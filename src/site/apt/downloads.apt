@@ -6,10 +6,7 @@ Download Project Artifacts
 
 * Release Versions
 
-  * <<2.0>>
-
-    * {{{http://snapshots.repository.codehaus.org/org/codehaus/atomserver/2.0/atomserver-2.0-install.tar.gz}installer}}
-      ({{{http://snapshots.repository.codehaus.org/org/codehaus/atomserver/2.0/atomserver-2.0-install.tar.gz.md5}MD5}})
+  * no release version yet.
 
   <All release versions of AtomServer are available from the maven repository at:>
   <<{{http://repository.codehaus.org/org/codehaus/atomserver/}}>>
@@ -20,3 +17,8 @@ Download Project Artifacts
 
   <All SNAPSHOT versions built from the development trunk are available in the snapshot repository at:>
   <<{{http://snapshots.repository.codehaus.org/org/codehaus/atomserver/}}>>
+
+  * <<2.0-SNAPSHOT>>
+
+    * {{{http://snapshots.repository.codehaus.org/org/codehaus/atomserver/2.0-SNAPSHOT/atomserver-2.0-SNAPSHOT-install.tar.gz}installer}}
+      ({{{http://snapshots.repository.codehaus.org/org/codehaus/atomserver/2.0-SNAPSHOT/atomserver-2.0-SNAPSHOT-install.tar.gz.md5}MD5}})
