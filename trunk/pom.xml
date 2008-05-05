@@ -43,7 +43,7 @@
     <licenses>
         <license>
             <name>Apache 2</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <url>LICENSE.txt</url>
             <distribution>repo</distribution>
             <comments>A business-friendly OSS license</comments>
         </license>
@@ -911,7 +911,7 @@
 
     <!-- ======================================================================= -->
     <!-- DEPLOYMENT
-         ========== -->    
+         ========== -->
     <distributionManagement>
         <!-- this is where binaries are deployed -->
         <repository>
