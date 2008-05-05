@@ -153,14 +153,15 @@ public class FileBasedContentStorage implements ContentStorage {
     private static byte[] testBytes = new byte[1024];
 
     private void writeTestFile( File dir ){
-        File testFile = new File( dir, "testFileSystem.txt" );
+        File testFile = null;
         try {
+            testFile= File.createTempFile("testFS", ".txt", dir);
             successfulAvailabiltyFileWrite = false;
             FileUtils.writeByteArrayToFile(testFile, testBytes);
             FileUtils.forceDelete(testFile);
             successfulAvailabiltyFileWrite = true;
         } catch ( IOException e ) {
-            String msg = "An IOException occured while writing the testFile; " + testFile;
+            String msg = "An IOException occured while writing the testFile; " + String.valueOf(testFile);
             log.error( msg );
             throw new AtomServerException( msg, e );
         }
