@@ -924,7 +924,7 @@
             <id>codehaus.org</id>
             <uniqueVersion>false</uniqueVersion>
             <name>AtomServer Snapshot Repository</name>
-            <url>dav:https://dav.codehaus.org/snapshots.repository/savana/</url>
+            <url>dav:https://dav.codehaus.org/snapshots.repository/atomserver/</url>
         </snapshotRepository>
         <!-- this is where the site is deployed-->
         <site>
