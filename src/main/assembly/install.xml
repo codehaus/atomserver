@@ -20,6 +20,22 @@
 
     <fileSets>
         <fileSet>
+            <outputDirectory>/atomserver</outputDirectory>
+            <includes>
+                <include>LICENSE.txt</include>
+            </includes>
+        </fileSet>
+
+        <fileSet>
+            <directory>src/main/webapp/WEB-INF/lib/licenses</directory>
+            <outputDirectory>/atomserver/licenses</outputDirectory>
+            <excludes>
+                <exclude>**/_svn</exclude>
+                <exclude>**/_svn/**</exclude>
+            </excludes>
+        </fileSet>
+
+        <fileSet>
             <directory>src/main/dist/bin</directory>
             <outputDirectory>/atomserver/bin</outputDirectory>
             <fileMode>0774</fileMode>
