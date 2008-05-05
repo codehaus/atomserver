@@ -53,7 +53,7 @@ public class JettyWebAppTestCase extends TestCase {
     static private final String JETTY_CONNECTOR_ID = "httpConnector";
 
     static protected String[] DEFAULT_CONFIGS = {"/org/atomserver/spring/propertyConfigurerBeans.xml",
-                                                 "/org/atomserver/spring/jettyBeans.xml"};
+                                                 "/jettyBeans.xml"};
 
     static protected String jettyServerBeanId = "jettyWebAppServer";
 
