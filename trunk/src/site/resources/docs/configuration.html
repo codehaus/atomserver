@@ -1,0 +1,179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <link rel="StyleSheet" href="css/style.css" type="text/css">
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>AtomServer Configuration</title>
+</head>
+<body class="maincontent">
+<h1><img src="images/atom-logo.gif" alt="logo">
+AtomServer, Configuration</h1>
+<br>
+<div class="content"><span style="font-style: italic;">Chris Berry,
+Bryon Jacob.
+Updated 05/01/08</span><br>
+<br>
+This
+document describes specific details about configuring AtomServer; where
+to put configuration files, how to define your own Workspaces, etc.<br>
+<br>
+For a further, detailed description of the actual protocol, either<br>
+<ul>
+  <li>See <a href="http://www.atomenabled.org/developers/syndication/">the
+Atom Publishing Protocol Reference</a> for further information about
+the
+elements of the feed itself. Note that we do not exhaustingly document
+this
+information ourselves,&nbsp; because we are using Atom entirely as
+dictated
+by the standard.</li>
+  <li>See <a href="atomserver_protocol_basics.html">the AtomServer
+Protocol
+Basics document </a>for general information about communicating with
+the atomserver service.<br>
+  </li>
+</ul>
+This document does <span style="font-weight: bold;">not</span> explain
+the underlying concepts behind AtomServer; REST, Atom, and OpenSearch.
+That
+information can be found in <a href="atomserver_intro.html">the
+AtomServer
+General Introduction document</a>. <span style="font-style: italic;">It
+is highly recommended that you read this document first</span>.<br>
+<br>
+Nor does this document explain the basics of XML,
+namespaces, syndicated feeds, and the <span
+ style="font-family: monospace;">GET, POST, PUT</span>, and <span
+ style="font-family: monospace;">DELETE</span>
+requests in HTTP, as well as HTTP's concept of a "resource." For more
+information about those things, see the <a href="#resources">Additional
+resources </a>section of
+this document.<br>
+<h2>Contents</h2>
+<ul>
+  <li>General Information<br>
+  </li>
+  <li>BLAH<br>
+  </li>
+  <li>Additional Resources<br>
+  </li>
+</ul>
+<hr style="width: 100%; height: 2px;">
+<h2>Putting Resources on AtomServer's Classpath <br>
+</h2>
+In most cases the only thing you'll need to do to AtomServer is
+configure it. Its very likely that won't have to write any code.
+Although if you do,
+AtomServer is built on top of Spring, and therefore allows you to
+easily wire in your own versions of AtomServer's Spring Beans (e.g.
+your own <span style="font-family: monospace;">AutoTagger</span>,
+etc.). Either way, AtomServer has a built-in, specialized <span
+ style="font-family: monospace;">ClassLoader</span>&nbsp; (named <span
+ style="font-family: monospace;">ConfigurationAwareClassLoader</span>)
+, which allows you to specify two additional directories to search
+before it does its conventional webapp search.<br>
+<br>
+The first directory <span style="font-family: monospace;">ConfigurationAwareClassLoader</span>
+searches is identified within AtomServer by the System
+property; <span style="font-family: monospace; font-weight: bold;">atomserver.ops.conf.dir</span>,
+and in the control scrip, <span style="font-family: monospace;">atomserver.sh,</span>
+by the environment variable; <span style="font-family: monospace;">$ATOMSERVER_OPSCONF_DIR</span>
+(which <span style="font-family: monospace;">atomserver.sh</span>
+simply translates to&nbsp; <span style="font-family: monospace;">atomserver.ops.conf.dir</span>).
+The <span style="font-family: monospace;">atomserver.ops.conf.dir </span>is
+meant for special "Operations overrides". This directory is
+always searched first, if it is defined. It is meant for information
+such as database connection URLs, etc. - i.e. private information owned
+by
+Operations. In this directory you might, for example, put a file named <span
+ style="font-family: monospace;">db.properties </span>which would
+override any <span style="font-family: monospace;">db.properties </span>files
+further down the ClassPath.<br>
+<br>
+The next directory <span style="font-family: monospace;">ConfigurationAwareClassLoader</span>
+searches is identified within AtomServer by the System
+property; <span style="font-family: monospace; font-weight: bold;">atomserver.conf.dir</span>,
+and in the control scrip, <span style="font-family: monospace;">atomserver.sh,</span>
+by the environment variable; <span style="font-family: monospace;">$ATOMSERVER_CONF_DIR</span>
+(which <span style="font-family: monospace;">atomserver.sh</span>
+simply translates to&nbsp; <span style="font-family: monospace;">atomserver.conf.dir</span>).
+<span style="font-family: monospace;">atomserver.conf.dir </span>is
+where you, the developer, will do all of your configuration. <span
+ style="font-family: monospace;">ConfigurationAwareClassLoader</span>
+treats it like a <br>
+alternate <span style="font-family: monospace;">WEB-INF </span>directory,
+which means that it looks there for two directories named <span
+ style="font-family: monospace;">/classes</span> and <span
+ style="font-family: monospace;">/lib</span>. And if found, will place <span
+ style="font-family: monospace;">$ATOMSERVER_CONF_DIR/classes </span>directly
+on the ClassPath. And likewise, if found, <span
+ style="font-family: monospace;">ConfigurationAwareClassLoader<span
+ style="font-family: Verdana,Arial,Helvetica,sans-serif;"> </span></span>will
+place all JARs in <span style="font-family: monospace;">$ATOMSERVER_CONF_DIR/lib
+</span>onto the ClassPath.<br>
+<br>
+So, to reiterate, AtomServer will look for Spring Beans and other
+Resources in the following order; <br>
+<ol>
+  <li><span style="font-family: monospace;">atomserver.ops.conf.dir</span>
+  </li>
+  <li><span style="font-family: monospace;">atomserver.conf.dir</span></li>
+  <li><span style="font-family: monospace;">WEB-INF</span> (either <span
+ style="font-family: monospace;">AtomServer's or yours)</span> </li>
+  <li>The System ClassPath<br>
+  </li>
+</ol>
+When you wire up AtomServer you will mostly be concerned with the
+following two directories;<br>
+<ul>
+  <li><span style="font-family: monospace;">$ATOMSERVER_CONF_DIR/classes/env
+    </span>- AtomServer requires that an "environment properties" file
+be provided. These
+configuration files tell AtomServer what type of DB it is connecting
+to, etc. These files
+are quite important. Typically, there are many properties files in
+this directory. You tell AtomServer which of these files to use when
+you
+provide the "<span style="font-family: monospace;">-env</span>"
+argument to the control script; <span style="font-family: monospace;">atomserver.sh.</span>
+For
+example; <span style="font-family: monospace;">"atomserver.sh -env prd
+...."</span> tells AtomServer to read in the
+properties file; <span style="font-family: monospace;">prd.properties</span>.
+    <br>
+  </li>
+  <li><span style="font-family: monospace; color: rgb(51, 51, 51);">$ATOMSERVER_HOME/conf/classes/org/atomserver/spring/ext
+    </span><span style="font-weight: bold;"><span
+ style="color: rgb(0, 102, 0);">- </span></span><span
+ style="color: rgb(0, 102, 0);"><span style="color: rgb(51, 51, 51);">AtomServer
+uses Spring, and defines many Spring Beans. Any&nbsp; Spring Beans you
+define here will override Beans defined within AtomServer itself. This
+is how you configure your own Workspaces.</span></span><span
+ style="font-weight: bold;"><span style="color: rgb(0, 102, 0);"><br>
+    </span></span></li>
+</ul>
+<hr style="width: 100%; height: 2px;">
+<h2><a name="resources"></a>Additional resources</h2>
+You may find the following third-party documents useful:<br>
+<br>
+&nbsp;&nbsp;&nbsp; * <a
+ href="http://www-128.ibm.com/developerworks/xml/library/x-atom10.html">Overview
+of Atom</a> from IBM<br>
+&nbsp;&nbsp;&nbsp; * <a
+ href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html">HTTP 1.1
+method definitions</a>; specification for GET, POST, PUT, and DELETE<br>
+&nbsp;&nbsp;&nbsp; * <a
+ href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html">HTTP 1.1
+status code definitions</a><br>
+&nbsp;&nbsp;&nbsp; * <a
+ href="http://www.atomenabled.org/developers/syndication/">Atom
+Syndication Reference</a> (from Atom-enabled)<br>
+&nbsp;&nbsp;&nbsp; * <a
+ href="http://www-128.ibm.com/developerworks/library/x-atompp1/">Getting
+to know the Atom Publishing Protocol (from IBM)</a><span
+ style="font-weight: bold;"></span><br>
+<br>
+</div>
+</body>
+</html>

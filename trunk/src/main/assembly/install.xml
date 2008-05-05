@@ -1,0 +1,84 @@
+<assembly>
+
+    <id>install</id>
+    <formats>
+        <format>tar.gz</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>/atomserver/webapps</outputDirectory>
+            <outputFileNameMapping>${artifactId}-${version}.${extension}</outputFileNameMapping>
+            <unpack>false</unpack>
+            <fileMode>0774</fileMode>
+            <includes>
+                <include>org.atomserver:atomserver</include>
+            </includes>
+        </dependencySet>
+    </dependencySets>
+
+    <fileSets>
+        <fileSet>
+            <directory>src/main/dist/bin</directory>
+            <outputDirectory>/atomserver/bin</outputDirectory>
+            <fileMode>0774</fileMode>
+            <excludes>
+                <exclude>**/_svn</exclude>
+                <exclude>**/_svn/**</exclude>
+            </excludes>
+        </fileSet>
+
+        <fileSet>
+            <directory>src/main/dist/conf</directory>
+            <outputDirectory>/atomserver/conf</outputDirectory>
+            <excludes>
+                <exclude>**/_svn</exclude>
+                <exclude>**/_svn/**</exclude>
+            </excludes>
+        </fileSet>
+
+        <fileSet>
+            <directory>src/main/dist/data</directory>
+            <outputDirectory>/atomserver/data</outputDirectory>
+            <excludes>
+                <exclude>**/_svn</exclude>
+                <exclude>**/_svn/**</exclude>
+            </excludes>
+        </fileSet>
+
+        <fileSet>
+            <directory>src/main/dist/logs</directory>
+            <outputDirectory>/atomserver/logs</outputDirectory>
+            <fileMode>0664</fileMode>
+            <excludes>
+                <exclude>**/_svn</exclude>
+                <exclude>**/_svn/**</exclude>
+            </excludes>
+        </fileSet>
+
+        <fileSet>
+            <directory>target</directory>
+            <outputDirectory>/atomserver/conf/classes</outputDirectory>
+            <includes>
+              <include>version.properties</include>
+            </includes>
+            <excludes>
+                <exclude>**/_svn</exclude>
+                <exclude>**/_svn/**</exclude>
+            </excludes>
+            <fileMode>0664</fileMode>
+        </fileSet>
+        
+        <fileSet>
+            <directory>src/site/resources/docs</directory>
+            <outputDirectory>/atomserver/docs</outputDirectory>
+            <fileMode>0664</fileMode>
+            <excludes>
+                <exclude>**/_svn</exclude>
+                <exclude>**/_svn/**</exclude>
+            </excludes>
+        </fileSet>
+    </fileSets>
+
+</assembly>
