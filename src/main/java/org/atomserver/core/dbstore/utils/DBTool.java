@@ -12,7 +12,7 @@ public class DBTool {
 
     public static ApplicationContext getToolContext(ApplicationContext parentContext) {
         String[] configs = {
-                "/org/atomserver/spring/dbAuxilApplicationContext.xml"
+                "/org/atomserver/spring/dbtools/dbtools.xml"
         };
         ClassPathXmlApplicationContext springFactory =
                 new ClassPathXmlApplicationContext(configs, false, parentContext);
@@ -28,7 +28,7 @@ public class DBTool {
                 "/org/atomserver/spring/logBeans.xml",
                 "/org/atomserver/spring/storageBeans.xml",
                 "/org/atomserver/spring/databaseBeans.xml",
-                "/org/atomserver/spring/dbAuxilApplicationContext.xml"
+                "/org/atomserver/spring/dbtools/dbtools.xml"
         };
         ClassPathXmlApplicationContext springFactory =
                 new ClassPathXmlApplicationContext(configs, false);
