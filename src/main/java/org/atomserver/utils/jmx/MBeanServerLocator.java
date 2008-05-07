@@ -34,6 +34,8 @@ import org.apache.commons.logging.LogFactory;
         <property name="jndiName" value="java:comp/env/jmx/MBeanServer"/>
     </bean>
 </pre>
+
+ TODO: make this class less resin-aware
 */
 
 public class MBeanServerLocator extends JndiObjectLocator {
