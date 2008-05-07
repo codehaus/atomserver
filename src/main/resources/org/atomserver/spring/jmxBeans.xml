@@ -20,22 +20,14 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans 
                            http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
 
-    <bean id="org.atomserver-mbeanServerLocator"
+    <bean id="org.atomserver-mBeanServerLocator"
           class="org.atomserver.utils.jmx.MBeanServerLocator" >
       <property name="containerType" value="${atomserver.container.name}"/>
     </bean>
 
-    <bean id="org.atomserver-mbeanServer"
-          factory-bean="org.atomserver-mbeanServerLocator"
+    <bean id="org.atomserver-mBeanServer"
+          factory-bean="org.atomserver-mBeanServerLocator"
           factory-method="locateMBeanServer" /> 
-
-    <bean id="org.atomserver-attributeSource"
-          class="org.springframework.jmx.export.annotation.AnnotationJmxAttributeSource"/>
-
-    <bean id="org.atomserver-mBeanAssembler"
-          class="org.springframework.jmx.export.assembler.MetadataMBeanInfoAssembler">
-        <property name="attributeSource" ref="org.atomserver-attributeSource"/>
-    </bean>
 
     <bean id="org.atomserver-mBeanExporter"
           lazy-init="false"
@@ -71,7 +63,15 @@
             </map>
         </property>
 
-        <property name="assembler" ref="org.atomserver-mBeanAssembler"/>
+        <!-- this configures an mbean assembler based on the Spring JMX annotations -->
+        <property name="assembler">
+            <bean class="org.springframework.jmx.export.assembler.MetadataMBeanInfoAssembler">
+                <property name="attributeSource">
+                    <bean class="org.springframework.jmx.export.annotation.AnnotationJmxAttributeSource"/>
+                </property>
+            </bean>
+        </property>
+
         <property name="registrationBehaviorName" value="REGISTRATION_REPLACE_EXISTING"/>
 
         <!--
@@ -83,7 +83,7 @@
         <property name="listeners">
             <list>
                 <bean class="org.atomserver.utils.jmx.HttpAdaptorMgr">
-                    <property name="mbeanServer" ref="org.atomserver-mbeanServer"/>
+                    <property name="mbeanServer" ref="org.atomserver-mBeanServer"/>
                 </bean>
             </list>
         </property>

@@ -23,21 +23,14 @@
                            http://abdera.apache.org 
                            http://abdera.apache.org/schemas/abdera-spring.xsd">
 
-    <!--  ================================== -->
-    <!--           Abdera Config             -->
-    <!--  ================================== -->
-    <!-- Note: requires external Beans;                                                
-         propertyConfigurer, physicalStorage, widgetsDAO, performanceLog
-    -->
-
     <bean id="org.atomserver-uriHandler" class="org.atomserver.uri.URIHandler">
         <property name="rootPath" value="${atomserver.servlet.context}"/>
         <property name="contextPath" value="${atomserver.servlet.mapping}"/>
     </bean>
 
-    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
-    <!-- Note: the default name for this beans is; org.apache.abdera.protocol.server.ServiceContext -->
     <a:serviceContext>
+        <!-- the default name for this beans is
+             org.apache.abdera.protocol.server.ServiceContext -->
         <a:provider>
             <ref bean="org.atomserver-atomServer"/>
         </a:provider>
@@ -47,19 +40,15 @@
         </a:targetResolver>
     </a:serviceContext>
 
-    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
-    <!-- NOTE: we programmatically *reset* store in some JUnits -->
     <bean id="org.atomserver-atomServer" class="org.atomserver.AtomServer">
         <property name="service" ref="org.atomserver-atomService"/>
         <property name="performanceLog" ref="org.atomserver-performanceLog"/>
         <property name="errorLog" ref="org.atomserver-errorLog"/>
     </bean>
 
-    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
     <bean id="org.atomserver-simpleXMLContentValidator"
           class="org.atomserver.core.validators.SimpleXMLContentValidator"/>
 
-    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
     <bean id="org.atomserver-isAliveHandler"
           class="org.atomserver.core.dbstore.AtomServerIsAliveHandler"
           depends-on="org.atomserver-propertyConfigurer" >
@@ -70,7 +59,6 @@
 
     <import resource="classpath:org/atomserver/spring/workspaceBeans.xml" />
 
-    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
     <bean id="org.atomserver-atomService"
           class="org.atomserver.core.dbstore.DBBasedAtomService"
           init-method="initialize"
@@ -81,7 +69,16 @@
 
         <property name="categoriesContentStorage" ref="org.atomserver-entryCategoriesContentStorage"/>
 
-        <property name="transactionTemplate" ref="org.atomserver-transactionTemplate"/>
+        <property name="transactionTemplate">
+            <bean class="org.springframework.transaction.support.TransactionTemplate">
+              <property name="timeout" value="${db.timeout.txn.put}"/>
+              <property name="transactionManager">
+                  <bean class="org.springframework.jdbc.datasource.DataSourceTransactionManager" >
+                    <property name="dataSource" ref="org.atomserver-dataSource"/>
+                  </bean>
+              </property>
+            </bean>
+        </property>
 
         <property name="uriHandler" ref="org.atomserver-uriHandler"/>
 

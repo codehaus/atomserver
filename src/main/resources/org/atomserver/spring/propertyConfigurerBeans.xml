@@ -56,7 +56,7 @@
         </property>
     </bean>
 
-    <bean id="org.atomserver-bootstrappers"
+    <bean id="org.atomserver-bootstrappers"           
           class="org.atomserver.utils.BootstrapperLoader">
         <property name="bootstrappers" value="${bootstrappers}"/>
     </bean>

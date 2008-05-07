@@ -39,7 +39,6 @@
         <property name="maxWait" value="10000"/>
     </bean>
 
-    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
     <bean id="org.atomserver-sqlMapClient"
           class="org.springframework.orm.ibatis.SqlMapClientFactoryBean"
           depends-on="org.atomserver-propertyConfigurer">
@@ -53,7 +52,6 @@
         </property>
     </bean>
 
-    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
     <bean id="org.atomserver-entriesDAO"
           class="org.atomserver.core.dbstore.dao.EntriesDAOiBatisImpl"
           depends-on="org.atomserver-propertyConfigurer">
@@ -65,7 +63,6 @@
         <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO" />
     </bean>
 
-    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
     <bean id="org.atomserver-contentDAO"
           class="org.atomserver.core.dbstore.dao.ContentDAOiBatisImpl"
           depends-on="org.atomserver-propertyConfigurer">
@@ -75,7 +72,6 @@
         <property name="performanceLog" ref="org.atomserver-performanceLog"/>
     </bean>
 
-    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
     <bean id="org.atomserver-entryCategoriesDAO"
           class="org.atomserver.core.dbstore.dao.EntryCategoriesDAOiBatisImpl"
           depends-on="org.atomserver-propertyConfigurer">
@@ -83,16 +79,6 @@
         <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
         <property name="databaseType" value="${db.type}"/>
         <property name="performanceLog" ref="org.atomserver-performanceLog"/>
-    </bean>
-
-    <bean id="org.atomserver-transactionTemplate"
-          class="org.springframework.transaction.support.TransactionTemplate">
-      <property name="timeout" value="${db.timeout.txn.put}"/>
-      <property name="transactionManager">
-          <bean class="org.springframework.jdbc.datasource.DataSourceTransactionManager" >
-            <property name="dataSource" ref="org.atomserver-dataSource"/>
-          </bean>
-      </property>
     </bean>
 
 </beans>
