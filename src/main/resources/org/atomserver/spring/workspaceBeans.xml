@@ -36,6 +36,7 @@
             <property name="defaultContentValidator" ref="org.atomserver-simpleXMLContentValidator"/>
             <property name="defaultCategoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
             <property name="defaultProducingEntryCategoriesFeedElement" value="true"/>
+            <property name="defaultEntryIdGenerator" ref="org.atomserver-entryIdGenerator" />
         </bean>
 
         <!-- dummy workspace is for testing ONLY -->

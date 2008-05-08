@@ -135,23 +135,28 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
     protected String runCRUDTest( boolean shouldCheckFile, String urlPath,
                                   boolean shouldCheckOptConc, boolean expects201, boolean allowsAny )
             throws Exception {
-        return runCRUDTest( shouldCheckFile, urlPath, shouldCheckOptConc, expects201, allowsAny, false );
+        return runCRUDTest( shouldCheckFile, urlPath, shouldCheckOptConc, expects201, allowsAny, false, null );
     }
 
     protected String runCRUDTest(boolean shouldCheckFile, String urlPath,
                                  boolean shouldCheckOptConc, boolean expects201,
-                                 boolean allowsAny, boolean doPost)
+                                 boolean allowsAny, boolean doPost, String locale )
             throws Exception {
         String fullURL = getServerURL() + urlPath;
         String id = urlPath;
 
-        log.debug( "DOING A POST = " + doPost );
+        log.debug( "DOING A POST = " + doPost + " locale= " + locale);
 
         //INSERT
         String editURI = null;
         if ( doPost ) {
-            editURI = post(id, fullURL, getFileXMLInsert(), 201 );
-            fullURL = fullURL + "/" + getCurrentEntryId() + ".xml";
+            String urlToPost = (locale == null) ? fullURL : fullURL + "?locale=" + locale ;
+            editURI = post(id, urlToPost, getFileXMLInsert(), 201 );
+            if (locale == null) {
+                fullURL = fullURL + "/" + getCurrentEntryId() + ".xml";
+            } else {
+                fullURL = fullURL + "/" + getCurrentEntryId() + "." + locale + ".xml";
+            }
             log.debug( "fullURL = " + fullURL );
         } else {
             String insertURL = ( shouldCheckOptConc ) ? fullURL : (fullURL + "/*") ;
@@ -348,7 +353,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
 
 
     //=========================
-    //      select
+    //      POST
     //=========================
     protected String post(String id, String fullURL, String fileXML, int expectedResponse ) throws Exception {
         assertNotNull( fileXML);
