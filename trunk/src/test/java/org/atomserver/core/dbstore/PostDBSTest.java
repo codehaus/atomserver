@@ -35,6 +35,8 @@ import java.io.File;
  */
 public class PostDBSTest extends CRUDDBSTestCase {
 
+    private String currentLocale;
+    private String currentWorkspace;
 
     public static Test suite()
     { return new TestSuite( PostDBSTest.class ); }
@@ -53,13 +55,37 @@ public class PostDBSTest extends CRUDDBSTestCase {
 
     protected IRI getEntryIRI() {
         IRI entryIRI = IRI.create("http://localhost:8080/"
-                              + widgetURIHelper.constructURIString("dummy", "acme", getCurrentEntryId(), null));
+                              + widgetURIHelper.constructURIString( getCurrentWorkspace(), "acme",
+                                                                   getCurrentEntryId(),
+                                                                   LocaleUtils.toLocale(getCurrentLocale())) );
         return entryIRI;
     }
 
     protected String getPropfileBase() {
-        return userdir + "/var/dummy/acme/" + getCurrentEntryId().substring(0,2) +
-               "/" + getCurrentEntryId() + "/" + getCurrentEntryId() + ".xml";
+        if ( currentLocale == null ) {
+            return userdir + "/var/" + getCurrentWorkspace() + "/acme/" + getCurrentEntryId().substring(0,2) +
+                   "/" + getCurrentEntryId() + "/" + getCurrentEntryId() + ".xml";
+        } else {
+            return userdir + "/var/" + getCurrentWorkspace() + "/acme/" + getCurrentEntryId().substring(0,2) +
+                   "/" + getCurrentEntryId() + "/" + getCurrentLocale() + "/" +
+                   getCurrentEntryId() + ".xml";            
+        }
+    }
+
+    protected String getCurrentLocale() {
+        return currentLocale;
+    }
+
+    protected void setCurrentLocale( String locale ) {
+        this.currentLocale = locale;
+    }
+
+    protected String getCurrentWorkspace() {
+        return currentWorkspace;
+    }
+
+    protected void setCurrentWorkspace( String workspace ) {
+        this.currentWorkspace = workspace;
     }
 
 
@@ -67,11 +93,38 @@ public class PostDBSTest extends CRUDDBSTestCase {
     //       tests
     //---------------------
 
-    public void testCRUD() throws Exception {
+    public void testCRUDNoLocale() throws Exception {
+
+        setCurrentWorkspace( "dummy" );
 
         // run the tests up to some point
         // INSERT/SELECT/UPDATE/SELECT/DELETE
-        String finalEditLink = runCRUDTest( true, "dummy/acme", true, true, false, true );
+        String finalEditLink = runCRUDTest( true, "dummy/acme", true, true, false, true, null );
+
+        // SELECT against the just deleted entry
+        ClientResponse response = clientGet( finalEditLink, null, 200, true );
+
+        Document<Entry> doc = response.getDocument();
+        Entry entryOut = doc.getRoot();
+        log.debug( "CONTENT= "+ entryOut.getContent() );
+        assertTrue( entryOut.getContent().indexOf("<deletion") != -1);
+
+        response.release();
+        if (contentStorage instanceof FileBasedContentStorage) {
+            int rev = extractRevisionFromURI( finalEditLink );
+            File pFile = new File( getPropfileBase() + ".r" + rev);
+            assertTrue( pFile != null && pFile.exists() );
+        }
+    }
+
+    public void testCRUDWithLocale() throws Exception {
+
+        setCurrentLocale( "en" );
+        setCurrentWorkspace( "widgets" );
+
+        // run the tests up to some point
+        // INSERT/SELECT/UPDATE/SELECT/DELETE
+        String finalEditLink = runCRUDTest( true, "widgets/acme", true, true, false, true, "en" );
 
         // SELECT against the just deleted entry
         ClientResponse response = clientGet( finalEditLink, null, 200, true );

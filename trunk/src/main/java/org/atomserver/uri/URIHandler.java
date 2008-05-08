@@ -377,6 +377,8 @@ public class URIHandler
             }
         }
 
+        log.debug("*********** locale= " + locale);
+
         URITarget target =
                 fileInfo != null ? new EntryTarget(requestContext, workspace, collection,
                                                    fileInfo.getEntryId(), revision, locale)
