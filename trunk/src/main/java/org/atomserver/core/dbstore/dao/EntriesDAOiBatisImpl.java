@@ -28,7 +28,6 @@ import org.atomserver.core.EntryMetaData;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.utils.locale.LocaleUtils;
 import org.atomserver.utils.logic.BooleanExpression;
-import org.atomserver.utils.logic.BooleanTerm;
 import org.atomserver.utils.perf.AutomaticStopWatch;
 import org.atomserver.utils.perf.StopWatch;
 import org.springframework.orm.ibatis.SqlMapClientCallback;
@@ -236,7 +235,10 @@ public class EntriesDAOiBatisImpl
         return insertEntry(entry, false, null, null);
     }
 
-    public Object insertEntry(EntryDescriptor entry, boolean isSeedingDB, Date published, Date lastModified) {
+    public Object insertEntry(EntryDescriptor entry,
+                              boolean isSeedingDB,
+                              Date published,
+                              Date lastModified) {
         StopWatch stopWatch = new AutomaticStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntriesDAOiBatisImpl INSERT ==> " + entry);
@@ -450,9 +452,12 @@ public class EntriesDAOiBatisImpl
     //======================================
     /**
      */
-    public List selectEntriesByPagePerCategory(FeedDescriptor feed,
-                                               Date lastModifiedDate, int pageDelim, int pageSize,
-                                               Collection<BooleanExpression<AtomCategory>> categoryQuery) {
+    public List<EntryMetaData> selectEntriesByPagePerCategory(
+            FeedDescriptor feed,
+            Date lastModifiedDate,
+            int pageDelim,
+            int pageSize,
+            Collection<BooleanExpression<AtomCategory>> categoryQuery) {
         return internalSelectEntries(lastModifiedDate, pageDelim, pageSize,
                                      null, "selectEntriesByPagePerCategory",
                                      feed, categoryQuery);
@@ -460,9 +465,13 @@ public class EntriesDAOiBatisImpl
 
     /**
      */
-    public List selectEntriesByPageAndLocalePerCategory(FeedDescriptor feed,
-                                                        Date lastModifiedDate, int pageDelim, int pageSize,
-                                                        String locale, Collection<BooleanExpression<AtomCategory>> categoryQuery) {
+    public List<EntryMetaData> selectEntriesByPageAndLocalePerCategory(
+            FeedDescriptor feed,
+            Date lastModifiedDate,
+            int pageDelim,
+            int pageSize,
+            String locale,
+            Collection<BooleanExpression<AtomCategory>> categoryQuery) {
         return internalSelectEntries(lastModifiedDate, pageDelim, pageSize,
                                      locale, "selectEntriesByPageAndLocalePerCategory",
                                      feed, categoryQuery);
@@ -470,16 +479,22 @@ public class EntriesDAOiBatisImpl
 
     /**
      */
-    public List selectEntriesByPage(FeedDescriptor feed,
-                                    Date lastModifiedDate, int pageDelim, int pageSize) {
+    public List<EntryMetaData> selectEntriesByPage(
+            FeedDescriptor feed,
+            Date lastModifiedDate,
+            int pageDelim,
+            int pageSize) {
         return internalSelectEntries(lastModifiedDate, pageDelim, pageSize,
                                      null, "selectEntriesByPage", feed, null);
     }
 
 
-    public List selectEntriesByPageAndLocale(FeedDescriptor feed,
-                                             Date lastModifiedDate, int pageDelim,
-                                             int pageSize, String locale) {
+    public List<EntryMetaData> selectEntriesByPageAndLocale(
+            FeedDescriptor feed,
+            Date lastModifiedDate,
+            int pageDelim,
+            int pageSize,
+            String locale) {
         return internalSelectEntries(lastModifiedDate, pageDelim, pageSize,
                                      locale, "selectEntriesByPageAndLocale", feed, null);
     }
@@ -495,7 +510,12 @@ public class EntriesDAOiBatisImpl
         return map.get(entryDescriptor.getEntryId());
     }
 
-    public List selectAggregateEntriesByPage(FeedDescriptor feed, Date lastModifiedDate, int pageDelim, int pageSize, Collection<BooleanExpression<AtomCategory>> categoriesQuery) {
+    public List<AggregateEntryMetaData> selectAggregateEntriesByPage(
+            FeedDescriptor feed,
+            Date lastModifiedDate,
+            int pageDelim,
+            int pageSize,
+            Collection<BooleanExpression<AtomCategory>> categoriesQuery) {
         ParamMap paramMap = prepareParamMapForSelectEntries(
                 lastModifiedDate, pageDelim, pageSize, null, feed);
 
@@ -511,11 +531,14 @@ public class EntriesDAOiBatisImpl
         return new ArrayList(map.values());
     }
 
-    private List internalSelectEntries(Date lastModifiedDate, int pageDelim,
-                                       int pageSize, String locale,
-                                       String ibatisMethod,
-                                       FeedDescriptor feed,
-                                       Collection<BooleanExpression<AtomCategory>> categoryQuery) {
+    private List<EntryMetaData> internalSelectEntries(
+            Date lastModifiedDate,
+            int pageDelim,
+            int pageSize,
+            String locale,
+            String ibatisMethod,
+            FeedDescriptor feed,
+            Collection<BooleanExpression<AtomCategory>> categoryQuery) {
         StopWatch stopWatch = new AutomaticStopWatch();
         try {
             ParamMap paramMap =
@@ -565,8 +588,8 @@ public class EntriesDAOiBatisImpl
     /**
      * NOTE: package scoped for use by JUnits
      */
-    public List selectEntriesByLastModified(String workspace, String collection,
-                                            Date lastModifiedDate) {
+    public List<EntryMetaData> selectEntriesByLastModified(String workspace, String collection,
+                                                           Date lastModifiedDate) {
         StopWatch stopWatch = new AutomaticStopWatch();
         try {
             return getSqlMapClientTemplate().queryForList(
@@ -585,8 +608,8 @@ public class EntriesDAOiBatisImpl
 
     /**
      */
-    public List selectEntriesByLastModifiedSeqNum(FeedDescriptor feed,
-                                                  Date lastModifiedDate) {
+    public List<EntryMetaData> selectEntriesByLastModifiedSeqNum(FeedDescriptor feed,
+                                                                 Date lastModifiedDate) {
         StopWatch stopWatch = new AutomaticStopWatch();
         try {
             return getSqlMapClientTemplate().queryForList(
@@ -606,7 +629,7 @@ public class EntriesDAOiBatisImpl
     /**
      * Meant for use by <b>only</b> the DBSeeder !!
      */
-    public List updateLastModifiedSeqNumForAllEntries(ServiceDescriptor service) {
+    public List<EntryMetaData> updateLastModifiedSeqNumForAllEntries(ServiceDescriptor service) {
 
         // Now let's sort it all by lastModified
         // Sort from the begining of time, in ascending order, so we get everything
