@@ -19,10 +19,7 @@ package org.atomserver.core;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.atomserver.ContentValidator;
-import org.atomserver.EntryAutoTagger;
-import org.atomserver.CategoriesHandler;
-import org.atomserver.ContentStorage;
+import org.atomserver.*;
 
 /**
  * CollectionOptions - The options which may be set for an AtomCollection.
@@ -47,6 +44,8 @@ public class CollectionOptions {
     private ContentValidator contentValidator = null;
     private CategoriesHandler categoriesHandler = null;
     private EntryAutoTagger autoTagger = null;
+
+    private EntryIdGenerator entryIdGenerator = null;
 
     private int maxLinkEntriesPerPage = -1;
     private int maxFullEntriesPerPage = -1;
@@ -129,4 +128,11 @@ public class CollectionOptions {
         this.maxFullEntriesPerPage = maxFullEntriesPerPage;
     }
 
+    public EntryIdGenerator getEntryIdGenerator() {
+        return entryIdGenerator;
+    }
+
+    public void setEntryIdGenerator(EntryIdGenerator entryIdGenerator) {
+        this.entryIdGenerator = entryIdGenerator;
+    }
 }

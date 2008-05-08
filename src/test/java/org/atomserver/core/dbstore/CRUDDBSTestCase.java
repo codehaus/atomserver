@@ -26,7 +26,10 @@ import java.io.File;
  */
 abstract public class CRUDDBSTestCase extends BaseCRUDDBSTestCase {
 
-    public void setUp() throws Exception { super.setUp(); }
+    public void setUp() throws Exception {
+        super.setUp();
+        setCurrentEntryId( propId );
+    }
 
     public void tearDown() throws Exception { super.tearDown(); }
 

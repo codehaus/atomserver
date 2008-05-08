@@ -99,7 +99,7 @@ public class TagsFeedQueriesDBSTest extends DBSTestCase {
             StringWriter stringWriter = new StringWriter();
             categories.writeTo( stringWriter ); 
             String categoriesXML = stringWriter.toString();
-            log.debug( "!!!!!!!!!!!!! Categories= " + categoriesXML );
+            log.debug( "Categories= " + categoriesXML );
 
             //INSERT
             String propId = "" + (propIdSeed + ii);
@@ -164,7 +164,7 @@ public class TagsFeedQueriesDBSTest extends DBSTestCase {
             // Now the widgets Entry should be "marked" deleted
             entry = getEntry( "widgets", "acme", propId, locale );
             String content = entry.getContent();
-            log.debug( "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ content= " + content );
+            log.debug( "content= " + content );
             assertTrue( content.indexOf( "deletion" ) != -1 );
             
             // The tags:widgets Entry should NOT be deleted (it doesn't really exist -- it is just the widgets Entry)
@@ -361,7 +361,7 @@ public class TagsFeedQueriesDBSTest extends DBSTestCase {
         log.debug( "List (pl) PAGE 1 = \n" + feed );
         IRI next = FeedPagingHelper.getNext( feed );
         assertNotNull( next );
-        log.debug( "@@@@@@@@@@@@@@@@@@@@@@@@@ next= " + next.toString() );
+        log.debug( "next= " + next.toString() );
         assertTrue( next.toString().indexOf( "locale=pl" ) != -1 );  
         assertTrue( next.toString().indexOf( "test2" ) != -1 );  
         assertTrue( next.toString().indexOf( "boo1" ) != -1 );  
@@ -388,14 +388,14 @@ public class TagsFeedQueriesDBSTest extends DBSTestCase {
             // Now the widgets Entry should be "marked" deleted
             entry = getEntry( "widgets", "acme", propId, locale[ ii % 2 ] );
             String content = entry.getContent();
-            log.debug( "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ content= " + content );
+            log.debug( "content= " + content );
             assertTrue( content.indexOf( "deletion" ) != -1 );
 
             // The tags:widgets Entry should NOT be deleted, so we ensure that it contains a
             // category element.
             entry = getEntry( "tags:widgets", "acme", propId, locale[ ii % 2 ] );
             content = entry.getContent();
-            log.debug( "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ content= " + content );
+            log.debug( "content= " + content );
             assertTrue( content.indexOf( "category" ) >= 0 );
         }
 

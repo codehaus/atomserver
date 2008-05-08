@@ -359,22 +359,10 @@ public class AtomServer extends AbstractProvider {
         }
         Abdera abdera = request.getServiceContext().getAbdera();
         try {
-            FeedTarget feedTarget = atomService.getURIHandler().getFeedTarget(request);
-            Entry entry = atomService.getAtomWorkspace(feedTarget.getWorkspace())
-                            .getAtomCollection(feedTarget.getCollection()).createEntry(request);
-
-            Document<org.apache.abdera.model.Service> doc = entry.getDocument();
-            AbstractResponseContext rc = new BaseResponseContext<Document<org.apache.abdera.model.Service>>(doc);
-            rc.setStatus(201);
-            rc.setEntityTag(new EntityTag(entry.getId().toString()));
-            rc.setLocation(new URL(request.getResolvedUri().toURL(), request.getSlug()).toString());
-            return rc;
-        } catch (Throwable e) {
-            return handleTopLevelException(e, abdera, request);
-        }
-        finally {
+            return handleSingleEntry(request, abdera);
+        } finally {
             if (perflog != null) {
-                perflog.log("POST.feed", request.getUri().getPath(), stopWatch);
+                perflog.log("POST.entry", request.getUri().getPath(), stopWatch);
             }
         }
     }
@@ -564,6 +552,9 @@ public class AtomServer extends AbstractProvider {
             if (uEntry.isNewlyCreated()) {
                 rc.setStatus(201);
             }
+
+            rc.setLocation( entry.getEditLinkResolvedHref().toString() );
+            
             return rc;
         } catch (Throwable e) {
             return handleTopLevelException(e, abdera, request);

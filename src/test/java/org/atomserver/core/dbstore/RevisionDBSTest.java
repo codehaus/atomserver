@@ -56,44 +56,44 @@ public class RevisionDBSTest extends CRUDDBSTestCase {
         // SELECT
         String fullURL0 = fullURL + "/0";
         editURI = select(fullURL0, true);
-        log.debug("@@@@@@@@@@@@@ editURI= " + editURI);
+        log.debug("editURI= " + editURI);
         assertTrue(editURI.indexOf("/0") != -1);
 
         // SELECT
         // This should fail -- there is no 1 yet
         String fullURL1 = fullURL + "/1";
         editURI = select(fullURL1, true, 409);
-        log.debug("@@@@@@@@@@@@@ editURI= " + editURI);
+        log.debug("editURI= " + editURI);
         assertTrue(editURI.indexOf("/0") != -1);
 
         // UPDATE -- now we go to 1
         editURI = update(id, fullURL0);
-        log.debug("@@@@@@@@@@@@@ editURI= " + editURI);
+        log.debug("editURI= " + editURI);
         assertTrue(editURI.indexOf("/1") != -1);
 
         // SELECT -- should find 1
         editURI = select(fullURL1, false);
-        log.debug("@@@@@@@@@@@@@ editURI= " + editURI);
+        log.debug("editURI= " + editURI);
         assertTrue(editURI.indexOf("/1") != -1);
 
         // UPDATE
         // This should fail -- there is no 2 yet
         String fullURL2 = fullURL + "/2";
         editURI = update(id, fullURL2);
-        log.debug("@@@@@@@@@@@@@ editURI= " + editURI);
+        log.debug("editURI= " + editURI);
         // this should return the proper edit URI
         assertTrue(editURI.indexOf("/1") != -1);
 
         // DELETE
         // This should fail -- there is no 2 yet
         editURI = delete(fullURL2);
-        log.debug("@@@@@@@@@@@@@ editURI= " + editURI);
+        log.debug("editURI= " + editURI);
         // this should return the proper edit URI
         assertTrue(editURI.endsWith("/1"));
 
         // DELETE
         editURI = delete(editURI);
-        log.debug("@@@@@@@@@@@@@ editURI= " + editURI);
+        log.debug("editURI= " + editURI);
         assertTrue(editURI.endsWith("/2"));
 
         // check that what happens when we delete a non-existent entry with the /* override is what we expect

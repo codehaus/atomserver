@@ -30,12 +30,17 @@ import java.util.Locale;
  * @author Bryon Jacob (bryon at jacob.net)
  */
 public class EntryTarget extends URITarget implements EntryDescriptor {
+
     private final RequestContext requestContext;
     private final String workspace;
     private final String collection;
-    private final String entryId;
     private final Integer revision;
     private final Locale locale;
+
+    private String entryId;
+
+    // NOTE: purposely this contains invalid HTML chars
+    public static final String UNASSIGNED_ID = "{{UNASSIGNED ID}}";
 
     public EntryTarget(RequestContext requestContext,
                        final String workspace,
@@ -52,6 +57,20 @@ public class EntryTarget extends URITarget implements EntryDescriptor {
         this.locale = locale;
     }
 
+    public EntryTarget(RequestContext requestContext,
+                       final String workspace,
+                       final String collection,
+                       final Integer revision,
+                       final Locale locale) {
+        super(TargetType.TYPE_COLLECTION, requestContext);
+        this.requestContext = requestContext;
+        this.workspace = workspace;
+        this.collection = collection;
+        this.entryId = UNASSIGNED_ID;
+        this.revision = revision;
+        this.locale = locale;
+    }
+
     public String getWorkspace() {
         return workspace;
     }
@@ -62,6 +81,10 @@ public class EntryTarget extends URITarget implements EntryDescriptor {
 
     public String getEntryId() {
         return entryId;
+    }
+
+    public void setEntryId( String entryId ) {
+        this.entryId = entryId;
     }
 
     public int getRevision() {

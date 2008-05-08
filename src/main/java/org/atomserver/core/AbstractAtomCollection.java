@@ -228,6 +228,18 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     }
 
     /**
+     * A convenience method to obtain the return the EntryIdGenerator wired into this AtomCollection
+     * @return  The EntryIdGenerator
+     */
+    protected EntryIdGenerator getEntryIdGenerator() {
+        if ( options != null && options.getEntryIdGenerator() != null ) {
+            return options.getEntryIdGenerator();
+        } else {
+            return parentAtomWorkspace.getOptions().getDefaultEntryIdGenerator();
+        }
+    }
+
+    /**
      * A convenience method to obtain the isLocalized property from the Options
      * @return Whether this Collection is Locale specific, which is reflected in it's URL structure, etc.
      */
@@ -490,6 +502,16 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                                      getCategoriesAffilliatedWorkspaceName());
                              mustAlreadyExist = true;
                          }
+                         // determine if we are creating the entryId -- i.e. if this was a POST
+                         if ( EntryTarget.UNASSIGNED_ID.equals(target.getEntryId()) ) {
+                             if ( getEntryIdGenerator() == null ) {
+                                 throw new AtomServerException( "No EntryIdGenerator was wired into the Collection (" +
+                                                                 target.toString() + ")");
+                             } else {
+                                 target.setEntryId( getEntryIdGenerator().generateId() );
+                             }
+                         }
+
                          final Object internalId = getInternalId(target);
                          EntryMetaData metaData = modifyEntry(internalId,
                                                               request,
@@ -948,6 +970,8 @@ abstract public class AbstractAtomCollection implements AtomCollection {
          String editURL = (revision != URIHandler.REVISION_OVERRIDE) ? (fileURI + "/" + revision) : fileURI;
          addLinkToEntry(factory, entry, editURL, "edit");
 
+         entry.addSimpleExtension(AtomServerConstants.ENTRY_ID, entryId);
+         
          return entry;
      }
 

@@ -38,6 +38,9 @@ public final class AtomServerConstants {
     public static final String END_INDEX_LN = "endIndex";
     public static final QName END_INDEX = new QName(ATOMSERVER_NS, END_INDEX_LN, ATOMSERVER_NS_PREFIX);
 
+    public static final String ENTRY_ID_LN = "entryId";
+    public static final QName ENTRY_ID = new QName(ATOMSERVER_NS, ENTRY_ID_LN, ATOMSERVER_NS_PREFIX);
+
     public static final String OPERATION_LN = "operation";
     public static final QName OPERATION = new QName(ATOMSERVER_BATCH_NS, OPERATION_LN, ATOMSERVER_BATCH_NS_PREFIX);
 

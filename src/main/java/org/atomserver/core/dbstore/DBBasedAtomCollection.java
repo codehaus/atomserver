@@ -541,7 +541,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         feed.addSimpleExtension(OpenSearchConstants.ITEMS_PER_PAGE, Integer.toString(pageSize));
     }
 
-    private void addHomeawayFeedElements(Feed feed, int endingPageDelim ) {
+    private void addAtomServerFeedElements(Feed feed, int endingPageDelim ) {
         feed.addSimpleExtension(AtomServerConstants.END_INDEX, Integer.toString(endingPageDelim));
     }
 
@@ -657,7 +657,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
 
         StopWatch stopWatch = new AutomaticStopWatch();
         try { 
-            addHomeawayFeedElements(feed, endingPageDelim );
+            addAtomServerFeedElements(feed, endingPageDelim );
             if ( ! resultsFitOnOnePage || startingPageDelim != 0 ) {
                 addOpenSearchElements(feed, startingPageDelim, pageSize, totalEntries);
                 
