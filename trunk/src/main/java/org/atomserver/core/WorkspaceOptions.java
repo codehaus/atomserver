@@ -50,6 +50,8 @@ public class WorkspaceOptions {
     private CategoriesHandler defaultCategoriesHandler = null;
     private EntryAutoTagger defaultAutoTagger = null;
 
+    private EntryIdGenerator entryIdGenerator = null;
+
     private boolean allowCategories = true;
     private String categoryWorkspaceName = null;
 
@@ -181,5 +183,14 @@ public class WorkspaceOptions {
     }
     public void setDefaultMaxFullEntriesPerPage( int maxFullEntriesPerPage ) {
         this.maxFullEntriesPerPage = maxFullEntriesPerPage;
-    }    
+    }
+
+    public EntryIdGenerator getDefaultEntryIdGenerator() {
+        return entryIdGenerator;
+    }
+    
+    public void setDefaultEntryIdGenerator(EntryIdGenerator entryIdGenerator) {
+        this.entryIdGenerator = entryIdGenerator;
+    }
+
 }

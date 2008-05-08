@@ -18,12 +18,10 @@
 package org.atomserver.blogs;
 
 import org.apache.abdera.Abdera;
+import org.apache.abdera.util.Constants;
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.i18n.iri.IRISyntaxException;
-import org.apache.abdera.model.Category;
-import org.apache.abdera.model.Document;
-import org.apache.abdera.model.Entry;
-import org.apache.abdera.model.Feed;
+import org.apache.abdera.model.*;
 import org.apache.abdera.parser.ParseException;
 import org.apache.abdera.protocol.server.RequestContext;
 import org.apache.commons.logging.Log;
@@ -37,7 +35,6 @@ import java.io.*;
 import java.util.Date;
 
 /**
- * cberry has not yet bothered to enter a useful javadoc comment.
  */
 public class FileBasedBlogCollection implements AtomCollection {
     private Log log = LogFactory.getLog(FileBasedBlogCollection.class);
@@ -88,6 +85,9 @@ public class FileBasedBlogCollection implements AtomCollection {
         String pathInfo[] = iri.toString().split("/");
         String dir = pathInfo[pathInfo.length - 1];
         File file = new File(new File(getRootDir(), dir), slug);
+
+        entry.addLink(request.getResolvedUri() + slug, "edit" );
+
         FileOutputStream out = null;
         try {
             out = new FileOutputStream(file);
@@ -104,39 +104,52 @@ public class FileBasedBlogCollection implements AtomCollection {
         return entry;
     }
 
-    public UpdateCreateOrDeleteEntry.CreateOrUpdateEntry updateEntry( RequestContext request ) throws AtomServerException {
+    public UpdateCreateOrDeleteEntry.CreateOrUpdateEntry updateEntry(RequestContext request) throws AtomServerException {
         IRI iri = request.getUri();
 
         Entry entry = null;
-        try {
-            Document<Entry> document = request.getDocument();
-            entry = document.getRoot();
-        } catch (IOException e) {
-            throw new AtomServerException(e);
+        boolean isCreated = false;
+        if ("POST".equals(request.getMethod())) {
+            entry = createEntry(request);
+            isCreated = true;
+        } else {
+
+            try {
+                Document<Entry> document = request.getDocument();
+                entry = document.getRoot();
+            } catch (IOException e) {
+                throw new AtomServerException(e);
+            }
+
+            entry.setUpdated(new Date());
+
+            String pathInfo[] = iri.toString().split("/");
+            String dir = pathInfo[pathInfo.length - 2];
+            String slug = pathInfo[pathInfo.length - 1];
+
+            entry.addLink(request.getResolvedUri().toString(), "edit" );
+
+            File file = new File(new File(getRootDir(), dir), slug);
+            FileOutputStream out = null;
+            try {
+                out = new FileOutputStream(file);
+                entry.writeTo(out);
+            } catch (FileNotFoundException e) {
+                throw new AtomServerException("File not found: " + file, e);
+            } catch (IOException e) {
+                throw new AtomServerException(e);
+            } finally {
+                if (out != null) {
+                    try {
+                        out.close();
+                    } catch (IOException ignored) {}
+                }
+            }
         }
 
-        entry.setUpdated(new Date());
-
-        String pathInfo[] = iri.toString().split("/");
-        String dir = pathInfo[pathInfo.length - 2];
-        String slug = pathInfo[pathInfo.length - 1];
-
-        File file = new File(new File(getRootDir(), dir), slug);
-        FileOutputStream out = null;
-        try {
-            out = new FileOutputStream(file);
-            entry.writeTo(out);
-        } catch (FileNotFoundException e) {
-            throw new AtomServerException("File not found: " + file, e);
-        } catch (IOException e) {
-            throw new AtomServerException(e);
-        } finally {
-            if (out != null) try {
-                out.close();
-            } catch (IOException ignored) {}
-        }
-
-        UpdateCreateOrDeleteEntry.CreateOrUpdateEntry uEntry = new UpdateCreateOrDeleteEntry.CreateOrUpdateEntry( entry, false );
+        log.debug( "isCreated = " + isCreated );
+        UpdateCreateOrDeleteEntry.CreateOrUpdateEntry uEntry =
+                new UpdateCreateOrDeleteEntry.CreateOrUpdateEntry(entry, isCreated);
         return uEntry;
     }
 

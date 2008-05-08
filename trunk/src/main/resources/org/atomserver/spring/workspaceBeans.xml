@@ -50,6 +50,7 @@
                               value="classpath:/widgets-1.0.rnc"/>
                 </bean>
             </property>
+            <property name="defaultEntryIdGenerator" ref="org.atomserver-entryIdGenerator" />
             <property name="defaultCategoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
             <property name="defaultAutoTagger">
                 <bean class="org.atomserver.core.autotaggers.XPathAutoTagger">

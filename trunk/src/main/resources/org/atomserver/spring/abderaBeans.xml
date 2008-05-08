@@ -49,6 +49,10 @@
     <bean id="org.atomserver-simpleXMLContentValidator"
           class="org.atomserver.core.validators.SimpleXMLContentValidator"/>
 
+    <bean id="org.atomserver-entryIdGenerator"
+          class="org.atomserver.core.idgenerators.UUIDEntryIdGenerator"/>
+
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
     <bean id="org.atomserver-isAliveHandler"
           class="org.atomserver.core.dbstore.AtomServerIsAliveHandler"
           depends-on="org.atomserver-propertyConfigurer" >

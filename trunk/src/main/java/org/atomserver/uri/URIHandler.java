@@ -380,9 +380,13 @@ public class URIHandler
         URITarget target =
                 fileInfo != null ? new EntryTarget(requestContext, workspace, collection,
                                                    fileInfo.getEntryId(), revision, locale)
-                : collection != null ? new FeedTarget(requestContext, workspace, collection,
-                                                      categoriesQuery)
+                : collection != null ?
+                  "POST".equals(requestContext.getMethod()) ?
+                      new EntryTarget(requestContext, workspace, collection,
+                                      revision, locale)
+                    : new FeedTarget(requestContext, workspace, collection, categoriesQuery)
                   : new ServiceTarget(requestContext, workspace);
+
 
         return new ParsedTarget(target, exception);
     }

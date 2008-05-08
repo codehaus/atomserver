@@ -205,7 +205,7 @@ public class LocaleParamDBSTest extends ParamDBSTestCase {
         next = FeedPagingHelper.getNext( feed );
         if ( numRecs == 12 ) {
             assertNotNull( next );
-            log.debug( "@@@@@@@@@@@@@@@@@@@@@@@@@ next= " + next.toString() );
+            log.debug( "next= " + next.toString() );
             assertTrue( next.toString().indexOf( "locale=de" ) != -1 );
 
 

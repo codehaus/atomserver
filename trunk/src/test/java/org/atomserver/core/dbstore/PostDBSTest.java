@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-
 package org.atomserver.core.dbstore;
+
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -23,18 +22,22 @@ import junit.framework.TestSuite;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Document;
 import org.apache.abdera.protocol.client.ClientResponse;
+import org.apache.abdera.i18n.iri.IRI;
+import org.apache.commons.lang.StringUtils;
 import org.atomserver.uri.EntryTarget;
 import org.atomserver.testutils.client.MockRequestContext;
 import org.atomserver.core.filestore.FileBasedContentStorage;
+import org.atomserver.utils.locale.LocaleUtils;
 
 import java.io.File;
 
 /**
  */
-public class CRUDDBSTest extends CRUDDBSTestCase {
+public class PostDBSTest extends CRUDDBSTestCase {
+
 
     public static Test suite()
-    { return new TestSuite( CRUDDBSTest.class ); }
+    { return new TestSuite( PostDBSTest.class ); }
 
     public void setUp() throws Exception
     { super.setUp(); }
@@ -48,6 +51,18 @@ public class CRUDDBSTest extends CRUDDBSTestCase {
         entriesDAO.obliterateEntry(entryTarget);
     }
 
+    protected IRI getEntryIRI() {
+        IRI entryIRI = IRI.create("http://localhost:8080/"
+                              + widgetURIHelper.constructURIString("dummy", "acme", getCurrentEntryId(), null));
+        return entryIRI;
+    }
+
+    protected String getPropfileBase() {
+        return userdir + "/var/dummy/acme/" + getCurrentEntryId().substring(0,2) +
+               "/" + getCurrentEntryId() + "/" + getCurrentEntryId() + ".xml";
+    }
+
+
     // --------------------
     //       tests
     //---------------------
@@ -56,7 +71,7 @@ public class CRUDDBSTest extends CRUDDBSTestCase {
 
         // run the tests up to some point
         // INSERT/SELECT/UPDATE/SELECT/DELETE
-        String finalEditLink = runCRUDTest();
+        String finalEditLink = runCRUDTest( true, "dummy/acme", true, true, false, true );
 
         // SELECT against the just deleted entry
         ClientResponse response = clientGet( finalEditLink, null, 200, true );
@@ -64,17 +79,7 @@ public class CRUDDBSTest extends CRUDDBSTestCase {
         Document<Entry> doc = response.getDocument();
         Entry entryOut = doc.getRoot();
         log.debug( "CONTENT= "+ entryOut.getContent() );
-        assertEquals("<deletion xmlns=\"http://schemas.atomserver.org/atomserver/v1/rev0\" collection=\"acme\" id=\"12345\" locale=\"en\" workspace=\"widgets\"><property xmlns=\"http://schemas.atomserver.org/widgets/v1/rev0\" systemId=\"acme\" id=\"12345\" inNetwork=\"false\">\n"
-                     + "<colors>"
-                     + "<color isDefault=\"true\">teal</color>"
-                     + "</colors>"
-                     + "<contact>"
-                     + "<contactId>1638</contactId>"
-                     + "<displayName>This is an update</displayName>"
-                     + "<hasEmail>true</hasEmail>"
-                     + "</contact>"
-                     + "</property></deletion>",
-                     entryOut.getContent());
+        assertTrue( entryOut.getContent().indexOf("<deletion") != -1);
 
         response.release();
         if (contentStorage instanceof FileBasedContentStorage) {

@@ -128,7 +128,7 @@ public class TagsBasicsDBSTest extends CRUDDBSTestCase {
         StringWriter stringWriter = new StringWriter();
         categories.writeTo( stringWriter ); 
         String categoriesXML = stringWriter.toString();
-        log.debug( "!!!!!!!!!!!!! Categories= " + categoriesXML );
+        log.debug( "Categories= " + categoriesXML );
 
         //INSERT
         String editURI = update(id, fullURL, categoriesXML );
@@ -206,7 +206,7 @@ public class TagsBasicsDBSTest extends CRUDDBSTestCase {
         StringWriter stringWriter = new StringWriter();
         categories.writeTo( stringWriter ); 
         String categoriesXML4 = stringWriter.toString();
-        log.debug( "!!!!!!!!!!!!! Categories= " + categoriesXML4 );
+        log.debug( "Categories= " + categoriesXML4 );
 
         //INSERT
         String editURI4 = insert(id, fullURL, categoriesXML4, false );
@@ -230,7 +230,7 @@ public class TagsBasicsDBSTest extends CRUDDBSTestCase {
         stringWriter = new StringWriter();
         categories.writeTo( stringWriter ); 
         String categoriesXML2797 = stringWriter.toString();
-        log.debug( "!!!!!!!!!!!!! Categories= " + categoriesXML2797 );
+        log.debug( "Categories= " + categoriesXML2797 );
 
         //INSERT
         String editURI2797 = insert(id, fullURL, categoriesXML2797, false );

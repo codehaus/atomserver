@@ -26,6 +26,7 @@ import org.apache.abdera.protocol.client.AbderaClient;
 import org.apache.abdera.protocol.client.ClientResponse;
 import org.apache.abdera.protocol.client.RequestOptions;
 import org.atomserver.core.filestore.FileBasedContentStorage;
+import org.atomserver.core.etc.AtomServerConstants;
 
 import javax.xml.namespace.QName;
 import java.io.BufferedReader;
@@ -41,6 +42,8 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
     private static final String PFX = "";
     private static final QName LINK = new QName(NS, "link", PFX);
 
+
+    private String currentEntryId = null;
 
     // -------------------------------------------------------
     public void setUp() throws Exception {
@@ -60,6 +63,14 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
                    pFile.delete();
             }
          }
+    }
+
+    protected String getCurrentEntryId() {
+        return currentEntryId;
+    }
+
+    protected void setCurrentEntryId(String currentEntryId) {
+        this.currentEntryId = currentEntryId;
     }
 
     protected File getPropfile() { return null; }
@@ -110,31 +121,51 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         return runCRUDTest( shouldCheckFile, urlPath, true );
     }
 
-    protected String runCRUDTest( boolean shouldCheckFile, String urlPath, boolean shouldCheckOptConc ) throws Exception {
+    protected String runCRUDTest( boolean shouldCheckFile, String urlPath, boolean shouldCheckOptConc )
+            throws Exception {
         return runCRUDTest( shouldCheckFile, urlPath, shouldCheckOptConc, true );
     }
 
     protected String runCRUDTest( boolean shouldCheckFile, String urlPath,
-                                  boolean shouldCheckOptConc, boolean expects201 ) throws Exception {
+                                  boolean shouldCheckOptConc, boolean expects201 )
+            throws Exception {
         return runCRUDTest( shouldCheckFile, urlPath, shouldCheckOptConc, expects201, false );
-
     }
 
     protected String runCRUDTest( boolean shouldCheckFile, String urlPath,
-                                  boolean shouldCheckOptConc, boolean expects201, boolean allowsAny ) throws Exception {
+                                  boolean shouldCheckOptConc, boolean expects201, boolean allowsAny )
+            throws Exception {
+        return runCRUDTest( shouldCheckFile, urlPath, shouldCheckOptConc, expects201, allowsAny, false );
+    }
+
+    protected String runCRUDTest(boolean shouldCheckFile, String urlPath,
+                                 boolean shouldCheckOptConc, boolean expects201,
+                                 boolean allowsAny, boolean doPost)
+            throws Exception {
         String fullURL = getServerURL() + urlPath;
         String id = urlPath;
 
+        log.debug( "DOING A POST = " + doPost );
+
         //INSERT
-        String insertURL = ( shouldCheckOptConc ) ? fullURL : (fullURL + "/*") ;
-        String editURI = insert(id, insertURL, getFileXMLInsert(), expects201, allowsAny );
+        String editURI = null;
+        if ( doPost ) {
+            editURI = post(id, fullURL, getFileXMLInsert(), 201 );
+            fullURL = fullURL + "/" + getCurrentEntryId() + ".xml";
+            log.debug( "fullURL = " + fullURL );
+        } else {
+            String insertURL = ( shouldCheckOptConc ) ? fullURL : (fullURL + "/*") ;
+            editURI = insert(id, insertURL, getFileXMLInsert(), expects201, allowsAny );
+        }
+
         log.debug( "########################################## editURI = " + editURI );
         if (  shouldCheckFile && contentStorage instanceof FileBasedContentStorage) {
             File propFile = new File( getPropfileBase() + ".r0" );
             assertNotNull( propFile );
-            log.debug("@@@@@@@@@@@@@@@@@@@ " + propFile);
+            log.debug("propFile " + propFile);
             assertTrue(propFile.exists());
         }
+
         int rev = 0;
         if ( shouldCheckOptConc ) {
             rev = extractRevisionFromURI(editURI);
@@ -157,7 +188,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         if (  shouldCheckFile && contentStorage instanceof FileBasedContentStorage) {
             File propFile = new File( getPropfileBase() + ".r1" );
             assertNotNull( propFile );
-            log.debug("@@@@@@@@@@@@@@@@@@@ " + propFile);
+            log.debug("propfile= " + propFile);
             assertTrue(propFile.exists());
         }
         if ( shouldCheckOptConc ) {
@@ -181,7 +212,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         if (  shouldCheckFile && contentStorage instanceof FileBasedContentStorage) {
             File propFile = new File( getPropfileBase() + ".r2" );
             assertNotNull( propFile );
-            log.debug("@@@@@@@@@@@@@@@@@@@ " + propFile);
+            log.debug("propfile= " + propFile);
             assertTrue(propFile.exists());
         }
         if ( shouldCheckOptConc ) {
@@ -314,6 +345,54 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         br.close();
         Thread.sleep(500);
     }
+
+
+    //=========================
+    //      select
+    //=========================
+    protected String post(String id, String fullURL, String fileXML, int expectedResponse ) throws Exception {
+        assertNotNull( fileXML);
+
+        // INSERT
+        AbderaClient client = new AbderaClient();
+        RequestOptions options = client.getDefaultRequestOptions();
+        options.setHeader("Connection", "close");
+
+        Entry entry = getFactory().newEntry();
+        entry.setId(id);
+        entry.setContentAsXhtml(fileXML);
+
+        log.debug("full URL = " + fullURL);
+        ClientResponse response = client.post(fullURL, entry, options);
+
+        int status = response.getStatus();
+        log.debug( "********************************");
+        log.debug( "response.getStatus() = " + status );
+
+        assertEquals( expectedResponse,response.getStatus() );
+
+        Document<Entry> doc = response.getDocument();
+        Entry entryOut = null;
+        try {
+            entryOut = doc.getRoot();
+        } catch (ClassCastException e) {
+            log.error("ABDERA ERROR MESSAGE : " + ((org.apache.abdera.protocol.error.Error)doc.getRoot()).getMessage());
+            throw e;
+        }
+
+        IRI editLink = entryOut.getEditLinkResolvedHref();
+        assertNotNull("link rel='edit' must not be null", editLink);
+
+        String editLinkStr = editLink.toString();
+
+        String entryId = entryOut.getSimpleExtension(AtomServerConstants.ENTRY_ID);
+        log.debug( "entryId= " + entryId);
+        setCurrentEntryId( entryId );
+
+        response.release();
+        return editLinkStr;
+    }
+
 
     //=========================
     //      select

@@ -102,7 +102,7 @@ public class TagsFeedEntriesCategoriesDBSTest extends DBSTestCase {
             StringWriter stringWriter = new StringWriter();
             categories.writeTo( stringWriter ); 
             String categoriesXML = stringWriter.toString();
-            log.debug( "!!!!!!!!!!!!! Categories= " + categoriesXML );
+            log.debug( "Categories= " + categoriesXML );
 
             //INSERT
             String propId = "" + (propIdSeed + ii);

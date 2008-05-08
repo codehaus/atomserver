@@ -90,18 +90,6 @@ public class JettyWebAppTestCase extends TestCase {
         return servletContextName;
     }
 
-    /*
-    protected String getServletMapping() {
-        return servletMapping;
-    }
-
-    protected String getBaseURI() {
-        String baseURI = StringUtils.isEmpty(servletContextName) ? "" : servletContextName;
-        baseURI += StringUtils.isEmpty(servletMapping) ? "" :  servletMapping;
-        return baseURI;
-    }
-    */
-
     protected void setUp() throws Exception {
         try {
             super.setUp();
@@ -290,7 +278,7 @@ public class JettyWebAppTestCase extends TestCase {
         Server jserver = getJettyServer();
         Connector[] connectors = jserver.getConnectors();
         for (int ii = 0; ii < connectors.length; ii++) {
-            log.debug("!!!!!!!!!!!! Connector Name = " + connectors[ii].getName());
+            log.debug("Connector Name = " + connectors[ii].getName());
             if (connectors[ii].getName().equals(connectorName)) {
                 return connectors[ii];
             }

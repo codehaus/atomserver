@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * cberry has not yet bothered to enter a useful javadoc comment.
  */
 public class FileBasedBlogWorkspace implements AtomWorkspace {
     private Log log = LogFactory.getLog(FileBasedBlogService.class);
