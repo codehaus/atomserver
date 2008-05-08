@@ -148,7 +148,7 @@
     -->
     <properties>
         <!-- designate the general Spring properties file -->
-        <env>postgres</env>
+        <env>asdev-postgres</env>
 
         <servletContext>atomserver</servletContext>
         <servletMapping>v1</servletMapping>

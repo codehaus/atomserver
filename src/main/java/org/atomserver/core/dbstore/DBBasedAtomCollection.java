@@ -192,11 +192,10 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         }
 
         // Add elements to the Feed document
-        long lastModified = createFeedElements( feed, abdera, iri, feedTarget, entryType,
-                                                sortedList, workspace, collection, locale,
-                                                numEntries, pageSizePlus1,  pageSize,
-                                                startingPageDelim, totalEntries );
-        return lastModified;
+        return createFeedElements(feed, abdera, iri, feedTarget, entryType,
+                                  sortedList, workspace, collection, locale,
+                                  numEntries, pageSizePlus1, pageSize,
+                                  startingPageDelim, totalEntries);
     }
 
     /**

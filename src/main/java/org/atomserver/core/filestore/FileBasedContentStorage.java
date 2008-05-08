@@ -25,6 +25,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.ContentStorage;
 import org.atomserver.EntryDescriptor;
+import org.atomserver.utils.PartitionPathGenerator;
+import org.atomserver.utils.PrefixPartitionPathGenerator;
 import org.atomserver.core.BaseEntryDescriptor;
 import org.atomserver.exceptions.AtomServerException;
 import org.springframework.jmx.export.annotation.ManagedResource;
@@ -68,6 +70,7 @@ public class FileBasedContentStorage implements ContentStorage {
     private String rootDirAbsPath = null;
 
     private boolean sweepToTrash = true;
+    private PartitionPathGenerator partitionPathGenerator = new PrefixPartitionPathGenerator();
 
     private int sweepToTrashLagTimeSecs = SWEEP_TO_TRASH_LAG_TIME_SECS_DEFAULT;
 
@@ -185,7 +188,11 @@ public class FileBasedContentStorage implements ContentStorage {
             throw new AtomServerException( msg );
         }
         return rootDir;
-    }  
+    }
+
+    public void setPartitionPathGenerator(PartitionPathGenerator partitionPathGenerator) {
+        this.partitionPathGenerator = partitionPathGenerator;
+    }
 
     /** We should NEVER keep the real File around for rootDir.
      * This is because we use NFS (at least in PRD) so there is the very real
@@ -654,7 +661,10 @@ public class FileBasedContentStorage implements ContentStorage {
     private File getEntryDir(String workspace,
                              String collection,
                              String entryId) {
-        return pathFromRoot(workspace, collection, entryId.substring(0, Math.min(2, entryId.length())), entryId);
+        return new File(
+                partitionPathGenerator.generatePath(
+                        pathFromRoot(workspace,  collection), entryId),
+                entryId);
     }
 
     private EntryDescriptor getMetaDataFromFilePath(File file) {

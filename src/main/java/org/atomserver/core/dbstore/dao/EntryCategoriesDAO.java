@@ -16,22 +16,23 @@
 
 package org.atomserver.core.dbstore.dao;
 
-import java.util.List;
-import java.util.Set;
-
+import org.atomserver.EntryDescriptor;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryMetaData;
-import org.atomserver.EntryDescriptor;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * The DAO for accessing an Entry's Categories
  *
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
- * TODO: ideally, we would like to change all of the methods that refer to workspace or collection as strings into ones that take a descriptor of some sort.
+ *         TODO: ideally, we would like to change all of the methods that refer to workspace or collection as strings into ones that take a descriptor of some sort.
  */
 public interface EntryCategoriesDAO
-    extends AtomServerDAO {
+        extends AtomServerDAO {
 
     //======================================
     //          CRUD OPERATIONS
@@ -45,33 +46,47 @@ public interface EntryCategoriesDAO
     //======================================
     //          BATCH OPERATIONS
     //======================================
-    public void insertEntryCategoryBatch( List<EntryCategory> entryCategoryList );
-    public void deleteEntryCategoryBatch( List<EntryCategory> entryCategoryList );
+    public void insertEntryCategoryBatch(List<EntryCategory> entryCategoryList);
+
+    public void deleteEntryCategoryBatch(List<EntryCategory> entryCategoryList);
 
     //======================================
     //          LIST QUERIES
     //======================================
-    public List selectEntriesCategories( String workspace, String collection, Set<String> entryIds);
-    public List selectEntryCategories( EntryDescriptor entryQuery );
-    public List selectEntryCategoriesInScheme( EntryDescriptor entryQuery, String scheme );
+    public List<EntryCategory> selectEntriesCategories(String workspace,
+                                                       String collection,
+                                                       Set<String> entryIds);
+
+    public List<EntryCategory> selectEntryCategories(EntryDescriptor entryQuery);
+
+    public List<EntryCategory> selectEntryCategoriesInScheme(EntryDescriptor entryQuery,
+                                                             String scheme);
 
     public void deleteEntryCategories(EntryDescriptor entryQuery);
-    public void deleteEntryCategoriesInScheme(EntryMetaData entryQuery, String scheme);
 
-    public List selectDistictCollections( String workspace );
+    public void deleteEntryCategoriesInScheme(EntryMetaData entryQuery,
+                                              String scheme);
 
-    public List selectDistictCategoriesPerCollection( String workspace, String collection );
+    public List<String> selectDistictCollections(String workspace);
+
+    public List<Map<String, String>> selectDistictCategoriesPerCollection(String workspace,
+                                                                          String collection);
 
     //======================================
     //          LIST OPERATIONS
     //======================================
     public void deleteAllEntryCategories(String workspace);
-    public void deleteAllEntryCategories(String workspace, String collection);
+
+    public void deleteAllEntryCategories(String workspace,
+                                         String collection);
+
     public void deleteAllRowsFromEntryCategories();
 
     //======================================
     //          COUNT QUERIES
     //======================================
     public int getTotalCount(String workspace);
-    public int getTotalCount(String workspace, String collection);
+
+    public int getTotalCount(String workspace,
+                             String collection);
 }

@@ -28,7 +28,6 @@ import org.apache.abdera.factory.Factory;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Category;
 import org.apache.abdera.model.Categories;
-import org.apache.abdera.protocol.server.ServiceContext;
 import org.atomserver.AtomServer;
 
 import org.atomserver.EntryDescriptor;
@@ -57,7 +56,7 @@ public class EntryCategoriesHandler
      */
     public void writeEntryCategories( Entry entry, EntryDescriptor descriptor ) {
 
-        Categories categoriesToWrite = getEntryCategories( descriptor );
+        Categories categoriesToWrite = getCategories(descriptor);
         if ( categoriesToWrite == null ) 
             return;
 
@@ -65,31 +64,6 @@ public class EntryCategoriesHandler
         for ( Category category : categoryList ) {
             entry.addCategory( category );
         }         
-    }
-
-    /**
-     * Return the Categories for the Entry described by this EntryDescriptor.
-     * <p/>
-     * NOTE: The workspace entering this method (in the EntryDescriptor) 
-     * is assumed to be a "regular" workspace
-     * <p/>
-     * i.e. NOT a "Categories workspace" (e.g. widgets vs. tags:widgets)
-     */
-    public Categories getEntryCategories( EntryDescriptor descriptor ) {
-        Categories categoriesToWrite = getCategories( descriptor );
-        return categoriesToWrite;
-    }
-
-    /**
-     * Delete the Categories from the Entry for this EntryDescriptor.
-     * <p/>
-     * NOTE: The workspace entering this method (in the EntryDescriptor) 
-     * is assumed to be a "regular" workspace
-     * <p/>
-     * i.e. NOT a "Categories workspace" (e.g. widgets vs. tags:widgets)
-     */
-    public void deleteEntryCategories( EntryDescriptor descriptor ) {
-        deleteCategories( descriptor );
     }
 
     /**

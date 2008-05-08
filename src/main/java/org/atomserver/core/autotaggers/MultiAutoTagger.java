@@ -24,6 +24,7 @@ import java.util.List;
 
 /**
  * MultiAutoTagger - provides for composition of multiple EntryAutoTaggers for a single workspace.
+ *
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */

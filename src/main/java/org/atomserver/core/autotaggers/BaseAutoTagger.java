@@ -17,13 +17,14 @@
 
 package org.atomserver.core.autotaggers;
 
-import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
 import org.atomserver.EntryAutoTagger;
+import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
 import org.atomserver.core.etc.AtomServerPerformanceLog;
 
 /**
  * BaseAutoTagger - provides an abstract base class for EntryAutoTaggers that allows for a spring-
  * configured EntryCategoriesDAO.
+ *
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
@@ -53,8 +54,8 @@ public abstract class BaseAutoTagger implements EntryAutoTagger {
      */
     protected AtomServerPerformanceLog perflog;
 
-    public void setPerformanceLog( AtomServerPerformanceLog perflog ) {
+    public void setPerformanceLog(AtomServerPerformanceLog perflog) {
         this.perflog = perflog;
     }
 
- }
+}

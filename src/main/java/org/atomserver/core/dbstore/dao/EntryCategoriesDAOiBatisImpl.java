@@ -31,6 +31,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.Map;
 
 
 /**
@@ -185,7 +186,7 @@ public class EntryCategoriesDAOiBatisImpl
     //          LIST QUERIES
     //======================================
 
-    public List selectEntriesCategories(String workspace, String collection, Set<String> entryIds) {
+    public List<EntryCategory> selectEntriesCategories(String workspace, String collection, Set<String> entryIds) {
         StopWatch stopWatch = new AutomaticStopWatch();
         try {
             return getSqlMapClientTemplate().queryForList(
@@ -202,11 +203,11 @@ public class EntryCategoriesDAOiBatisImpl
         }
     }
 
-    public List selectEntryCategories(EntryDescriptor entryQuery) {
+    public List<EntryCategory> selectEntryCategories(EntryDescriptor entryQuery) {
         return selectEntryCategoriesInScheme(entryQuery, null);
     }
 
-    public List selectEntryCategoriesInScheme(EntryDescriptor entryQuery, String scheme) {
+    public List<EntryCategory> selectEntryCategoriesInScheme(EntryDescriptor entryQuery, String scheme) {
         StopWatch stopWatch = new AutomaticStopWatch();
         try {
             EntryCategory paramMap = new EntryCategory();
@@ -264,7 +265,7 @@ public class EntryCategoriesDAOiBatisImpl
 
     /**
      */
-    public List selectDistictCollections(String workspace) {
+    public List<String> selectDistictCollections(String workspace) {
         StopWatch stopWatch = new AutomaticStopWatch();
         try {
             return getSqlMapClientTemplate().queryForList("selectDistinctCollections", workspace);
@@ -278,7 +279,7 @@ public class EntryCategoriesDAOiBatisImpl
 
     /**
      */
-    public List selectDistictCategoriesPerCollection(String workspace, String collection) {
+    public List<Map<String, String>> selectDistictCategoriesPerCollection(String workspace, String collection) {
         StopWatch stopWatch = new AutomaticStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntryCategoriesDAOiBatisImpl::selectDistictCategoriesPerCollection [ " + workspace + " " + collection + " ]");
