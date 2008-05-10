@@ -30,6 +30,7 @@ import org.atomserver.EntryDescriptor;
 import org.atomserver.FeedDescriptor;
 import org.atomserver.core.WorkspaceOptions;
 import org.atomserver.exceptions.BadRequestException;
+import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.utils.collections.ArraySegmentIterator;
 import org.atomserver.utils.locale.LocaleUtils;
 import org.atomserver.utils.logic.BooleanExpression;
@@ -265,6 +266,15 @@ public class URIHandler
         if (log.isDebugEnabled()) {
             log.debug("parsing IRI [" + iri + "]");
         }
+
+        // We cannot allow "fragments" or "anchors" (e.g. /foo/bar/#baz )
+        //   because we cannot tell this from a legitimate EntryId, etc.
+        if (iri.getFragment() != null) {
+            String msg = "Could no parse the URI. It contains a fragment (i.e. an anchor - e.g. /foo/bar/#baz)";
+            log.error( msg );
+            throw new AtomServerException( msg );
+        }
+
         URIHandler.ParsedTarget parsedTarget = parseTargetFromIRI(requestContext, iri);
         if (parsedTarget == null) {
             return null;
@@ -377,7 +387,7 @@ public class URIHandler
             }
         }
 
-        log.debug("*********** locale= " + locale);
+        log.debug("locale= " + locale);
 
         URITarget target =
                 fileInfo != null ? new EntryTarget(requestContext, workspace, collection,

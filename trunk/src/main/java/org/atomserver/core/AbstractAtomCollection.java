@@ -594,7 +594,22 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                  IRI iri = baseIri.relativize(entry.getLink("edit").getHref());
                  EntryTarget entryTarget = null;
                  try {
-                     entryTarget = (EntryTarget) getURIHandler().parseIRI(request, iri);
+                     // The request is always a PUT, so we will get back a FeedTarget when we want an insert
+                     URITarget uriTarget = getURIHandler().parseIRI(request, iri);
+                     if (uriTarget instanceof FeedTarget) {
+                         entryTarget = new EntryTarget((FeedTarget) uriTarget);
+
+                         // determine if we are creating the entryId -- i.e. if this was a POST
+                         if (getEntryIdGenerator() == null) {
+                             throw new AtomServerException("No EntryIdGenerator was wired into the Collection (" +
+                                                           entryTarget.toString() + ")");
+                         } else {
+                             entryTarget.setEntryId(getEntryIdGenerator().generateId());
+                         }
+
+                     } else {
+                         entryTarget = (EntryTarget) uriTarget;
+                     }
                  } catch (Exception e) {
                      throw new BadRequestException("Bad request URI: " + iri, e);
                  }
@@ -621,7 +636,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
 
                  if ("delete".equalsIgnoreCase(operation)) {
                      entriesToDelete.add(entryTarget);
-                 } else if ("update".equalsIgnoreCase(operation)) {
+                 } else if ("update".equalsIgnoreCase(operation) || "insert".equalsIgnoreCase(operation)) {
                      String entryXml = validateAndPreprocessEntryContents(entry, entryTarget);
                      entriesToUpdate.add(entryTarget);
                      entryXmlMap.put(entryTarget, entryXml);
@@ -635,6 +650,8 @@ abstract public class AbstractAtomCollection implements AtomCollection {
          }
 
          Abdera abdera = request.getServiceContext().getAbdera();
+
+         // ---------------- process updates ------------------   
          if (!entriesToUpdate.isEmpty()) {
              java.util.Collection<BatchEntryResult> results =
                      executeTransactionally(
@@ -679,6 +696,8 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                  updateEntries.add(updateEntry);
              }
          }
+
+         // ---------------- process deletes ------------------
          if (!entriesToDelete.isEmpty()) {
              java.util.Collection<BatchEntryResult> results =
                      executeTransactionally(new TransactionalTask<Collection<BatchEntryResult>>() {
@@ -699,6 +718,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                              return results;
                          }
                      });
+
              for (BatchEntryResult result : results) {
                  // TODO: WRONG!
                  EntryMetaData metaData = result.getMetaData();
