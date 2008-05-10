@@ -21,6 +21,7 @@ import org.apache.abdera.protocol.server.RequestContext;
 import org.apache.abdera.protocol.server.TargetType;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.LocaleUtils;
 
 import java.util.Locale;
 
@@ -69,6 +70,16 @@ public class EntryTarget extends URITarget implements EntryDescriptor {
         this.entryId = UNASSIGNED_ID;
         this.revision = revision;
         this.locale = locale;
+    }
+
+    public EntryTarget(final FeedTarget feedTarget ) {
+        super(TargetType.TYPE_COLLECTION, feedTarget.getRequestContext());
+        this.requestContext = feedTarget.getRequestContext();
+        this.workspace = feedTarget.getWorkspace();
+        this.collection = feedTarget.getCollection();
+        this.entryId = UNASSIGNED_ID;
+        this.revision = 0;
+        this.locale = (feedTarget.getLocaleParam() == null ) ? null : feedTarget.getLocaleParam();
     }
 
     public String getWorkspace() {

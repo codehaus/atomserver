@@ -52,24 +52,10 @@ public class BatchDBSTest extends DBSTestCase {
     //       tests
     //---------------------
 
-    //  FIXME   FIXME   FIXME   FIXME   FIXME
-    public void NOtestDisabled() throws Exception {
-        AbderaClient client = new AbderaClient();
-
-         RequestOptions options = client.getDefaultRequestOptions();
-         options.setHeader("Connection", "close");
-
-         String batchURI = getServerURL() + "widgets/acme/$batch";
-         Feed batch = getFactory().newFeed();
-         String updateText = "testInitialLoad()";
-         batch.addEntry(createUpdateEntry("92345", updateText, 0));
-         batch.addEntry(createUpdateEntry("92346", updateText, 0));
-         ClientResponse clientResponse = runBatch(client, batchURI, batch, 403);
-    }  
-
     public void testAll() throws Exception {
         runInitialLoad();
         runIntermixedInsertsAndUpdates();
+        runInsertsOnly();
         runUpdatesOnly();
         runOptimisticConcurrencyErrors();
         runBadRequests();
@@ -122,14 +108,19 @@ public class BatchDBSTest extends DBSTestCase {
         batch.addEntry(createUpdateEntry("92346", updateText, 0));
         batch.addEntry(createUpdateEntry("92347", updateText, 0));
         batch.addEntry(createUpdateEntry("92348", updateText, 0));
+
+        batch.addEntry(createInsertEntry("92349", updateText));
+        batch.addEntry(createInsertEntry("92350", updateText));
+
         ClientResponse clientResponse = runBatch(client, batchURI, batch, 200);
         Feed response = clientResponse.<Feed>getDocument().getRoot();
-        checkFeedResults(response, 2, 2, 0, 0);
+        checkFeedResults(response, 4, 2, 0, 0);
         assertEquals(batch.getEntries().size(), response.getEntries().size());
         int insertCount = 0, updateCount = 0;
         for (Entry entry : response.getEntries()) {
             Operation operation = entry.getExtension(AtomServerConstants.OPERATION);
             Status status = entry.getExtension(AtomServerConstants.STATUS);
+            log.debug( "++++++++++ ID= " + entry.getId().toString() );
             if (entry.getId().toString().contains("92347") || entry.getId().toString().contains("92348")) {
                 assertTrue("insert".equals(operation.getType()));
                 assertEquals("201", status.getCode());
@@ -140,10 +131,15 @@ public class BatchDBSTest extends DBSTestCase {
                 assertEquals("200", status.getCode());
                 assertEquals("OK", status.getReason());
                 updateCount++;
+            } else {
+                assertTrue("insert".equals(operation.getType()));
+                assertEquals("201", status.getCode());
+                assertEquals("CREATED", status.getReason());
+                insertCount++;
             }
             assertTrue(entry.getContent().contains(updateText));
         }
-        assertEquals(2, insertCount);
+        assertEquals(4, insertCount);
         assertEquals(2, updateCount);
         clientResponse.release();
     }
@@ -171,6 +167,34 @@ public class BatchDBSTest extends DBSTestCase {
             assertEquals("update", operation.getType());
             assertEquals("200", status.getCode());
             assertEquals("OK", status.getReason());
+            assertTrue(entry.getContent().contains(updateText));
+        }
+        clientResponse.release();
+    }
+
+    public void runInsertsOnly() throws Exception {
+        AbderaClient client = new AbderaClient();
+
+        RequestOptions options = client.getDefaultRequestOptions();
+        options.setHeader("Connection", "close");
+
+        String batchURI = getServerURL() + "widgets/acme/$batch";
+        Feed batch = getFactory().newFeed();
+        String updateText = "testIsertsOnly()";
+        batch.addEntry(createInsertEntry("92345", updateText));
+        batch.addEntry(createInsertEntry("92346", updateText));
+        batch.addEntry(createInsertEntry("92347", updateText));
+        batch.addEntry(createInsertEntry("92348", updateText));
+        ClientResponse clientResponse = runBatch(client, batchURI, batch, 200);
+        Feed response = clientResponse.<Feed>getDocument().getRoot();
+        checkFeedResults(response, 4, 0, 0, 0);
+        assertEquals(batch.getEntries().size(), response.getEntries().size());
+        for (Entry entry : response.getEntries()) {
+            Operation operation = entry.getExtension(AtomServerConstants.OPERATION);
+            Status status = entry.getExtension(AtomServerConstants.STATUS);
+            assertEquals("insert", operation.getType());
+            assertEquals("201", status.getCode());
+            assertEquals("CREATED", status.getReason());
             assertTrue(entry.getContent().contains(updateText));
         }
         clientResponse.release();
@@ -394,7 +418,7 @@ public class BatchDBSTest extends DBSTestCase {
         assertEquals(updates, results.getUpdates());
         assertEquals(deletes, results.getDeletes());
         assertEquals(errors, results.getErrors());
-    }
+   }
 
     private ClientResponse runBatch(AbderaClient client,
                                     String batchURI,
@@ -410,6 +434,14 @@ public class BatchDBSTest extends DBSTestCase {
         entry.setContentAsXhtml(createPropertyXml(id, text));
         ((Operation) entry.addExtension(AtomServerConstants.OPERATION)).setType("update");
         entry.addLink(MessageFormat.format("/" + getBaseURI() + "/widgets/acme/{0}.en.xml/{1}", id, revision), "edit");
+        return entry;
+    }
+
+    private Entry createInsertEntry(String id, String text) {
+        Entry entry = getFactory().newEntry();
+        entry.setContentAsXhtml(createPropertyXml(id, text));
+        ((Operation) entry.addExtension(AtomServerConstants.OPERATION)).setType("insert");
+        entry.addLink("/" + getBaseURI() + "/widgets/acme", "edit");
         return entry;
     }
 
