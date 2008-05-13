@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<document url="http://java-build.wvrgroup.internal:/opt/sites/atomserver/releases.html">
+
+    <properties>
+        <title>Release Notes</title>
+        <author email="chriswberry@gmail.com">Chris Berry</author>
+    </properties>
+
+    <body>
+
+        <section name="Release 2.0 (5/13/08)">
+            <ol>
+                <li>This is the initial open source release.
+                It is numbered 2.0 because the code behind AtomServer has been around
+                as an internal application for about 1 year, and over that time went through many revisions</li>
+            </ol>
+        </section>
+
+    </body>
+</document>
+
+
+
+
+
+
+
+
+                 
