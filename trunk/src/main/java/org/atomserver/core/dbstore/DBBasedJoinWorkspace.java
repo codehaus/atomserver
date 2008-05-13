@@ -17,10 +17,16 @@
 package org.atomserver.core.dbstore;
 
 import org.apache.abdera.Abdera;
+import org.apache.abdera.util.Constants;
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
+import org.apache.abdera.model.Link;
+import org.apache.abdera.model.Content;
+import static org.apache.abdera.model.Content.Type.XML;
 import org.apache.abdera.protocol.server.RequestContext;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.atomserver.*;
 import org.atomserver.core.AggregateEntryMetaData;
 import org.atomserver.core.EntryMetaData;
@@ -30,16 +36,21 @@ import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.uri.EntryTarget;
 import org.atomserver.uri.FeedTarget;
 
+import javax.activation.DataHandler;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.io.StringWriter;
+import java.io.IOException;
 
 /**
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
 public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
+
+    private static final Log log = LogFactory.getLog(DBBasedJoinWorkspace.class);
 
     public DBBasedJoinWorkspace(AtomService parentAtomService) {
         super(parentAtomService, "$join");
@@ -90,31 +101,58 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
             }
 
             //~~~~~~~~~~~~~~~~~~~~~~
-            protected void addFullEntryContent(Abdera abdera, EntryDescriptor entryMetaData, Entry entry) {
+            protected void addFullEntryContent(Abdera abdera,
+                                               EntryDescriptor entryMetaData,
+                                               Entry entry) {
+                // this method is called at multiple levels while the aggregate is being built - we
+                // need to handle the call differently at the TOP level, where we have Aggregate
+                // entries, and at the lower levels where we do not.
+                if (entryMetaData instanceof AggregateEntryMetaData) {
+                    addAggregateEntryContent(abdera,
+                                             (AggregateEntryMetaData) entryMetaData,
+                                             entry);
+                } else {
+                    addMemberEntryContent(entryMetaData,
+                                          entry);
+                }
+            }
+
+            private void addAggregateEntryContent(Abdera abdera,
+                                                  AggregateEntryMetaData agg,
+                                                  Entry entry) {
                 StringBuilder builder = new StringBuilder("<aggregate xmlns='" +
-                                                           AtomServerConstants.SCHEMAS_NAMESPACE + "'>");
-
-                AggregateEntryMetaData agg = (AggregateEntryMetaData) entryMetaData;
-                for (EntryMetaData emd : agg.getMembers()) {
-                    ContentStorage contentStorage =
-                            getParentAtomService().getAtomWorkspace(emd.getWorkspace())
-                                    .getAtomCollection(emd.getCollection()).getContentStorage();
-
-                    String xml = contentStorage.getContent(emd);
-                    if (xml == null) {
-                        throw new AtomServerException("Could not read entry (" + emd + ")");
+                                                           AtomServerConstants.SCHEMAS_NAMESPACE +
+                                                           "'>");
+                try {
+                    StringWriter entries = new StringWriter();
+                    for (EntryMetaData emd : agg.getMembers()) {
+                        newEntry(abdera, emd, EntryType.full).writeTo(entries);
                     }
-                    xml = xml.replaceFirst("<[?].*[?]>", "");
-
-
-                    builder.append(xml);
+                    builder.append(entries.toString());
+                } catch (IOException e) {
+                    throw new AtomServerException(e);
                 }
 
                 builder.append("</aggregate>");
 
-                entry.setContent(builder.toString());
+                entry.setContent(builder.toString(), XML);
             }
 
+            private void addMemberEntryContent(EntryDescriptor entryMetaData,
+                                               Entry entry) {
+                ContentStorage contentStorage =
+                        getParentAtomService().getAtomWorkspace(entryMetaData.getWorkspace())
+                                .getAtomCollection(entryMetaData.getCollection()).getContentStorage();
+
+                String xml = contentStorage.getContent( entryMetaData );
+                if (xml == null) {
+                    throw new AtomServerException("Could not read entry (" + entryMetaData + ")");
+                }
+                xml = xml.replaceFirst("<[?].*[?]>", "" );
+
+                entry.setContent( xml, XML );
+            }
         };
     }
+
 }
