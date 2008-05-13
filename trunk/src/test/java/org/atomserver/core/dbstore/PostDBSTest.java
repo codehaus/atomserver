@@ -141,4 +141,39 @@ public class PostDBSTest extends CRUDDBSTestCase {
             assertTrue( pFile != null && pFile.exists() );
         }
     }
+
+
+    public void testMinimalEntry() throws Exception {
+
+        setCurrentLocale( "fr" );
+        setCurrentWorkspace( "widgets" );
+        
+        String fullURL = getServerURL() + "widgets/acme";
+        String urlToPost = fullURL + "?locale=fr";
+        String id = null;
+
+        //INSERT
+        // Verify that the <id> is not required
+        String editURI = post(id, urlToPost, getFileXMLInsert(), 201);
+
+        fullURL = fullURL + "/" + getCurrentEntryId() + ".fr.xml";
+        log.debug("fullURL = " + fullURL);
+
+        log.debug("########################################## editURI = " + editURI);
+        File propFile = new File(getPropfileBase() + ".r0");
+        assertNotNull(propFile);
+        log.debug("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%propFile " + propFile);
+        assertTrue(propFile.exists());
+
+        int rev = extractRevisionFromURI(editURI);
+        assertEquals(0, rev);
+
+        // SELECT
+        String xmlTestString = "This is an insert";
+        editURI = select(fullURL, true, 200, xmlTestString);
+        log.debug("########################################## editURI = " + editURI);
+        rev = extractRevisionFromURI(editURI);
+        assertEquals(0, rev);
+    }
+
 }

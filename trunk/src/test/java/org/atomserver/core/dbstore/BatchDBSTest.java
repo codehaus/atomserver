@@ -53,6 +53,10 @@ public class BatchDBSTest extends DBSTestCase {
     //---------------------
 
     public void testAll() throws Exception {
+
+        // NOTE: these tests cascade into each other. In other words, the results
+        //        from one test may be used in the next. Thus, you cannot just comment
+        //        them one or more out....
         runInitialLoad();
         runIntermixedInsertsAndUpdates();
         runInsertsOnly();
@@ -63,11 +67,13 @@ public class BatchDBSTest extends DBSTestCase {
         runMultipleOperationsApplied();
         runNewIdNamespace();
         runDeleteNonexistent();
+
+        runSameEntryTwice();
+        runSameEntryOutOfOrder();
         runDeleteAll();
 
         Thread.sleep( 2000 );
     }
-
 
     public void runInitialLoad() throws Exception {
         AbderaClient client = new AbderaClient();
@@ -83,7 +89,11 @@ public class BatchDBSTest extends DBSTestCase {
         ClientResponse clientResponse = runBatch(client, batchURI, batch, 200);
         Feed response = clientResponse.<Feed>getDocument().getRoot();
         checkFeedResults(response, 2, 0, 0, 0);
+
+        String[] entryIdOrder = { "92345", "92346" };
+
         assertEquals(batch.getEntries().size(), response.getEntries().size());
+        int order = 0;
         for (Entry entry : response.getEntries()) {
             Operation operation = entry.getExtension(AtomServerConstants.OPERATION);
             Status status = entry.getExtension(AtomServerConstants.STATUS);
@@ -91,6 +101,9 @@ public class BatchDBSTest extends DBSTestCase {
             assertEquals("201", status.getCode());
             assertEquals("CREATED", status.getReason());
             assertTrue(entry.getContent().contains(updateText));
+
+            assertTrue( entry.getId().toString().contains(entryIdOrder[order]) );
+            order++;
         }
         clientResponse.release();
     }
@@ -104,29 +117,35 @@ public class BatchDBSTest extends DBSTestCase {
         String batchURI = getServerURL() + "widgets/acme/$batch";
         Feed batch = getFactory().newFeed();
         String updateText = "testIntermixedInsertsAndUpdates()";
-        batch.addEntry(createUpdateEntry("92345", updateText, 0));
-        batch.addEntry(createUpdateEntry("92346", updateText, 0));
-        batch.addEntry(createUpdateEntry("92347", updateText, 0));
-        batch.addEntry(createUpdateEntry("92348", updateText, 0));
 
+
+        batch.addEntry(createUpdateEntry("92345", updateText, 0));
+        batch.addEntry(createUpdateEntry("92347", updateText, 0));
+
+        // this 1 will get POSTed, and have Ids generated
+        //   but the 92349 will show up in the <content>
         batch.addEntry(createInsertEntry("92349", updateText));
-        batch.addEntry(createInsertEntry("92350", updateText));
+
+        batch.addEntry(createUpdateEntry("92348", updateText, 0));
+        batch.addEntry(createUpdateEntry("92346", updateText, 0));
+
+        // this 1 will get POSTed, and have Ids generated
+        //   but the 92349 will show up in the <content>
+         batch.addEntry(createInsertEntry("92350", updateText));
+
+        String[] entryIdOrder = { "92345", "92347", "92349", "92348", "92346", "92350" };
 
         ClientResponse clientResponse = runBatch(client, batchURI, batch, 200);
         Feed response = clientResponse.<Feed>getDocument().getRoot();
         checkFeedResults(response, 4, 2, 0, 0);
         assertEquals(batch.getEntries().size(), response.getEntries().size());
-        int insertCount = 0, updateCount = 0;
+        int insertCount = 0, updateCount = 0, order = 0;
         for (Entry entry : response.getEntries()) {
             Operation operation = entry.getExtension(AtomServerConstants.OPERATION);
             Status status = entry.getExtension(AtomServerConstants.STATUS);
             log.debug( "++++++++++ ID= " + entry.getId().toString() );
-            if (entry.getId().toString().contains("92347") || entry.getId().toString().contains("92348")) {
-                assertTrue("insert".equals(operation.getType()));
-                assertEquals("201", status.getCode());
-                assertEquals("CREATED", status.getReason());
-                insertCount++;
-            } else if (entry.getId().toString().contains("92345") || entry.getId().toString().contains("92346")) {
+
+            if (entry.getId().toString().contains("92345") || entry.getId().toString().contains("92346")) {
                 assertTrue("update".equals(operation.getType()));
                 assertEquals("200", status.getCode());
                 assertEquals("OK", status.getReason());
@@ -137,7 +156,13 @@ public class BatchDBSTest extends DBSTestCase {
                 assertEquals("CREATED", status.getReason());
                 insertCount++;
             }
+
+            if ( !( order == 2 || order == 5 ) )
+                assertTrue( entry.getId().toString().contains(entryIdOrder[order]) );
+
             assertTrue(entry.getContent().contains(updateText));
+            assertTrue(entry.getContent().contains(entryIdOrder[order]));
+            order++;
         }
         assertEquals(4, insertCount);
         assertEquals(2, updateCount);
@@ -157,10 +182,12 @@ public class BatchDBSTest extends DBSTestCase {
         batch.addEntry(createOplessEntry("92346", updateText, 1));
         batch.addEntry(createOplessEntry("92347", updateText, 0));
         batch.addEntry(createOplessEntry("92348", updateText, 0));
+        String[] entryIdOrder = { "92345", "92346", "92347", "92348" };
         ClientResponse clientResponse = runBatch(client, batchURI, batch, 200);
         Feed response = clientResponse.<Feed>getDocument().getRoot();
         checkFeedResults(response, 0, 4, 0, 0);
         assertEquals(batch.getEntries().size(), response.getEntries().size());
+        int order = 0;
         for (Entry entry : response.getEntries()) {
             Operation operation = entry.getExtension(AtomServerConstants.OPERATION);
             Status status = entry.getExtension(AtomServerConstants.STATUS);
@@ -168,6 +195,8 @@ public class BatchDBSTest extends DBSTestCase {
             assertEquals("200", status.getCode());
             assertEquals("OK", status.getReason());
             assertTrue(entry.getContent().contains(updateText));
+            assertTrue( entry.getId().toString().contains(entryIdOrder[order]) );
+            order++;
         }
         clientResponse.release();
     }
@@ -185,10 +214,12 @@ public class BatchDBSTest extends DBSTestCase {
         batch.addEntry(createInsertEntry("92346", updateText));
         batch.addEntry(createInsertEntry("92347", updateText));
         batch.addEntry(createInsertEntry("92348", updateText));
+        String[] entryIdOrder = { "92345", "92346", "92347", "92348" };
         ClientResponse clientResponse = runBatch(client, batchURI, batch, 200);
         Feed response = clientResponse.<Feed>getDocument().getRoot();
         checkFeedResults(response, 4, 0, 0, 0);
         assertEquals(batch.getEntries().size(), response.getEntries().size());
+        int order = 0;
         for (Entry entry : response.getEntries()) {
             Operation operation = entry.getExtension(AtomServerConstants.OPERATION);
             Status status = entry.getExtension(AtomServerConstants.STATUS);
@@ -196,6 +227,8 @@ public class BatchDBSTest extends DBSTestCase {
             assertEquals("201", status.getCode());
             assertEquals("CREATED", status.getReason());
             assertTrue(entry.getContent().contains(updateText));
+            assertTrue(entry.getContent().contains(entryIdOrder[order]));
+            order++;
         }
         clientResponse.release();
     }
@@ -210,15 +243,16 @@ public class BatchDBSTest extends DBSTestCase {
         Feed batch = getFactory().newFeed();
         String updateText = "testOptimisticConcurrencyErrors()";
         batch.addEntry(createUpdateEntry("92345", updateText, 1));
-        batch.addEntry(createUpdateEntry("92346", updateText, 1));
         batch.addEntry(createUpdateEntry("92347", updateText, 1));
+        batch.addEntry(createUpdateEntry("92346", updateText, 1));
         batch.addEntry(createUpdateEntry("92348", updateText, 1));
+        String[] entryIdOrder = { "92345", "92347", "92346", "92348" };
         ClientResponse clientResponse = runBatch(client, batchURI, batch, 200);
         Feed response = clientResponse.<Feed>getDocument().getRoot();
         checkFeedResults(response, 0, 2, 0, 2);
 
         assertEquals(batch.getEntries().size(), response.getEntries().size());
-        int errorCount = 0, updateCount = 0;
+        int errorCount = 0, updateCount = 0, order = 0;
         for (Entry entry : response.getEntries()) {
             Operation operation = entry.getExtension(AtomServerConstants.OPERATION);
             Status status = entry.getExtension(AtomServerConstants.STATUS);
@@ -235,6 +269,8 @@ public class BatchDBSTest extends DBSTestCase {
                 assertTrue(entry.getContent().contains(updateText));
                 updateCount++;
             }
+            assertTrue( entry.getId().toString().contains(entryIdOrder[order]) );
+            order++;
         }
         assertEquals(2, errorCount);
         assertEquals(2, updateCount);
@@ -252,11 +288,13 @@ public class BatchDBSTest extends DBSTestCase {
         String updateText = "testBadRequests()";
         batch.addEntry(createUpdateEntry("2/3/4/5/6", updateText, 1));
         batch.addEntry(createUpdateEntry("#2323", updateText, 1));
+        String[] entryIdOrder = {"2/3/4/5/6", "#2323"};
         ClientResponse clientResponse = runBatch(client, batchURI, batch, 200);
         Feed response = clientResponse.<Feed>getDocument().getRoot();
         checkFeedResults(response, 0, 0, 0, 2);
 
         assertEquals(batch.getEntries().size(), response.getEntries().size());
+        int  order = 0;
         for (Entry entry : response.getEntries()) {
             Operation operation = entry.getExtension(AtomServerConstants.OPERATION);
             Status status = entry.getExtension(AtomServerConstants.STATUS);
@@ -272,6 +310,8 @@ public class BatchDBSTest extends DBSTestCase {
                              "Reason:: Bad request URI: /widgets/acme/#2323.en.xml/1",
                              status.getReason());
             }
+            assertTrue(entry.getContent().contains(entryIdOrder[order]));
+            order++;
         }
 
         clientResponse.release();
@@ -369,6 +409,93 @@ public class BatchDBSTest extends DBSTestCase {
         clientResponse.release();
     }
 
+    public void runSameEntryTwice() throws Exception {
+         AbderaClient client = new AbderaClient();
+
+         RequestOptions options = client.getDefaultRequestOptions();
+         options.setHeader("Connection", "close");
+
+         String batchURI = getServerURL() + "widgets/acme/$batch";
+         Feed batch = getFactory().newFeed();
+         String updateText = "testSameEntryTwice()";
+
+         batch.addEntry(createOplessEntry("92345", updateText, 2));
+         batch.addEntry(createOplessEntry("92346", updateText, 2));
+         batch.addEntry(createOplessEntry("92347", updateText, 2));
+         batch.addEntry(createOplessEntry("92346", updateText, 3));
+         batch.addEntry(createOplessEntry("92348", updateText, 2));
+         batch.addEntry(createOplessEntry("92347", updateText, 3));
+
+         String[] entryIdOrder = { "92345", "92346", "92347", "92346", "92348", "92347" };
+         ClientResponse clientResponse = runBatch(client, batchURI, batch, 200);
+         Feed response = clientResponse.<Feed>getDocument().getRoot();
+         checkFeedResults(response, 0, 4, 0, 2);
+         assertEquals(batch.getEntries().size(), response.getEntries().size());
+         int order = 0;
+         for (Entry entry : response.getEntries()) {
+             Operation operation = entry.getExtension(AtomServerConstants.OPERATION);
+             Status status = entry.getExtension(AtomServerConstants.STATUS);
+             assertEquals("update", operation.getType());
+             if ( order == 3 || order == 5 ) {
+                 assertEquals("400", status.getCode());
+                 assertTrue( status.getReason().contains( "You may not include the same Entry twice"));
+             } else {
+                 assertEquals("200", status.getCode());
+                 assertEquals("OK", status.getReason());
+             }
+             assertTrue(entry.getContent().contains(updateText));
+             assertTrue( entry.getContent().contains(entryIdOrder[order]) );
+             order++;
+         }
+         clientResponse.release();
+     }
+
+    public void runSameEntryOutOfOrder() throws Exception {
+         AbderaClient client = new AbderaClient();
+
+         RequestOptions options = client.getDefaultRequestOptions();
+         options.setHeader("Connection", "close");
+
+         String batchURI = getServerURL() + "widgets/acme/$batch";
+         Feed batch = getFactory().newFeed();
+         String updateText = "testSameEntryTwice()";
+
+         batch.addEntry(createOplessEntry("92345", updateText, 3));
+         batch.addEntry(createOplessEntry("92346", updateText, 4));
+         batch.addEntry(createOplessEntry("92347", updateText, 4));
+         batch.addEntry(createOplessEntry("92346", updateText, 3));
+         batch.addEntry(createOplessEntry("92348", updateText, 3));
+         batch.addEntry(createOplessEntry("92347", updateText, 3));
+
+         String[] entryIdOrder = { "92345", "92346", "92347", "92346", "92348", "92347" };
+         ClientResponse clientResponse = runBatch(client, batchURI, batch, 200);
+         Feed response = clientResponse.<Feed>getDocument().getRoot();
+         checkFeedResults(response, 0, 2, 0, 4);
+         assertEquals(batch.getEntries().size(), response.getEntries().size());
+         int order = 0;
+         for (Entry entry : response.getEntries()) {
+             Operation operation = entry.getExtension(AtomServerConstants.OPERATION);
+             Status status = entry.getExtension(AtomServerConstants.STATUS);
+             if ( order == 3 || order == 5 ) {
+                 assertEquals("update", operation.getType());
+                 assertEquals("400", status.getCode());
+                 assertTrue( status.getReason().contains( "You may not include the same Entry twice"));
+             } else if ( order == 1 || order == 2 ) {
+                 assertEquals("insert", operation.getType());
+                 assertEquals("409", status.getCode());
+                 assertTrue( status.getReason().contains( "Optimisitic Concurrency Error"));
+             } else {
+                 assertEquals("update", operation.getType());
+                 assertEquals("200", status.getCode());
+                 assertEquals("OK", status.getReason());
+             }
+             assertTrue(entry.getContent().contains(updateText));
+             assertTrue( entry.getContent().contains(entryIdOrder[order]) );
+             order++;
+         }
+         clientResponse.release();
+     }
+
     public void runDeleteAll() throws Exception {
         try {
             AbderaClient client = new AbderaClient();
@@ -379,10 +506,10 @@ public class BatchDBSTest extends DBSTestCase {
             String batchURI = getServerURL() + "widgets/acme/$batch";
             Feed batch = getFactory().newFeed();
             ((Operation) batch.addExtension(AtomServerConstants.OPERATION)).setType("delete");
-            batch.addEntry(createOplessEntry("92345", null, 2));
-            batch.addEntry(createOplessEntry("92346", null, 2));
-            batch.addEntry(createOplessEntry("92347", null, 2));
-            batch.addEntry(createOplessEntry("92348", null, 2));
+            batch.addEntry(createOplessEntry("92345", null, 4));
+            batch.addEntry(createOplessEntry("92346", null, 3));
+            batch.addEntry(createOplessEntry("92347", null, 3));
+            batch.addEntry(createOplessEntry("92348", null, 4));
             ClientResponse clientResponse = runBatch(client, batchURI, batch, 200);
             Feed response = clientResponse.<Feed>getDocument().getRoot();
             checkFeedResults(response, 0, 0, 4, 0);
@@ -394,11 +521,6 @@ public class BatchDBSTest extends DBSTestCase {
                 assertEquals("200", status.getCode());
                 assertEquals("OK", status.getReason());
                 assertTrue(entry.getContent().contains("<deletion"));
-                if (entry.getId().toString().contains("92345") || entry.getId().toString().contains("92346")) {
-                    assertTrue(entry.getContent().contains("testUpdatesOnly"));
-                } else if (entry.getId().toString().contains("92347") || entry.getId().toString().contains("92348")) {
-                    assertTrue(entry.getContent().contains("testOptimisticConcurrencyErrors"));
-                }
             }
             clientResponse.release();
         } finally {
@@ -408,8 +530,6 @@ public class BatchDBSTest extends DBSTestCase {
             deleteEntry("widgets", "acme", "92348", "en");
         }
     }
-
-
 
     private void checkFeedResults(Feed feed, int inserts, int updates, int deletes, int errors) {
         Results results = feed.getExtension(AtomServerConstants.RESULTS);

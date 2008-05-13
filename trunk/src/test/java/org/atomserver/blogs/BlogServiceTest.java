@@ -34,6 +34,7 @@ import java.io.InputStreamReader;
 import java.util.Date;
 
 /**
+ * This test was inspired from original work by Ugo Cei
  */
 public class BlogServiceTest extends JettyWebAppTestCase {
 

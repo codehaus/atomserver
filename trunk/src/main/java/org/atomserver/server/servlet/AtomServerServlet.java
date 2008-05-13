@@ -41,9 +41,9 @@ public class AtomServerServlet
 
     private final static Log logger = LogFactory.getLog(AtomServerServlet.class);
 
-    public static final String APPLICATION_CONTEXT_LOCATION_PARAMETER = "appCtxLocation";
+    public static final String SPRING_APPLICATION_CONTEXT_FILE = "springAppContextFile";
 
-    private ApplicationContext appCtx;
+    private ApplicationContext appContext;
 
     @Override
     public void init(ServletConfig config)
@@ -54,20 +54,20 @@ public class AtomServerServlet
     }
 
     protected void loadSpringContext() {
-        if (appCtx == null) {
+        if (appContext == null) {
             ServletConfig config = getServletConfig();
 
             ServletContext context = config.getServletContext();
             if (context != null) {
                 logger.debug("LOADING: WebApplicationContextUtils.getRequiredWebApplicationContext(context))");
-                appCtx = WebApplicationContextUtils.getRequiredWebApplicationContext(context);
+                appContext = WebApplicationContextUtils.getRequiredWebApplicationContext(context);
             } else {
                 logger.debug("LOADING: new ClassPathXmlApplicationContext( .... )");
-                appCtx = new ClassPathXmlApplicationContext(config.getInitParameter(APPLICATION_CONTEXT_LOCATION_PARAMETER));
+                appContext = new ClassPathXmlApplicationContext(config.getInitParameter(SPRING_APPLICATION_CONTEXT_FILE));
             }
 
             if (logger.isDebugEnabled()) {
-                logger.debug("Application context set:: appCtx= " + appCtx);
+                logger.debug("Application context set:: appContext= " + appContext);
             }
         }
     }
@@ -79,9 +79,9 @@ public class AtomServerServlet
         }
 
         loadSpringContext();
-        logger.debug("createServiceContext() LOADING: loadSpringContext() : appCtx= " + appCtx);
+        logger.debug("createServiceContext() LOADING: loadSpringContext() : appContext= " + appContext);
 
-        ServiceContext sc = (ServiceContext) appCtx.getBean(contextName);
+        ServiceContext sc = (ServiceContext) appContext.getBean(contextName);
         sc.init(getAbdera(), getProperties(getServletConfig()));
         return sc;
     }

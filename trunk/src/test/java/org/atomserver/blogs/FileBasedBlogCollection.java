@@ -35,6 +35,7 @@ import java.io.*;
 import java.util.Date;
 
 /**
+ * This code was inspired from original work by Ugo Cei
  */
 public class FileBasedBlogCollection implements AtomCollection {
     private Log log = LogFactory.getLog(FileBasedBlogCollection.class);
@@ -64,7 +65,7 @@ public class FileBasedBlogCollection implements AtomCollection {
         return null;
     }
 
-    public Entry createEntry( RequestContext request ) throws AtomServerException {
+    private Entry createEntry( RequestContext request ) throws AtomServerException {
         IRI iri = request.getUri();
         String slug = request.getSlug();
 

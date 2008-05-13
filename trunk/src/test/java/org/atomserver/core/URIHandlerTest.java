@@ -30,11 +30,6 @@ public class URIHandlerTest extends TestCase {
         System.out.println("iri.getQuery() = " + iri.getQuery());
         System.out.println("iri.getRawQuery() = " + iri.getRawQuery());
         System.out.println("-----");
-//        iri = baseIri.resolve(iri);
-//        System.out.println("iri.getFragment() = " + iri.getFragment());
-//        System.out.println("iri.getPath() = " + iri.getPath());
-//        System.out.println("iri.getQuery() = " + iri.getQuery());
-//        System.out.println("iri.getRawQuery() = " + iri.getRawQuery());
         iri = baseIri.relativize(iri);
         System.out.println("iri = " + iri);
         System.out.println("iri.getPath() = " + iri.getPath());
