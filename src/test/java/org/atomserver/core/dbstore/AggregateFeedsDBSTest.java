@@ -19,9 +19,12 @@ import org.apache.abdera.model.Categories;
 import org.apache.abdera.model.Category;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
+import org.apache.commons.io.FileUtils;
 import org.atomserver.core.etc.AtomServerConstants;
 
 import java.io.StringWriter;
+import java.io.FileWriter;
+import java.io.File;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -137,7 +140,7 @@ public class AggregateFeedsDBSTest extends DBSTestCase {
         feed = getPage("$join/urn:myjoin?entry-type=full&start-index=" + endIndex, 200);
         assertEquals(1, feed.getEntries().size());
         assertTrue(feed.getEntries().get(0).getContent().startsWith(
-                "<aggregate xmlns='http://schemas.atomserver.org/atomserver/v1/rev0'>"));
+                "<aggregate xmlns=\"http://schemas.atomserver.org/atomserver/v1/rev0\">"));
         assertTrue(feed.getEntries().get(0).getContent().contains(
                 getEntry("widgets", "mywidgets", "" + BASE_WIDGET_ID, Locale.US.toString()).getContent()));
         assertTrue(feed.getEntries().get(0).getContent().contains(
