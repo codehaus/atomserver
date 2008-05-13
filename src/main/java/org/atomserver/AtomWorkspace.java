@@ -28,7 +28,7 @@ import java.util.List;
  * AtomWorkspace - Workspaces in AtomPub allow you to group related information (resources) into logical sets (collections).
  * An AtomWorkspace represents that concept. It is a server-defined set of AtomPub collections, which are represented
  * as zero or more AtomCollection objects, where these AtomCollections describe the AtomPub collections of
- * resources availablen to Clients for reading and/or writing.
+ * resources available to Clients for reading and/or writing.
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
@@ -95,7 +95,8 @@ public interface AtomWorkspace {
     void setOptions( WorkspaceOptions options );
 
     /**
-     * 
+     * This method should be called as Workspaces are instantiated, so that any specific bootstrapping
+     * can occur. For example, it can do tasks such as ensure Collections are created up-front.
      */
     void bootstrap();
 }
