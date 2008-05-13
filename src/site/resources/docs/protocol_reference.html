@@ -476,14 +476,15 @@ parameter (see above).<br>
 </table>
 <br>
 <h4><a name="responses"></a>Query responses</h4>
-<p>Queries return an Atom feed or an Atom entry, depending on the
+<p>Queries return an Atom Feed or an Atom Entry, depending on the
 request parameters.</p>
 <p>Query results contain the following OpenSearch elements directly
 under the <code>&lt;feed&gt;</code> element:</p>
 <dl>
   <dt style="font-weight: bold;"><code>openSearch:totalResults</code></dt>
-  <dd>The total number of search results for the query (not necessarily
-all present in the results feed).</dd>
+  <dd>The total number of search results for the query. This element is
+optional, and is not provided by default.<br>
+  </dd>
   <dt style="font-weight: bold;"><code>openSearch:startIndex</code></dt>
   <dd>The index of the first result. See the <span
  style="font-family: monospace;">start-index</span> in the table
@@ -513,7 +514,7 @@ for a subsequent Feed page request.<br>
   </dd>
 </dl>
 <p>The
-Atom response feed and entries may also include any of the following
+Atom response Feed and Entries may also include any of the following
 Atom and AtomServer elements (as well as others listed in the Atom
 specification):</p>
 <dl>
@@ -533,9 +534,32 @@ use the <span style="font-family: monospace;">next</span> link when
 accessing the next page of results.<br>
   </dd>
 </dl>
+<p>Query results also contain the following AtomServer extension
+elements
+directly
+under the <code>&lt;entry&gt;</code> element:</p>
+<code></code>
+<dl>
+  <dt style="font-weight: bold;"><code>atomserver:entryId</code></dt>
+  <dd>The Id of the Atom Entry. This is element is provided as a
+convenience to the User. It is particularly important for <span
+ style="font-family: monospace;">POST</span> requests, when the Id was
+created within AtomServer. It saves the User the trouble of parsing the
+Id out of the &lt;id&gt; element, because inevitably the User will need
+it for further processing. </dd>
+</dl>
 <p>Here's a sample response body, in response to a Feed query:</p>
 <div id="codebox">
-<pre>&lt;?xml version='1.0' encoding='UTF-8'?&gt;<br>&lt;feed xmlns="http://www.w3.org/2005/Atom" xmlns:ha="http://atomserver.org/namespaces/1.0/" xmlns:os="http://a9.com/-/spec/opensearchrss/1.1/"&gt;<br>   &lt;os:totalResults&gt;65801&lt;/os:totalResults&gt;<br>   &lt;os:startIndex&gt;0&lt;/os:startIndex&gt;<br>   &lt;os:itemsPerPage&gt;2&lt;/os:itemsPerPage&gt;<br>   &lt;as:endIndex&gt;153&lt;/as:endIndex&gt;<br>   &lt;link href="/myserver/v1/widgets/acme?start-index=153&amp;amp;max-results=2" rel="next" /&gt;<br>   &lt;link href="/myserver/v1/widgets/acme?start-index=0&amp;amp;max-results=2" rel="self" /&gt;<br>   &lt;author&gt;&lt;name&gt;AtomServer APP Service&lt;/name&gt;&lt;/author&gt;<br>   &lt;title type="text"&gt;acme entries&lt;/title&gt;<br>   &lt;updated&gt;2007-10-05T19:17:42.750Z&lt;/updated&gt;<br>   &lt;id&gt;tag:atomserver.org,2007:v1:acme&lt;/id&gt;<br>   &lt;entry&gt;<br>      &lt;id&gt;/myserver/v1/widgets/acme/205390.en.xml&lt;/id&gt;<br>      &lt;updated&gt;2007-10-05T18:48:23.437Z&lt;/updated&gt;<br>      &lt;published&gt;2007-10-05T18:48:23.437Z&lt;/published&gt;<br>      &lt;title type="text"&gt; Entry: acme 205390.en&lt;/title&gt;&lt;author&gt;<br>      &lt;name&gt;AtomServer Atom Service&lt;/name&gt;&lt;/author&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml" rel="self" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml/2" rel="edit" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml" rel="alternate" /&gt;<br>   &lt;/entry&gt;<br>   &lt;entry&gt;<br>      &lt;id&gt;/myserver/v1/widgets/acme/205395.en.xml&lt;/id&gt;<br>      &lt;updated&gt;2007-10-05T15:48:56.437Z&lt;/updated&gt;<br>      &lt;published&gt;2007-10-05T12:50:76.437Z&lt;/published&gt;<br>      &lt;title type="text"&gt; Entry: acme 205395.en&lt;/title&gt;&lt;author&gt;<br>      &lt;name&gt;AtomServer Atom Service&lt;/name&gt;&lt;/author&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205395.en.xml" rel="self" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205395.en.xml/1" rel="edit" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205395.en.xml" rel="alternate" /&gt;<br>   &lt;/entry&gt;<span
+<pre>&lt;?xml version='1.0' encoding='UTF-8'?&gt;<br>&lt;feed xmlns="http://www.w3.org/2005/Atom" <br>      xmlns:as="http://atomserver.org/namespaces/1.0/" <br>      xmlns:os="http://a9.com/-/spec/opensearchrss/1.1/"&gt;<br><span
+ style="font-weight: bold;">   &lt;os:totalResults&gt;65801&lt;/os:totalResults&gt;</span><br
+ style="font-weight: bold;"><span style="font-weight: bold;">   &lt;os:startIndex&gt;0&lt;/os:startIndex&gt;</span><br
+ style="font-weight: bold;"><span style="font-weight: bold;">   &lt;os:itemsPerPage&gt;2&lt;/os:itemsPerPage&gt;</span><br
+ style="font-weight: bold;"><span style="font-weight: bold;">   &lt;as:endIndex&gt;153&lt;/as:endIndex&gt;</span><br
+ style="font-weight: bold;"><span style="font-weight: bold;">   &lt;link href="/myserver/v1/widgets/acme?start-index=153&amp;amp;max-results=2" rel="next" /&gt;</span><br
+ style="font-weight: bold;"><span style="font-weight: bold;">   &lt;link href="/myserver/v1/widgets/acme?start-index=0&amp;amp;max-results=2" rel="self" /&gt;</span><br
+ style="font-weight: bold;"><span style="font-weight: bold;"> </span>  &lt;author&gt;&lt;name&gt;AtomServer APP Service&lt;/name&gt;&lt;/author&gt;<br>   &lt;title type="text"&gt;acme entries&lt;/title&gt;<br>   &lt;updated&gt;2007-10-05T19:17:42.750Z&lt;/updated&gt;<br>   &lt;id&gt;tag:atomserver.org,2007:v1:acme&lt;/id&gt;<br>   &lt;entry&gt;<br>      &lt;id&gt;/myserver/v1/widgets/acme/205390.en.xml&lt;/id&gt;<br><span
+ style="font-weight: bold;">      &lt;as:entryId&gt;205390&lt;/as:entryId&gt;</span><br
+ style="font-weight: bold;">      &lt;updated&gt;2007-10-05T18:48:23.437Z&lt;/updated&gt;<br>      &lt;published&gt;2007-10-05T18:48:23.437Z&lt;/published&gt;<br>      &lt;title type="text"&gt; Entry: acme 205390.en&lt;/title&gt;&lt;author&gt;<br>      &lt;name&gt;AtomServer Atom Service&lt;/name&gt;&lt;/author&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml" rel="self" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml/2" rel="edit" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml" rel="alternate" /&gt;<br>   &lt;/entry&gt;<br>   &lt;entry&gt;<br>      &lt;id&gt;/myserver/v1/widgets/acme/205395.en.xml&lt;/id&gt;<br>      &lt;as:entryId&gt;205395&lt;/as:entryId&gt;<br>      &lt;updated&gt;2007-10-05T15:48:56.437Z&lt;/updated&gt;<br>      &lt;published&gt;2007-10-05T12:50:76.437Z&lt;/published&gt;<br>      &lt;title type="text"&gt; Entry: acme 205395.en&lt;/title&gt;&lt;author&gt;<br>      &lt;name&gt;AtomServer Atom Service&lt;/name&gt;&lt;/author&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205395.en.xml" rel="self" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205395.en.xml/1" rel="edit" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205395.en.xml" rel="alternate" /&gt;<br>   &lt;/entry&gt;<span
  style="font-family: monospace;"></span><span
  style="font-family: monospace;"><br>&lt;/feed&gt;</span></pre>
 </div>
@@ -590,7 +614,7 @@ The best way to access a time-sensitive Feed is to use the <span
  style="font-family: monospace;">
 GET /v1/widgets/acme?start-index=</span><span
  style="font-family: monospace;">153). </span>Using
-this method ensures that you will never recieve any inappropriate
+this method ensures that you will never receive any inappropriate
 duplicate Entries. The reason for this is that a "last modified date"
 operation is, by definition, an inclusive operation (i.e. "&gt;="). And
 that many Entries may have the same Date. To work around this,
@@ -599,7 +623,7 @@ indexes every Entry monotonically. And a "get next index" operation is
 exclusive (i.e. "&gt;"), so you are therefore assured of getting the
 appropriate next Entry. The <span style="font-family: monospace;">start-index</span>
 for a Feed is equal to the <span style="font-family: monospace;">endIndex</span>
-returned by the last page you recieved. <br>
+returned by the last page you received. <br>
 <h4><a name="Dates"></a>The RFC4287 Date Specification</h4>
 Any Dates provided must match the RFC4287 specification, which is
 described below. Most important, <span style="font-weight: bold;">dates
