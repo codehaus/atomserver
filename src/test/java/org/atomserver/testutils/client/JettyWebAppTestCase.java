@@ -63,7 +63,6 @@ public class JettyWebAppTestCase extends TestCase {
     private ServletHandler servletHandler = null;
 
     protected String servletContextName;
-    //protected String servletMapping;
 
     protected ClassPathXmlApplicationContext jettySpringFactory = null;
     protected ApplicationContext appSpringFactory = null;
@@ -97,7 +96,7 @@ public class JettyWebAppTestCase extends TestCase {
             // just in case, stop Jetty if it is running
             stopJetty();
 
-            // Set the variable in within the Spring acegiBeans.xml 
+            // Set the variable in the Spring acegiBeans.xml
             log.debug("useNonSecure= " + useNonSecure);
             if (useNonSecure) {
                 System.setProperty("security.use.filters", "false");
@@ -134,7 +133,7 @@ public class JettyWebAppTestCase extends TestCase {
      * NOTE: if you're getting BindExceptions (Address is in use)
      * This can happen if an Exception is thrown during the setUp()
      * And, in general, this will be due to some errant file in /var
-     * So try a ./bin/clear-testutils-files.sh.
+     * So try a ./bin/clear-test-files.sh.
      */
     private void startJetty() throws Exception {
         Server jserver = getJettyServer();

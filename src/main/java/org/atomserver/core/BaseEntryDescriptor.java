@@ -18,6 +18,8 @@
 package org.atomserver.core;
 
 import org.atomserver.EntryDescriptor;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import java.util.Locale;
 
@@ -78,8 +80,6 @@ public class BaseEntryDescriptor implements EntryDescriptor {
     public int getRevision() { return revision; }
 
     public void setRevision(int revision) { this.revision = revision; }
-
-    //public boolean isRevisionDefined() { return ((revision == UNDEFINED_REVISION)? false : true ); }
 
     public String toString() {
         StringBuffer buff = new StringBuffer();

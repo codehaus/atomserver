@@ -146,4 +146,16 @@ public class EntryTarget extends URITarget implements EntryDescriptor {
                 .append(getLocale())
                 .toHashCode();
     }
+
+    public String toString() {
+        return new StringBuffer()
+            .append("EntryTarget:: [")
+            .append(getWorkspace())
+            .append(" ").append(getCollection())
+            .append(" ").append(getEntryId())
+            .append(" ").append(getLocale())
+            .append(" ").append(getRevision())
+            .append("]").toString();
+    }
+
 }

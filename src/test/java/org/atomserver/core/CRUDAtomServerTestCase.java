@@ -364,7 +364,8 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         options.setHeader("Connection", "close");
 
         Entry entry = getFactory().newEntry();
-        entry.setId(id);
+        if ( id != null )
+            entry.setId(id);
         entry.setContentAsXhtml(fileXML);
 
         log.debug("full URL = " + fullURL);

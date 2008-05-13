@@ -34,10 +34,7 @@ import org.atomserver.exceptions.BadContentException;
 import org.atomserver.exceptions.BadRequestException;
 import org.atomserver.exceptions.MovedPermanentlyException;
 import org.atomserver.ext.batch.Operation;
-import org.atomserver.uri.EntryTarget;
-import org.atomserver.uri.FeedTarget;
-import org.atomserver.uri.URIHandler;
-import org.atomserver.uri.URITarget;
+import org.atomserver.uri.*;
 import org.atomserver.utils.perf.AutomaticStopWatch;
 import org.atomserver.utils.perf.StopWatch;
 import org.atomserver.utils.xml.XML; 
@@ -306,6 +303,11 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         return parentAtomWorkspace.getParentAtomService().getURIHandler();
     }
 
+    /**
+     * A convenience method to determine whether this is a Categories Workspace, which is a special
+     * internal Workspace created to handle Category manipulation.
+     * @return true or false
+     */
     protected boolean isCategoriesWorkspace() {
         if ( log.isTraceEnabled() )
             log.trace("For workspace(" + parentAtomWorkspace.getName() +
@@ -313,12 +315,21 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         return parentAtomWorkspace.getOptions().isCategoriesWorkspace();
     }
 
+    /**
+     * A convenience method to determine the acual is a Workspace affliated with a Cateories Workspace,
+     * which is a special internal Workspace created to handle Category manipulation.
+     * @return The affliated Workspace name
+     */
     protected String getCategoriesAffilliatedWorkspaceName() {
         return ((parentAtomWorkspace.getOptions().getAffiliatedAtomWorkspace() != null )
                 ? parentAtomWorkspace.getOptions().getAffiliatedAtomWorkspace().getName()
                 : null );
     }
 
+    /**
+     * A convenience method to pull the Service Base URI from the affliated AtomService.
+     * @return The Service Base URI
+     */
     protected String getServiceBaseUri() {
         return parentAtomWorkspace.getParentAtomService().getServiceBaseUri();
     }
@@ -468,13 +479,6 @@ abstract public class AbstractAtomCollection implements AtomCollection {
          return entry;
      }
 
-     /**
-      * {@inheritDoc}
-      */
-     public Entry createEntry(RequestContext request) throws AtomServerException {
-         throw new AtomServerException("COLLECTION POST NOT IMPLEMENTED");
-     }
-
     /**
      * {@inheritDoc}
      */
@@ -576,25 +580,27 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                                           getMaxFullEntriesPerPage()));
          }
 
-         java.util.Collection<UpdateCreateOrDeleteEntry> updateEntries = new HashSet<UpdateCreateOrDeleteEntry>();
-
          final List<EntryTarget> entriesToUpdate = new ArrayList<EntryTarget>();
          final List<EntryTarget> entriesToDelete = new ArrayList<EntryTarget>();
-         List<EntryTarget> errorEntries = new ArrayList<EntryTarget>();
-
          final EntryMap<String> entryXmlMap = new EntryMap<String>();
+         final HashMap<EntryTarget, Integer> orderMap = new HashMap<EntryTarget, Integer>();
 
          Operation defaultOperationExtension = document.getRoot().getExtension(AtomServerConstants.OPERATION);
          String defaultOperation = defaultOperationExtension == null ? "update" : defaultOperationExtension.getType();
 
          List<Entry> entries = document.getRoot().getEntries();
+
+         UpdateCreateOrDeleteEntry[] updateEntries = new UpdateCreateOrDeleteEntry[entries.size()];
+         Set<RelaxedEntryTarget> relaxedEntryTargetSet = new HashSet<RelaxedEntryTarget>();
+
+         int order = 0;
          for (Entry entry : entries) {
              try {
                  IRI baseIri = new IRI(getServiceBaseUri());
                  IRI iri = baseIri.relativize(entry.getLink("edit").getHref());
                  EntryTarget entryTarget = null;
                  try {
-                     // The request is always a PUT, so we will get back a FeedTarget when we want an insert
+                     // The request is always as PUT, so we will get back a FeedTarget when we want an insert
                      URITarget uriTarget = getURIHandler().parseIRI(request, iri);
                      if (uriTarget instanceof FeedTarget) {
                          entryTarget = new EntryTarget((FeedTarget) uriTarget);
@@ -617,16 +623,17 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                      throw new BadRequestException("Bad request URI: " + iri);
                  }
 
-                 String workspace = entryTarget.getWorkspace();
                  String collection = entryTarget.getCollection();
                  ensureCollectionExists(collection);
 
+                 // Verify that we do not have multiple <operation> elements
                  List<Operation> operationExtensions = entry.getExtensions(AtomServerConstants.OPERATION);
 
                  if (operationExtensions != null && operationExtensions.size() > 1) {
                      throw new BadRequestException("Multiple operations applied to one entry");
                  }
 
+                 // Set to the default operation if none is set.
                  String operation = operationExtensions == null || operationExtensions.isEmpty() ?
                                     defaultOperation :
                                     operationExtensions.get(0).getType();
@@ -634,24 +641,38 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                      log.debug("operation : " + operation);
                  }
 
+                 // We do not allow an Entry to occur twice in the batch.
+                 //   NOTE: the first one wins !!
+                 RelaxedEntryTarget relaxedEntryTarget = new RelaxedEntryTarget(entryTarget);
+                 if ( relaxedEntryTargetSet.contains( relaxedEntryTarget ) ) {
+                     throw new BadRequestException("You may not include the same Entry twice ("
+                                                   + entryTarget + ").");
+                 } else {
+                     relaxedEntryTargetSet.add( relaxedEntryTarget );
+                 }
+
+                 // Add to the processing lists.
                  if ("delete".equalsIgnoreCase(operation)) {
                      entriesToDelete.add(entryTarget);
+                     orderMap.put( entryTarget, order);
                  } else if ("update".equalsIgnoreCase(operation) || "insert".equalsIgnoreCase(operation)) {
                      String entryXml = validateAndPreprocessEntryContents(entry, entryTarget);
                      entriesToUpdate.add(entryTarget);
                      entryXmlMap.put(entryTarget, entryXml);
+                     orderMap.put( entryTarget, order);
                  }
              } catch (AtomServerException e) {
                  UpdateCreateOrDeleteEntry.CreateOrUpdateEntry updateEntry =
                          new UpdateCreateOrDeleteEntry.CreateOrUpdateEntry(entry, false);
                  updateEntry.setException(e);
-                 updateEntries.add(updateEntry);
+                 updateEntries[order] = updateEntry;
              }
+             order++;
          }
 
          Abdera abdera = request.getServiceContext().getAbdera();
 
-         // ---------------- process updates ------------------   
+         // ---------------- process updates ------------------
          if (!entriesToUpdate.isEmpty()) {
              java.util.Collection<BatchEntryResult> results =
                      executeTransactionally(
@@ -673,6 +694,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                                      return results;
                                  }
                              });
+
              for (BatchEntryResult result : results) {
                  EntryMetaData metaData = result.getMetaData();
                  if (metaData == null) {
@@ -687,13 +709,21 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                      newEntryWithCommonContentOnly(abdera, result.getEntryTarget()) :
                      newEntry(abdera, metaData, EntryType.full);
 
-                 UpdateCreateOrDeleteEntry.CreateOrUpdateEntry updateEntry = new UpdateCreateOrDeleteEntry.CreateOrUpdateEntry(
-                         entry,
-                         metaData != null && metaData.isNewlyCreated());
+                 UpdateCreateOrDeleteEntry.CreateOrUpdateEntry updateEntry =
+                         new UpdateCreateOrDeleteEntry.CreateOrUpdateEntry( entry,
+                                                                            metaData != null && metaData.isNewlyCreated());
                  if (result.getException() != null) {
                      updateEntry.setException(result.getException());
                  }
-                 updateEntries.add(updateEntry);
+
+                 Integer listOrder = orderMap.get( result.getEntryTarget() );
+                 if ( listOrder == null ) {
+                     // This should never happen....
+                     String msg = "Could not map (" + result.getEntryTarget() + ") in Batch Order Map";
+                     log.error( msg );
+                     throw new AtomServerException( msg );
+                 }
+                 updateEntries[listOrder] = updateEntry;
              }
          }
 
@@ -753,12 +783,26 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                  if (result.getException() != null) {
                      deleteEntry.setException(result.getException());
                  }
-                 updateEntries.add(deleteEntry);
+                 
+                 Integer listOrder = orderMap.get( result.getEntryTarget() );
+                 if ( listOrder == null ) {
+                     // This should never happen....
+                     String msg = "Could not map (" + result.getEntryTarget() + ") in Batch Order Map";
+                     log.error( msg );
+                     throw new AtomServerException( msg );
+                 }
+                 updateEntries[listOrder] = deleteEntry;
              }
-
-             entryXmlMap.clear();
          }
-         return updateEntries;
+
+         // Clear the maps to help out the Garbage Collector
+         entryXmlMap.clear();
+         entriesToUpdate.clear();
+         entriesToDelete.clear();
+         orderMap.clear();
+         relaxedEntryTargetSet.clear();
+
+         return Arrays.asList( updateEntries );
      }
 
     /**

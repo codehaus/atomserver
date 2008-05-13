@@ -84,21 +84,13 @@ public interface AtomCollection {
             throws AtomServerException;
 
     /**
-     * Return the Abdera Entry object associated with this POST Request, which indicates the creation of an Entry.
-     * <p/>
-     * Note that the AtomServer (actually the URIHandler) has already decoded the URL enough to know
-     * that the URL refers to a create Entry request, but we must pass along the RequestContext because
-     * other parts of the RequestContext may be required for processing (Headers, etc.)
-     * @param request The Abdera RequestContext, which contains the URL and all HTTP Headers.
-     * @return The Abdera Entry object.
-     * @throws AtomServerException
-     */
-    Entry createEntry(RequestContext request)
-            throws AtomServerException;
-
-    /**
-     * Determines whether the Entry, as specified by this PUT Request, already exists and if not creates it,
-     * otherwise it updates the existing Entry. This method returns a CreateOrUpdateEntry object, which is
+     * This method is used to both create and update an Entry.
+     * <ol>
+     * <li>For PUT requests (to a Entry URL), it determines whether the Entry already exists and if not creates it,
+     * otherwise it updates the existing Entry.</li>
+     * <li>For POST requests (to a Feed URL), it creates the Entry and in doing so, creates an Entry Id.</li>
+     * </ol>
+     * This method returns a CreateOrUpdateEntry object, which is
      * simply a wrapper around the Abdera Entry, with the additional information of whether an update or create occurred.
      * (This information is required to determine whether a 200 or a 201 should be returned)
      * <p/>
@@ -126,7 +118,7 @@ public interface AtomCollection {
             throws AtomServerException;
 
     /**
-     * Handles a "batch request".
+     * Handles a "batched operations" request.
      * Returns a list of UpdateCreateOrDeleteEntry objects, which are simply wrappers
      * around Abdera Entries with the additional information on whether that Entry was updated,
      * created, or deleted. This additional information is used to determine the appropriate HTTP status code
