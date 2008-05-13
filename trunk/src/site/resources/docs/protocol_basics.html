@@ -50,9 +50,10 @@ can send and receive AtomServer messages using any programming language
 that
 lets you issue HTTP requests and parse XML-based responses.<br>
 <br>
-Finally, giving credit where it is due, this document is based on the
-GData Protocol Basics document.<span
- style="font-weight: bold; color: rgb(255, 0, 0);"><br>
+<span style="font-style: italic;">Finally, giving credit where it is
+due, this document is based on the
+GData Protocol Basics document.</span><span
+ style="font-weight: bold; color: rgb(255, 0, 0); font-style: italic;"><br>
 </span>
 <h2>Contents</h2>
 <ol>
@@ -67,7 +68,11 @@ GData Protocol Basics document.<span
     <li><a href="#get-entry">Requesting a specific entry.</a><br>
     </li>
     <li><a href="#post-entry">Inserting a new entry</a></li>
-    <li><a href="#put-entry">Updating an entry</a></li>
+    <ol>
+      <li><a href="#insert-post">Inserting a new Entry using a POST</a></li>
+      <li><a href="#insert-put">Inserting a new Entry using a PUT</a></li>
+    </ol>
+    <li><a href="#update">Updating an entry</a></li>
     <li><a href="#delete-entry">Deleting an entry</a></li>
   </ol>
   <li><a href="#more-info">Additional resources</a></li>
@@ -491,22 +496,132 @@ you will receive the response content as described in <a
   </li>
 </ul>
 <h3><a name="post-entry"></a>5) Inserting a new entry</h3>
-To create a new Entry, send a <span style="font-family: monospace;">PUT</span>
-request, and supply a new Entry in AtomServer format. Note that there
+There are two ways to insert a new Entry. Which of these you use
+depends on whether you already know the Entry's identifier or not. <br>
+<ul>
+  <li><span style="font-weight: bold;">Using a</span><span
+ style="font-family: monospace; font-weight: bold;"> PUT</span><span
+ style="font-weight: bold;"> request.</span>&nbsp; If you already know
+the identifier of your Entry, when it was assigned outside of
+AtomServer, you make a PUT request to the specific URL associated with
+this Entry. </li>
+  <li><span style="font-weight: bold;">Using a </span><span
+ style="font-family: monospace; font-weight: bold;">POST</span><span
+ style="font-weight: bold;"> request.</span>&nbsp; If you want
+AtomServer to assign an Entry ID for you, then you make a POST request
+to the Feed URL of the Workspace, Collection you want this Entry
+created in. <br>
+  </li>
+</ul>
+<h4><a name="insert-post"></a>5.1) Inserting a new Entry using a POST
+</h4>
+When you want AtomServer to create an Entry Id for you, you send a <span
+ style="font-family: monospace;">POST</span>
+request to the appropriate Feed URL, and supply a new Entry in
+AtomServer format. AtomServer can be configured with an whatevre
+EntryIDGenerator you care to supply, as long as it supplies a unique Id
+for the given Workspace/Collection. By default, AtomServer uses a
+UUIDEntryIDGenerator, which creates a unique UUID as the Entry Id. <br>
+<br>
+NOTE: If the Workspace and/or Collection has been configured for
+localization, then you must supply the locale Query parameter with the
+URL, as depicted in the example below.<br>
+NOTE: the XML namespace qualifier ( e.g. <span
+ style="font-family: monospace;">&lt;entry
+xmlns="http://www.w3.org/2005/Atom"</span>&gt;) is <span
+ style="font-weight: bold;">required</span> by the Atompub
+specification!<br>
+NOTE: the client does <span style="font-weight: bold;">not </span>need
+to provide any of the <span style="font-family: monospace;">entry</span>
+elements
+when creating an Entry including the <span
+ style="font-family: monospace;">&lt;id&gt;</span><span
+ style="font-weight: bold;"></span>.<br>
+<br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-family: monospace;"></span><br>
+<div id="codebox"><span style="font-family: monospace;">POST
+/v1/widgets/acme?local=en_US</span><br>
+<pre id="line1">&lt;<span class="start-tag">entry</span><span
+ class="attribute-name"> xmlns</span>=<span class="attribute-value">"http://www.w3.org/2005/Atom"</span>&gt;<br>   &lt;<span
+ class="start-tag">content</span><span class="attribute-name"></span> type="application/xml"&gt;<br>     &lt;property xmlns="http://schemas.atomserver.org/widgets/v1/rev0" systemId="acme" inNetwork="false"&gt;<br>         .....<br>     &lt;/property&gt;<br><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;">   &lt;/content&gt;</span><span
+ style="font-family: monospace;"><br>&lt;/entry&gt;</span>
+</pre>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;">
+</span><span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+</div>
+<span style="font-family: monospace;"><br>
+</span><span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+The server responds:<br>
+<br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div id="codebox"><span style="font-family: monospace;">201
+CREATED</span><br>
+<pre id="line1"><span class="pi">&lt;?xml version='1.0' encoding='UTF-8'?&gt;</span><br>&lt;<span
+ class="start-tag">entry</span><span class="attribute-name"> xmlns</span>=<span
+ class="attribute-value">"http://www.w3.org/2005/Atom"</span>&gt;<br>   &lt;<span
+ class="start-tag">id</span>&gt;/myserver/v1/widgets/acme/a371412926e0439983eda36651049dfa.en_US.xml&lt;/<span
+ class="end-tag">id</span>&gt;<br>   &lt;<span class="start-tag">updated</span>&gt;2007-10-05T19:17:42.640Z&lt;/<span
+ class="end-tag">updated</span>&gt;<br>   &lt;<span class="start-tag">published</span>&gt;2007-10-05T19:17:42.640Z&lt;/<span
+ class="end-tag">published</span>&gt;<br>   &lt;<span class="start-tag">title</span><span
+ class="attribute-name"> type</span>=<span class="attribute-value">"text"</span>&gt; Entry: acme a371412926e0439983eda36651049dfa.en_US&lt;/<span
+ class="end-tag">title</span>&gt;<br>   &lt;<span class="start-tag">author</span>&gt;&lt;<span
+ class="start-tag">name</span>&gt;AtomServer APP Service&lt;/<span
+ class="end-tag">name</span>&gt;&lt;/<span class="end-tag">author</span>&gt;<br>   &lt;<span
+ class="start-tag">link</span><span class="attribute-name"> href</span>=<span
+ class="attribute-value">"/myserver/v1/widgets/acme/</span>a371412926e0439983eda36651049dfa<span
+ class="attribute-value">.en_US.xml" </span><span class="attribute-name">rel</span>=<span
+ class="attribute-value">"self" </span><span class="attribute-name">/</span>&gt;<br>   &lt;<span
+ class="start-tag">link</span><span class="attribute-name"> href</span>=<span
+ class="attribute-value">"/myserver/v1/widgets/acme/</span>a371412926e0439983eda36651049dfa<span
+ class="attribute-value">.en_US.xml/0" </span><span
+ class="attribute-name">rel</span>=<span class="attribute-value">"edit" </span><span
+ class="attribute-name">/</span>&gt;<br>   &lt;<span class="start-tag">content</span><span
+ class="attribute-name"></span> type="application/xml"&gt;<br>     &lt;property xmlns="http://schemas.atomserver.org/widgets/v1/rev0" systemId="acme" id="a371412926e0439983eda36651049dfa" inNetwork="false"&gt;<br>         .....<br>     &lt;/property&gt;<br><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;">   &lt;/content&gt;</span><span
+ style="font-family: monospace;"><br>&lt;/entry&gt;</span>
+</pre>
+</div>
+<br>
+</div>
+<span style="font-family: monospace;"></span>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+<h4><a name="insert-put"></a>5.2) Inserting a new Entry using a PUT</h4>
+When you already know the Entry Id for the Entry you want created, you
+send a <span style="font-family: monospace;">PUT</span>
+request to the appropriate Entry URL, and supply a new Entry in
+AtomServer format. Note that, for this case, there
 is effectively no difference between an
 Update and an Insert, <span style="font-style: italic;">except</span>
 for Updates, where you <span style="font-weight: bold;">must</span>
-provide the revision identifier. Although, for situations where there
+provide the revision identifier. (Although, for situations where there
 is a "single writer" and optimistic concurrency is not required, you
 can use the widcard revision identifier ( <span
  style="font-family: monospace;">/*</span> ) to override optimistic
-concurrency.<br>
+concurrency).<br>
 <br>
 NOTE: the XML namespace qualifier ( e.g. <span
  style="font-family: monospace;">&lt;entry
 xmlns="http://www.w3.org/2005/Atom"</span>&gt;) is <span
  style="font-weight: bold;">required</span> by the Atompub
 specification!<br>
+NOTE: the client does not need to provide any of the <span
+ style="font-family: monospace;">entry</span> elements
+when creating an Entry <span style="font-style: italic;">except for </span><span
+ style="font-family: monospace; font-style: italic;">&lt;id&gt;</span>,
+which <span style="font-weight: bold;">must</span> be provided
 <div style="margin-left: 40px;">
 <div style="margin-left: 40px;"><span style="font-family: monospace;"></span><br>
 <div id="codebox"><span style="font-family: monospace;">PUT
@@ -562,16 +677,11 @@ CREATED</span><br>
  style="font-family: monospace;"><br>&lt;/entry&gt;</span>
 </pre>
 </div>
-<br>
 </div>
 <span style="font-family: monospace;"></span>
 <span style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span></div>
-Note that the client does not need to provide any of the <span
- style="font-family: monospace;">entry</span> elements
-when creating an Entry except for <span style="font-family: monospace;">&lt;id&gt;</span>,
-which <span style="font-weight: bold;">must</span> be provided.<br>
-<h3><a name="put-entry"></a>6) Updating an entry</h3>
+<h3><a name="update"></a>6) Updating an entry</h3>
 To update an existing entry, use PUT, with the entry's edit URI (as
 provided by the server in the previous example, in the &lt;link
 rel="edit"&gt; element). Note that there is effectively no difference
@@ -657,8 +767,8 @@ OK</span><br>
 </span></div>
 Note that you receive an <span style="font-family: monospace;">edit</span>
 link and a <span style="font-family: monospace;">self</span> link in
-the response.&nbsp; You <span style="font-weight: bold;">must</span>
-use the <span style="font-family: monospace;">edit</span> link when
+the response.&nbsp; And that you <span style="font-weight: bold;">must</span>
+use this <span style="font-family: monospace;">edit</span> link when
 you wish to edit (Update or Delete) the Entry. <br>
 <br>
 If you had requested a revision which did <span

@@ -36,21 +36,6 @@ Basics document </a>for general information about communicating with
 the AtomServer service.<br>
   </li>
 </ul>
-This document does <span style="font-weight: bold;">not</span> explain
-the underlying concepts behind AtomServer; REST, Atom, and OpenSearch.
-That
-information can be found in <a href="intro.html">the AtomServer
-General Introduction document</a>. <span style="font-style: italic;">It
-is highly recommended that you read this document first</span>.<br>
-<br>
-Nor does this document explain the basics of XML,
-namespaces, syndicated feeds, and the <span
- style="font-family: monospace;">GET, POST, PUT</span>, and <span
- style="font-family: monospace;">DELETE</span>
-requests in HTTP, as well as HTTP's concept of a "resource." For more
-information about those things, see the <a href="#resources">Additional
-resources </a>section of
-this document.<br>
 <h2>Contents</h2>
 <ul>
   <li><a href="#info">General Information</a><br>
@@ -58,12 +43,12 @@ this document.<br>
   <li><a href="#submit">Submitting a batch request</a></li>
   <li><a href="#writing">Writing a batch operations feed</a></li>
   <ul>
-    <li><a href="#update">Insert and Update operations</a></li>
+    <li><a href="#insert">Insert operations</a><br>
+    </li>
+    <li><a href="#update">Update operations</a></li>
     <li><a href="#delete">Delete operations</a></li>
   </ul>
-  <li><a href="#tracking">Tracking operations</a></li>
   <li><a href="#status-codes">Handling status codes</a></li>
-  <li><a href="#interrupted">Identifying interrupted operations</a></li>
   <li><a href="#example">Example batch operations and status feed</a> </li>
   <li><a href="#resources">Additional Resources</a><br>
   </li>
@@ -135,29 +120,40 @@ recommended </span>if you need to publish many entries at once.<br>
 <p>There are several points to notice when looking at the example above;<br>
 </p>
 <ul>
-  <li>Batches are submitted as a <span style="font-family: monospace;">&lt;feed&gt;.
-    </span>This means that you can use mostly standard Atom syntax
+  <li>Batches are submitted and returned as a <span
+ style="font-family: monospace;">&lt;feed&gt;. </span>This means that
+you can use mostly standard Atom syntax
 (&lt;feed&gt;, &lt;entry&gt;, etc) when composing a batch operations
 request.<br>
   </li>
   <li>You <span style="font-weight: bold;">must</span> provide a
 special XML element&nbsp;<span style="font-family: monospace;">&lt;asbatch:operation
-type="insert|delete"/&gt;</span> for each <span
+type="insert|update|delete"/&gt;</span> for each <span
  style="font-family: monospace;">&lt;entry&gt;</span> that you submit
-for batch processing. </li>
+for batch processing. This may be either per Entry or per Batch.<br>
+  </li>
+  <li>You <span style="font-weight: bold;">must</span> provide the
+atomserver asbatch namespace on the <span
+ style="font-family: monospace;">&lt;feed&gt;</span>
+element (i.e <span style="font-family: monospace;">&lt;feed </span>xmlns:asbatch="http://atomserver.org/namespaces/1.0/batch"<span
+ style="font-family: monospace;">&gt; </span>)</li>
   <li>You <span style="font-weight: bold;">must</span> provide the
 atomserver namespace on the <span style="font-family: monospace;">&lt;entry&gt;</span>
-element (i.e <span style="font-family: monospace;">&lt;entry xmlns:ha="</span><span
- style="font-family: monospace;">http://atomserver.org/namespaces/atomserver/1.0/</span><span
+element (i.e <span style="font-family: monospace;">&lt;entry xmlns:as="</span><span
+ style="font-family: monospace;">http://atomserver.org/namespaces/1.0/</span><span
  style="font-family: monospace;">"&gt; </span>)</li>
   <li>You <span style="font-weight: bold;">must</span> provide a "edit
-link" to identify which entry to operate on. (e.g. ) This is consistent
-with all other AtomServer usage. The edit link is the only guarrenteed
+link" to identify which entry to operate on. (e.g. <span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;">&lt;link
+href="/myserver/v1/widgets/acme/92348.en.xml/2" rel="edit"/&gt;</span>)
+This is consistent
+with all other AtomServer usage. The edit link is the only guaranteed
 way
 to edit an entry in AtomServer. This link should contain the correct
 revision number to satisfy optimistic concurrency expectations.</li>
 </ul>
-Another important, but subtle point is that AtomServer does "lazy
+Another important, but subtle point is that AtomServer allows "lazy
 inserts".
 This is because AtomServer, in keeping with REST principles, allows you
 to <span style="font-family: monospace;">PUT</span> an entry for
@@ -166,8 +162,28 @@ or update to the same URL, and AtomServer determines on-the-fly which
 operation is required. So, as expected, this behavior is reflected in
 the batch processing API, and thus, <span
  style="font-family: monospace;">&lt;asbatch:operation
-type="update"/&gt; </span>is used for either an insert or an
-update.&nbsp; <br>
+type="update"/&gt; </span>may be used for either an insert or an
+update, provided you supply an Entry URL in the "edit link" (e.g. <span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;">&lt;link
+href="/myserver/v1/widgets/acme/92348.en.xml/2" rel="edit"/&gt;</span>).
+<br>
+<br>
+AtomServer also allows for typical RESTful <span
+ style="font-family: monospace;">POST </span>operations, which are, by
+definition, <span style="font-family: monospace;">insert</span>
+operations. Again, you provide an "edit link", but, in this case, you
+will provide a "Feed URL. (e.g <span style="font-family: monospace;"></span><span
+ style="font-family: monospace;">&lt;link
+href="/myserver/v1/widgets/acme" rel="edit"/&gt;</span>).<br>
+<br>
+Batch Entries are returned in the same order they were provided. And
+further Response details are supplied in the Entry, including&nbsp;
+HTTP status code (200, 201, 400, 409, etc.) and what operation actually
+occured (<span style="font-family: monospace;">insert</span>, <span
+ style="font-family: monospace;">update</span>, <span
+ style="font-family: monospace;">delete</span>, or <span
+ style="font-family: monospace;">error</span>) <br>
 <hr style="width: 100%; height: 2px;">
 <h2><a name="submit"></a>Submitting a batch request</h2>
 <p>A
@@ -179,9 +195,10 @@ operations to the "<span style="font-family: monospace;">widgets/acme</span>"
 feed, then you would <span style="font-family: monospace;">PUT</span>
 to the following URL;<br>
 </p>
-<div style="margin-left: 40px;"><br>
-<div id="codebox"><span style="font-family: monospace;">PUT
-/myserver/v1/widgets/$batch<br>
+<div style="margin-left: 40px;">
+<div id="codebox"><span style="font-family: monospace;"><span
+ style="font-weight: bold;">PUT
+/myserver/v1/widgets/$batch</span><br>
 </span> </div>
 <span style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span><span
@@ -193,33 +210,81 @@ to the following URL;<br>
 <h2><a name="writing"></a>Writing a batch operations feed</h2>
 <p>A batch operations feed contains a list of entries to insert,
 update, or delete. Each operation is defined by a <code>&lt;asbatch:operation
-type="update|delete"/&gt;</code> element. Note that update incompasses
-both insert and update, which is consistent with AtomServer in general.
-In AtomServer we submit both inserts and updates using an HTTP PUT, and
+type="insert|update|delete"/&gt;</code> element. How these these
+operations work directly reflects <a href="protocol_basics.html">how
+AtomServer works for <span style="font-family: monospace;">PUT</span>,
+<span style="font-family: monospace;">POST</span>, and <span
+ style="font-family: monospace;">DELETE</span> of individual Entries</a>.<br>
+</p>
+<ul>
+  <li><span style="font-family: monospace; font-weight: bold;">PUT</span><span
+ style="font-weight: bold;">.</span>&nbsp;
+In AtomServer you can submit both inserts and updates using a HTTP<span
+ style="font-family: monospace;"> PUT </span>(a, so called, Lazy Insert<span
+ style="font-family: monospace;">),</span> and
 this
-behavior is, of course, reflected in the batch processing API.<br>
-</p>
-<p>This element may be a direct child of a <code>&lt;feed&gt;</code>
-element, a direct child of any of the entries in the feed, or both.
-When included in an entry, it specifies the operation to
-execute for that specific entry. When included in the feed, this
-element specifies the default operation to execute on any entries that
+behavior is, of course, reflected in the batch processing API. For
+either <span style="font-family: monospace;">PUT</span> operation - an
+update or insert - you <span style="font-weight: bold;">must</span>
+submit an "edit link" that represents an Entry URL. (e.g. <span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;">&lt;link
+href="/myserver/v1/widgets/acme/92348.en.xml/2" rel="edit"/&gt;</span>).
+  </li>
+  <li><span style="font-family: monospace; font-weight: bold;">POST.</span>
+You can also request a batch <span style="font-family: monospace;">insert</span>
+operation that reflects a RESTful HTTP POST, and in this case the Entry
+Id is generated by AtomServer. Here you <span
+ style="font-weight: bold;">must</span> provide an "edit link" that
+represents a "Feed URL. (e.g <span style="font-family: monospace;"></span><span
+ style="font-family: monospace;">&lt;link
+href="/myserver/v1/widgets/acme" rel="edit"/&gt;</span>).<br>
+  </li>
+  <li><span style="font-family: monospace; font-weight: bold;">DELETE.</span>
+To request a batch <span style="font-family: monospace;">delete</span>
+operation that reflects a HTTP <span style="font-family: monospace;">DELETE</span>,
+you <span style="font-weight: bold;">must</span> submit an "edit link"
+that represents an Entry URL. (e.g. <span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;">&lt;link
+href="/myserver/v1/widgets/acme/92348.en.xml/2" rel="edit"/&gt;</span>).
+  </li>
+</ul>
+<p>The <span style="font-family: monospace;">operation</span> element
+may be a direct child of a <code>&lt;feed&gt;</code>
+element, a direct child of any of the Entries in the Feed, or both.
+When included in an Entry, it specifies the operation to
+execute for that specific Entry. When included in the Feed, this
+element specifies the default operation to execute on any Entries that
 do not have a <code>&lt;asbatch:operation/&gt;</code> element.</p>
-<p>When neither the entry nor the feed specifies an operation, the
-default operation is <code>update</code>.<br>
+<p>When neither the Entry nor the Feed specifies an operation, <span
+ style="font-style: italic;">the
+default operation is </span><code style="font-style: italic;">update</code>.<br>
 </p>
-<p>Applications should not apply multiple operations to the same entry
+<p>Applications may <span style="font-weight: bold;">not</span> apply
+multiple operations to the same entry
 in a single batch feed. The results would be indeterminate if you
 specified multiple operations for the same entry, therefore, an
 Exception is thrown and you will recieve a 400 HTTP response code in
 the <code>&lt;asbatch:status/&gt;</code> element.<br>
 </p>
 <p>Operations are NOT necessarily performed in the order listed in the
-feed - operations are partitioned into three groups - inserts, updates,
+feed - operations are partitioned into two groups - updates
 and deletes - and each group is executed in a single batch operation to
-the database.&nbsp; It is generally wrong to submit multiple operations
-on the same entry in the same batch, and doing so can produce undefined
-results.<br>
+the database.&nbsp; For this reason, <span style="font-style: italic;">you
+may <span style="font-weight: bold;">not</span> submit multiple
+operations
+on the same entry in the same batch</span>, and doing so will produce
+an error for all duplicates. The first Entry in a duplicate set will be
+processed, and all others will result in errors. <br>
+</p>
+<p>It is important to note that AtomServer will attempt to process all
+Entries in the batch, and will return all Entries in the same order it
+received them. If any errors occured, those Entries will be returned
+along with all others, and will simply be flagged as errors. The status
+element will indicate the error that occured and a short description of
+the reason (e.g. <span style="font-family: monospace;">&lt;asbatch:status
+code="400" reason="Bad Request::....." /&gt;</span> ) <br>
 </p>
 <p>By default, the
 number of entries in the XML batch operations feed that you send to the
@@ -231,26 +296,36 @@ protect itself from excessive feeds. Note, the numbers shown here are
 the default values, and a AtomServer Workspace can be configured with
 alternate values.<br>
 </p>
-<h3><a name="update"></a>Insert and Update operations</h3>
+<h3><a name="insert"></a>Insert operations</h3>
 <p>An insert operation is denoted as follows:</p>
 <div style="margin-left: 40px;">
-<div id="codebox"><code>&lt;asbatch:operation type="update"&gt;</code> </div>
+<div style="font-weight: bold;" id="codebox"><code>&lt;asbatch:operation
+type="insert"&gt;</code> </div>
 <span style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span></div>
-<p>In AtomServer, both an
-insert and an update operation is equivalent to PUTing the entry. When
-the operation
-succeeds, the entire entry content is returned, with an updated
-document id field. If an insert occurred, you will recieve a <code>&lt;asbatch:status
-code="201"/&gt;</code> element. And if an update occurred, you will
-recieve a <code>&lt;asbatch:status code="200"/&gt;</code> element.</p>
-<p>Here is an example of a successful insert request:<br>
+<p>In AtomServer, an
+insert operation is equivalent to either PUTing or POSTing a new Entry.
+Which of these occurs depends upon the "edit link" that is provided. If
+an Entry URL is provided within the "edit link"; a PUT equivalent
+occurs. And if a Feed URL is provided within the "edit link"; a POST
+equivalent occurs. This exactly matches the behavior of AtomServer in
+general.&nbsp; <br>
+</p>
+<p>When
+the insert operation
+succeeds, the entire Entry content is returned, with an updated
+document id field. And you will receive a <code>&lt;asbatch:status
+code="201"/&gt;</code> element.&nbsp;</p>
+<p>Here is an example of a successful POST insert Request:
+<br>
 </p>
 <div style="margin-left: 40px;">
-<div id="codebox">&nbsp;&nbsp;&nbsp;&nbsp; &lt;entry
-xmlns:ha="http://atomserver.org/namespaces/atomserver/1.0/"&gt;<br>
+<div id="codebox">&nbsp;&lt;feed xmlns="http://www.w3.org/2005/Atom"
+xmlns:asbatch="http://atomserver.org/namespaces/1.0/batch"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;entry
+xmlns:ha="http://atomserver.org/namespaces/1.0/"&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;content
 type="application/xml"&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -269,11 +344,140 @@ id="92348" inNetwork="false"&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &lt;/property&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/content&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;asbatch:operation
-type="update"/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span
+ style="font-weight: bold;">&lt;asbatch:operation
+type="insert"/&gt;</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;link
+href="/myserver/v1/widgets/acme" rel="edit"/&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp; &lt;/entry&gt;<br>
+&lt;/feed&gt;<br>
+</div>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+<p>Here is an example of a Response to a successful insert request: <br>
+</p>
+<div style="margin-left: 40px;">
+<div id="codebox">&lt;?xml version='1.0' encoding='UTF-8'?&gt;<br>
+&lt;feed xmlns="http://www.w3.org/2005/Atom" <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+xmlns:asbatch="http://atomserver.org/namespaces/1.0/batch"&gt;<br>
+&nbsp;<span style="font-weight: bold;">&nbsp;&nbsp; &lt;asbatch:results
+inserts="1" updates="0" deletes="0" errors="0" /&gt;&nbsp;&nbsp;&nbsp; </span><br
+ style="font-weight: bold;">
+&nbsp;&nbsp;&nbsp; &lt;entry
+xmlns:as="http://atomserver.org/namespaces/1.0/"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;id&gt;/myserver/v1/widgets/acme/a371412926e0439983eda36651049dfa.en.xml&lt;/id&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;updated&gt;2007-11-15T17:09:19.000Z&lt;/updated&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;published&gt;2007-11-15T17:09:19.000Z&lt;/published&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;title
+type="text"&gt;Entry: acme 92348.en&lt;/title&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;author&gt;&lt;name&gt;AtomServer Atom
+Service&lt;/name&gt;&lt;/author&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
-href="/myserver/v1/widgets/acme/92348.en.xml" rel="edit"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp; &lt;/entry&gt; </div>
+href="/myserver/v1/widgets/acme/a371412926e0439983eda36651049dfa.en.xml"
+rel="self"/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
+href="/myserver/v1/widgets/acme/a371412926e0439983eda36651049dfa.en.xml/0"
+rel="edit"/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;content
+type="application/xml"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;property xmlns="http://schemas.atomserver.org/widgets/v1/rev0"
+systemId="acme"
+id="a371412926e0439983eda36651049dfa" inNetwork="false"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;contact&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&lt;contactId&gt;1638&lt;/contactId&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&lt;displayName&gt;Chris Berry&lt;/displayName&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&lt;hasEmail&gt;true&lt;/hasEmail&gt;<br>
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/contact&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/content&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;category/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span
+ style="font-weight: bold;">&lt;asbatch:operation
+type="insert"/&gt;</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;asbatch:status
+code="201" reason="OK"/&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp; &lt;/entry&gt;<br>
+&lt;/feed&gt;<br>
+<code></code> </div>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+<p>Note that the <span style="font-family: monospace;">&lt;asbatch:operation&gt;</span>
+is returned with <span style="font-family: monospace;">type="insert"</span>
+when an insert occurs.<br>
+</p>
+<h3><a name="update"></a>Update operations</h3>
+<p>An update operation is denoted as follows:</p>
+<div style="margin-left: 40px;">
+<div style="font-weight: bold;" id="codebox"><code>&lt;asbatch:operation
+type="update"&gt;</code> </div>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+<p>In AtomServer, a PUT operation can result in <span
+ style="font-style: italic;">either</span> an
+insert and an update operation, and not surprisingly AtomServer allows
+this same behavior in batch operations. <br>
+</p>
+<p>When
+the update operation
+succeeds, the entire entry content is returned, with an updated
+document id field. If an insert occurred, you will receive a <code>&lt;asbatch:status
+code="201"/&gt;</code> element. And if an update occurred, you will
+receive a <code>&lt;asbatch:status code="200"/&gt;</code> element.</p>
+<p>Here is an example of a successful insert request:<br>
+</p>
+<div style="margin-left: 40px;">
+<div id="codebox">&lt;feed xmlns="http://www.w3.org/2005/Atom"
+xmlns:asbatch="http://atomserver.org/namespaces/1.0/batch"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp; &lt;entry
+xmlns:ha="http://atomserver.org/namespaces/atomserver/1.0/"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;id&gt;/myserver/v1/widgets/acme/92348.en.xml&lt;/id&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;content
+type="application/xml"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;property xmlns="http://schemas.atomserver.org/widgets/v1/rev0"
+systemId="acme"
+id="92348" inNetwork="false"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;contact&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&lt;contactId&gt;1638&lt;/contactId&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&lt;displayName&gt;Chris Berry&lt;/displayName&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&lt;hasEmail&gt;true&lt;/hasEmail&gt;<br>
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/contact&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/content&gt;<br>
+&nbsp;<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;asbatch:operation
+type="update"/&gt;</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;link
+href="/myserver/v1/widgets/acme/92348.en.xml" rel="edit"/&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp; &lt;/entry&gt;<br>
+&lt;/feed&gt;<br>
+</div>
 <span style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span><span
@@ -281,7 +485,13 @@ href="/myserver/v1/widgets/acme/92348.en.xml" rel="edit"/&gt;<br>
 <p>Here is an example of a response to a successful update request: <br>
 </p>
 <div style="margin-left: 40px;">
-<div id="codebox">&nbsp;&nbsp;&nbsp;&nbsp; &lt;entry
+<div id="codebox">&lt;feed xmlns="http://www.w3.org/2005/Atom" <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+xmlns:asbatch="http://atomserver.org/namespaces/1.0/batch"&gt;<br>
+&nbsp;<span style="font-weight: bold;"> &nbsp;&nbsp;
+&lt;asbatch:results inserts="1" updates="0" deletes="0" errors="0"
+/&gt;&nbsp;&nbsp;&nbsp; </span><br style="font-weight: bold;">
+&nbsp;&nbsp;&nbsp;&nbsp; &lt;entry
 xmlns:ha="http://atomserver.org/namespaces/atomserver/1.0/"&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &lt;id&gt;/myserver/v1/widgets/acme/92348.en.xml&lt;/id&gt;<br>
@@ -318,11 +528,14 @@ id="92348" inNetwork="false"&gt;<br>
 &lt;/property&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/content&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;category/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;asbatch:operation
-type="insert"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;asbatch:status
-code="201" reason="OK"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp; &lt;/entry&gt;<code></code> </div>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span
+ style="font-weight: bold;">&lt;asbatch:operation
+type="insert"/&gt;</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;asbatch:status
+code="201" reason="OK"/&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp; &lt;/entry&gt;<br>
+&lt;/feed&gt;<code></code> </div>
 <span style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span><span
@@ -333,7 +546,8 @@ when an insert occurs, and <span style="font-family: monospace;">type="update"
 </span>when an update occurs</p>
 <h3><a name="delete"></a>Delete operations</h3>
 <div style="margin-left: 40px;">
-<div id="codebox"><code>&lt;asbatch:operation type="delete"&gt;</code> </div>
+<div style="font-weight: bold;" id="codebox"><code>&lt;asbatch:operation
+type="delete"&gt;</code> </div>
 <span style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span><span
@@ -348,21 +562,34 @@ code="200"/&gt;</code> element will be returned.</p>
 <p>Here is an example of a delete request: <br>
 </p>
 <div style="margin-left: 40px;">
-<div id="codebox">&nbsp;&nbsp;&nbsp;&nbsp; &lt;entry
+<div id="codebox">&lt;feed xmlns="http://www.w3.org/2005/Atom"
+xmlns:asbatch="http://atomserver.org/namespaces/1.0/batch"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp; &lt;entry
 xmlns:ha="http://atomserver.org/namespaces/atomserver/1.0/"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;asbatch:operation
-type="delete"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
-href="/myserver/v1/widgets/acme/92345.en.xml/0" rel="edit"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp; &lt;/entry&gt;<code><br>
-</code> </div>
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;asbatch:operation
+type="delete"/&gt;</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;link
+href="/myserver/v1/widgets/acme/92345.en.xml/0" rel="edit"/&gt;</span><br
+ style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;</span>&nbsp;&nbsp;&nbsp;
+&lt;/entry&gt;<br>
+&lt;/feed&gt;<br>
+<code></code> </div>
 <span style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span></div>
 <p>Here is an example of a successful response:</p>
 <div style="margin-left: 40px;">
-<div id="codebox">&nbsp;&nbsp;&nbsp;&nbsp; &lt;entry
+<div id="codebox">&lt;feed xmlns="http://www.w3.org/2005/Atom" <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+xmlns:asbatch="http://atomserver.org/namespaces/1.0/batch"&gt;<br>
+&nbsp;<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;
+&lt;asbatch:results inserts="0" updates="0" deletes="1" errors="0"
+/&gt;&nbsp;&nbsp;&nbsp; </span><br style="font-weight: bold;">
+&nbsp;&nbsp;&nbsp;&nbsp; &lt;entry
 xmlns:ha="http://atomserver.org/namespaces/atomserver/1.0/"&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &lt;id&gt;/myserver/v1/widgets/acme/92345.en.xml&lt;/id&gt;<br>
@@ -408,11 +635,14 @@ id="92345" inNetwork="false"&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/content&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/content&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;category/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;asbatch:operation
-type="delete"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;asbatch:status
-code="200" reason="OK"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp; &lt;/entry&gt;<code></code> </div>
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;asbatch:operation
+type="delete"/&gt;</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;asbatch:status
+code="200" reason="OK"/&gt;</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;</span>&nbsp;&nbsp;&nbsp;
+&lt;/entry&gt;<code></code> </div>
 <span style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span><span
@@ -425,8 +655,8 @@ code="200" reason="OK"/&gt;<br>
  style="font-family: monospace;"></span><br>
 </p>
 <div style="margin-left: 40px;">
-<div id="codebox"><code></code>&lt;asbatch:status
-code="200|201|404|500|..." reason="reason" [content-type="type"]/&gt;
+<div id="codebox"><code></code><span style="font-weight: bold;">&lt;asbatch:status
+code="200|201|404|500|..." reason="reason" [content-type="type"]/&gt;</span>
 </div>
 <span style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span><span
@@ -460,7 +690,7 @@ This feed requests that the server delete two entries and modify two
 new entries.</p>
 <div style="margin-left: 40px;"><br>
 <div id="codebox">
-<pre>PUT : https://atomserver.atomserver.org/myserver/v1/widgets/acme/batch<br></pre>
+<pre>PUT   http://myserver.com/myserver/v1/widgets/acme/$batch<br></pre>
 &lt;feed xmlns="http://www.w3.org/2005/Atom"&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp; &lt;entry
 xmlns:ha="http://atomserver.org/namespaces/atomserver/1.0/"&gt;<br>
@@ -482,25 +712,37 @@ id="92347" inNetwork="false"&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &lt;/property&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/content&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;asbatch:operation
-type="update"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
-href="/myserver/v1/widgets/acme/92347.en.xml/0" rel="edit"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp; &lt;/entry&gt;<br>
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;asbatch:operation
+type="update"/&gt;</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;link
+href="/myserver/v1/widgets/acme/92347.en.xml/0" rel="edit"/&gt;</span><br
+ style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;</span>&nbsp;&nbsp;&nbsp;
+&lt;/entry&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp; &lt;entry
 xmlns:ha="http://atomserver.org/namespaces/atomserver/1.0/"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;asbatch:operation
-type="delete"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
-href="/myserver/v1/widgets/acme/92345.en.xml/0" rel="edit"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp; &lt;/entry&gt;<br>
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;asbatch:operation
+type="delete"/&gt;</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;link
+href="/myserver/v1/widgets/acme/92345.en.xml/0" rel="edit"/&gt;</span><br
+ style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;</span>&nbsp;&nbsp;&nbsp;
+&lt;/entry&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp; &lt;entry
 xmlns:ha="http://atomserver.org/namespaces/atomserver/1.0/"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;asbatch:operation
-type="delete"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
-href="/myserver/v1/widgets/acme/23456.en.xml/2" rel="edit"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp; &lt;/entry&gt;<br>
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;asbatch:operation
+type="delete"/&gt;</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;link
+href="/myserver/v1/widgets/acme/23456.en.xml/2" rel="edit"/&gt;</span><br
+ style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;</span>&nbsp;&nbsp;&nbsp;
+&lt;/entry&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp; &lt;entry
 xmlns:ha="http://atomserver.org/namespaces/atomserver/1.0/"&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;content
@@ -519,10 +761,13 @@ id="92348" inNetwork="false"&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &lt;/property&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/content&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;asbatch:operation
-type="update"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
-href="/myserver/v1/widgets/acme/92348.en.xml" rel="edit"/&gt;<br>
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;asbatch:operation
+type="update"/&gt;</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;link
+href="/myserver/v1/widgets/acme/92348.en.xml" rel="edit"/&gt;</span><br
+ style="font-weight: bold;">
 &nbsp;&nbsp;&nbsp;&nbsp; &lt;/entry&gt;<br>
 &lt;/feed&gt;<br>
 </div>
@@ -532,26 +777,29 @@ href="/myserver/v1/widgets/acme/92348.en.xml" rel="edit"/&gt;<br>
  style="font-family: monospace;"></span></div>
 <p>Let's assume that the two "updates" worked, but one of the two
 deletions failed. In this case, the batch status feed might look like
-the following. Notice that the entries have been reordered compared to
-the batch operations feed.<br>
+the following. Note that the Entries are returned in exactly the same
+order that they appear in the Batch Request.<br>
 </p>
 <div style="margin-left: 40px;"><br>
-<div id="codebox">
-&lt;feed xmlns="http://www.w3.org/2005/Atom"&gt;<br>
+<div id="codebox">&lt;feed xmlns="http://www.w3.org/2005/Atom" <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+xmlns:asbatch="http://atomserver.org/namespaces/1.0/batch"&gt;<br>
+&nbsp;<span style="font-weight: bold;">&nbsp; &nbsp;
+&lt;asbatch:results inserts="0" updates="2" deletes="1" errors="1"
+/&gt;&nbsp;&nbsp;&nbsp; </span><br style="font-weight: bold;">
 &nbsp;&nbsp;&nbsp;&nbsp; &lt;entry
 xmlns:ha="http://atomserver.org/namespaces/atomserver/1.0/"&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;id&gt;/myserver/v1/widgets/acme/92347.en.xml&lt;/id&gt;<br>
+&lt;id&gt;/myserver/v1/widgets/acme/<span style="font-weight: bold;">92347</span>.en.xml&lt;/id&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &lt;updated&gt;2007-11-15T17:09:19.000Z&lt;/updated&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &lt;published&gt;2007-11-15T17:09:19.000Z&lt;/published&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;title
 type="text"&gt;Entry: acme 92347.en&lt;/title&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;author&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;name&gt;AtomServer Atom Service&lt;/name&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/author&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;author&gt;&lt;name&gt;AtomServer APP
+Service&lt;/name&gt;&lt;/author&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
 href="/myserver/v1/widgets/acme/92347.en.xml" rel="self"/&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
@@ -574,66 +822,27 @@ id="92347" inNetwork="false"&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &lt;/property&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/content&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;category/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;asbatch:operation
-type="update"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;asbatch:status
-code="200" reason="OK"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp; &lt;/entry&gt;<br>
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;asbatch:operation
+type="update"/&gt;</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;asbatch:status
+code="200" reason="OK"/&gt;</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;</span>&nbsp;&nbsp;&nbsp;
+&lt;/entry&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp; &lt;entry
 xmlns:ha="http://atomserver.org/namespaces/atomserver/1.0/"&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;id&gt;/myserver/v1/widgets/acme/92348.en.xml&lt;/id&gt;<br>
+&lt;id&gt;/myserver/v1/widgets/acme/<span style="font-weight: bold;">92345</span>.en.xml&lt;/id&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &lt;updated&gt;2007-11-15T17:09:19.000Z&lt;/updated&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;published&gt;2007-11-15T17:09:19.000Z&lt;/published&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;title
-type="text"&gt;Entry: acme 92348.en&lt;/title&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;author&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;name&gt;AtomServer Atom Service&lt;/name&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/author&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
-href="/myserver/v1/widgets/acme/92348.en.xml" rel="self"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
-href="/myserver/v1/widgets/acme/92348.en.xml/0" rel="edit"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;content
-type="application/xml"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;property xmlns="http://schemas.atomserver.org/widgets/v1/rev0"
-systemId="acme"
-id="92348" inNetwork="false"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;contact&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-&lt;contactId&gt;1533&lt;/contactId&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-&lt;displayName&gt;Bryon Jacob&lt;/displayName&gt;<br>
-&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/contact&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;/property&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/content&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;category/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;asbatch:operation
-type="insert"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;asbatch:status
-code="200" reason="OK"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp; &lt;/entry&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp; &lt;entry
-xmlns:ha="http://atomserver.org/namespaces/atomserver/1.0/"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;id&gt;/myserver/v1/widgets/acme/92345.en.xml&lt;/id&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;updated&gt;2007-11-15T17:09:19.000Z&lt;/updated&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;published&gt;2007-11-15T17:09:19.000Z&lt;/published&gt;<br>
+&lt;published&gt;2007-11-15T17:10:19.000Z&lt;/published&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;title
 type="text"&gt;Entry: acme 92345.en&lt;/title&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;author&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;name&gt;AtomServer Atom Service&lt;/name&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/author&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;author&gt;&lt;name&gt;AtomServer APP
+Service&lt;/name&gt;&lt;/author&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
 href="/myserver/v1/widgets/acme/92345.en.xml" rel="self"/&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
@@ -662,12 +871,78 @@ id="92345" inNetwork="false"&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &lt;/deletion&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/content&gt;<br>
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;asbatch:operation
+type="delete"/&gt;</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;asbatch:status
+code="200" reason="OK"/&gt;</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;</span>&nbsp;&nbsp;&nbsp;
+&lt;/entry&gt;&nbsp;
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp; &lt;entry&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;id&gt;/atomserver/v1/widgets/acme/<span style="font-weight: bold;">23456</span>.en.xml&lt;/id&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;title
+type="text"&gt; Entry: acme 23456.en&lt;/title&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;author&gt;&lt;name&gt;AtomServer APP
+Service&lt;/name&gt;&lt;/author&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
+href="/atomserver/v1/widgets/acme/23456.en.xml" rel="self" /&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
+href="/atomserver/v1/widgets/acme/23456.en.xml/0" rel="edit" /&gt;<br>
+&nbsp;<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;asbatch:operation type="delete" /&gt;</span><br
+ style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;asbatch:status code="404" reason="Unknown Entry::
+/atomserver/v1/widgets/acme/$batch&amp;#xa;Reason:: Entry [widgets,
+acme, 23456, en] NOT FOUND" /&gt;</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;</span>&nbsp;&nbsp;&nbsp;
+&lt;/entry&gt;<br>
+&nbsp; &nbsp;&nbsp; &lt;entry
+xmlns:ha="http://atomserver.org/namespaces/atomserver/1.0/"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;id&gt;/myserver/v1/widgets/acme/<span style="font-weight: bold;">92348</span>.en.xml&lt;/id&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;updated&gt;2007-11-15T17:09:19.000Z&lt;/updated&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;published&gt;2007-11-15T17:11:19.000Z&lt;/published&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;title
+type="text"&gt;Entry: acme 92348.en&lt;/title&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;author&gt;&lt;name&gt;AtomServer APP
+Service&lt;/name&gt;&lt;/author&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
+href="/myserver/v1/widgets/acme/92348.en.xml" rel="self"/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
+href="/myserver/v1/widgets/acme/92348.en.xml/0" rel="edit"/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;content
+type="application/xml"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;property xmlns="http://schemas.atomserver.org/widgets/v1/rev0"
+systemId="acme"
+id="92348" inNetwork="false"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;contact&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&lt;contactId&gt;1533&lt;/contactId&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&lt;displayName&gt;Bryon Jacob&lt;/displayName&gt;<br>
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/contact&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/content&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;category/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;asbatch:operation
-type="delete"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;asbatch:status
-code="200" reason="OK"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp; &lt;/entry&gt;<br>
+&nbsp;<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;asbatch:operation
+type="insert"/&gt;</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;asbatch:status
+code="200" reason="OK"/&gt;</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;</span>&nbsp;&nbsp;&nbsp;
+&lt;/entry&gt;<br>
 &lt;/feed&gt;<font size="2"><br>
 </font> </div>
 <span style="font-family: monospace;"></span><span
