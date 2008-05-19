@@ -41,6 +41,15 @@ public final class AtomServerConstants {
     public static final String ENTRY_ID_LN = "entryId";
     public static final QName ENTRY_ID = new QName(ATOMSERVER_NS, ENTRY_ID_LN, ATOMSERVER_NS_PREFIX);
 
+    public static final String WORKSPACE_LN = "workspace";
+    public static final QName WORKSPACE = new QName(ATOMSERVER_NS, WORKSPACE_LN, ATOMSERVER_NS_PREFIX);
+
+    public static final String COLLECTION_LN = "collection";
+    public static final QName COLLECTION = new QName(ATOMSERVER_NS, COLLECTION_LN, ATOMSERVER_NS_PREFIX);
+
+    public static final String LOCALE_LN = "locale";
+    public static final QName LOCALE = new QName(ATOMSERVER_NS, LOCALE_LN, ATOMSERVER_NS_PREFIX);
+
     public static final String OPERATION_LN = "operation";
     public static final QName OPERATION = new QName(ATOMSERVER_BATCH_NS, OPERATION_LN, ATOMSERVER_BATCH_NS_PREFIX);
 

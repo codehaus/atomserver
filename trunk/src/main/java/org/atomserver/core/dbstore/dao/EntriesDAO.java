@@ -27,6 +27,7 @@ import org.atomserver.utils.logic.BooleanExpression;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * The DAO for accessing Entries
@@ -154,7 +155,7 @@ public interface EntriesDAO
     List<AggregateEntryMetaData> selectAggregateEntriesByPage(
             FeedDescriptor feed,
             Date lastModifiedDate,
-            int pageDelim,
+            Locale locale, int pageDelim,
             int pageSize,
             Collection<BooleanExpression<AtomCategory>> categoriesQuery);
 

@@ -19,12 +19,9 @@ import org.apache.abdera.model.Categories;
 import org.apache.abdera.model.Category;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
-import org.apache.commons.io.FileUtils;
 import org.atomserver.core.etc.AtomServerConstants;
 
 import java.io.StringWriter;
-import java.io.FileWriter;
-import java.io.File;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,8 +42,9 @@ public class AggregateFeedsDBSTest extends DBSTestCase {
     public void testAggregateFeeds() throws Exception {
         for (int i = 0; i < NUM_ENTRIES; i++) {
             String widgetId = "" + (BASE_WIDGET_ID + i);
+            Locale locale = i == 5 ? Locale.UK : Locale.US;
             createWidget("widgets", "mywidgets", widgetId,
-                         Locale.US.toString(), createWidgetXMLFileString(widgetId));
+                         locale.toString(), createWidgetXMLFileString(widgetId));
 
             String dummyId = "" + (BASE_DUMMY_ID + i);
             createWidget("dummy", "mydummies", dummyId,
@@ -67,7 +65,7 @@ public class AggregateFeedsDBSTest extends DBSTestCase {
             categories.writeTo(stringWriter);
             String categoriesXML = stringWriter.toString();
 
-            modifyEntry("tags:widgets", "mywidgets", widgetId, Locale.US.toString(),
+            modifyEntry("tags:widgets", "mywidgets", widgetId, locale.toString(),
                         categoriesXML, false, "*", false);
 
             categories = getFactory().newCategories();
@@ -160,6 +158,26 @@ public class AggregateFeedsDBSTest extends DBSTestCase {
         feed = getPage("$join/urn:myjoin?start-index=" + endIndex, 200);
         assertEquals(1, feed.getEntries().size());
 
-        endIndex = feed.getSimpleExtension(AtomServerConstants.END_INDEX);
+        feed = getPage("$join/urn:myjoin?entry-type=full&locale=en_US", 200);
+
+        assertEquals(NUM_ENTRIES - 1, feed.getEntries().size());
+
+        assertEquals(feed.getEntries().get(0).getContent(),
+                     getEntry("$join", "urn:myjoin", "" + (BASE_WIDGET_ID + 1), Locale.US.toString()).getContent());
+
+
+        feed = getPage("$join/urn:myjoin?locale=en_GB&entry-type=full", 200);
+        assertEquals(1, feed.getEntries().size());
+
+        Entry entry = getEntry("$join", "urn:myjoin", "" + (BASE_WIDGET_ID + 5), Locale.UK.toString());
+
+        assertEquals(feed.getEntries().get(0).getContent(),
+                     entry.getContent());
+
+        String url = getServerURL() +
+                     getURLPath("$join", "urn:myjoin",
+                                "" + (BASE_WIDGET_ID + 5), Locale.US.toString(), null);
+
+        clientGet(url, null, 404, true);
     }
 }

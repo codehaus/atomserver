@@ -17,17 +17,35 @@
 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:a="http://abdera.apache.org"
+       xmlns:as="http://www.atomserver.org/schema/spring/2.0"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:util="http://www.springframework.org/schema/util" 
+       xmlns:util="http://www.springframework.org/schema/util"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
                            http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
                            http://abdera.apache.org
                            http://abdera.apache.org/schemas/abdera-spring.xsd
                            http://www.springframework.org/schema/util
-                           http://www.springframework.org/schema/util/spring-util-2.0.xsd">
+                           http://www.springframework.org/schema/util/spring-util-2.0.xsd
+                           http://www.atomserver.org/schema/spring/2.0
+                           http://www.atomserver.org/schema/spring/2.0">
 
     <util:set id="org.atomserver-workspaces">
 
+<!--
+        <as:workspace name="testme" localized="true">
+            <as:validator class="blah">
+                <as:property name="foo" value="bar"/>
+            </as:validator>
+            <as:validator class="blah">
+                <as:property name="foo" value="bar"/>
+            </as:validator>
+
+
+            <as:autotagger-script>
+                NAMESPACE widgets = http://schemas.atomserver.org/widgets/v1/rev0;
+            </as:autotagger-script>
+        </as:workspace>
+-->
         <!-- WIDGETS ... for testing ONLY -->
         <bean class="org.atomserver.core.WorkspaceOptions">
             <property name="name" value="widgets"/>
@@ -36,7 +54,7 @@
             <property name="defaultContentValidator" ref="org.atomserver-simpleXMLContentValidator"/>
             <property name="defaultCategoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
             <property name="defaultProducingEntryCategoriesFeedElement" value="true"/>
-            <property name="defaultEntryIdGenerator" ref="org.atomserver-entryIdGenerator" />
+            <property name="defaultEntryIdGenerator" ref="org.atomserver-entryIdGenerator"/>
         </bean>
 
         <!-- dummy workspace is for testing ONLY -->
@@ -51,7 +69,7 @@
                               value="classpath:/widgets-1.0.rnc"/>
                 </bean>
             </property>
-            <property name="defaultEntryIdGenerator" ref="org.atomserver-entryIdGenerator" />
+            <property name="defaultEntryIdGenerator" ref="org.atomserver-entryIdGenerator"/>
             <property name="defaultCategoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
             <property name="defaultAutoTagger">
                 <bean class="org.atomserver.core.autotaggers.XPathAutoTagger">
@@ -72,6 +90,10 @@
                     MATCH "/widgets:property[@systemId='acme' and
                             (@id >= 50000)]" {urn:foo.systems}acmeALEX;
                     MATCH "/widgets:property[@systemId='whizbang']" {urn:foo.systems}whizbang;
+                    DELETE SCHEME {urn:composite};
+                    MATCH "/widgets:property" {urn:composite}$|@systemId|-$|@id|;
+                    DELETE SCHEME "/widgets:property" {urn:sys.$|@systemId|};
+                    MATCH "/widgets:property" {urn:sys.$|@systemId|}$|@id|;
                     ]]>
                         </value>
                     </property>

@@ -1005,7 +1005,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
      }
 
      //~~~~~~~~~~~~~~~~~~~~~~
-     private Entry newEntryWithCommonContentOnly(Abdera abdera, EntryDescriptor entryMetaData)
+     protected Entry newEntryWithCommonContentOnly(Abdera abdera, EntryDescriptor entryMetaData)
          throws AtomServerException {
 
          if (log.isTraceEnabled()) {
@@ -1031,13 +1031,17 @@ abstract public class AbstractAtomCollection implements AtomCollection {
          entry.addAuthor("AtomServer APP Service");
          addLinkToEntry(factory, entry, fileURI, "self");
 
-         String editURL = (revision != URIHandler.REVISION_OVERRIDE) ? (fileURI + "/" + revision) : fileURI;
-         addLinkToEntry(factory, entry, editURL, "edit");
+         addEditLink(revision, factory, entry, fileURI);
 
          entry.addSimpleExtension(AtomServerConstants.ENTRY_ID, entryId);
          
          return entry;
      }
+
+    protected void addEditLink(int revision, Factory factory, Entry entry, String fileURI) {
+        String editURL = (revision != URIHandler.REVISION_OVERRIDE) ? (fileURI + "/" + revision) : fileURI;
+        addLinkToEntry(factory, entry, editURL, "edit");
+    }
 
     //~~~~~~~~~~~~~~~~~~~~~~
      protected void addFullEntryContent(Abdera abdera, EntryDescriptor entryMetaData, Entry entry) {

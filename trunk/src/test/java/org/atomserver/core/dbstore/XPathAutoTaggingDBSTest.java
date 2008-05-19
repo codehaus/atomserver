@@ -49,17 +49,17 @@ public class XPathAutoTaggingDBSTest extends CRUDAtomServerTestCase {
             String editUri = publishAndTestVersion(
                     "/testwidget.xml", urlPath, 0,
                     Arrays.asList("green", "yellow", "purple", "blue", "DEFAULT:blue"),
-                    true,"acmeALEX");
+                    true,"acmeALEX", "167370");
 
             editUri = publishAndTestVersion(
                     "/testwidget1.xml", urlPath, 0,
                     Arrays.asList("red", "orange", "black", "brown", "DEFAULT:brown"),
-                    false,"acmeCHRIS");
+                    false,"acmeCHRIS", "2222");
 
             editUri = publishAndTestVersion(
                     "/testwidget2.xml", urlPath, 1,
                     Arrays.asList("pink", "red", "DEFAULT:red"),
-                    false, "acmeBRYON");
+                    false, "acmeBRYON", "23450");
 
             delete(editUri);
         } finally {
@@ -86,7 +86,7 @@ public class XPathAutoTaggingDBSTest extends CRUDAtomServerTestCase {
 
     private String publishAndTestVersion(String dataFileName, String urlPath, int rev,
                                          List<String> colors, boolean insert,
-                                         String system) throws Exception {
+                                         String system, String id) throws Exception {
         String xml = IOUtils.toString(getClass().getResourceAsStream(dataFileName));
         String editUri =
                 insert ?
@@ -97,8 +97,8 @@ public class XPathAutoTaggingDBSTest extends CRUDAtomServerTestCase {
         Document<Entry> doc = response.getDocument();
         List<Category> categories = doc.getRoot().getCategories();
         log.debug("******** " + categories);
-        
-        assertEquals(colors.size() + 1, categories.size());
+
+        assertEquals(colors.size() + 3, categories.size());
 
         for (Category category : categories) {
             log.debug( "SCHEME TERM = [" + category.getScheme().toString() + " "
@@ -106,6 +106,10 @@ public class XPathAutoTaggingDBSTest extends CRUDAtomServerTestCase {
 
             if ("urn:foo.systems".equals(category.getScheme().toString())) {
                 assertEquals(system, category.getTerm());
+            } else if ("urn:sys.acme".equals(category.getScheme().toString())) {
+                assertEquals(id, category.getTerm());
+            } else if ("urn:composite".equals(category.getScheme().toString())) {
+                assertEquals("acme-" + id, category.getTerm());
             } else {
                 assertEquals("urn:foo.colors", category.getScheme().toString());
                 assertTrue(colors.contains(category.getTerm()));

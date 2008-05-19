@@ -500,24 +500,33 @@ public class EntriesDAOiBatisImpl
     }
 
     public AggregateEntryMetaData selectAggregateEntry(EntryDescriptor entryDescriptor) {
-        List list = getSqlMapClientTemplate().queryForList(
-                "selectAggregateEntry",
-                paramMap()
-                        .param("collection", entryDescriptor.getCollection())
-                        .param("entryId", entryDescriptor.getEntryId()));
+        ParamMap paramMap = paramMap()
+                .param("collection", entryDescriptor.getCollection())
+                .param("entryId", entryDescriptor.getEntryId());
+        if (entryDescriptor.getLocale() != null) {
+            paramMap.param("country", entryDescriptor.getLocale().getCountry());
+            paramMap.param("language", entryDescriptor.getLocale().getLanguage());
+        }
+
         Map<String, AggregateEntryMetaData> map =
-                AggregateEntryMetaData.aggregate(entryDescriptor.getCollection(), list);
+                AggregateEntryMetaData.aggregate(
+                        entryDescriptor.getCollection(),
+                        entryDescriptor.getLocale(),
+                        getSqlMapClientTemplate().queryForList("selectAggregateEntry", paramMap));
+
         return map.get(entryDescriptor.getEntryId());
     }
 
     public List<AggregateEntryMetaData> selectAggregateEntriesByPage(
             FeedDescriptor feed,
             Date lastModifiedDate,
+            Locale locale,
             int pageDelim,
             int pageSize,
             Collection<BooleanExpression<AtomCategory>> categoriesQuery) {
         ParamMap paramMap = prepareParamMapForSelectEntries(
-                lastModifiedDate, pageDelim, pageSize, null, feed);
+                lastModifiedDate, pageDelim, pageSize,
+                locale == null ? null : locale.toString(), feed);
 
         if (categoriesQuery != null) {
             paramMap.param("categoryQuerySql",
@@ -527,7 +536,7 @@ public class EntriesDAOiBatisImpl
 
         List entries = getSqlMapClientTemplate().queryForList("selectAggregateEntriesByPage", paramMap);
         Map<String, AggregateEntryMetaData> map =
-                AggregateEntryMetaData.aggregate(feed.getCollection(), entries);
+                AggregateEntryMetaData.aggregate(feed.getCollection(), locale, entries);
         return new ArrayList(map.values());
     }
 
