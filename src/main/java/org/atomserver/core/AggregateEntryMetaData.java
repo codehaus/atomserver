@@ -40,11 +40,11 @@ public class AggregateEntryMetaData extends EntryMetaData {
     );
     private final Set<EntryCategory> categories = new HashSet<EntryCategory>();
 
-    public AggregateEntryMetaData(String collection, String entryId) {
+    public AggregateEntryMetaData(String collection, Locale locale, String entryId) {
         setWorkspace("$join");
         setCollection(collection);
         setEntryId(entryId);
-        setLocale(null);
+        setLocale(locale);
     }
 
     public void add(EntryMetaData... members) {
@@ -83,6 +83,7 @@ public class AggregateEntryMetaData extends EntryMetaData {
     }
 
     public static Map<String, AggregateEntryMetaData> aggregate(String collectionName,
+                                                                Locale locale,
                                                                 Collection<EntryMetaData> metaData) {
         HashMap<String, AggregateEntryMetaData> map = new HashMap<String, AggregateEntryMetaData>();
         for (EntryMetaData entry : metaData) {
@@ -91,7 +92,7 @@ public class AggregateEntryMetaData extends EntryMetaData {
                     AggregateEntryMetaData agg = map.get(category.getTerm());
                     if (agg == null) {
                         map.put(category.getTerm(), agg =
-                                new AggregateEntryMetaData(collectionName, category.getTerm()));
+                                new AggregateEntryMetaData(collectionName, locale, category.getTerm()));
                     }
                     agg.add(entry);
                 }

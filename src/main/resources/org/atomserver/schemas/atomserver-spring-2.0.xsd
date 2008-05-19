@@ -25,21 +25,27 @@
 
     <xsd:import namespace="http://www.springframework.org/schema/beans"/>
 
-    <xsd:element name="workspaces">
+    <xsd:element name="workspace">
         <xsd:complexType>
             <xsd:complexContent>
-                <xsd:extension base="beans:identifiedType">
+                <xsd:extension base="xsd:element">
                     <xsd:sequence>
-                        <xsd:element name="workspace" minOccurs="0" maxOccurs="unbounded">
+                        <xsd:element name="autotagger-script" minOccurs="0" maxOccurs="1"/>
+                        <xsd:element name="validator" minOccurs="0" maxOccurs="1">
                             <xsd:complexType>
                                 <xsd:complexContent>
                                     <xsd:extension base="xsd:anyType">
-                                        <xsd:attribute name="name" type="xsd:string" use="required"/>
+                                        <xsd:sequence>
+                                            <xsd:element name="property" type="beans:propertyType"/>
+                                        </xsd:sequence>
+                                        <xsd:attribute name="class" use="required"/>
                                     </xsd:extension>
                                 </xsd:complexContent>
                             </xsd:complexType>
                         </xsd:element>
                     </xsd:sequence>
+                    <xsd:attribute name="name" type="xsd:string" use="required"/>
+                    <xsd:attribute name="localized" type="xsd:boolean" default="false"/>
                 </xsd:extension>
             </xsd:complexContent>
         </xsd:complexType>

@@ -17,12 +17,10 @@
 package org.atomserver.core.dbstore;
 
 import org.apache.abdera.Abdera;
-import org.apache.abdera.util.Constants;
+import org.apache.abdera.factory.Factory;
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
-import org.apache.abdera.model.Link;
-import org.apache.abdera.model.Content;
 import static org.apache.abdera.model.Content.Type.XML;
 import org.apache.abdera.protocol.server.RequestContext;
 import org.apache.commons.logging.Log;
@@ -32,11 +30,13 @@ import org.atomserver.core.AggregateEntryMetaData;
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.WorkspaceOptions;
 import org.atomserver.core.etc.AtomServerConstants;
+import static org.atomserver.core.etc.AtomServerConstants.WORKSPACE;
+import static org.atomserver.core.etc.AtomServerConstants.COLLECTION;
+import static org.atomserver.core.etc.AtomServerConstants.LOCALE;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.uri.EntryTarget;
 import org.atomserver.uri.FeedTarget;
 
-import javax.activation.DataHandler;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -77,6 +77,7 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
                 List<AggregateEntryMetaData> list =
                         getEntriesDAO().selectAggregateEntriesByPage(feedTarget,
                                                                      new Date(ifModifiedSinceLong),
+                                                                     feedTarget.getLocaleParam(),
                                                                      feedTarget.getPageDelimParam(),
                                                                      pageSize + 1,
                                                                      feedTarget.getCategoriesQuery());
@@ -151,6 +152,29 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
                 xml = xml.replaceFirst("<[?].*[?]>", "" );
 
                 entry.setContent( xml, XML );
+            }
+
+            protected void addEditLink(int revision, Factory factory, Entry entry, String fileURI) {
+                if (revision != EntryTarget.UNDEFINED_REVISION) {
+                    super.addEditLink(revision, factory, entry, fileURI);
+                }
+            }
+
+            //~~~~~~~~~~~~~~~~~~~~~~
+            protected Entry newEntryWithCommonContentOnly(Abdera abdera,
+                                                          EntryDescriptor entryMetaData)
+                    throws AtomServerException {
+                Entry entry = super.newEntryWithCommonContentOnly(abdera, entryMetaData);
+
+                if (!(entryMetaData instanceof AggregateEntryMetaData)) {
+                    entry.addSimpleExtension(WORKSPACE, entryMetaData.getWorkspace());
+                    entry.addSimpleExtension(COLLECTION, entryMetaData.getCollection());
+                    if (entryMetaData.getLocale() != null) {
+                        entry.addSimpleExtension(LOCALE, entryMetaData.getLocale().toString());
+                    }
+                }
+
+                return entry;
             }
         };
     }

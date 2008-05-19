@@ -25,6 +25,16 @@
           FROM EntryStore entry JOIN EntryCategory cat
             ON entry.EntryStoreId = cat.EntryStoreId
          WHERE cat.scheme = #collection#
+        <!-- when looking for the set of changed aggregate entry ids, and we have been asked for a
+             localized feed, we should ONLY look at entries in the proper locale, because we
+             require there to be at least one entry in the correct locale, and we collate the
+             results with a GROUP BY below, so we are only recoring "at least one" anyways... -->
+        <isNotNull property="country">
+           AND (entry.CountryCode = #country#)
+        </isNotNull>
+        <isNotNull property="language">
+           AND (entry.LanCode = #language#)
+        </isNotNull>
       GROUP BY cat.term
         HAVING MAX(UpdateTimestamp) > #lastModifiedSeqNum#
       ORDER BY MAX(UpdateTimestamp)
@@ -52,6 +62,14 @@
                      ON modEntry.EntryId = matchedEntry.EntryId
               </isNotNull>
               )
+        <!-- if this is a localized feed, we want to pull in components that are in the proper
+             locale, as well as things that are not localized at all -->
+        <isNotNull property="country">
+           AND (entry.CountryCode = #country# OR entry.CountryCode = '**')
+        </isNotNull>
+        <isNotNull property="language">
+           AND (entry.LanCode = #language# OR entry.LanCode = '**')
+        </isNotNull>
         ORDER BY UpdateTimestamp, Scheme, Term
     </select>
 
@@ -61,6 +79,30 @@
            ON entry.EntryStoreId = joincat.EntryStoreId
           AND joincat.scheme = #collection#
           AND joincat.term = #entryId#
+       <!-- if this is a localized entry, we want to pull in things that are in the proper locale,
+            as well as things that are not localized at all -->
+       <isNotNull property="country">
+          AND (entry.CountryCode = #country# OR entry.CountryCode = '**')
+       </isNotNull>
+       <isNotNull property="language">
+          AND (entry.LanCode = #language# OR entry.LanCode = '**')
+       </isNotNull>
+       <!-- but, in the case of a localized entry, we only want to return an entry if there is at
+            least one localized component in the propert locale - this clause executes that filter
+            and causes an empty result set in that case -->
+       <isNotNull property="language">
+          AND joincat.term IN (SELECT c.term
+                                 FROM EntryCategory c JOIN EntryStore e
+                                   ON c.EntryStoreId = e.EntryStoreId
+                                WHERE c.scheme = #collection#
+                                  AND c.term = #entryId#
+                                  AND e.LanCode = #language#
+           <isNotNull property="country">
+                                  AND e.CountryCode = #country#
+           </isNotNull>
+                                GROUP BY c.term
+           )
+       </isNotNull>
     </select>
 
 </sqlMap>

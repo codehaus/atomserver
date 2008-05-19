@@ -33,7 +33,9 @@ public class WorkspaceBeanDefinitionParser
     }
 
     protected void doParse(Element element, BeanDefinitionBuilder bean) {
-        bean.addPropertyValue("name", element.getAttribute("name"));
-        bean.addPropertyValue("defaultLocalized", Boolean.valueOf(element.getAttribute("localized")));
+        bean.addPropertyValue("name",
+                              element.getAttribute("name"));
+        bean.addPropertyValue("defaultLocalized",
+                              Boolean.valueOf(element.getAttribute("localized")));
     }
 }
