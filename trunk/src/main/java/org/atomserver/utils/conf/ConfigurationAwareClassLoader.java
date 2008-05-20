@@ -17,7 +17,6 @@ package org.atomserver.utils.conf;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.atomserver.utils.hsql.HsqlBootstrapper;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -34,25 +33,34 @@ import java.util.Enumeration;
 /**
  * ConfigurationAwareClassLoader - a ClassLoader that is aware of the atomserver configuration
  * directories.
+ *
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
 public class ConfigurationAwareClassLoader
         extends URLClassLoader {
 
-    static private Log log = LogFactory.getLog( ConfigurationAwareClassLoader.class);
- 
-    public static final Properties ENV;
+    static private Log log = LogFactory.getLog(ConfigurationAwareClassLoader.class);
 
-    static {
+    private static Properties ENV = null;
+
+    private static void loadEnv() {
         ClassLoader confClassLoader = new ConfigurationAwareClassLoader(
                 ConfigurationAwareClassLoader.class.getClassLoader());
+
         ENV = new Properties();
+        String envFile = "env/" + System.getProperty("atomserver.env") + ".properties";
+        String msg = "Could not load the environment file: " + envFile;
         try {
-            ENV.load(confClassLoader.getResourceAsStream(
-                "env/" + System.getProperty("atomserver.env") + ".properties"));
+            getENV().load(confClassLoader.getResourceAsStream(envFile));
+        } catch (NullPointerException e) {
+            msg = "NullPointerException:: " + msg;
+            log.error(msg);
+            throw new RuntimeException(msg, e);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            msg = "IOException:: " + msg;
+            log.error(msg);
+            throw new RuntimeException(msg, e);
         }
     }
 
@@ -100,8 +108,8 @@ public class ConfigurationAwareClassLoader
             String conf = System.getProperty("atomserver.conf.dir");
             String opsConf = System.getProperty("atomserver.ops.conf.dir");
 
-            log.debug( "atomserver.conf.dir= " + conf );
-            log.debug( "atomserver.ops.conf.dir= " + opsConf );
+            log.debug("atomserver.conf.dir= " + conf);
+            log.debug("atomserver.ops.conf.dir= " + opsConf);
 
             // build a list of URLs
             List<URL> urls = new ArrayList<URL>();
@@ -169,5 +177,16 @@ public class ConfigurationAwareClassLoader
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static void invalidateENV() {
+        ENV = null;
+    }
+
+    public static Properties getENV() {
+        if (ENV == null) {
+            loadEnv();
+        }
+        return ENV;
     }
 }

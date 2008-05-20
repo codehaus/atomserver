@@ -45,7 +45,7 @@ public class MTFeedDBSTest extends FeedDBSTestCase {
     private static int NUM_RECS = 4;
 
     public void setUp() throws Exception {
-        if ("hsql".equals(ConfigurationAwareClassLoader.ENV.get("db.type"))) {
+        if ("hsql".equals(ConfigurationAwareClassLoader.getENV().get("db.type"))) {
             log.debug("skipping test - doesn't work in HSQL");
             return;
         }
@@ -54,7 +54,7 @@ public class MTFeedDBSTest extends FeedDBSTestCase {
     }
 
     public void tearDown() throws Exception {
-        if ("hsql".equals(ConfigurationAwareClassLoader.ENV.get("db.type"))) {
+        if ("hsql".equals(ConfigurationAwareClassLoader.getENV().get("db.type"))) {
             return;
         }
         super.tearDown();
@@ -85,7 +85,7 @@ public class MTFeedDBSTest extends FeedDBSTestCase {
     //       tests
     //---------------------
     public void testMultiThreadedFeedReads() throws Exception {
-        if ("hsql".equals(ConfigurationAwareClassLoader.ENV.get("db.type"))) {
+        if ("hsql".equals(ConfigurationAwareClassLoader.getENV().get("db.type"))) {
             return;
         }
         String wspace1 = "widgets";
@@ -116,7 +116,7 @@ public class MTFeedDBSTest extends FeedDBSTestCase {
     }
 
     public void testWriteContention() throws Exception {
-        if ("hsql".equals(ConfigurationAwareClassLoader.ENV.get("db.type"))) {
+        if ("hsql".equals(ConfigurationAwareClassLoader.getENV().get("db.type"))) {
             return;
         }
         final String workspace = "widgets";

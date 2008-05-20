@@ -23,6 +23,7 @@ import org.atomserver.uri.FeedTarget;
 import org.atomserver.uri.URIHandler;
 import org.atomserver.exceptions.BadRequestException;
 import org.atomserver.utils.AtomDate;
+import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
 import org.atomserver.testutils.client.MockRequestContext;
 import junit.framework.TestCase;
 import org.apache.abdera.protocol.server.ServiceContext;
@@ -55,9 +56,13 @@ public class EntryURIHelperTest extends TestCase {
                             "/org/atomserver/spring/storageBeans.xml",
                             "/org/atomserver/spring/logBeans.xml",
                             "/org/atomserver/spring/abderaBeans.xml"};
-        ApplicationContext springContext = new ClassPathXmlApplicationContext(configs);
-        handler = ((AbstractAtomService) springContext.getBean("org.atomserver-atomService")).getURIHandler();
-        serviceContext = (ServiceContext) springContext.getBean(CONTEXT_NAME);
+
+        ClassPathXmlApplicationContext springFactory = new ClassPathXmlApplicationContext(configs, false);
+        springFactory.setClassLoader( new ConfigurationAwareClassLoader(springFactory.getClassLoader()));
+        springFactory.refresh();
+
+        handler = ((AbstractAtomService) springFactory.getBean("org.atomserver-atomService")).getURIHandler();
+        serviceContext = (ServiceContext) springFactory.getBean(CONTEXT_NAME);
         if (serviceContext.getAbdera() == null) {
             serviceContext.init(new Abdera(), null );
         }

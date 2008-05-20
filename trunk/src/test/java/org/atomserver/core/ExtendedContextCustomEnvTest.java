@@ -19,20 +19,30 @@ package org.atomserver.core;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.atomserver.testutils.client.JettyWebAppTestCase;
+import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
 
 import java.io.File;
+import java.util.Properties;
 
 public class ExtendedContextCustomEnvTest extends JettyWebAppTestCase {
 
     String prevConfDir = null;
+    String prevOpsConfDir = null;
     String prevEnv = null;
 
     protected void setUp() throws Exception {
+        ConfigurationAwareClassLoader.invalidateENV();
+
         File confDir = new File(getClass().getClassLoader().getResource("confdir").toURI());
+
         prevConfDir = System.getProperty("atomserver.conf.dir");
+        prevOpsConfDir = System.getProperty("atomserver.ops.conf.dir");
         prevEnv = System.getProperty("atomserver.env");
+
+        System.clearProperty("atomserver.ops.conf.dir");
         System.setProperty("atomserver.conf.dir", confDir.getAbsolutePath());
         System.setProperty("atomserver.env", "custom");
+
         super.setUp();
     }
 
@@ -43,11 +53,17 @@ public class ExtendedContextCustomEnvTest extends JettyWebAppTestCase {
         } else {
             System.setProperty("atomserver.conf.dir", prevConfDir);
         }
+        if (prevOpsConfDir == null) {
+            System.clearProperty("atomserver.ops.conf.dir");
+        } else {
+            System.setProperty("atomserver.ops.conf.dir", prevOpsConfDir);
+        }
         if (prevEnv == null) {
             System.clearProperty("atomserver.env");
         } else {
             System.setProperty("atomserver.env", prevEnv);
         }
+        ConfigurationAwareClassLoader.invalidateENV();        
     }
 
     public void testExtendedContext() throws Exception {

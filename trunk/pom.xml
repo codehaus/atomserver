@@ -602,6 +602,11 @@
                         </property>
 
                         <property>
+                            <name>atomserver.ops.conf.dir</name>
+                            <value>${atomserver.ops.conf.dir}</value>
+                        </property>
+
+                        <property>
                             <name>atomserver.servlet.context</name>
                             <value>${servletContext}</value>
                         </property>
