@@ -362,7 +362,7 @@ public class XPathAutoTagger
                                 (NodeList) xPath.evaluate(subExpression,
                                                           nodeList.item(i),
                                                           XPathConstants.NODESET);
-                        values.add(subValue.item(i).getTextContent());
+                        values.add(subValue.item(0).getTextContent());
                     }
                     EntryCategory category = new EntryCategory();
                     category.setEntryStoreId(entry.getEntryStoreId());
