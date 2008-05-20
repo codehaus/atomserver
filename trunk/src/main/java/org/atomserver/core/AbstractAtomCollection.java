@@ -1061,6 +1061,16 @@ abstract public class AbstractAtomCollection implements AtomCollection {
      // Add Categories to the Entry, if a CategoriesHandler has been registered
      private void addCategoriesToEntry(Entry entry, EntryMetaData entryMetaData, Abdera abdera) {
          if ( (entryMetaData.getCategories() != null) && (entryMetaData.getCategories().size() > 0) ) {
+             Collections.sort(entryMetaData.getCategories(),
+                              new Comparator<EntryCategory>() {
+                                  public int compare(EntryCategory a, EntryCategory b) {
+                                      // compare first by scheme, then by term
+                                      int schemeCompare = a.getScheme().compareTo(b.getScheme());
+                                      return schemeCompare == 0 ?
+                                             a.getTerm().compareTo(b.getTerm()) :
+                                             schemeCompare;
+                                  }
+                              });
              for (EntryCategory entryCategory : entryMetaData.getCategories()) {
 
                  if ( (entryCategory.getScheme() == null) && (entryCategory.getTerm() == null) ) {
