@@ -25,12 +25,12 @@
             <item name="Home" href="index.html"/>
             <item name="Release Notes" href="releases.html"/>
             <item name="Downloads" href="downloads.html"/>
+            <item name="Features" href="docs/features.html"/>
             <item name="Getting Started" href="docs/getting_started.html"/>
         </menu>
 
         <menu name="The AtomServer API Docs">
             <item name="Index" href="docs/index.html"/>
-            <item name="Features" href="docs/features.html"/>
             <item name="Tech Overview" href="docs/intro.html"/>
             <item name="API Basics" href="docs/protocol_basics.html"/>
             <item name="Protocol Details" href="docs/protocol_reference.html"/>

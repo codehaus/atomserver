@@ -39,7 +39,7 @@ public class MTEntryDBSTest extends BaseCRUDDBSTestCase {
     protected String getURLPath() { return null; }
 
     public void setUp() throws Exception { 
-        if ("hsql".equals(ConfigurationAwareClassLoader.ENV.get("db.type"))) {
+        if ("hsql".equals(ConfigurationAwareClassLoader.getENV().get("db.type"))) {
             log.debug("skipping test - doesn't work in HSQL");
             return;
         }
@@ -49,7 +49,7 @@ public class MTEntryDBSTest extends BaseCRUDDBSTestCase {
     }
 
     public void tearDown() throws Exception { 
-        if ("hsql".equals(ConfigurationAwareClassLoader.ENV.get("db.type"))) {
+        if ("hsql".equals(ConfigurationAwareClassLoader.getENV().get("db.type"))) {
             return;
         }
         super.tearDown();
@@ -140,7 +140,7 @@ public class MTEntryDBSTest extends BaseCRUDDBSTestCase {
     }
     
     public void testHittingAllDifferentOnes() throws Exception {
-        if ("hsql".equals(ConfigurationAwareClassLoader.ENV.get("db.type"))) {
+        if ("hsql".equals(ConfigurationAwareClassLoader.getENV().get("db.type"))) {
             return;
         }
         String wspace1 = "widgets";
@@ -182,7 +182,7 @@ public class MTEntryDBSTest extends BaseCRUDDBSTestCase {
     static private Random random = new Random();
 
     public void testHittingTheSameOne() throws Exception {
-        if ("hsql".equals(ConfigurationAwareClassLoader.ENV.get("db.type"))) {
+        if ("hsql".equals(ConfigurationAwareClassLoader.getENV().get("db.type"))) {
             return;
         }
         String wspace = "dummy";

@@ -18,6 +18,7 @@ package org.atomserver.core;
 
 import org.atomserver.testutils.client.MockRequestContext;
 import org.atomserver.uri.URIHandler;
+import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -56,7 +57,11 @@ public class RegexTargetResolverTest extends TestCase {
                             "/org/atomserver/spring/storageBeans.xml",
                             "/org/atomserver/spring/logBeans.xml",
                             "/org/atomserver/spring/abderaBeans.xml"};
-        ApplicationContext springFactory = new ClassPathXmlApplicationContext(configs);
+
+        ClassPathXmlApplicationContext springFactory = new ClassPathXmlApplicationContext(configs, false);
+        springFactory.setClassLoader( new ConfigurationAwareClassLoader(springFactory.getClassLoader()));
+        springFactory.refresh();
+
 
         serviceContext = (ServiceContext)( springFactory.getBean( CONTEXT_NAME ) );
         if (serviceContext.getAbdera() == null) {

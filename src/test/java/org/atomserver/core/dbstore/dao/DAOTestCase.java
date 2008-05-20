@@ -22,6 +22,7 @@ import org.apache.abdera.protocol.server.ServiceContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.AtomService;
+import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
 import org.atomserver.uri.URIHandler;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -38,7 +39,7 @@ public class DAOTestCase extends TestCase {
 
     static protected String userDir = System.getProperty("user.dir");
 
-    protected ApplicationContext springFactory = null;
+    protected ClassPathXmlApplicationContext springFactory = null;
 
     protected EntriesDAO entriesDAO = null;
     protected EntryCategoriesDAO entryCategoriesDAO = null;
@@ -57,7 +58,11 @@ public class DAOTestCase extends TestCase {
                             "/org/atomserver/spring/storageBeans.xml",
                             "/org/atomserver/spring/logBeans.xml",
                             "/org/atomserver/spring/abderaBeans.xml"};
-        springFactory = new ClassPathXmlApplicationContext(configs);
+
+        springFactory = new ClassPathXmlApplicationContext(configs, false);
+        springFactory.setClassLoader( new ConfigurationAwareClassLoader(springFactory.getClassLoader()));
+        springFactory.refresh();
+
         entryURIHelper = ((AtomService) springFactory.getBean("org.atomserver-atomService")).getURIHandler();
 
         entriesDAO = (EntriesDAO) springFactory.getBean("org.atomserver-entriesDAO");

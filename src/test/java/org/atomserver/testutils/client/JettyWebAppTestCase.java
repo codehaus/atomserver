@@ -105,10 +105,10 @@ public class JettyWebAppTestCase extends TestCase {
             }
 
             if (jettySpringFactory == null) {
+                log.debug( "Loading jettySpringFactory........");
                 jettySpringFactory = new ClassPathXmlApplicationContext(configs, false);
                 jettySpringFactory.setClassLoader(
-                            new ConfigurationAwareClassLoader(
-                                    jettySpringFactory.getClassLoader()));
+                            new ConfigurationAwareClassLoader(jettySpringFactory.getClassLoader()));
                 jettySpringFactory.refresh();
             }
 

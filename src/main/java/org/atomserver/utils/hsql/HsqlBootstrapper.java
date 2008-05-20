@@ -16,6 +16,8 @@
 package org.atomserver.utils.hsql;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
 
 import java.io.File;
@@ -28,6 +30,7 @@ import java.sql.Connection;
  */
 public class HsqlBootstrapper
         implements Runnable {
+    static private Log log = LogFactory.getLog( HsqlBootstrapper.class);
 
     private static final String HSQLDB_FILE_PREFIX = "jdbc:hsqldb:file:";
     private static final String HSQL_DDL = "org/atomserver/sql/hsql/hsql_ddl.sql";
@@ -39,7 +42,9 @@ public class HsqlBootstrapper
             // make sure we only bootstrap once per VM
             if (!hasBootstrapped) {
                 // get the DB URL, and if it is a file-based DB, create the directory
-                String dbUrl = ConfigurationAwareClassLoader.ENV.getProperty("db.url");
+                String dbUrl = ConfigurationAwareClassLoader.getENV().getProperty("db.url");
+                log.debug( "db.url = " + dbUrl );
+                
                 if (dbUrl.startsWith(HSQLDB_FILE_PREFIX)) {
                     new File(dbUrl.replaceFirst(HSQLDB_FILE_PREFIX, "")).getParentFile().mkdirs();
                 }

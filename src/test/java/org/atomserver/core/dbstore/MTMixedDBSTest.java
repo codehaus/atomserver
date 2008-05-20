@@ -50,7 +50,7 @@ public class MTMixedDBSTest extends FeedDBSTestCase {
     static private int secsToRun = 15;    // 40;
 
     public void setUp() throws Exception {
-        if ("hsql".equals(ConfigurationAwareClassLoader.ENV.get("db.type"))) {
+        if ("hsql".equals(ConfigurationAwareClassLoader.getENV().get("db.type"))) {
             log.debug("skipping test - doesn't work in HSQL");
             return;
         }
@@ -67,7 +67,7 @@ public class MTMixedDBSTest extends FeedDBSTestCase {
     }
 
     public void tearDown() throws Exception {
-        if ("hsql".equals(ConfigurationAwareClassLoader.ENV.get("db.type"))) {
+        if ("hsql".equals(ConfigurationAwareClassLoader.getENV().get("db.type"))) {
             return;
         }
         super.tearDown();
@@ -122,7 +122,7 @@ public class MTMixedDBSTest extends FeedDBSTestCase {
     protected boolean requiresDBSeeding() { return false; }
 
     public void testmixedLoad() throws Exception {
-        if ("hsql".equals(ConfigurationAwareClassLoader.ENV.get("db.type"))) {
+        if ("hsql".equals(ConfigurationAwareClassLoader.getENV().get("db.type"))) {
             return;
         }
 
