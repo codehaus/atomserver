@@ -110,13 +110,10 @@
         <url>http://fisheye.codehaus.org/browse/atomserver</url>
     </scm>
 
-    <!--  TODO need to set this up somewhere
     <ciManagement>
         <system>TeamCity</system>
-        <url>???</url>
+        <url>http://managed.on.a.private.build.server</url>
     </ciManagement>
-    -->
-
 
     <!-- ======================================================================= -->
     <!-- PROPERTIES
@@ -133,6 +130,10 @@
 
         <!-- the filestore location -->
         <dataDir>file:var</dataDir>
+
+        <!-- configuration dirs -->
+        <confDir></confDir>
+        <opsConfDir></opsConfDir>
 
         <!-- JMX (jmxBeans.xml) -->
         <jmxHttpPort>50505</jmxHttpPort>
@@ -603,7 +604,11 @@
 
                         <property>
                             <name>atomserver.ops.conf.dir</name>
-                            <value>${atomserver.ops.conf.dir}</value>
+                            <value>${opsConfDir}</value>
+                        </property>
+                        <property>
+                            <name>atomserver.conf.dir</name>
+                            <value>${confDir}</value>
                         </property>
 
                         <property>
@@ -773,6 +778,15 @@
                             <name>atomserver.data.dir</name>
                             <value>${dataDir}</value>
                         </systemProperty>
+
+                        <systemProperty>
+                            <name>atomserver.ops.conf.dir</name>
+                            <value>${opsConfDir}</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <name>atomserver.conf.dir</name>
+                            <value>${confDir}</value>
+                        </systemProperty>                       
 
                         <systemProperty>
                             <name>atomserver.servlet.context</name>
