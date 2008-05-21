@@ -17,6 +17,7 @@ package org.atomserver.utils.conf;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -107,6 +108,14 @@ public class ConfigurationAwareClassLoader
             // get the two system properties
             String conf = System.getProperty("atomserver.conf.dir");
             String opsConf = System.getProperty("atomserver.ops.conf.dir");
+
+            // Maven will send us an empty string, so deal with that here
+            if (StringUtils.isEmpty(conf)) {
+                conf = null;
+            }
+            if ( StringUtils.isEmpty(opsConf)) {
+                opsConf = null;
+            }
 
             log.debug("atomserver.conf.dir= " + conf);
             log.debug("atomserver.ops.conf.dir= " + opsConf);
