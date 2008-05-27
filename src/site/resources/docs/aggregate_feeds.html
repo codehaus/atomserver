@@ -1,11 +1,8 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
+<html><head>
   <link rel="StyleSheet" href="css/style.css" type="text/css">
-  <meta content="text/html; charset=ISO-8859-1"
- http-equiv="content-type">
-  <title>AtomServer Aggregate Feeds</title>
-</head>
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+  <title>AtomServer Aggregate Feeds</title></head>
 <body class="maincontent">
 <h1><img src="images/atom-logo.gif" alt="logo">&nbsp;
 <span style="font-weight: bold;"></span>AtomServer, Aggregate Feeds</h1>
@@ -13,75 +10,29 @@
 <div class="content"><span style="font-style: italic;">Chris Berry,
 Bryon Jacob.
 Updated 05/01/08 </span><br>
-<br>
-This
-document describes some specific details about using the "Aggregate
-Feed" feature in AtomServer.<br>
-<br>
-For a further, detailed description of the actual protocol, either<br>
-<ul>
-  <li>See <a href="http://www.atomenabled.org/developers/syndication/">the
-Atom Publishing Protocol Reference</a> for further information about
-the
-elements of the feed itself. Note that we do not exhaustingly document
-this
-information ourselves,&nbsp; because we are using Atom entirely as
-dictated
-by the standard.</li>
-  <li>See <a href="atomserver_protocol_basics.html">the AtomServer
-Protocol
-Basics document </a>for general information about communicating with
-the atomserver service.<br>
-  </li>
-</ul>
-This document does <span style="font-weight: bold;">not</span> explain
-the underlying concepts behind AtomServer; REST, Atom, and OpenSearch.
-That
-information can be found in <a href="atomserver_intro.html">the
-AtomServer
-General Introduction document</a>. <span style="font-style: italic;">It
-is highly recommended that you read this document first</span>.<br>
-<br>
-Nor does this document explain the basics of XML,
-namespaces, syndicated feeds, and the <span
- style="font-family: monospace;">GET, POST, PUT</span>, and <span
- style="font-family: monospace;">DELETE</span>
-requests in HTTP, as well as HTTP's concept of a "resource." For more
-information about those things, see the <a href="#resources">Additional
-resources </a>section of
-this document.<br>
-<h2>Contents</h2>
-<ul>
-  <li>BLAH<br>
-  </li>
-  <li>Additional Resources</li>
-</ul>
-<hr style="width: 100%; height: 2px;">
-<h2><img style="width: 465px; height: 28px;" alt=""
- src="images/under-construction.gif"><br>
-</h2>
-<br>
-<hr style="width: 100%; height: 2px;">
-<h2><a name="resources"></a>Additional resources</h2>
-You may find the following third-party documents useful:<br>
-<br>
-&nbsp;&nbsp;&nbsp; * <a
- href="http://www-128.ibm.com/developerworks/xml/library/x-atom10.html">Overview
-of Atom</a> from IBM<br>
-&nbsp;&nbsp;&nbsp; * <a
- href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html">HTTP 1.1
-method definitions</a>; specification for GET, POST, PUT, and DELETE<br>
-&nbsp;&nbsp;&nbsp; * <a
- href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html">HTTP 1.1
-status code definitions</a><br>
-&nbsp;&nbsp;&nbsp; * <a
- href="http://www.atomenabled.org/developers/syndication/">Atom
-Syndication Reference</a> (from Atom-enabled)<br>
-&nbsp;&nbsp;&nbsp; * <a
- href="http://www-128.ibm.com/developerworks/library/x-atompp1/">Getting
-to know the Atom Publishing Protocol (from IBM)</a><span
- style="font-weight: bold;"></span><br>
-<br>
+<br><span style="font-weight: bold;"></span>Aggregate feeds are feeds
+of Aggregate Entries - entries that combine multiple related entries
+into a single entry. &nbsp;As an example, let's assume you have two
+feeds in your Atomserver, <span style="font-weight: bold;">cars</span> and <span style="font-weight: bold;">drivers<span style="font-weight: bold;"><span style="font-weight: bold;"></span></span></span>, with the following entries:<br><br><span style="font-weight: bold;">/cars/porsche.xml<br></span><pre><span style="font-weight: bold;">&lt;car make="Porsche" model="911"/&gt;</span></pre><span style="font-weight: bold;">/cars/neon.xml<br></span><pre><span style="font-weight: bold;">&lt;car make="Dodge" model="Neon"/&gt;</span></pre><span style="font-weight: bold;">/drivers/dad.xml<br></span><pre><span style="font-weight: bold;">&lt;driver name="dad"&gt;<br>&nbsp; &nbsp;&lt;car id="/cars/porsche.xml"/&gt;<br>&nbsp; &nbsp;&lt;car id="/cars/neon.xml"/&gt;<br>&lt;/driver&gt;</span></pre><span style="font-weight: bold;">/drivers/teen.xml<br></span><pre><span style="font-weight: bold;">&lt;driver name="teen"&gt;<br>&nbsp; &nbsp;&lt;car id="/cars/neon.xml"/&gt;<br>&lt;/driver&gt;</span></pre>Aggregate
+Feeds can be used to pull a feed of "cars with their drivers".
+&nbsp;Aggregate feeds are constructed using categories, where a unique
+category &nbsp;<span style="font-weight: bold;">scheme</span> defines an aggregate <span style="font-weight: bold;">category</span>, and each <span style="font-weight: bold;">term</span>
+in that scheme defines an aggregate entriy. &nbsp;In our example, we
+need to apply the appropriate categories to each of the entries:<br><br><span style="font-weight: bold;">/cars/smith/porsche.xml &nbsp;</span><span style="font-style: italic;">(urn:car-driver)porsche<br></span><span style="font-weight: bold;">/cars/</span><span style="font-weight: bold;">smith/</span><span style="font-weight: bold;">neon.xml &nbsp;</span><span style="font-style: italic;"><span style="font-style: italic;">(urn:car-driver)neon<br><span style="font-weight: bold;"></span></span></span><span style="font-weight: bold;"><span style="font-weight: bold;">/drivers/</span></span><span style="font-weight: bold;">smith/</span><span style="font-weight: bold;"><span style="font-weight: bold;">dad.xml</span></span> &nbsp;<span style="font-style: italic;">(urn:car-driver)porsche (urn:car-driver)neon<br></span><span style="font-weight: bold;">/drivers/</span><span style="font-weight: bold;">smith/</span><span style="font-weight: bold;">teen.xml</span><span style="font-style: italic;"> &nbsp;(urn:car-driver)neon<br><br></span>With those categories applied to the entries, there is an Aggregate Feed based on the scheme - <span style="font-weight: bold;">urn:car-driver</span>. &nbsp;The Workspace for all aggregate feeds is <span style="font-weight: bold;">$join</span>:<br><br><span style="font-weight: bold;">http://your.atomserver/$join/urn:car-driver</span><span style="font-style: italic;"><br><br><br><span style="font-style: italic;"></span></span>This
+feed would return one entry for each unique term in the urn:car-driver
+scheme, and the contents of each entry would be an &lt;aggregate&gt;
+element that contains the set of entry XMLs for the individual "real"
+entries with that category:<br><br><pre style="font-weight: bold;"><span style="font-style: italic;">&lt;feed xmlns="http://www.w3.org/2005/Atom" xmlns:as="http://atomserver.org/namespaces/1.0/"&gt;<br>&nbsp;&nbsp;&nbsp; &lt;link href="/$join/urn:car-driver?max-results=15" rel="self"/&gt;<br>&nbsp;&nbsp;&nbsp; &lt;entry&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;id&gt;/$join/urn:car-driver/porsche.xml&lt;/id&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link href="/$join/urn:car-driver/porsche.xml" rel="self"/&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;content type="application/xml"&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;aggregate xmlns="http://schemas.atomserver.org/atomserver/v1/rev0"&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;entry xmlns="http://www.w3.org/2005/Atom"&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;id&gt;/cars/smith/porsche.xml&lt;/id&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span style="font-style: italic;">&lt;link href="/cars/smith/porsche.xml" rel="self"/&gt;</span><br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;content type="application/xml"&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;car make="Porsche" model="911"/&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/content&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/entry&gt;<span style="font-style: italic;"><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;entry xmlns="http://www.w3.org/2005/Atom"&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;id&gt;/drivers/smith/dad.xml&lt;/id&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span style="font-style: italic;">&lt;link href="/</span><span style="font-style: italic;">drivers</span><span style="font-style: italic;">/smith/dad.xml" rel="self"/&gt;</span><br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;content type="application/xml"&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&lt;driver name="dad"&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;&lt;car id="/cars/porsche.xml"/&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;&lt;car id="/cars/neon.xml"/&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/driver&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/content&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/entry&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/aggregate&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &lt;/content&gt;<br>&nbsp; &nbsp; &lt;entry&gt;<span style="font-style: italic;"><br>&nbsp;&nbsp;&nbsp; &lt;entry&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;id&gt;/$join/urn:car-driver/neon.xml&lt;/id&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link href="/$join/urn:car-driver/neon.xml" rel="self"/&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;content type="application/xml"&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;aggregate xmlns="http://schemas.atomserver.org/atomserver/v1/rev0"&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;entry xmlns="http://www.w3.org/2005/Atom"&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;id&gt;/cars/smith/neon.xml&lt;/id&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span style="font-style: italic;">&lt;link href="/cars/smith/neon.xml" rel="self"/&gt;</span><br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;content type="application/xml"&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;car make="Dodge" model="neon"/&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/content&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/entry&gt;<span style="font-style: italic;"><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;entry xmlns="http://www.w3.org/2005/Atom"&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;id&gt;/drivers/smith/dad.xml&lt;/id&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span style="font-style: italic;">&lt;link href="/</span><span style="font-style: italic;">drivers</span><span style="font-style: italic;">/smith/dad.xml" rel="self"/&gt;</span><br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;content type="application/xml"&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&lt;driver name="dad"&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;&lt;car id="/cars/porsche.xml"/&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;&lt;car id="/cars/neon.xml"/&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/driver&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/content&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/entry&gt;<br><span style="font-style: italic;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;entry xmlns="http://www.w3.org/2005/Atom"&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;id&gt;/drivers/smith/teen.xml&lt;/id&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span style="font-style: italic;">&lt;link href="/</span><span style="font-style: italic;">drivers</span><span style="font-style: italic;">/smith/teen.xml" rel="self"/&gt;</span><br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;content type="application/xml"&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&lt;driver name="teen"&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;&lt;car id="/cars/neon.xml"/&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/driver&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/content&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/entry&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/aggregate&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &lt;/content&gt;<br>&nbsp; &nbsp; &lt;entry&gt;<span style="font-family: monospace;"><br></span>&lt;/feed&gt;</pre>There are several things to note about an Aggregate Feed:<span style="font-weight: bold;"><span style="font-style: italic;"><br></span></span><ul><li><span style="font-weight: bold;"><span style="font-style: italic;"></span></span>The <span style="font-weight: bold;">sequence number</span>
+for an aggregate entry is the same as the number of its child with the
+highest sequence number - the result of this is that if ANY of the
+components of an aggregate change, the aggregate will be returned the
+next time the aggregate feed is pulled.</li><li>The set of <span style="font-weight: bold;">categories</span> for an aggregate entry is the union of the categories on all its members.</li><li>Aggregate feeds can also be subject to a category search : <span style="font-weight: bold;">/$join/urn:car-driver/-/(urn:color)red</span> would pull all the aggregate entries from our feed that have the (urn:color)red category.</li><li>A <span style="font-weight: bold;">localized</span> aggregate feed can be specified in the same way as for normal feeds - like <span style="font-weight: bold;">/$join/urn:car-driver?locale=en_US</span>.
+&nbsp;A localized aggregate entry only exists if there is at least one
+of its components localized in the given locale. &nbsp;If there are no
+localized entries with an entry in the given locale for the components
+of an aggregate, then that aggregate is not returned in the feed.</li></ul>Aggregate feeds define three new elements that occur in the component entries inside an &lt;aggregate&gt; element. :<ul><li><span style="font-weight: bold;">as:workspace</span> - contains the workspace of the component entry</li><li><span style="font-weight: bold;">as:collection</span> - contains the collection of the component entry</li><li><span style="font-weight: bold;">as:locale</span> - contains the locale of the component entry (if any...)</li></ul>These, along with <span style="font-weight: bold;">as:entryId</span>
+that is present in Atomserver entries anyway, allow for consumers of
+Aggregate feeds to easily programmatically determine what kind of entry
+each component of an aggregate is. <span style="font-weight: bold;"><span style="font-style: italic;"><br></span></span><br>
 </div>
-</body>
-</html>
+</body></html>
