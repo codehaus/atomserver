@@ -1,6 +1,6 @@
 
 =======================================================
-Building hcData
+Building AtomServer
 =======================================================
 
 To build against Postgres, you *must* provide the "env" property to maven (i.e "-Denv=postgres")
