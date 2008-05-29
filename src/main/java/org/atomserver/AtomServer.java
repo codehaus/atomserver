@@ -100,7 +100,7 @@ public class AtomServer extends AbstractProvider {
     // ------------
     //   statics 
     //--------------
-    static private Log logger = LogFactory.getLog(AtomServer.class);
+    static protected Log logger = LogFactory.getLog(AtomServer.class);
     private static final Pattern BATCH_ENTRY_PATTERN = Pattern.compile("/([^/#?]+)/([^/#?]+)/\\$batch");
     private static int DEFAULT_PAGE_SIZE = 100;
 
