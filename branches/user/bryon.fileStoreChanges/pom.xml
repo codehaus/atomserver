@@ -143,8 +143,8 @@
         <rootAppender>Stdout</rootAppender>
 
         <rootLogLevel>DEBUG</rootLogLevel>
-        <!-- <logLevel>TRACE</logLevel>   -->
-        <logLevel>DEBUG</logLevel>
+         <logLevel>TRACE</logLevel>
+        <!--<logLevel>DEBUG</logLevel>-->
         <logDir>${basedir}/target</logDir>
         <logFileNamePrefix>atomserver</logFileNamePrefix>
 

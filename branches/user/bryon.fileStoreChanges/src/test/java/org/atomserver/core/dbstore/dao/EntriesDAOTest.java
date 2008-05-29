@@ -270,11 +270,11 @@ public class EntriesDAOTest extends DAOTestCase {
 
         if (contentStorage instanceof FileBasedContentStorage) {
             FileBasedContentStorage fileBasedContentStorage = (FileBasedContentStorage) contentStorage;
-            assertEquals(fileBasedContentStorage.getFileLocation(entryOut.getWorkspace(),
+            assertEquals(fileBasedContentStorage.getPhysicalRepresentation(entryOut.getWorkspace(),
                                                      entryOut.getCollection(),
                                                      entryOut.getEntryId(),
                                                      entryOut.getLocale(), 0),
-                     fileBasedContentStorage.getFileLocation(entryIn.getWorkspace(),
+                     fileBasedContentStorage.getPhysicalRepresentation(entryIn.getWorkspace(),
                                                      entryIn.getCollection(),
                                                      entryIn.getEntryId(),
                                                      entryIn.getLocale(), 0));

@@ -1,0 +1,19 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+
+    <bean id="org.atomserver-contentStorage"
+          class="org.atomserver.core.filestore.TestingContentStorage"
+          lazy-init="true">
+        <property name="storage">
+            <bean class="org.atomserver.core.filestore.FileBasedContentStorage"
+                  depends-on="org.atomserver-propertyConfigurer">
+                <constructor-arg type="java.io.File" value="${atomserver.data.dir}"/>
+                <property name="sweepToTrash" value="true"/>
+            </bean>
+        </property>
+    </bean>
+
+</beans>

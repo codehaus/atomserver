@@ -21,6 +21,8 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.apache.abdera.i18n.iri.IRI;
 import org.atomserver.core.filestore.FileBasedContentStorage;
+import org.atomserver.core.filestore.TestingContentStorage;
+import org.atomserver.testutils.conf.TestConfUtil;
 
 import java.io.File;
 
@@ -28,17 +30,24 @@ import java.io.File;
  */
 public class FileRetryDBSTest extends CRUDDBSTestCase {
 
+    private TestingContentStorage testingContentStorage = null;
+
     public static Test suite()
     { return new TestSuite( FileRetryDBSTest.class ); }
 
     public void setUp() throws Exception { 
-        super.setUp(); 
+        TestConfUtil.preSetup("fileErrorsConf");
+        super.setUp();
+
+        testingContentStorage =
+                (TestingContentStorage) getSpringFactory().getBean("org.atomserver-contentStorage");
     }
 
     public void tearDown() throws Exception { 
         super.tearDown();
-        FileBasedContentStorage.setTestingAlternatelyFailOnFileReadException( false );
-        FileBasedContentStorage.setTestingAlternatelyFailOnFileReadNull( false );
+        TestConfUtil.postTearDown();
+        testingContentStorage.setTestingAlternatelyFailOnFileReadException( false );
+        testingContentStorage.setTestingAlternatelyFailOnFileReadNull( false );
         destroyEntry( wspace, coll, id, null, false );
     }
 
@@ -77,40 +86,40 @@ public class FileRetryDBSTest extends CRUDDBSTestCase {
 
     public void testFileRetry() throws Exception {
         // Set to pass this time
-        FileBasedContentStorage.setTestingAlternatelyFailOnFileReadException( true );
+        testingContentStorage.setTestingAlternatelyFailOnFileReadException( true );
         int maxRetries = FileBasedContentStorage.getMaxRetries(); 
-        FileBasedContentStorage.setTestingAlternatelyFailOnFileReadExceptionPassCount( maxRetries );
+        testingContentStorage.setTestingAlternatelyFailOnFileReadExceptionPassCount( maxRetries );
 
         insertThenSelect( 200 );
     }
 
     public void testFileRetry2() throws Exception {
         // Set to FAIL this time
-        FileBasedContentStorage.setTestingAlternatelyFailOnFileReadException( true );
+        testingContentStorage.setTestingAlternatelyFailOnFileReadException( true );
         int maxRetries = FileBasedContentStorage.getMaxRetries(); 
-        FileBasedContentStorage.setTestingAlternatelyFailOnFileReadExceptionPassCount( maxRetries+1 );
+        testingContentStorage.setTestingAlternatelyFailOnFileReadExceptionPassCount( maxRetries+1 );
 
         insertThenSelect( 500 );
-        FileBasedContentStorage.setTestingAlternatelyFailOnFileReadExceptionPassCount( maxRetries );
+        testingContentStorage.setTestingAlternatelyFailOnFileReadExceptionPassCount( maxRetries );
     }
 
     public void testFileRetry3() throws Exception {
         // Set to pass this time
-        FileBasedContentStorage.setTestingAlternatelyFailOnFileReadNull( true );
+        testingContentStorage.setTestingAlternatelyFailOnFileReadNull( true );
         int maxRetries = FileBasedContentStorage.getMaxRetries(); 
-        FileBasedContentStorage.setTestingAlternatelyFailOnFileReadNullPassCount( maxRetries );
+        testingContentStorage.setTestingAlternatelyFailOnFileReadNullPassCount( maxRetries );
 
         insertThenSelect( 200 );
     }
 
     public void testFileRetry4() throws Exception {
         // Set to FAIL this time
-        FileBasedContentStorage.setTestingAlternatelyFailOnFileReadNull( true );
+        testingContentStorage.setTestingAlternatelyFailOnFileReadNull( true );
         int maxRetries = FileBasedContentStorage.getMaxRetries(); 
-        FileBasedContentStorage.setTestingAlternatelyFailOnFileReadNullPassCount( maxRetries+1 );
+        testingContentStorage.setTestingAlternatelyFailOnFileReadNullPassCount( maxRetries+1 );
 
         insertThenSelect( 500 );
-        FileBasedContentStorage.setTestingAlternatelyFailOnFileReadNullPassCount( maxRetries );
+        testingContentStorage.setTestingAlternatelyFailOnFileReadNullPassCount( maxRetries );
     }
     
     void insertThenSelect( int expectedResult ) throws Exception { 

@@ -25,6 +25,9 @@ import org.apache.abdera.protocol.client.AbderaClient;
 import org.apache.abdera.protocol.client.ClientResponse;
 import org.apache.abdera.protocol.client.RequestOptions;
 import org.atomserver.core.filestore.FileBasedContentStorage;
+import org.atomserver.core.filestore.TestingContentStorage;
+import org.atomserver.testutils.conf.TestConfUtil;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.io.File;
 
@@ -32,19 +35,25 @@ import java.io.File;
  */
 public class TxnDBSTest extends CRUDDBSTestCase {
 
+    private TestingContentStorage testingContentStorage = null;
+
     public static Test suite()
     { return new TestSuite( TxnDBSTest.class ); }
 
-    public void setUp() throws Exception { 
-        super.setUp(); 
-        //FileBasedContentStorage.setTestingDeleteBackupsOnExit( false );
-        FileBasedContentStorage.setTestingAlternatelyFailOnPut( true );
+    public void setUp() throws Exception {
+        TestConfUtil.preSetup("fileErrorsConf");
+        super.setUp();
+
+        testingContentStorage =
+                (TestingContentStorage) getSpringFactory().getBean("org.atomserver-contentStorage");
+        testingContentStorage.setTestingAlternatelyFailOnPut( true );
     }
 
-    public void tearDown() throws Exception { 
+    public void tearDown() throws Exception {
         super.tearDown();
-        //FileBasedContentStorage.setTestingDeleteBackupsOnExit( true );
-        FileBasedContentStorage.setTestingAlternatelyFailOnPut( false );
+        TestConfUtil.postTearDown();
+
+        testingContentStorage.setTestingAlternatelyFailOnPut( false );
         destroyEntry( wspace, coll, id, null, false );
     }
 

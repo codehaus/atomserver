@@ -22,6 +22,7 @@ import junit.framework.TestSuite;
 import org.apache.abdera.model.*;
 import org.apache.abdera.protocol.client.ClientResponse;
 import org.atomserver.core.AtomServerTestCase;
+import org.atomserver.testutils.conf.TestConfUtil;
 
 import java.io.File;
 import java.util.Date;
@@ -35,22 +36,14 @@ public class FilestoreTest extends AtomServerTestCase {
     public static Test suite()
     { return new TestSuite( FilestoreTest.class ); }
 
-    private String prevConfDir;
-
     public void setUp() throws Exception {
-        File confDir = new File(getClass().getClassLoader().getResource("filestore-conf").toURI());
-        prevConfDir = System.getProperty("atomserver.conf.dir");
-        System.setProperty("atomserver.conf.dir", confDir.getAbsolutePath());
+        TestConfUtil.preSetup("filestore-conf");
         super.setUp();
     }
 
     public void tearDown() throws Exception {
         super.tearDown();
-        if (prevConfDir == null) {
-            System.clearProperty("atomserver.conf.dir");
-        } else {
-            System.setProperty("atomserver.conf.dir", prevConfDir);
-        }
+        TestConfUtil.postTearDown();
     }
 
 
