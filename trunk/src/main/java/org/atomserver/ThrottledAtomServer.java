@@ -112,8 +112,10 @@ public class ThrottledAtomServer extends AtomServer {
             // InterruptedException - if the current thread was interrupted while waiting               
             // Re-assert the thread's interrupted status
             Thread.currentThread().interrupt();
-            futureTask.cancel(true);
 
+            futureTask.cancel(true);
+            logger.error( e );
+            return this.servererror( abdera, request, "InterruptedException occurred:: " + e.getCause(), e );
         } catch (ExecutionException e) {
             // ExecutionException - if the computation threw an exception
             // Because all Exception handling is done in the supre class; AtomServer, we shoudl never get this
