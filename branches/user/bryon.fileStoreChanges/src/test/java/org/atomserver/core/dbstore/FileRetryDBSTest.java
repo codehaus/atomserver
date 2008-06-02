@@ -87,7 +87,7 @@ public class FileRetryDBSTest extends CRUDDBSTestCase {
     public void testFileRetry() throws Exception {
         // Set to pass this time
         testingContentStorage.setTestingAlternatelyFailOnFileReadException( true );
-        int maxRetries = FileBasedContentStorage.getMaxRetries(); 
+        int maxRetries = FileBasedContentStorage.MAX_RETRIES;
         testingContentStorage.setTestingAlternatelyFailOnFileReadExceptionPassCount( maxRetries );
 
         insertThenSelect( 200 );
@@ -96,7 +96,7 @@ public class FileRetryDBSTest extends CRUDDBSTestCase {
     public void testFileRetry2() throws Exception {
         // Set to FAIL this time
         testingContentStorage.setTestingAlternatelyFailOnFileReadException( true );
-        int maxRetries = FileBasedContentStorage.getMaxRetries(); 
+        int maxRetries = FileBasedContentStorage.MAX_RETRIES;
         testingContentStorage.setTestingAlternatelyFailOnFileReadExceptionPassCount( maxRetries+1 );
 
         insertThenSelect( 500 );
@@ -106,7 +106,7 @@ public class FileRetryDBSTest extends CRUDDBSTestCase {
     public void testFileRetry3() throws Exception {
         // Set to pass this time
         testingContentStorage.setTestingAlternatelyFailOnFileReadNull( true );
-        int maxRetries = FileBasedContentStorage.getMaxRetries(); 
+        int maxRetries = FileBasedContentStorage.MAX_RETRIES;
         testingContentStorage.setTestingAlternatelyFailOnFileReadNullPassCount( maxRetries );
 
         insertThenSelect( 200 );
@@ -115,7 +115,7 @@ public class FileRetryDBSTest extends CRUDDBSTestCase {
     public void testFileRetry4() throws Exception {
         // Set to FAIL this time
         testingContentStorage.setTestingAlternatelyFailOnFileReadNull( true );
-        int maxRetries = FileBasedContentStorage.getMaxRetries(); 
+        int maxRetries = FileBasedContentStorage.MAX_RETRIES;
         testingContentStorage.setTestingAlternatelyFailOnFileReadNullPassCount( maxRetries+1 );
 
         insertThenSelect( 500 );

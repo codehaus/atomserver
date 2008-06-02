@@ -57,8 +57,11 @@ public class FileBasedContentStorage implements ContentStorage {
     public static final int MAX_RETRIES = 3;
     public static final int SLEEP_BETWEEN_RETRY = 750;
 
-    static private final Pattern FILE_PATH_PATTERN =
-        Pattern.compile("/?(\\w+)/(\\w+)/\\w+/(\\w+)/?((?:\\w+)?(?:/\\w+)?)/\\w+\\.xml.r(\\d+)");
+    private static final Pattern FILE_PATH_WORKSPACE_COLLECTION_PATTERN =
+            Pattern.compile("^/?(\\w+)/(\\w+)/.*$");
+
+    private static final Pattern FILE_PATH_LOCALE_REV_PATTERN =
+            Pattern.compile("^/?((?:[a-z]{2})?(?:/[A-Z]{2})?)/\\w+\\.xml.r(\\d+)$");
 
     static public final String TRASH_DIR_NAME = "_trash";
 
@@ -74,11 +77,6 @@ public class FileBasedContentStorage implements ContentStorage {
     private PartitionPathGenerator partitionPathGenerator = new PrefixPartitionPathGenerator();
 
     private int sweepToTrashLagTimeSecs = SWEEP_TO_TRASH_LAG_TIME_SECS_DEFAULT;
-
-    //============================================
-    static public int getMaxRetries() {
-        return MAX_RETRIES;
-    }
 
     //=========================
     // The following methods are for testing purposes ONLY
@@ -279,6 +277,8 @@ public class FileBasedContentStorage implements ContentStorage {
      * seen with NFS file systems, where a GET that closely follows a PUT (within a second) may incorrectly
      * report that the file does not exist, resulting in a 500 Error. We now retry MAX_RETRIES times,
      * sleeping SLEEP_BETWEEN_RETRY ms between each attempt
+     *
+     * TODO: per Chris, we may be able to simplify this and remove the retries, because we never overwrite the same file multiple times anymore.
      */
     public String getContent(EntryDescriptor descriptor) {
 
@@ -613,32 +613,31 @@ public class FileBasedContentStorage implements ContentStorage {
         String relativePath = filePath.replace(rootPath, "");
         if ( log.isDebugEnabled() )
             log.debug("relative path = " + relativePath);
-        Matcher matcher = FILE_PATH_PATTERN.matcher(relativePath);
-
-        if ( matcher.matches() ) {
+        Matcher matcher =
+                FILE_PATH_WORKSPACE_COLLECTION_PATTERN.matcher(relativePath);
+        if (matcher.matches()) {
             String workspace = matcher.group(1);
             String collection = matcher.group(2);
-            String entryId = matcher.group(3);
-            Locale locale = StringUtils.isEmpty(matcher.group(4))
-                            ? null
-                            : LocaleUtils.toLocale(matcher.group(4).replace('/', '_'));
-            if ( matcher.group(5) == null ) {
-                String msg = "Revision is not specified for file= " + file;
-                log.error( msg );
-                throw new AtomServerException( msg );
-            }
+            File collectionRoot = pathFromRoot(workspace, collection);
+            PartitionPathGenerator.ReverseMatch match = partitionPathGenerator.reverseMatch(collectionRoot, file);
+            String entryId = match.getSeed();
+            Matcher localeRevMatcher = FILE_PATH_LOCALE_REV_PATTERN.matcher(match.getRest());
+            Locale locale;
             int revision;
-            try { revision = Integer.parseInt(matcher.group(5)); }
-            catch ( NumberFormatException ee ) {
-               String msg = "Could not parse revision from file= " + file;
-               log.error( msg );
-               throw new AtomServerException( msg );
+            if (localeRevMatcher.matches()) {
+                locale = StringUtils.isEmpty(localeRevMatcher.group(1)) ?
+                         null :
+                         LocaleUtils.toLocale(localeRevMatcher.group(1).replace("/", "_"));
+                try { revision = Integer.parseInt(localeRevMatcher.group(2)); }
+                catch ( NumberFormatException ee ) {
+                   String msg = "Could not parse revision from file= " + file;
+                   log.error( msg );
+                   throw new AtomServerException( msg );
+                }
+                return new BaseEntryDescriptor( workspace, collection, entryId, locale, revision );
             }
-            return new BaseEntryDescriptor( workspace, collection, entryId, locale, revision );
-
-        } else {
-            return null;
         }
+            return null;
     }
 
     private File pathFromRoot(String... parts) {
@@ -718,6 +717,10 @@ public class FileBasedContentStorage implements ContentStorage {
             log.error( "Error when cleaning up dir [" + baseDir + "] when writing file (" + thisRev + ")", e );
         }
     }
+
+
+
+    
 
     private List<PartitionPathGenerator> partitionPathGenerators;
 

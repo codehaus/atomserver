@@ -2,7 +2,6 @@
 =======================================================
 Building AtomServer
 =======================================================
-
 To build against Postgres, you *must* provide the "env" property to maven (i.e "-Denv=postgres")
 env  is the atomserver environment to use. It controls which environment properties file to use. (default=dev)
            These files live at src/main/resources/env. And follow the naming convention {env}.properties
