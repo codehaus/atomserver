@@ -26,25 +26,26 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.ContentStorage;
 import org.atomserver.EntryDescriptor;
-import org.atomserver.utils.PartitionPathGenerator;
-import org.atomserver.utils.PrefixPartitionPathGenerator;
 import org.atomserver.core.BaseEntryDescriptor;
 import org.atomserver.exceptions.AtomServerException;
-import org.springframework.jmx.export.annotation.ManagedResource;
+import org.atomserver.utils.PartitionPathGenerator;
+import org.atomserver.utils.PrefixPartitionPathGenerator;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
+import org.springframework.jmx.export.annotation.ManagedResource;
 
 import java.io.*;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * File-based implementation of physical storage for entries.
+ *
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
@@ -83,14 +84,17 @@ public class FileBasedContentStorage implements ContentStorage {
     private boolean successfulAvailabiltyFileWrite = false;
 
     public void testingResetNFSTempFile() {
-        setNFSTempFile( (new File(rootDirAbsPath)) );
+        setNFSTempFile((new File(rootDirAbsPath)));
     }
+
     public File testingGetNFSTempFile() {
         return nfsTempFile;
     }
-    public void testingSetRootDirAbsPath( String rootDirAbsPath ) {
+
+    public void testingSetRootDirAbsPath(String rootDirAbsPath) {
         this.rootDirAbsPath = rootDirAbsPath;
     }
+
     public boolean testingWroteAvailabiltyFile() {
         return successfulAvailabiltyFileWrite;
     }
@@ -104,23 +108,23 @@ public class FileBasedContentStorage implements ContentStorage {
         File rootDir = getRootDir();
 
         // we must actually write a file, because we may have "disk is full" problems
-        writeTestFile( rootDir );
+        writeTestFile(rootDir);
     }
 
     private static byte[] testBytes = new byte[1024];
 
-    private void writeTestFile( File dir ){
+    private void writeTestFile(File dir) {
         File testFile = null;
         try {
-            testFile= File.createTempFile("testFS", ".txt", dir);
+            testFile = File.createTempFile("testFS", ".txt", dir);
             successfulAvailabiltyFileWrite = false;
             FileUtils.writeByteArrayToFile(testFile, testBytes);
             FileUtils.forceDelete(testFile);
             successfulAvailabiltyFileWrite = true;
-        } catch ( IOException e ) {
+        } catch (IOException e) {
             String msg = "An IOException occured while writing the testFile; " + String.valueOf(testFile);
-            log.error( msg );
-            throw new AtomServerException( msg, e );
+            log.error(msg);
+            throw new AtomServerException(msg, e);
         }
     }
 
@@ -130,16 +134,16 @@ public class FileBasedContentStorage implements ContentStorage {
     public File getRootDir() {
         File rootDir = new File(rootDirAbsPath);
 
-        if (!( rootDir.exists() && rootDir.canRead() && rootDir.isDirectory())) {
-            String msg = "The root data directory (" + rootDirAbsPath + ") does NOT exist, or is NOT readable" ;
-            log.error( msg );
-            throw new AtomServerException( msg );
+        if (!(rootDir.exists() && rootDir.canRead() && rootDir.isDirectory())) {
+            String msg = "The root data directory (" + rootDirAbsPath + ") does NOT exist, or is NOT readable";
+            log.error(msg);
+            throw new AtomServerException(msg);
         }
-        if ( !nfsTempFile.exists() ) {
+        if (!nfsTempFile.exists()) {
             String msg = "The NFS tempfile - which indicates that NFS is still up -- is missing (in "
-                + rootDirAbsPath + ")" + "\n NFS is DOWN" ;
-            log.error( msg );
-            throw new AtomServerException( msg );
+                         + rootDirAbsPath + ")" + "\n NFS is DOWN";
+            log.error(msg);
+            throw new AtomServerException(msg);
         }
         return rootDir;
     }
@@ -148,30 +152,32 @@ public class FileBasedContentStorage implements ContentStorage {
         this.partitionPathGenerator = partitionPathGenerator;
     }
 
-    /** We should NEVER keep the real File around for rootDir.
+    /**
+     * We should NEVER keep the real File around for rootDir.
      * This is because we use NFS (at least in PRD) so there is the very real
      * possibility that the rootDir could vanish. Thus, we MUST recreate the File
      * every time we use it. This way we can recover without requiring a restart.
-     *
+     * <p/>
      * Also, along these lines, we create a temporary file at the rootDir, and then check
      * for its existence. If it vanishes, then NFS has vanished. And it'll be there when it comes back...
+     *
      * @param rootDir the root directory where our content storage lives
      */
-    private void initializeRootDir( File rootDir ) {
+    private void initializeRootDir(File rootDir) {
         rootDir.mkdirs();
         this.rootDirAbsPath = rootDir.getAbsolutePath();
-        setNFSTempFile( rootDir );
+        setNFSTempFile(rootDir);
     }
 
-    private void setNFSTempFile( File rootDir ) {
+    private void setNFSTempFile(File rootDir) {
         try {
-            this.nfsTempFile = File.createTempFile( "NFS-indicator-", ".tmp", rootDir );
+            this.nfsTempFile = File.createTempFile("NFS-indicator-", ".tmp", rootDir);
             this.nfsTempFile.deleteOnExit();
-        } catch ( IOException ee ) {
+        } catch (IOException ee) {
             String msg = "The NFS tempfile - which indicates that NFS is still up -- cannot be created (in "
-                + rootDirAbsPath + ")";
-            log.error( msg );
-            throw new AtomServerException( msg, ee );
+                         + rootDirAbsPath + ")";
+            log.error(msg);
+            throw new AtomServerException(msg, ee);
         }
     }
 
@@ -202,7 +208,7 @@ public class FileBasedContentStorage implements ContentStorage {
     /**
      * {@inheritDoc}
      */
-    public boolean workspaceExists( String workspace ) {
+    public boolean workspaceExists(String workspace) {
         File workspaceDir = pathFromRoot(workspace);
         return (workspaceDir.exists() && workspaceDir.isDirectory());
     }
@@ -218,17 +224,18 @@ public class FileBasedContentStorage implements ContentStorage {
     /**
      * {@inheritDoc}
      */
-    public void createCollection( String workspace, String collection ) {
-        if ( collectionExists( workspace, collection ) )
+    public void createCollection(String workspace, String collection) {
+        if (collectionExists(workspace, collection)) {
             return;
+        }
         File collectionDir = pathFromRoot(workspace, collection);
         try {
-            collectionDir.mkdirs() ;
+            collectionDir.mkdirs();
         } catch (SecurityException e) {
             String msg = "collection " + workspace + "/" + collection +
-                " does not exist and could not be created.";
+                         " does not exist and could not be created.";
             log.error(msg, e);
-            throw new AtomServerException( msg, e );
+            throw new AtomServerException(msg, e);
         }
     }
 
@@ -239,16 +246,17 @@ public class FileBasedContentStorage implements ContentStorage {
      * @param rootDir the root directory for the file-based store
      *                this is the dir at which you would find the workspaces (e.g. "widgets")
      */
-    public FileBasedContentStorage( File rootDir) {
+    public FileBasedContentStorage(File rootDir) {
         // set up the root directory
-        initializeRootDir( rootDir );
+        initializeRootDir(rootDir);
     }
 
     // Used by IOC container to enable/disable sweeping excess revisions to a separate trash dir
     @ManagedAttribute
-    public void setSweepToTrash( boolean sweepToTrash ) {
+    public void setSweepToTrash(boolean sweepToTrash) {
         this.sweepToTrash = sweepToTrash;
     }
+
     @ManagedAttribute
     public boolean getSweepToTrash() {
         return sweepToTrash;
@@ -260,6 +268,7 @@ public class FileBasedContentStorage implements ContentStorage {
     public void setSweepToTrashLagTimeSecs(int sweepToTrashLagTimeSecs) {
         this.sweepToTrashLagTimeSecs = sweepToTrashLagTimeSecs;
     }
+
     @ManagedAttribute
     public int getSweepToTrashLagTimeSecs() {
         return sweepToTrashLagTimeSecs;
@@ -272,17 +281,17 @@ public class FileBasedContentStorage implements ContentStorage {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * We have added retries to the getContent() method. This addresses a problem we have
      * seen with NFS file systems, where a GET that closely follows a PUT (within a second) may incorrectly
      * report that the file does not exist, resulting in a 500 Error. We now retry MAX_RETRIES times,
      * sleeping SLEEP_BETWEEN_RETRY ms between each attempt
-     *
+     * <p/>
      * TODO: per Chris, we may be able to simplify this and remove the retries, because we never overwrite the same file multiple times anymore.
      */
     public String getContent(EntryDescriptor descriptor) {
 
-        if ( descriptor.getRevision() == EntryDescriptor.UNDEFINED_REVISION )  {
+        if (descriptor.getRevision() == EntryDescriptor.UNDEFINED_REVISION) {
             String msg = "The revision number is UNDEFINED when attempting to GET the XML file for "
                          + descriptor;
             log.error(msg);
@@ -294,7 +303,7 @@ public class FileBasedContentStorage implements ContentStorage {
         boolean finished = false;
         IOException exceptionThrown = null;
 
-        while ( !finished && (retries < MAX_RETRIES) ) {
+        while (!finished && (retries < MAX_RETRIES)) {
             result = null;
             exceptionThrown = null;
             try {
@@ -303,30 +312,30 @@ public class FileBasedContentStorage implements ContentStorage {
                                             descriptor.getEntryId(),
                                             descriptor.getLocale(),
                                             descriptor.getRevision());
-                if ( file == null ) {
-                    log.warn( "getFileLocation() returned NULL getting XML data for entry::  " + descriptor );
+                if (file == null) {
+                    log.warn("getFileLocation() returned NULL getting XML data for entry::  " + descriptor);
                 } else {
                     result = FileUtils.readFileToString(file, "UTF-8");
                 }
-            } catch ( IOException ioe ) {
-                log.warn( "IOException getting XML data for entry " + descriptor + " Caused by " +  ioe.getMessage() );
+            } catch (IOException ioe) {
+                log.warn("IOException getting XML data for entry " + descriptor + " Caused by " + ioe.getMessage());
                 exceptionThrown = ioe;
             }
 
-            if ( (exceptionThrown == null) && (result != null) ) {
+            if ((exceptionThrown == null) && (result != null)) {
                 finished = true;
             } else {
-                try { Thread.sleep( SLEEP_BETWEEN_RETRY ); }
-                catch( InterruptedException ee ) {
+                try { Thread.sleep(SLEEP_BETWEEN_RETRY); }
+                catch (InterruptedException ee) {
                     // never interrupted
                 }
                 retries++;
             }
         }
 
-        if ( exceptionThrown != null ) {
+        if (exceptionThrown != null) {
             String msg = MessageFormat.format("IOException getting XML data for entry {0} :: Reason {1}",
-                                              descriptor, exceptionThrown.getMessage() );
+                                              descriptor, exceptionThrown.getMessage());
             log.error(msg, exceptionThrown);
             throw new AtomServerException(msg, exceptionThrown);
         }
@@ -339,7 +348,7 @@ public class FileBasedContentStorage implements ContentStorage {
      */
     public void putContent(String entryXml, EntryDescriptor descriptor) {
 
-        if ( descriptor.getRevision() == EntryDescriptor.UNDEFINED_REVISION )  {
+        if (descriptor.getRevision() == EntryDescriptor.UNDEFINED_REVISION) {
             String msg = "The revision number is UNDEFINED when attempting to PUT the XML file for "
                          + descriptor;
             log.error(msg);
@@ -351,21 +360,21 @@ public class FileBasedContentStorage implements ContentStorage {
             // compute the filename
             xmlFile = convertToFile(descriptor, true);
 
-            if ( log.isTraceEnabled() ){
-                log.trace( "Preparing to write XML file:: "+ descriptor + " XML file:: " + xmlFile );
+            if (log.isTraceEnabled()) {
+                log.trace("Preparing to write XML file:: " + descriptor + " XML file:: " + xmlFile);
             }
 
             // marshall the entry to that file
-            FileUtils.writeStringToFile( xmlFile, entryXml, UTF_8 );
+            FileUtils.writeStringToFile(xmlFile, entryXml, UTF_8);
 
             // move ANY files except the just created  revision to "_trash" dir
             // NOTE: cleanupExcessFiles will NOT throw any Exceptions
-            cleanupExcessFiles( xmlFile, descriptor );
+            cleanupExcessFiles(xmlFile, descriptor);
 
-        } catch ( Exception ee ) {
+        } catch (Exception ee) {
             String errmsg = MessageFormat.format("Exception putting XML data for entry {0}   Reason:: {1}",
                                                  descriptor, ee.getMessage());
-            if ( xmlFile != null && xmlFile.exists() ) {
+            if (xmlFile != null && xmlFile.exists()) {
                 errmsg += "\n!!!!!!!!! WARNING !!!!!!!! The file (" + xmlFile + ") exists BUT the write FAILED";
             }
             log.error(errmsg, ee);
@@ -391,37 +400,39 @@ public class FileBasedContentStorage implements ContentStorage {
      * {@inheritDoc}
      */
     public void revisionChangedWithoutContentChanging(EntryDescriptor descriptor) {
-        File fileSansRevision = convertToFileSansRevision( descriptor );
+        File fileSansRevision = convertToFileSansRevision(descriptor);
 
         int revision = descriptor.getRevision();
-        File newFile = createRevisionFile( fileSansRevision, revision );
+        File newFile = createRevisionFile(fileSansRevision, revision);
 
 
         int lastRev = revision - 1;
-        if ( log.isTraceEnabled() )
-           log.trace( "revision= " + revision );
-        if ( lastRev < 0 ) {
+        if (log.isTraceEnabled()) {
+            log.trace("revision= " + revision);
+        }
+        if (lastRev < 0) {
             String msg = "Last revision is 0 or less, which should NOT be possible (" + descriptor + ")";
-            log.error( msg );
-            throw new AtomServerException( msg );
+            log.error(msg);
+            throw new AtomServerException(msg);
         }
 
-        File prevFile = createRevisionFile( fileSansRevision, lastRev );
+        File prevFile = createRevisionFile(fileSansRevision, lastRev);
 
-        if ( !(prevFile.exists()) ) {
+        if (!(prevFile.exists())) {
             String msg = "Last revision file does NOT exist [" + prevFile + "] (" + descriptor + ")";
-            log.error( msg );
-            throw new AtomServerException( msg );
+            log.error(msg);
+            throw new AtomServerException(msg);
         }
 
         try {
-            if ( log.isTraceEnabled() )
-               log.trace( "COPYING previous file = " + prevFile + " to " + newFile );
+            if (log.isTraceEnabled()) {
+                log.trace("COPYING previous file = " + prevFile + " to " + newFile);
+            }
 
             FileUtils.copyFile(prevFile, newFile);
 
             // move ANY files except the just created  revision to "_trash" dir
-            cleanupExcessFiles( newFile, descriptor );
+            cleanupExcessFiles(newFile, descriptor);
 
         } catch (IOException e) {
             log.error("ERROR COPYING TO FILE! (" + prevFile + ")", e);
@@ -433,10 +444,11 @@ public class FileBasedContentStorage implements ContentStorage {
      * {@inheritDoc}
      */
     public void deleteContent(String deletedContentXml, EntryDescriptor descriptor) {
-        if ( deletedContentXml == null )
+        if (deletedContentXml == null) {
             convertToFile(descriptor, false).delete();
-        else
-            putContent( deletedContentXml, descriptor );
+        } else {
+            putContent(deletedContentXml, descriptor);
+        }
     }
 
     public void obliterateContent(EntryDescriptor descriptor) {
@@ -470,20 +482,20 @@ public class FileBasedContentStorage implements ContentStorage {
                                     descriptor.getCollection(),
                                     descriptor.getEntryId(),
                                     descriptor.getLocale(),
-                                    descriptor.getRevision() );
+                                    descriptor.getRevision());
         return file == null ? 0L : file.lastModified();
     }
 
     private File convertToFile(EntryDescriptor descriptor, boolean mkdirs) {
-        File fileSansRevision = convertToFileSansRevision( descriptor, mkdirs );
-        return createRevisionFile( fileSansRevision,  descriptor.getRevision() );
+        File fileSansRevision = convertToFileSansRevision(descriptor, mkdirs);
+        return createRevisionFile(fileSansRevision, descriptor.getRevision());
     }
 
-    private File convertToFileSansRevision( EntryDescriptor descriptor) {
-        return convertToFileSansRevision( descriptor, false );
+    private File convertToFileSansRevision(EntryDescriptor descriptor) {
+        return convertToFileSansRevision(descriptor, false);
     }
 
-    private File convertToFileSansRevision( EntryDescriptor descriptor, boolean mkdirs) {
+    private File convertToFileSansRevision(EntryDescriptor descriptor, boolean mkdirs) {
         String entryId = descriptor.getEntryId();
 
         // figure out the specific directory on disk where the file should be written
@@ -493,18 +505,18 @@ public class FileBasedContentStorage implements ContentStorage {
         if (mkdirs) {
             dir.mkdirs();
         }
-        return new File(dir, getFileName( entryId, NO_REVISION )  );
+        return new File(dir, getFileName(entryId, NO_REVISION));
     }
 
-    private File createRevisionFile( File fileSansRevision,  int revision ) {
-        String newFileName =  fileSansRevision.getAbsolutePath() + ".r" + revision;
-        return new File( newFileName  );
+    private File createRevisionFile(File fileSansRevision, int revision) {
+        String newFileName = fileSansRevision.getAbsolutePath() + ".r" + revision;
+        return new File(newFileName);
     }
 
-    private String getFileName( String entryId, int revision ) {
+    private String getFileName(String entryId, int revision) {
         String fileName = entryId + ".xml";
-        if ( revision != NO_REVISION ) {
-           fileName += ".r" + revision;
+        if (revision != NO_REVISION) {
+            fileName += ".r" + revision;
         }
         return fileName;
     }
@@ -522,10 +534,10 @@ public class FileBasedContentStorage implements ContentStorage {
     }
 
     private File getFileLocation(String workspace,
-                                String collection,
-                                String entryId,
-                                Locale locale,
-                                int revision) {
+                                 String collection,
+                                 String entryId,
+                                 Locale locale,
+                                 int revision) {
         // figure out the collection dir and the most specific dir (based on locale) where the
         // entry might be written
         File dir = getLocaleDirectory(workspace, collection, entryId, locale);
@@ -533,27 +545,29 @@ public class FileBasedContentStorage implements ContentStorage {
         File systemDir = pathFromRoot(workspace, collection);
 
         // find the location of the entry file, walking backwards down the locale tree if needed
-        if ( log.isDebugEnabled() )
+        if (log.isDebugEnabled()) {
             log.debug(MessageFormat.format("looking for entry {0} in {1}, rooted at {2}, revision {3}",
-                                            entryId, dir, systemDir, revision));
+                                           entryId, dir, systemDir, revision));
+        }
 
-        String fileName = getFileName( entryId, revision );
+        String fileName = getFileName(entryId, revision);
         File xmlFile;
-        if ( dir.exists() ) {
-            xmlFile = new File( dir, fileName );
-            if ( ! xmlFile.exists() ) {
+        if (dir.exists()) {
+            xmlFile = new File(dir, fileName);
+            if (!xmlFile.exists()) {
                 xmlFile = null;
-                if ( revision != -1 ) {
-                    log.warn( "The file (" + fileName + ") does NOT exist in directory:: " + dir );
+                if (revision != -1) {
+                    log.warn("The file (" + fileName + ") does NOT exist in directory:: " + dir);
                 }
             }
         } else {
             xmlFile = null;
-            log.warn( "The directory:: " + dir + " does NOT exist. Could NOT locate file= " + fileName );
+            log.warn("The directory:: " + dir + " does NOT exist. Could NOT locate file= " + fileName);
         }
 
-        if ( log.isDebugEnabled() )
+        if (log.isDebugEnabled()) {
             log.debug(MessageFormat.format("Found entry file: {0}", xmlFile));
+        }
         return xmlFile;
     }
 
@@ -599,20 +613,23 @@ public class FileBasedContentStorage implements ContentStorage {
                              String entryId) {
         return new File(
                 partitionPathGenerator.generatePath(
-                        pathFromRoot(workspace,  collection), entryId),
+                        pathFromRoot(workspace, collection), entryId),
                 entryId);
     }
 
     private EntryDescriptor getMetaDataFromFilePath(File file) {
         String filePath = file.getAbsolutePath();
-        if ( log.isDebugEnabled() )
+        if (log.isDebugEnabled()) {
             log.debug("file path = " + filePath);
+        }
         String rootPath = getRootDir().getAbsolutePath();
-        if ( log.isDebugEnabled() )
+        if (log.isDebugEnabled()) {
             log.debug("root path = " + rootPath);
+        }
         String relativePath = filePath.replace(rootPath, "");
-        if ( log.isDebugEnabled() )
+        if (log.isDebugEnabled()) {
             log.debug("relative path = " + relativePath);
+        }
         Matcher matcher =
                 FILE_PATH_WORKSPACE_COLLECTION_PATTERN.matcher(relativePath);
         if (matcher.matches()) {
@@ -629,15 +646,15 @@ public class FileBasedContentStorage implements ContentStorage {
                          null :
                          LocaleUtils.toLocale(localeRevMatcher.group(1).replace("/", "_"));
                 try { revision = Integer.parseInt(localeRevMatcher.group(2)); }
-                catch ( NumberFormatException ee ) {
-                   String msg = "Could not parse revision from file= " + file;
-                   log.error( msg );
-                   throw new AtomServerException( msg );
+                catch (NumberFormatException ee) {
+                    String msg = "Could not parse revision from file= " + file;
+                    log.error(msg);
+                    throw new AtomServerException(msg);
                 }
-                return new BaseEntryDescriptor( workspace, collection, entryId, locale, revision );
+                return new BaseEntryDescriptor(workspace, collection, entryId, locale, revision);
             }
         }
-            return null;
+        return null;
     }
 
     private File pathFromRoot(String... parts) {
@@ -653,19 +670,20 @@ public class FileBasedContentStorage implements ContentStorage {
      * The trash dir is meant to be cleaned up by some external process.
      * NOTE: this method does not throw an Exception. Instead, it simply logs errors and moves on.
      *
-     * @param thisRev the file pointint at the current revision
+     * @param thisRev    the file pointint at the current revision
      * @param descriptor the entry that relates to the content
      */
-    private void cleanupExcessFiles( final File thisRev, final EntryDescriptor descriptor ) {
+    private void cleanupExcessFiles(final File thisRev, final EntryDescriptor descriptor) {
 
-        if ( !sweepToTrash ) {
+        if (!sweepToTrash) {
             return;
         }
 
-        String fullPath = FilenameUtils.getFullPath( thisRev.getAbsolutePath() );
-        File baseDir = new File( fullPath );
-        if ( log.isTraceEnabled() )
-            log.trace("cleaning up excess files at " + baseDir + " based on " + thisRev );
+        String fullPath = FilenameUtils.getFullPath(thisRev.getAbsolutePath());
+        File baseDir = new File(fullPath);
+        if (log.isTraceEnabled()) {
+            log.trace("cleaning up excess files at " + baseDir + " based on " + thisRev);
+        }
 
         try {
             // get a file pointer at the file we just wrote, and the one for the prev rev
@@ -688,7 +706,7 @@ public class FileBasedContentStorage implements ContentStorage {
                            !fileToCheck.isHidden() &&
                            !thisRev.equals(fileToCheck) &&
                            (oneRevBack == null || !oneRevBack.equals(fileToCheck)) &&
-                           ((System.currentTimeMillis() - fileToCheck.lastModified()) > sweepToTrashLagTimeSecs*1000L );
+                           ((System.currentTimeMillis() - fileToCheck.lastModified()) > sweepToTrashLagTimeSecs * 1000L);
 
                 }
             });
@@ -698,29 +716,26 @@ public class FileBasedContentStorage implements ContentStorage {
 
                 // first of all, there needs to be a "_trash" subdirectory,
                 // so we make sure that exists
-                File trashDir = new File( baseDir, TRASH_DIR_NAME);
+                File trashDir = new File(baseDir, TRASH_DIR_NAME);
                 trashDir.mkdirs();
 
                 // and move the files into it
                 for (File file : toDelete) {
                     File moveTo = new File(trashDir, file.getName());
-                    if ( !file.renameTo( moveTo ) ) {
-                        throw new IOException( "When cleaning up excess revisions, could not move the file ("
-                                               + file + ") to (" + moveTo + ")");
+                    if (!file.renameTo(moveTo)) {
+                        throw new IOException("When cleaning up excess revisions, could not move the file ("
+                                              + file + ") to (" + moveTo + ")");
                     }
                 }
-           }
+            }
         }
         catch (Exception e) {
             // if there was any exception in the move (including the one we might have just thrown
             // above) then we should log it
-            log.error( "Error when cleaning up dir [" + baseDir + "] when writing file (" + thisRev + ")", e );
+            log.error("Error when cleaning up dir [" + baseDir + "] when writing file (" + thisRev + ")", e);
         }
     }
 
-
-
-    
 
     private List<PartitionPathGenerator> partitionPathGenerators;
 
