@@ -60,6 +60,6 @@ public class NonLocalizedEntriesDBSTest extends DBSTestCase {
         for (int propId = 40000; propId < 40004; propId++) {
             deleteEntry("dummy", "acme", String.valueOf(propId), null);
         }
-        FileUtils.deleteDirectory(new File("var/dummy/acme"));
+        FileUtils.deleteDirectory(new File(TEST_DATA_DIR + "/dummy/acme"));
     }
 }

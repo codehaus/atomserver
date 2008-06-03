@@ -63,10 +63,10 @@ public class PostDBSTest extends CRUDDBSTestCase {
 
     protected String getPropfileBase() {
         if ( currentLocale == null ) {
-            return userdir + "/var/" + getCurrentWorkspace() + "/acme/" + getCurrentEntryId().substring(0,2) +
+            return TEST_DATA_DIR + "/" + getCurrentWorkspace() + "/acme/" + getCurrentEntryId().substring(0,2) +
                    "/" + getCurrentEntryId() + "/" + getCurrentEntryId() + ".xml";
         } else {
-            return userdir + "/var/" + getCurrentWorkspace() + "/acme/" + getCurrentEntryId().substring(0,2) +
+            return TEST_DATA_DIR + "/" + getCurrentWorkspace() + "/acme/" + getCurrentEntryId().substring(0,2) +
                    "/" + getCurrentEntryId() + "/" + getCurrentLocale() + "/" +
                    getCurrentEntryId() + ".xml";            
         }

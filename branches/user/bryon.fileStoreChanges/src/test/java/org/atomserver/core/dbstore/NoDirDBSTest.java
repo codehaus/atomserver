@@ -48,8 +48,8 @@ public class NoDirDBSTest extends CRUDDBSTestCase {
         String fullURL = getServerURL() + urlPath;
         String id = urlPath;
 
-        File blahDir = new File(userdir + "/var/widgets/" + collection);
-        File pfile = new File(userdir + "/var/widgets/" + collection + "/12/12345/en/12345.xml.r0");
+        File blahDir = new File(TEST_DATA_DIR + "/widgets/" + collection);
+        File pfile = new File(TEST_DATA_DIR + "/widgets/" + collection + "/12/12345/en/12345.xml.r0");
         assertFalse(blahDir.exists());
         assertFalse(pfile.exists());
 

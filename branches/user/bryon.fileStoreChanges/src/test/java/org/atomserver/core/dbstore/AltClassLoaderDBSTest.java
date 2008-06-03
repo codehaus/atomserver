@@ -64,7 +64,7 @@ public class AltClassLoaderDBSTest extends CRUDDBSTestCase {
     }
 
     protected File getPropfile() {
-        File propFile = new File(userdir + "/var/" + wspace + "/" + coll + "/34/34567/34567.xml");
+        File propFile = new File(TEST_DATA_DIR + "/" + wspace + "/" + coll + "/34/34567/34567.xml");
         return propFile;
     }
 

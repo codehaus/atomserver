@@ -79,7 +79,7 @@ abstract public class CRUDDBSTestCase extends BaseCRUDDBSTestCase {
     }
 
     protected String getPropfileBase() {
-        return userdir + "/var/widgets/acme/12/12345/en/12345.xml";
+        return TEST_DATA_DIR + "/widgets/acme/12/12345/en/12345.xml";
     }
 
 }

@@ -54,7 +54,7 @@ public class TagsCRUDDBSTest extends CRUDDBSTestCase {
     protected String getURLPath() { return "tags:widgets/acme/642.en.xml"; }
 
     protected String getPropfileBase() {
-        return (userdir + "/var/widgets/acme/64/642/en/642.xml");
+        return (TEST_DATA_DIR + "/widgets/acme/64/642/en/642.xml");
      }
 
     protected File getPropfile() {

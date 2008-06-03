@@ -27,6 +27,7 @@ import org.apache.abdera.protocol.client.ClientResponse;
 import org.apache.abdera.protocol.client.RequestOptions;
 import org.apache.commons.io.FileUtils;
 import org.atomserver.testutils.client.JettyWebAppTestCase;
+import org.atomserver.core.AtomServerTestCase;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -51,17 +52,18 @@ public class BlogServiceTest extends JettyWebAppTestCase {
     }
 
     public void setUp() throws Exception {
+
+        File file = new File(getClass().getResource("/testentries/var").toURI());
+        FileUtils.copyDirectory(file, AtomServerTestCase.TEST_DATA_DIR);
+
         super.setUp();
     }
 
     public void tearDown() throws Exception {
         super.tearDown();
-        // delete the files produced during the tests
-        File blogsABCdir = new File(userdir + "/var/blogs/abc");
-        java.util.Collection files = FileUtils.listFiles(blogsABCdir, null, false);
-        for (Object obj : files) {
-            ((File) obj).delete();
-        }
+
+//        FileUtils.deleteDirectory(AtomServerTestCase.TEST_DATA_DIR);
+
         // have to give the file system a chance to catch up
         System.out.println("SLEEPING FOR 1 sec to give linux a chance to delete some testutils files");
         Thread.sleep(1000);

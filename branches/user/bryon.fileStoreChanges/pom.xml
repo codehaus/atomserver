@@ -129,7 +129,7 @@
         <servletMapping>v1</servletMapping>
 
         <!-- the filestore location -->
-        <dataDir>file:var</dataDir>
+        <dataDir>file:target/var</dataDir>
 
         <!-- configuration dirs -->
         <confDir></confDir>

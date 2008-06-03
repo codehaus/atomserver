@@ -90,7 +90,7 @@ public class CRUDFSTest extends CRUDAtomServerTestCase {
     }
 
     protected File getPropfile() {
-        return new File(userdir + "/var/widgets/acme/12/12345/en/12345.xml");
+        return new File(TEST_DATA_DIR + "/widgets/acme/12/12345/en/12345.xml");
     }
 
     // --------------------

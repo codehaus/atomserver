@@ -92,8 +92,8 @@ public class RawClientDBSTest extends JettyWebAppTestCase {
             log.error( "%%%%%%%%%%%%%%%%%%%%%%%%%% Could not find " + entryIRI + " to delete" );
         }
 
-        deleteTestFile( userDir + "/var/widgets/foobar",
-                        userDir + "/var/widgets/foobar/24/24560/en/24560.xml" );
+        deleteTestFile( userDir + "/target/var/widgets/foobar",
+                        userDir + "/target/var/widgets/foobar/24/24560/en/24560.xml" );
     }
 
     private String getServerRoot()

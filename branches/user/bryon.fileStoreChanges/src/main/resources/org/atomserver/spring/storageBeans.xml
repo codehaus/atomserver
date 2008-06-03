@@ -34,16 +34,6 @@
         <property name="sweepToTrash" value="true"/>
     </bean>
 
-<!--
-    <bean id="org.atomserver-dbContentStorage"
-          class="org.atomserver.core.dbstore.DBBasedContentStorage"
-          lazy-init="true"
-          depends-on="org.atomserver-propertyConfigurer">
-        <property name="contentDAO" ref="org.atomserver-contentDAO"/>
-        <property name="entriesDAO" ref="org.atomserver-entriesDAO"/>
-    </bean>
--->
-
     <bean id="org.atomserver-entryCategoriesContentStorage"
           class="org.atomserver.core.dbstore.EntryCategoriesContentStorage"
           depends-on="org.atomserver-propertyConfigurer"

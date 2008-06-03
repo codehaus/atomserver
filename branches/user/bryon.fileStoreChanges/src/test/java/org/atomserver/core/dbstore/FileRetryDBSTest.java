@@ -72,7 +72,7 @@ public class FileRetryDBSTest extends CRUDDBSTestCase {
     }
 
     protected String getPropfileBase() {
-        return (userdir + "/var/" + wspace + "/" + coll + "/54/54321/54321.xml");
+        return (TEST_DATA_DIR + "/" + wspace + "/" + coll + "/54/54321/54321.xml");
     }
 
     protected File getPropfile() {

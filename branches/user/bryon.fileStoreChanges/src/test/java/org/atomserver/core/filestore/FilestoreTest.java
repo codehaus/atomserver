@@ -104,7 +104,7 @@ public class FilestoreTest extends AtomServerTestCase {
     public void XXXtestReadFeedSince() throws Exception {
         Date now = new Date();
         long lnow = now.getTime();
-        File touchFile = new File( userdir + "/var/widgets/acme/27/2788/en/2788.xml.r0" );
+        File touchFile = new File( TEST_DATA_DIR + "/widgets/acme/27/2788/en/2788.xml.r0" );
         long origLastModified = touchFile.lastModified();
         touchFile.setLastModified( lnow );
 
@@ -135,7 +135,7 @@ public class FilestoreTest extends AtomServerTestCase {
     public void XXXtestGetEntrySincePasses() throws Exception {
         Date now = new Date();
         long lnow = now.getTime();
-        File touchFile = new File( userdir + "/var/widgets/acme/99/9999/en/9999.xml.r0" );
+        File touchFile = new File( TEST_DATA_DIR + "/widgets/acme/99/9999/en/9999.xml.r0" );
         long origLastModified = touchFile.lastModified();
         touchFile.setLastModified( lnow );
 
@@ -152,7 +152,7 @@ public class FilestoreTest extends AtomServerTestCase {
     public void XXXtestGetEntrySinceFails() throws Exception {
         Date now = new Date();
         long lnow = now.getTime();
-        File touchFile = new File( userdir + "/var/widgets/acme/99/9999/en/9999.xml.r0" );
+        File touchFile = new File( TEST_DATA_DIR + "/widgets/acme/99/9999/en/9999.xml.r0" );
         long origLastModified = touchFile.lastModified();
         touchFile.setLastModified( lnow - 10000 );
 

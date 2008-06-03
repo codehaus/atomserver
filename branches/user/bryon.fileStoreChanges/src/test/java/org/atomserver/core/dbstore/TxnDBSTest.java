@@ -78,7 +78,7 @@ public class TxnDBSTest extends CRUDDBSTestCase {
     }
 
     protected String getPropfileBase() {
-        return (userdir + "/var/" + wspace + "/" + coll + "/12/12345/12345.xml");
+        return (TEST_DATA_DIR + "/" + wspace + "/" + coll + "/12/12345/12345.xml");
     }
 
     protected File getPropfile() {
@@ -140,11 +140,7 @@ public class TxnDBSTest extends CRUDDBSTestCase {
         File file = getPropfile();
         assertTrue( file.exists() );
 
-        /*
-        File bakFile = new File(userdir + "/var/" + wspace + "/" + coll + "/12/12345/12345.xml.r0");
-        assertFalse( bakFile.exists() );
-        */
-        File newFile = new File(userdir + "/var/" + wspace + "/" + coll + "/12/12345/12345.xml.r1");
+        File newFile = new File(TEST_DATA_DIR + "/" + wspace + "/" + coll + "/12/12345/12345.xml.r1");
         assertTrue( !newFile.exists() ); 
 
     }
