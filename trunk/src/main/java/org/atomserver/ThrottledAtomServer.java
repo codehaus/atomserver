@@ -113,22 +113,32 @@ public class ThrottledAtomServer extends AtomServer {
             // Re-assert the thread's interrupted status
             Thread.currentThread().interrupt();
 
-            futureTask.cancel(true);
-            logger.error( e );
+            logger.error( "InterruptedException in executePooledTask: Cause= " + e.getCause() + 
+                          " Message= " + e.getMessage(), e );
             return this.servererror( abdera, request, "InterruptedException occurred:: " + e.getCause(), e );
         } catch (ExecutionException e) {
             // ExecutionException - if the computation threw an exception
-            // Because all Exception handling is done in the supre class; AtomServer, we shoudl never get this
-            logger.error( e );
+            // Because all Exception handling is done in the super class; AtomServer, we should never get this
+            logger.error( "ExecutionException in executePooledTask: Cause= " + e.getCause() +
+                          " Message= " + e.getMessage(), e );
             return this.servererror( abdera, request, "ExecutionException occurred:: " + e.getCause(), e );
         } catch (TimeoutException e) {
             //  TimeoutException - if the wait timed out
-            logger.error( e );
+            logger.error( "TimeoutException in executePooledTask: Cause= " + e.getCause() +
+                          " Message= " + e.getMessage(), e );
             return this.servererror( abdera, request, "TimeoutException occurred:: " + e.getCause(), e );
         } catch (Exception e) {
-            logger.error( e );
+            logger.error( "Unknown Exception in executePooledTask: Cause= " + e.getCause() +
+                          " Message= " + e.getMessage(), e );
             return this.servererror( abdera, request, "Unknown Exception occurred:: " + e.getCause(), e );
+
+        } finally {
+            // Best practice is to cancel tasks whose result is no longer needed
+            // NOTE; task.cancel() is harmless if the task has already completed
+            // Interrupt if running...
+            futureTask.cancel(true);
         }
+
         return response;
     }
 
