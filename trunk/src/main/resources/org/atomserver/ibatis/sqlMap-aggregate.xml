@@ -24,6 +24,10 @@
                cat.term as EntryId
           FROM EntryStore entry JOIN EntryCategory cat
             ON entry.EntryStoreId = cat.EntryStoreId
+        <isNotNull property="categoryQuerySql">
+            INNER JOIN ( $categoryQuerySql$ ) matchedEntry
+               ON cat.term = matchedEntry.EntryId
+        </isNotNull>
          WHERE cat.scheme = #collection#
         <!-- when looking for the set of changed aggregate entry ids, and we have been asked for a
              localized feed, we should ONLY look at entries in the proper locale, because we
@@ -52,15 +56,7 @@
            ON entry.EntryStoreId = joincat.EntryStoreId
           AND joincat.scheme = #collection#
           AND joincat.term IN (
-              <isNull property="categoryQuerySql">
                 <include refid="SELECT_modifiedAggregateEntryIds"/>
-              </isNull>
-              <isNotNull property="categoryQuerySql">
-                 SELECT modEntry.EntryId
-                   FROM ( <include refid="SELECT_modifiedAggregateEntryIds"/> ) modEntry
-                  INNER JOIN ( $categoryQuerySql$ ) matchedEntry
-                     ON modEntry.EntryId = matchedEntry.EntryId
-              </isNotNull>
               )
         <!-- if this is a localized feed, we want to pull in components that are in the proper
              locale, as well as things that are not localized at all -->
