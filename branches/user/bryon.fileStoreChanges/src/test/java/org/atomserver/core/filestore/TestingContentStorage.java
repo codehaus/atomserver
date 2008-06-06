@@ -1,9 +1,7 @@
 package org.atomserver.core.filestore;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.atomserver.ContentStorageWrapper;
 import org.atomserver.EntryDescriptor;
 import org.atomserver.exceptions.AtomServerException;
 import org.springframework.jmx.export.annotation.ManagedResource;
@@ -11,11 +9,8 @@ import org.springframework.jmx.export.annotation.ManagedAttribute;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.Locale;
 
 @ManagedResource(description = "Testing Content Storage")
-// TODO: make this extend FBCS, not wrap - refactor so that getContent code is *really* tested.
 public class TestingContentStorage extends FileBasedContentStorage {
 
     private static final Log log = LogFactory.getLog(TestingContentStorage.class);

@@ -504,23 +504,29 @@ public class FileBasedContentStorage implements ContentStorage {
             String workspace = matcher.group(1);
             String collection = matcher.group(2);
             File collectionRoot = pathFromRoot(workspace, collection);
-            // TODO: got to fix this BEFORE promoting this branch - Chris -- do NOT let this through a code read! (BRYON)
-            PartitionPathGenerator.ReverseMatch match = partitionPathGenerators.get(0).reverseMatch(collectionRoot, file);
-            String entryId = match.getSeed();
-            Matcher localeRevMatcher = FILE_PATH_LOCALE_REV_PATTERN.matcher(match.getRest());
-            Locale locale;
-            int revision;
-            if (localeRevMatcher.matches()) {
-                locale = StringUtils.isEmpty(localeRevMatcher.group(1)) ?
-                         null :
-                         LocaleUtils.toLocale(localeRevMatcher.group(1).replace("/", "_"));
-                try { revision = Integer.parseInt(localeRevMatcher.group(2)); }
-                catch (NumberFormatException ee) {
-                    String msg = "Could not parse revision from file= " + file;
-                    log.error(msg);
-                    throw new AtomServerException(msg);
+
+            for (PartitionPathGenerator pathGenerator : partitionPathGenerators) {
+                PartitionPathGenerator.ReverseMatch match =
+                        pathGenerator.reverseMatch(collectionRoot, file);
+                if (match != null) {
+                    String entryId = match.getSeed();
+                    Matcher localeRevMatcher =
+                            FILE_PATH_LOCALE_REV_PATTERN.matcher(match.getRest());
+                    Locale locale;
+                    int revision;
+                    if (localeRevMatcher.matches()) {
+                        locale = StringUtils.isEmpty(localeRevMatcher.group(1)) ?
+                                 null :
+                                 LocaleUtils.toLocale(localeRevMatcher.group(1).replace("/", "_"));
+                        try { revision = Integer.parseInt(localeRevMatcher.group(2)); }
+                        catch (NumberFormatException ee) {
+                            String msg = "Could not parse revision from file= " + file;
+                            log.error(msg);
+                            throw new AtomServerException(msg);
+                        }
+                        return new BaseEntryDescriptor(workspace, collection, entryId, locale, revision);
+                    }
                 }
-                return new BaseEntryDescriptor(workspace, collection, entryId, locale, revision);
             }
         }
         return null;
