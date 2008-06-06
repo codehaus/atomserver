@@ -26,12 +26,15 @@ import org.apache.abdera.protocol.client.AbderaClient;
 import org.apache.abdera.protocol.client.ClientResponse;
 import org.apache.abdera.protocol.client.RequestOptions;
 import org.atomserver.core.filestore.FileBasedContentStorage;
+import org.atomserver.core.filestore.TestingContentStorage;
 import org.atomserver.core.etc.AtomServerConstants;
+import org.atomserver.utils.PartitionPathGenerator;
 
 import javax.xml.namespace.QName;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.util.Locale;
 
 /**
  */
@@ -54,12 +57,11 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
     public void tearDown() throws Exception {
         super.tearDown();
 
-        String propFileBase = getPropfileBase();
         if ( contentStorage instanceof FileBasedContentStorage) {
             // the test; runTest() can create revs 0 thru 5
-            for ( int ii = 0 ; ii < 6; ii++ ) {
-                File pFile = new File( propFileBase + ".r" + ii);
-                if (pFile.exists())
+            for ( int revision = 0 ; revision < 6; revision++ ) {
+                File pFile = getEntryFile(revision);
+                if (pFile != null && pFile.exists())
                    pFile.delete();
             }
          }
@@ -73,8 +75,29 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         this.currentEntryId = currentEntryId;
     }
 
-    protected File getPropfile() { return null; }
-    protected String getPropfileBase() { return null; }
+    protected File getPropfile() throws Exception { return null; }
+
+    protected File getEntryFile(int revision) throws Exception {
+        return null;
+    }
+
+    protected File getEntryFile(String workspace,
+                                String collection,
+                                String entryId,
+                                Locale locale,
+                                boolean gzipped,
+                                int revision) 
+            throws Exception {
+        FileBasedContentStorage contentStorage = (FileBasedContentStorage)this.contentStorage;
+//                (FileBasedContentStorage) getSpringFactory().getBean("org.atomserver-contentStorage");
+        PartitionPathGenerator pathGenerator = contentStorage.getPartitionPathGenerators().get(0);
+        log.debug("PATH GENERATOR CLASS : " + pathGenerator.getClass());
+        return contentStorage.generateEntryFilePath(
+                new BaseEntryDescriptor(workspace, collection, entryId, locale),
+                pathGenerator,
+                gzipped,
+                revision);
+    }
 
     protected String getFileXMLInsert() {
         String fileXMLInsert =
@@ -165,7 +188,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
 
         log.debug( "########################################## editURI = " + editURI );
         if (  shouldCheckFile && contentStorage instanceof FileBasedContentStorage) {
-            File propFile = new File( getPropfileBase() + ".r0" );
+            File propFile = getEntryFile(0);
             assertNotNull( propFile );
             log.debug("propFile " + propFile);
             assertTrue(propFile.exists());
@@ -191,7 +214,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         editURI = update(id, updateURL, getFileXMLUpdate(), allowsAny);
         log.debug( "########################################## editURI = " + editURI );
         if (  shouldCheckFile && contentStorage instanceof FileBasedContentStorage) {
-            File propFile = new File( getPropfileBase() + ".r1" );
+            File propFile = getEntryFile(1);
             assertNotNull( propFile );
             log.debug("propfile= " + propFile);
             assertTrue(propFile.exists());
@@ -215,7 +238,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         editURI = delete(deleteURL);
         log.debug( "########################################## editURI = " + editURI );
         if (  shouldCheckFile && contentStorage instanceof FileBasedContentStorage) {
-            File propFile = new File( getPropfileBase() + ".r2" );
+            File propFile = getEntryFile(2);
             assertNotNull( propFile );
             log.debug("propfile= " + propFile);
             assertTrue(propFile.exists());

@@ -46,9 +46,6 @@ public class AltClassLoaderDBSTest extends CRUDDBSTestCase {
     protected String getStoreName() 
     { return "org.atomserver-atomService"; }
 
-    protected boolean requiresDBSeeding() 
-    { return false; }
-
     private String wspace = "dummy"; 
     private String coll = "dumber"; 
     private String id = "34567"; 

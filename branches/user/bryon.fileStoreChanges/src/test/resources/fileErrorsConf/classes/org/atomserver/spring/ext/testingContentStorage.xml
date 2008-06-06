@@ -7,12 +7,14 @@
     <bean id="org.atomserver-contentStorage"
           class="org.atomserver.core.filestore.TestingContentStorage"
           lazy-init="true">
-        <property name="storage">
-            <bean class="org.atomserver.core.filestore.FileBasedContentStorage"
-                  depends-on="org.atomserver-propertyConfigurer">
-                <constructor-arg type="java.io.File" value="${atomserver.data.dir}"/>
-                <property name="sweepToTrash" value="true"/>
-            </bean>
+        <constructor-arg type="java.io.File" value="${atomserver.data.dir}"/>
+        <property name="sweepToTrash" value="true"/>
+        <property name="gzipEnabled" value="true"/>
+        <property name="partitionPathGenerators">
+            <list>
+                <bean class="org.atomserver.utils.ShardedPathGenerator"/>
+                <bean class="org.atomserver.utils.PrefixPartitionPathGenerator"/>
+            </list>
         </property>
     </bean>
 

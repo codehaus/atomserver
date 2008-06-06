@@ -41,9 +41,8 @@ public class PhysicalStorageTest extends TestCase {
         File root = new File(System.getProperty("java.io.tmpdir"), "storage");
 
         try {
-            FileBasedContentStorage fileBasedStorage = new FileBasedContentStorage(root);
-            TestingContentStorage storage = new TestingContentStorage();
-            storage.setStorage(fileBasedStorage);
+            TestingContentStorage fileBasedStorage = new TestingContentStorage(root);
+            TestingContentStorage storage = fileBasedStorage;
             storage.setTestingFailOnGet(false);
             
             assertEquals(root, fileBasedStorage.getRootDir());

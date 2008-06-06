@@ -23,10 +23,14 @@ import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.protocol.client.ClientResponse;
+import org.atomserver.core.filestore.FileBasedContentStorage;
+import org.atomserver.utils.ShardedPathGenerator;
+import org.atomserver.utils.PrefixPartitionPathGenerator;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 
 /**
  * testutils DB in/out.
@@ -35,12 +39,6 @@ public class InOutDBSTest extends CRUDDBSTestCase {
 
     public static Test suite()
     { return new TestSuite( InOutDBSTest.class ); }
-
-    public void setUp() throws Exception
-    { super.setUp(); }
-
-    public void tearDown() throws Exception
-    { super.tearDown(); }
 
     protected boolean requiresDBSeeding() { return true; }
 

@@ -25,6 +25,7 @@ import org.atomserver.core.filestore.TestingContentStorage;
 import org.atomserver.testutils.conf.TestConfUtil;
 
 import java.io.File;
+import java.util.Locale;
 
 /**
  */
@@ -54,10 +55,7 @@ public class FileRetryDBSTest extends CRUDDBSTestCase {
     protected String getStoreName() 
     { return "org.atomserver-atomService"; }
 
-    protected boolean requiresDBSeeding() 
-    { return false; }
-
-    private String wspace = "dummy"; 
+    private String wspace = "dummy";
     private String coll = "dumber"; 
     private String id = "54321"; 
     
@@ -75,9 +73,8 @@ public class FileRetryDBSTest extends CRUDDBSTestCase {
         return (TEST_DATA_DIR + "/" + wspace + "/" + coll + "/54/54321/54321.xml");
     }
 
-    protected File getPropfile() {
-        File propFile = new File( getPropfileBase() + ".r0");
-        return propFile;
+    protected File getEntryFile(int revision) throws Exception {
+        return getEntryFile(wspace, coll, "54321", null, true, revision);
     }
 
     // --------------------

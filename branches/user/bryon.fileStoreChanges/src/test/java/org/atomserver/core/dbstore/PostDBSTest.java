@@ -30,6 +30,7 @@ import org.atomserver.core.filestore.FileBasedContentStorage;
 import org.atomserver.utils.locale.LocaleUtils;
 
 import java.io.File;
+import java.util.Locale;
 
 /**
  */
@@ -68,8 +69,14 @@ public class PostDBSTest extends CRUDDBSTestCase {
         } else {
             return TEST_DATA_DIR + "/" + getCurrentWorkspace() + "/acme/" + getCurrentEntryId().substring(0,2) +
                    "/" + getCurrentEntryId() + "/" + getCurrentLocale() + "/" +
-                   getCurrentEntryId() + ".xml";            
+                   getCurrentEntryId() + ".xml";
         }
+    }
+
+    protected File getEntryFile(int revision) throws Exception {
+        return getEntryFile(getCurrentWorkspace(), "acme", getCurrentEntryId(),
+                            currentLocale == null ? null : LocaleUtils.toLocale(currentLocale),
+                            true, revision);
     }
 
     protected String getCurrentLocale() {
@@ -112,7 +119,7 @@ public class PostDBSTest extends CRUDDBSTestCase {
         response.release();
         if (contentStorage instanceof FileBasedContentStorage) {
             int rev = extractRevisionFromURI( finalEditLink );
-            File pFile = new File( getPropfileBase() + ".r" + rev);
+            File pFile = getEntryFile(rev);
             assertTrue( pFile != null && pFile.exists() );
         }
     }
@@ -137,7 +144,7 @@ public class PostDBSTest extends CRUDDBSTestCase {
         response.release();
         if (contentStorage instanceof FileBasedContentStorage) {
             int rev = extractRevisionFromURI( finalEditLink );
-            File pFile = new File( getPropfileBase() + ".r" + rev);
+            File pFile = getEntryFile(rev);
             assertTrue( pFile != null && pFile.exists() );
         }
     }
@@ -160,7 +167,7 @@ public class PostDBSTest extends CRUDDBSTestCase {
         log.debug("fullURL = " + fullURL);
 
         log.debug("########################################## editURI = " + editURI);
-        File propFile = new File(getPropfileBase() + ".r0");
+        File propFile = getEntryFile(0);
         assertNotNull(propFile);
         log.debug("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%propFile " + propFile);
         assertTrue(propFile.exists());

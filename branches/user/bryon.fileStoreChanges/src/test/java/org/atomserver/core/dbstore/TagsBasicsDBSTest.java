@@ -54,8 +54,6 @@ public class TagsBasicsDBSTest extends CRUDDBSTestCase {
     // --------------------
     //       tests
     //---------------------
-    public void NOtestNothing() {}
-
     public void testFeedWithCategories() throws Exception {
 
         String urlPath = "tags:widgets/acme" ;
@@ -63,7 +61,7 @@ public class TagsBasicsDBSTest extends CRUDDBSTestCase {
        
         // Note this is a 301 Moved Permanently -- so the Client will redirect
         //  based on the Location Header....
-        ClientResponse response = clientGetWithFullURL( fullURL, 200 );
+        ClientResponse response = clientGetWithFullURL( fullURL, 200 );               
     }
 
     public void testEntryWithCategories() throws Exception {

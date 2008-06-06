@@ -36,6 +36,7 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 import java.io.*;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -58,11 +59,13 @@ public class FileBasedContentStorage implements ContentStorage {
     public static final int MAX_RETRIES = 3;
     public static final int SLEEP_BETWEEN_RETRY = 750;
 
+    private static final String GZIP_EXTENSION = ".gz";
+
     private static final Pattern FILE_PATH_WORKSPACE_COLLECTION_PATTERN =
             Pattern.compile("^/?(\\w+)/(\\w+)/.*$");
 
     private static final Pattern FILE_PATH_LOCALE_REV_PATTERN =
-            Pattern.compile("^/?((?:[a-z]{2})?(?:/[A-Z]{2})?)/\\w+\\.xml.r(\\d+)$");
+            Pattern.compile("^/?((?:[a-z]{2})?(?:/[A-Z]{2})?)/\\w+\\.xml.r(\\d+)(?:" + GZIP_EXTENSION + ")?$");
 
     static public final String TRASH_DIR_NAME = "_trash";
 
@@ -75,7 +78,6 @@ public class FileBasedContentStorage implements ContentStorage {
     private String rootDirAbsPath = null;
 
     private boolean sweepToTrash = true;
-    private PartitionPathGenerator partitionPathGenerator = new PrefixPartitionPathGenerator();
 
     private int sweepToTrashLagTimeSecs = SWEEP_TO_TRASH_LAG_TIME_SECS_DEFAULT;
 
@@ -146,10 +148,6 @@ public class FileBasedContentStorage implements ContentStorage {
             throw new AtomServerException(msg);
         }
         return rootDir;
-    }
-
-    public void setPartitionPathGenerator(PartitionPathGenerator partitionPathGenerator) {
-        this.partitionPathGenerator = partitionPathGenerator;
     }
 
     /**
@@ -307,15 +305,12 @@ public class FileBasedContentStorage implements ContentStorage {
             result = null;
             exceptionThrown = null;
             try {
-                File file = getFileLocation(descriptor.getWorkspace(),
-                                            descriptor.getCollection(),
-                                            descriptor.getEntryId(),
-                                            descriptor.getLocale(),
-                                            descriptor.getRevision());
+                File file = findExistingEntryFile(descriptor, false);
+
                 if (file == null) {
                     log.warn("getFileLocation() returned NULL getting XML data for entry::  " + descriptor);
                 } else {
-                    result = FileUtils.readFileToString(file, "UTF-8");
+                    result = readFileToString(file);
                 }
             } catch (IOException ioe) {
                 log.warn("IOException getting XML data for entry " + descriptor + " Caused by " + ioe.getMessage());
@@ -358,14 +353,15 @@ public class FileBasedContentStorage implements ContentStorage {
         File xmlFile = null;
         try {
             // compute the filename
-            xmlFile = convertToFile(descriptor, true);
+            xmlFile = getEntryFileForWriting(descriptor);
+            xmlFile.getParentFile().mkdirs();
 
             if (log.isTraceEnabled()) {
-                log.trace("Preparing to write XML file:: " + descriptor + " XML file:: " + xmlFile);
+                log.trace("%> Preparing to write XML file:: " + descriptor + " XML file:: " + xmlFile);
             }
 
             // marshall the entry to that file
-            FileUtils.writeStringToFile(xmlFile, entryXml, UTF_8);
+            writeStringToFile(entryXml, xmlFile);
 
             // move ANY files except the just created  revision to "_trash" dir
             // NOTE: cleanupExcessFiles will NOT throw any Exceptions
@@ -388,27 +384,18 @@ public class FileBasedContentStorage implements ContentStorage {
      * {@inheritDoc}
      */
     public boolean contentExists(EntryDescriptor descriptor) {
-        File location = getFileLocation(descriptor.getWorkspace(),
-                                        descriptor.getCollection(),
-                                        descriptor.getEntryId(),
-                                        descriptor.getLocale(),
-                                        descriptor.getRevision());
-        return location != null && location.exists();
+        return findExistingEntryFile(descriptor, false) != null;
     }
 
     /**
      * {@inheritDoc}
      */
     public void revisionChangedWithoutContentChanging(EntryDescriptor descriptor) {
-        File fileSansRevision = convertToFileSansRevision(descriptor);
+        File newFile = getEntryFileForWriting(descriptor);
 
-        int revision = descriptor.getRevision();
-        File newFile = createRevisionFile(fileSansRevision, revision);
-
-
-        int lastRev = revision - 1;
+        int lastRev = descriptor.getRevision() - 1;
         if (log.isTraceEnabled()) {
-            log.trace("revision= " + revision);
+            log.trace("%> revision= " + descriptor.getRevision());
         }
         if (lastRev < 0) {
             String msg = "Last revision is 0 or less, which should NOT be possible (" + descriptor + ")";
@@ -416,22 +403,22 @@ public class FileBasedContentStorage implements ContentStorage {
             throw new AtomServerException(msg);
         }
 
-        File prevFile = createRevisionFile(fileSansRevision, lastRev);
+        File prevFile = findExistingEntryFile(descriptor, true);
 
-        if (!(prevFile.exists())) {
+        if (prevFile == null) {
             String msg = "Last revision file does NOT exist [" + prevFile + "] (" + descriptor + ")";
             log.error(msg);
-            throw new AtomServerException(msg);
+            throw new AtomServerException(msg);                                         
         }
 
         try {
             if (log.isTraceEnabled()) {
-                log.trace("COPYING previous file = " + prevFile + " to " + newFile);
+                log.trace("%> COPYING previous file = " + prevFile + " to " + newFile);
             }
 
-            FileUtils.copyFile(prevFile, newFile);
+            newFile.getParentFile().mkdirs();
+            writeStringToFile(readFileToString(prevFile), newFile);
 
-            // move ANY files except the just created  revision to "_trash" dir
             cleanupExcessFiles(newFile, descriptor);
 
         } catch (IOException e) {
@@ -445,31 +432,21 @@ public class FileBasedContentStorage implements ContentStorage {
      */
     public void deleteContent(String deletedContentXml, EntryDescriptor descriptor) {
         if (deletedContentXml == null) {
-            convertToFile(descriptor, false).delete();
+            File file = findExistingEntryFile(descriptor, false);
+            if (file != null) {
+                file.delete();
+            }
         } else {
             putContent(deletedContentXml, descriptor);
         }
     }
 
     public void obliterateContent(EntryDescriptor descriptor) {
-        String workspace = descriptor.getWorkspace();
-        String collection = descriptor.getCollection();
-        String entryId = descriptor.getEntryId();
-        Locale locale = descriptor.getLocale();
-
-        // get the root dir for the entry
-        File entryDir = getEntryDir(workspace, collection, entryId);
-        // get the localized directory for the entry (this MAY be the same thing, if the entry is not localized)
-        File localizedDir = getLocaleDirectory(workspace, collection, entryId, locale);
+        File entryFile = findExistingEntryFile(descriptor, false);
         try {
-            // delete the localized entry
-            FileUtils.deleteDirectory(localizedDir);
-            // if the entry dir is now empty (because we just deleted the last thing in it) then delete it too
-            if (entryDir.exists() && entryDir.listFiles().length == 0) {
-                FileUtils.deleteDirectory(entryDir);
-            }
+            FileUtils.deleteDirectory(entryFile.getParentFile());
+            cleanUpToCollection(descriptor, entryFile);
         } catch (Exception e) {
-            // if anything goes wrong, throw a AtomServerException, which will ultimately result in a 500 for the end user
             throw new AtomServerException("exception obliterating content from storage for " + descriptor + ".", e);
         }
     }
@@ -478,45 +455,18 @@ public class FileBasedContentStorage implements ContentStorage {
      * {@inheritDoc}
      */
     public long lastModified(EntryDescriptor descriptor) {
-        File file = getFileLocation(descriptor.getWorkspace(),
-                                    descriptor.getCollection(),
-                                    descriptor.getEntryId(),
-                                    descriptor.getLocale(),
-                                    descriptor.getRevision());
+        File file = findExistingEntryFile(descriptor, false);
         return file == null ? 0L : file.lastModified();
     }
 
-    private File convertToFile(EntryDescriptor descriptor, boolean mkdirs) {
-        File fileSansRevision = convertToFileSansRevision(descriptor, mkdirs);
-        return createRevisionFile(fileSansRevision, descriptor.getRevision());
-    }
 
-    private File convertToFileSansRevision(EntryDescriptor descriptor) {
-        return convertToFileSansRevision(descriptor, false);
-    }
-
-    private File convertToFileSansRevision(EntryDescriptor descriptor, boolean mkdirs) {
-        String entryId = descriptor.getEntryId();
-
-        // figure out the specific directory on disk where the file should be written
-        File dir = getLocaleDirectory(descriptor.getWorkspace(), descriptor.getCollection(), entryId, descriptor.getLocale());
-
-        // ensure that the directory exists
-        if (mkdirs) {
-            dir.mkdirs();
-        }
-        return new File(dir, getFileName(entryId, NO_REVISION));
-    }
-
-    private File createRevisionFile(File fileSansRevision, int revision) {
-        String newFileName = fileSansRevision.getAbsolutePath() + ".r" + revision;
-        return new File(newFileName);
-    }
-
-    private String getFileName(String entryId, int revision) {
+    private String getFileName(String entryId, int revision, boolean gzipped) {
         String fileName = entryId + ".xml";
         if (revision != NO_REVISION) {
             fileName += ".r" + revision;
+        }
+        if (gzipped) {
+            fileName += GZIP_EXTENSION;
         }
         return fileName;
     }
@@ -530,91 +480,9 @@ public class FileBasedContentStorage implements ContentStorage {
                                             String entryId,
                                             Locale locale,
                                             int revision) {
-        return getFileLocation(workspace, collection, entryId, locale, revision);
-    }
-
-    private File getFileLocation(String workspace,
-                                 String collection,
-                                 String entryId,
-                                 Locale locale,
-                                 int revision) {
-        // figure out the collection dir and the most specific dir (based on locale) where the
-        // entry might be written
-        File dir = getLocaleDirectory(workspace, collection, entryId, locale);
-
-        File systemDir = pathFromRoot(workspace, collection);
-
-        // find the location of the entry file, walking backwards down the locale tree if needed
-        if (log.isDebugEnabled()) {
-            log.debug(MessageFormat.format("looking for entry {0} in {1}, rooted at {2}, revision {3}",
-                                           entryId, dir, systemDir, revision));
-        }
-
-        String fileName = getFileName(entryId, revision);
-        File xmlFile;
-        if (dir.exists()) {
-            xmlFile = new File(dir, fileName);
-            if (!xmlFile.exists()) {
-                xmlFile = null;
-                if (revision != -1) {
-                    log.warn("The file (" + fileName + ") does NOT exist in directory:: " + dir);
-                }
-            }
-        } else {
-            xmlFile = null;
-            log.warn("The directory:: " + dir + " does NOT exist. Could NOT locate file= " + fileName);
-        }
-
-        if (log.isDebugEnabled()) {
-            log.debug(MessageFormat.format("Found entry file: {0}", xmlFile));
-        }
-        return xmlFile;
-    }
-
-
-    /**
-     * get the directory to store the entry with the given collection and entryId, in the given locale.
-     *
-     * @param workspace  the workspace of the entry to retrieve
-     * @param collection the collection of the entry to retrieve
-     * @param entryId    the entryId of the entry to retrieve
-     * @param locale     the locale to use for localizing the directory
-     * @return a File handle to the requested directory
-     */
-    private File getLocaleDirectory(String workspace,
-                                    String collection,
-                                    String entryId,
-                                    Locale locale) {
-        File dir = getEntryDir(workspace, collection, entryId);
-        if (locale != null) {
-            if (locale.getLanguage() != null) {
-                dir = new File(dir, locale.getLanguage());
-                if (locale.getCountry() != null) {
-                    dir = new File(dir, locale.getCountry());
-                    if (locale.getVariant() != null) {
-                        dir = new File(dir, locale.getVariant());
-                    }
-                }
-            }
-        }
-        return dir;
-    }
-
-    /**
-     * get the root directory for the entry with the given collection and entryId.
-     *
-     * @param workspace  the workspace of the entry to retrieve
-     * @param collection the collection of the entry to retrieve
-     * @param entryId    the entryId of the entry to retrieve
-     * @return a File handle to the requested directory
-     */
-    private File getEntryDir(String workspace,
-                             String collection,
-                             String entryId) {
-        return new File(
-                partitionPathGenerator.generatePath(
-                        pathFromRoot(workspace, collection), entryId),
-                entryId);
+        return findExistingEntryFile(
+                new BaseEntryDescriptor(workspace, collection, entryId, locale, revision),
+                false);
     }
 
     private EntryDescriptor getMetaDataFromFilePath(File file) {
@@ -636,7 +504,8 @@ public class FileBasedContentStorage implements ContentStorage {
             String workspace = matcher.group(1);
             String collection = matcher.group(2);
             File collectionRoot = pathFromRoot(workspace, collection);
-            PartitionPathGenerator.ReverseMatch match = partitionPathGenerator.reverseMatch(collectionRoot, file);
+            // TODO: got to fix this BEFORE promoting this branch - Chris -- do NOT let this through a code read! (BRYON)
+            PartitionPathGenerator.ReverseMatch match = partitionPathGenerators.get(0).reverseMatch(collectionRoot, file);
             String entryId = match.getSeed();
             Matcher localeRevMatcher = FILE_PATH_LOCALE_REV_PATTERN.matcher(match.getRest());
             Locale locale;
@@ -682,50 +551,64 @@ public class FileBasedContentStorage implements ContentStorage {
         String fullPath = FilenameUtils.getFullPath(thisRev.getAbsolutePath());
         File baseDir = new File(fullPath);
         if (log.isTraceEnabled()) {
-            log.trace("cleaning up excess files at " + baseDir + " based on " + thisRev);
+            log.trace("%> cleaning up excess files at " + baseDir + " based on " + thisRev);
         }
 
         try {
+            File trashDir = findExistingTrashDir(descriptor);
+            if (trashDir == null) {
+                trashDir = new File(thisRev.getParentFile(), TRASH_DIR_NAME);
+                if (log.isTraceEnabled()) {
+                    log.trace("%> no trash dir, will create one at " + trashDir + " if needed");
+                }
+            } else if (!trashDir.getParentFile().equals(thisRev.getParentFile())) {
+                File newTrashDir = new File(thisRev.getParentFile(), TRASH_DIR_NAME);
+                if (log.isTraceEnabled()) {
+                    log.trace("%> trash dir " + trashDir + " will be migrated to " + newTrashDir);
+                }
+                trashDir.renameTo(newTrashDir);
+                trashDir = newTrashDir;
+            }
+
             // get a file pointer at the file we just wrote, and the one for the prev rev
-            final File oneRevBack = getFileLocation(descriptor.getWorkspace(),
-                                                    descriptor.getCollection(),
-                                                    descriptor.getEntryId(),
-                                                    descriptor.getLocale(),
-                                                    descriptor.getRevision() - 1);
+            final File oneRevBack = findExistingEntryFile(descriptor, true);
 
             // list out all of the files in the directory that are (a) files, and (b) not one of
             // the last two revisions
-            final File[] toDelete = baseDir.listFiles(new FileFilter() {
-                public boolean accept(File fileToCheck) {
+            if (oneRevBack != null) {
+                final File[] toDelete = oneRevBack.getParentFile().listFiles(new FileFilter() {
+                    public boolean accept(File fileToCheck) {
 
-                    return fileToCheck != null &&
-                           fileToCheck.exists() &&
-                           fileToCheck.isFile() &&
-                           fileToCheck.canRead() &&
-                           fileToCheck.canWrite() &&
-                           !fileToCheck.isHidden() &&
-                           !thisRev.equals(fileToCheck) &&
-                           (oneRevBack == null || !oneRevBack.equals(fileToCheck)) &&
-                           ((System.currentTimeMillis() - fileToCheck.lastModified()) > sweepToTrashLagTimeSecs * 1000L);
+                        return fileToCheck != null &&
+                               fileToCheck.exists() &&
+                               fileToCheck.isFile() &&
+                               fileToCheck.canRead() &&
+                               fileToCheck.canWrite() &&
+                               !fileToCheck.isHidden() &&
+                               !thisRev.equals(fileToCheck) &&
+                               (oneRevBack == null || !oneRevBack.equals(fileToCheck)) &&
+                               ((System.currentTimeMillis() - fileToCheck.lastModified()) > sweepToTrashLagTimeSecs * 1000L);
 
-                }
-            });
-
-            // if there's anything to delete...
-            if (toDelete != null && toDelete.length > 0) {
-
-                // first of all, there needs to be a "_trash" subdirectory,
-                // so we make sure that exists
-                File trashDir = new File(baseDir, TRASH_DIR_NAME);
-                trashDir.mkdirs();
-
-                // and move the files into it
-                for (File file : toDelete) {
-                    File moveTo = new File(trashDir, file.getName());
-                    if (!file.renameTo(moveTo)) {
-                        throw new IOException("When cleaning up excess revisions, could not move the file ("
-                                              + file + ") to (" + moveTo + ")");
                     }
+                });
+
+                // if there's anything to delete...
+                if (toDelete != null && toDelete.length > 0) {
+
+                    // first of all, there needs to be a "_trash" subdirectory,
+                    // so we make sure that exists
+                    trashDir.mkdirs();
+
+                    // and move the files into it
+                    for (File file : toDelete) {
+                        File moveTo = new File(trashDir, file.getName());
+                        if (!file.renameTo(moveTo)) {
+                            throw new IOException("When cleaning up excess revisions, could not move the file ("
+                                                  + file + ") to (" + moveTo + ")");
+                        }
+                    }
+                    File cleanDir = oneRevBack.getParentFile();
+                    cleanUpToCollection(descriptor, cleanDir);
                 }
             }
         }
@@ -736,38 +619,137 @@ public class FileBasedContentStorage implements ContentStorage {
         }
     }
 
+    private void cleanUpToCollection(EntryDescriptor descriptor,
+                                     File cleanDir)
+            throws IOException {
+        File stopDir = pathFromRoot(descriptor.getWorkspace(), descriptor.getCollection());
 
-    private List<PartitionPathGenerator> partitionPathGenerators;
+        if (log.isTraceEnabled()) {
+            log.trace("%> cleaning " + cleanDir + ", stopping at " + stopDir);
+        }
 
-    private File getPreferredEntryDir(String workspace,
-                                      String collection,
-                                      String entryId) {
-        return new File(
-                partitionPathGenerators.get(0).generatePath(
-                        pathFromRoot(workspace, collection), entryId),
-                entryId);
+        if (!cleanDir.getAbsolutePath().startsWith(stopDir.getAbsolutePath())) {
+            throw new AtomServerException("the directory to clean (" + cleanDir + ") is not " +
+                                          "within the collection of the provided entry (" +
+                                          descriptor + ").");
+        }
+
+        while (!cleanDir.equals(stopDir) &&
+               cleanDir.isDirectory() &&
+               cleanDir.listFiles().length == 0) {
+            if (log.isTraceEnabled()) {
+                log.trace("%> deleting empty directory " + cleanDir);
+            }
+            FileUtils.deleteDirectory(cleanDir);
+            cleanDir = cleanDir.getParentFile();
+        }
     }
 
-
-    private File findExistingEntryDir(String workspace,
-                                      String collection,
-                                      String entryId) {
+    private File findExistingTrashDir(EntryDescriptor entry) {
+        if (log.isTraceEnabled()) {
+            log.trace("%> looking for trash directory for entry " + entry);
+        }
         for (PartitionPathGenerator pathGenerator : partitionPathGenerators) {
-            File entryDir = new File(
-                    pathGenerator.generatePath(
-                            pathFromRoot(workspace, collection), entryId),
-                    entryId);
-            if (entryDir.exists() && entryDir.isDirectory()) {
-                return entryDir;
-            } else {
-                log.debug("entry dir " + entryDir + " not found - trying next partition algorithm.");
+            File trashDir = new File(generateEntryDir(entry, pathGenerator), TRASH_DIR_NAME);
+            if (log.isTraceEnabled()) {
+                log.trace("%> checking trash directory path " + trashDir);
+            }
+            if (trashDir.exists() && trashDir.isDirectory()) {
+                if (log.isTraceEnabled()) {
+                    log.trace("%> trash directory " + trashDir + " exists.");
+                }
+                return trashDir;
             }
         }
         return null;
     }
 
-    private static final String GZIP_EXTENSION = ".gz";
-    private boolean gzipEnabled;
+    protected File findExistingEntryFile(EntryDescriptor entry,
+                                       boolean previousRev) {
+        if (log.isTraceEnabled()) {
+            log.trace("%> looking for entry file for " + entry);
+        }
+        for (PartitionPathGenerator pathGenerator : partitionPathGenerators) {
+            if (isGzipEnabled()) {
+                File entryFile = generateEntryFilePath(entry, pathGenerator, true, previousRev);
+                if (log.isTraceEnabled()) {
+                    log.trace("%> checking file path " + entryFile);
+                }
+                if (entryFile.exists()) {
+                    if (log.isTraceEnabled()) {
+                        log.trace("%> file path " + entryFile + " exists.");
+                    }
+                    return entryFile;
+                }
+            }
+            File entryFile = generateEntryFilePath(entry, pathGenerator, false, previousRev);
+            if (log.isTraceEnabled()) {
+                log.trace("%> checking file path " + entryFile);
+            }
+            if (entryFile.exists()) {
+                if (log.isTraceEnabled()) {
+                    log.trace("%> file path " + entryFile + " exists.");
+                }
+                return entryFile;
+            }
+        }
+        return null;
+    }
+
+    private File getEntryFileForWriting(EntryDescriptor entry) {
+        return generateEntryFilePath(entry, partitionPathGenerators.get(0), isGzipEnabled(), false);
+    }
+
+
+    private File generateEntryFilePath(EntryDescriptor entry,
+                                       PartitionPathGenerator pathGenerator,
+                                       boolean gzipped,
+                                       boolean previousRev) {
+        return generateEntryFilePath(entry, pathGenerator, gzipped,
+                                     entry.getRevision() - (previousRev ? 1 : 0));
+    }
+
+    public File generateEntryFilePath(EntryDescriptor entry,
+                                      PartitionPathGenerator pathGenerator,
+                                      boolean gzipped,
+                                      int revision) {
+        return new File(generateEntryDir(entry, pathGenerator),
+                        getFileName(entry.getEntryId(), revision, gzipped));
+    }
+
+    private File generateEntryDir(EntryDescriptor entry,
+                                  PartitionPathGenerator pathGenerator) {
+        File entryDir = new File(
+                pathGenerator.generatePath(
+                        pathFromRoot(entry.getWorkspace(), entry.getCollection()),
+                        entry.getEntryId()),
+                entry.getEntryId());
+        if (entry.getLocale() != null) {
+            if (entry.getLocale().getLanguage() != null) {
+                entryDir = new File(entryDir, entry.getLocale().getLanguage());
+                if (entry.getLocale().getCountry() != null) {
+                    entryDir = new File(entryDir, entry.getLocale().getCountry());
+                }
+            }
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("%> generated file path " + entryDir + " for entry " + entry);
+        }
+        return entryDir;
+    }
+
+    private List<PartitionPathGenerator> partitionPathGenerators =
+            Collections.<PartitionPathGenerator>singletonList(new PrefixPartitionPathGenerator());
+
+    public List<PartitionPathGenerator> getPartitionPathGenerators() {
+        return partitionPathGenerators;
+    }
+
+    public void setPartitionPathGenerators(List<PartitionPathGenerator> partitionPathGenerators) {
+        this.partitionPathGenerators = partitionPathGenerators;
+    }
+
+    private boolean gzipEnabled = false;
 
     public boolean isGzipEnabled() {
         return gzipEnabled;
@@ -777,18 +759,10 @@ public class FileBasedContentStorage implements ContentStorage {
         this.gzipEnabled = gzipEnabled;
     }
 
-    private static File findFilePreferringGzip(File file) {
-        File gzipFile = getGzipVariant(file);
-        return gzipFile.exists() && gzipFile.isFile() ?
-               gzipFile :
-               (file.exists() && file.isFile() ? file : null);
-    }
-
-    private static File getGzipVariant(File file) {
-        return new File(file.getParent(), file.getName() + GZIP_EXTENSION);
-    }
-
-    private static String readFileToString(File file) throws IOException {
+    protected String readFileToString(File file) throws IOException {
+        if (log.isTraceEnabled()) {
+            log.trace("reading file : " + file);
+        }
         if (file.getName().endsWith(GZIP_EXTENSION)) {
             GZIPInputStream inputStream = new GZIPInputStream(new FileInputStream(file));
             String content = IOUtils.toString(inputStream, UTF_8);
@@ -799,7 +773,7 @@ public class FileBasedContentStorage implements ContentStorage {
         }
     }
 
-    private static void writeStringToFile(String content, File file) throws IOException {
+    protected void writeStringToFile(String content, File file) throws IOException {
         if (file.getName().endsWith(GZIP_EXTENSION)) {
             GZIPOutputStream outputStream = new GZIPOutputStream(new FileOutputStream(file));
             IOUtils.write(content, outputStream, UTF_8);

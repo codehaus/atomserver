@@ -49,7 +49,7 @@ public class NoDirDBSTest extends CRUDDBSTestCase {
         String id = urlPath;
 
         File blahDir = new File(TEST_DATA_DIR + "/widgets/" + collection);
-        File pfile = new File(TEST_DATA_DIR + "/widgets/" + collection + "/12/12345/en/12345.xml.r0");
+        File pfile = getEntryFile("widgets", collection, "12345", Locale.ENGLISH, true, 0);
         assertFalse(blahDir.exists());
         assertFalse(pfile.exists());
 

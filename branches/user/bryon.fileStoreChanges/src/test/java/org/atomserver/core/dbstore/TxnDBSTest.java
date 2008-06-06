@@ -30,6 +30,7 @@ import org.atomserver.testutils.conf.TestConfUtil;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.io.File;
+import java.util.Locale;
 
 /**
  */
@@ -60,15 +61,14 @@ public class TxnDBSTest extends CRUDDBSTestCase {
     protected String getStoreName() 
     { return "org.atomserver-atomService"; }
 
-    protected boolean requiresDBSeeding() 
+    protected boolean requiresDBSeeding()
     { return false; }
 
-    private String wspace = "dummy"; 
+    private String wspace = "dummy";
     private String coll = "dumber"; 
-    private String id = "12345"; 
-    
+    private String id = "12345";
 
-    protected String getURLPath() 
+    protected String getURLPath()
     { return (wspace + "/" + coll + "/" + id + ".xml"); }
 
     protected IRI getEntryIRI() {
@@ -77,13 +77,13 @@ public class TxnDBSTest extends CRUDDBSTestCase {
         return entryIRI;
     }
 
-    protected String getPropfileBase() {
-        return (TEST_DATA_DIR + "/" + wspace + "/" + coll + "/12/12345/12345.xml");
+    protected File getEntryFile(int revision) throws Exception {
+        return getEntryFile(wspace, coll, "12345", null, true, revision);
     }
 
-    protected File getPropfile() {
-        File propFile = new File( getPropfileBase() + ".r0");
-        return propFile;
+
+    protected File getPropfile() throws Exception {
+        return getEntryFile(0);
     }
 
     // --------------------
@@ -138,6 +138,7 @@ public class TxnDBSTest extends CRUDDBSTestCase {
         // NOTE: the SELECT above has actually verified the content is the original content...
 
         File file = getPropfile();
+        log.debug("FILE :: " + file);
         assertTrue( file.exists() );
 
         File newFile = new File(TEST_DATA_DIR + "/" + wspace + "/" + coll + "/12/12345/12345.xml.r1");

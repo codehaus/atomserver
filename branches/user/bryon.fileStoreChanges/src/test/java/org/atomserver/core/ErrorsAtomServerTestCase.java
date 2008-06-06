@@ -24,11 +24,9 @@ import org.atomserver.core.dbstore.DBSTestCase;
  */
 abstract public class ErrorsAtomServerTestCase extends DBSTestCase {
 
-    public void setUp() throws Exception
-    { super.setUp(); }
-
-    public void tearDown() throws Exception
-    { super.tearDown(); }
+    protected boolean requiresDBSeeding() {
+        return true;
+    }
 
     protected void runErrorHandlingTests() throws Exception {
         badURI();
