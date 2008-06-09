@@ -1,0 +1,94 @@
+        SELECT DISTINCT
+               entry.EntryStoreId AS EntryStoreId,
+               entry.Workspace AS Workspace,
+               entry.Collection AS Collection,
+               entry.LanCode AS LanCode,
+               entry.CountryCode AS CountryCode,
+               entry.EntryId AS EntryId,
+               entry.UpdateDate AS UpdateDate,
+               entry.CreateDate AS CreateDate,
+               CONVERT(BIGINT, UpdateTimestamp) AS UpdateTimestamp,
+               entry.DeleteFlag AS DeleteFlag,
+               entry.RevisionNum AS RevisionNum,
+               cat.Scheme AS Scheme,
+               cat.Term AS Term,
+               cat.Label AS Label
+          FROM EntryStore entry
+          LEFT OUTER JOIN EntryCategory cat
+            ON entry.EntryStoreId = cat.EntryStoreId
+--
+-- Everything above this line is just specifying the columns we care about from the EntryStore
+-- and the EntryCategory.  We've aliased the entry istelf as 'entry' and the categories that are
+-- attached to the entry as 'cat'.
+--
+-- Some categories have a "dual" life - in addition to being a category, they are also used to
+-- effect "joins" against sets of entries.  We call the "joined" entries "aggregate entries".
+-- the idea is that if several entries have the same value for a given category, we sometimes
+-- want to retrieve them all together in one chunk.
+--
+-- In our basic object model, entries are identified by the tuple:
+--  (Workspace, Collection, EntryId, Locale)
+-- and categories are defined as:
+--  (Scheme, Term)
+-- to pull a feed of entries, you specify Workspace, Collection, and optionally Locale:
+--  /workspace/collection?locale=LOCALE
+-- and you recieve a feed of the entries that match.  For example, the URL
+-- /listings/trips?locale=en_US would return a feed of listing entries in the en_US locale. When
+-- you instead want to pull an "aggregate feed", the Workspace is always "$join", the Collection
+-- is the Scheme of the categories on which you want to join, and the entries returned are
+-- identified by the Terms of the categories:
+--  /$join/Scheme?locale=LOCALE
+-- So, in the example here, pulling /$join/urn:ha.listings.trips?locale=de_DE is requesting to
+-- pull all of the aggregate entries, joined by the 'urn:ha.listings.trips' Scheme, in the de_DE
+-- locale.
+--
+        INNER JOIN EntryCategory joincat                    -- alias this category as 'joincat'
+           ON entry.EntryStoreId = joincat.EntryStoreId     -- join it back to the 'entry'
+          AND joincat.scheme = 'urn:ha.listings.trips'      -- this is the Scheme on which we join
+          AND joincat.term IN (
+
+        SELECT TOP 16                                       -- do our pagination here
+               c.term as EntryId                            -- remember that the term is the agg id
+          FROM EntryStore e JOIN EntryCategory c            -- have to join in EntryStore for locales
+            ON e.EntryStoreId = c.EntryStoreId
+
+            INNER JOIN (
+                --
+                -- BEGIN category query
+                --
+                --      this inner query is responsible for returning only aggregate entries that
+                --      match the "category query" from the URL.  This has been re-written from my
+                --      old way of doing it to match the "set algebra" technique suggested by
+                --      Mitch (although, any inefficiencies introduced are almost certainly mine,
+                --      not his...)
+                --
+                --      The reason that this is written as yet another subselect, with no obvious
+                --      reason, is that there will often be multiple "terms", and additional terms
+                --      would be conjoined to this one with INNER JOINs to compute the
+                --      intersection - in this case, there only happens to be one term, so it looks
+                --      a little weird.  This is the most natural way for our "query generator"
+                --      code to work, and I assumed that SQL Server would optimize the extra SELECT
+                --      away, but if this is a performance issue, it can certainly be changed.
+                --
+                SELECT term0.EntryId AS EntryId FROM (
+                   SELECT DISTINCT jc.Term AS EntryId
+                     FROM EntryCategory jc JOIN EntryCategory sc
+                       ON jc.Scheme = 'urn:ha.listings.trips'
+                      AND sc.Scheme = 'urn:ha.companies'
+                      AND sc.Term = 'wvr'
+                      AND jc.EntryStoreId = sc.EntryStoreId
+                ) term0
+                --
+                -- END category query
+                --
+                ) matchedEntry
+               ON c.term = matchedEntry.EntryId
+
+         WHERE c.scheme = 'urn:ha.listings.trips'           -- only categories in the join Scheme
+           AND (e.CountryCode = 'DE')                       -- and attached to entries in the
+           AND (e.LanCode = 'de')                           --  correct locale
+      GROUP BY c.term                                       -- group by term - pull the agg together
+        HAVING MAX(UpdateTimestamp) > 16971217              -- this specifies where to start
+      ORDER BY MAX(UpdateTimestamp)                         -- the timestamp for an aggregate is
+                                                            --  the max timestamp of its parts
+              )

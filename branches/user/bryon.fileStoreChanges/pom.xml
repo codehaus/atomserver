@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation=" http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation=" http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -143,7 +144,7 @@
         <rootAppender>Stdout</rootAppender>
 
         <rootLogLevel>DEBUG</rootLogLevel>
-         <logLevel>TRACE</logLevel>
+        <logLevel>TRACE</logLevel>
         <!--<logLevel>DEBUG</logLevel>-->
         <logDir>${basedir}/target</logDir>
         <logFileNamePrefix>atomserver</logFileNamePrefix>
@@ -496,17 +497,17 @@
                         <inherited>false</inherited>
                         <configuration>
                             <tasks>
-                                <mkdir dir="${project.build.directory}" />
+                                <mkdir dir="${project.build.directory}"/>
                                 <exec executable="svn" output="${project.build.directory}/version.properties">
-                                    <arg value="info" />
-                                    <arg value="." />
+                                    <arg value="info"/>
+                                    <arg value="."/>
                                     <redirector>
                                         <outputfilterchain>
                                             <linecontains>
-                                                <contains value="Revision" />
+                                                <contains value="Revision"/>
                                             </linecontains>
                                             <tokenfilter>
-                                                <replacestring from="Revision: " to="atomserver.revision=" />
+                                                <replacestring from="Revision: " to="atomserver.revision="/>
                                             </tokenfilter>
                                         </outputfilterchain>
                                     </redirector>
@@ -514,7 +515,7 @@
                                 <echo file="${project.build.directory}/version.properties" append="true">
                                     atomserver.version=${project.version}
                                 </echo>
-                                <fixcrlf srcdir="${project.build.directory}" eol="lf" includes="version.properties" />
+                                <fixcrlf srcdir="${project.build.directory}" eol="lf" includes="version.properties"/>
                             </tasks>
                         </configuration>
                         <goals>
@@ -786,7 +787,7 @@
                         <systemProperty>
                             <name>atomserver.conf.dir</name>
                             <value>${confDir}</value>
-                        </systemProperty>                       
+                        </systemProperty>
 
                         <systemProperty>
                             <name>atomserver.servlet.context</name>
