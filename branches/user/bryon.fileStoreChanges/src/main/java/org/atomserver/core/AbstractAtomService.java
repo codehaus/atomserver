@@ -29,6 +29,11 @@ import org.atomserver.core.etc.AtomServerPerformanceLog;
 import org.atomserver.uri.ServiceTarget;
 import org.atomserver.uri.URIHandler;
 
+import java.util.regex.Matcher;
+import java.util.List;
+import java.util.Collections;
+import java.util.Arrays;
+
 /**
  * The abstract, base AtomService implementation. Subclasses must implement newAtomWorkspace().
  * @author Chris Berry  (chriswberry at gmail.com)
@@ -45,7 +50,7 @@ abstract public class AbstractAtomService implements AtomService {
      * @return  The newly created AtoWorkspace.
      */
     abstract public AtomWorkspace newAtomWorkspace( AtomService parentService, String name );
-    protected AtomWorkspace getJoinWorkspace() {
+    protected AtomWorkspace getJoinWorkspace(List<String> joinWorkspaces) {
         throw new UnsupportedOperationException("this service does not support join feeds.");
     }
 
@@ -61,9 +66,16 @@ abstract public class AbstractAtomService implements AtomService {
      * {@inheritDoc}
      */
     public AtomWorkspace getAtomWorkspace(String workspace) {
-        return "$join".equals(workspace) ?
-               getJoinWorkspace() :
+        Matcher matcher = URIHandler.JOIN_WORKSPACE_PATTERN.matcher(workspace);
+        return matcher.matches() ?
+               getJoinWorkspace(joinWorkspaces(matcher.group(1))) :
                workspaces.get( workspace );
+    }
+
+    private List<String> joinWorkspaces(String commaSeparatedWorkspaceList) {
+        return (List<String>) (commaSeparatedWorkspaceList == null ?
+                    Collections.EMPTY_LIST :
+                    Arrays.asList(commaSeparatedWorkspaceList.split("\\s*,\\s*")));
     }
 
     public void initialize() {}
@@ -136,7 +148,7 @@ abstract public class AbstractAtomService implements AtomService {
 
     /**
      * Returns the actual number of Workspaces associated with this AtomService, including "invisible" Workspaces
-     * @return
+     * @return the number of workspaces
      */
     public int getNumberOfWorkspaces() {
         return ( this.workspaces != null ) ? this.workspaces.size() : 0 ;

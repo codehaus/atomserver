@@ -51,9 +51,11 @@ import java.io.IOException;
 public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
 
     private static final Log log = LogFactory.getLog(DBBasedJoinWorkspace.class);
+    private final List<String> joinWorkspaces;
 
-    public DBBasedJoinWorkspace(AtomService parentAtomService) {
+    public DBBasedJoinWorkspace(AtomService parentAtomService, List<String> joinWorkspaces) {
         super(parentAtomService, "$join");
+        this.joinWorkspaces = joinWorkspaces;
         setOptions(new WorkspaceOptions());
     }
 
@@ -61,7 +63,7 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
         return new DBBasedAtomCollection(this, collectionName) {
 
             protected EntryMetaData innerGetEntry(EntryTarget entryTarget) {
-                return getEntriesDAO().selectAggregateEntry(entryTarget);
+                return getEntriesDAO().selectAggregateEntry(entryTarget, joinWorkspaces);
             }
 
             protected long getEntries(RequestContext request,
@@ -80,7 +82,8 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
                                                                      feedTarget.getLocaleParam(),
                                                                      feedTarget.getPageDelimParam(),
                                                                      pageSize + 1,
-                                                                     feedTarget.getCategoriesQuery());
+                                                                     feedTarget.getCategoriesQuery(),
+                                                                     joinWorkspaces);
 
                 Collections.sort(list, new Comparator<AggregateEntryMetaData>() {
                     public int compare(AggregateEntryMetaData a, AggregateEntryMetaData b) {

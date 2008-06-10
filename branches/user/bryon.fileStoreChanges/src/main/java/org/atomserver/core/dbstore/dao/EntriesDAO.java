@@ -157,10 +157,12 @@ public interface EntriesDAO
             Date lastModifiedDate,
             Locale locale, int pageDelim,
             int pageSize,
-            Collection<BooleanExpression<AtomCategory>> categoriesQuery);
+            Collection<BooleanExpression<AtomCategory>> categoriesQuery,
+            List<String> joinWorkspaces);
 
     AggregateEntryMetaData selectAggregateEntry(
-            EntryDescriptor entryDescriptor);
+            EntryDescriptor entryDescriptor,
+            List<String> joinWorkspaces);
 
     List<EntryMetaData> selectEntriesByLastModified(
             String workspace,

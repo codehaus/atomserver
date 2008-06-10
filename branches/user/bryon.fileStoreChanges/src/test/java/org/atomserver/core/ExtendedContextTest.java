@@ -21,10 +21,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.atomserver.testutils.client.JettyWebAppTestCase;
 import org.atomserver.testutils.conf.TestConfUtil;
 
-import java.io.File;
-
 public class ExtendedContextTest extends JettyWebAppTestCase {
-    private String prevConfDir = null;
 
     protected void setUp() throws Exception {
         TestConfUtil.preSetup("confdir");

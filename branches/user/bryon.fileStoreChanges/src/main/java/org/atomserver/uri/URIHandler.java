@@ -29,8 +29,8 @@ import org.atomserver.AtomService;
 import org.atomserver.EntryDescriptor;
 import org.atomserver.FeedDescriptor;
 import org.atomserver.core.WorkspaceOptions;
-import org.atomserver.exceptions.BadRequestException;
 import org.atomserver.exceptions.AtomServerException;
+import org.atomserver.exceptions.BadRequestException;
 import org.atomserver.utils.collections.ArraySegmentIterator;
 import org.atomserver.utils.locale.LocaleUtils;
 import org.atomserver.utils.logic.BooleanExpression;
@@ -43,6 +43,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * URIHandler - The class which decodes the URL for AtomServer. This class extends Abdera's Target Resolver.
@@ -61,6 +62,8 @@ public class URIHandler
     private AtomService atomService = null;
     private String rootPath = null;
     private String contextPath = null;
+    public static final Pattern JOIN_WORKSPACE_PATTERN =
+            Pattern.compile("\\$join(?:\\((\\w+(?:,\\s*\\w+)*)\\))?");
 
     private class ParsedTarget {
         private final URITarget target;
@@ -372,7 +375,7 @@ public class URIHandler
         
         // workspaces that start with $ are special - currently we only support $join
         if (workspace != null && workspace.startsWith("$")) {
-            if (!"$join".equals(workspace)) {
+            if (!JOIN_WORKSPACE_PATTERN.matcher(workspace).matches()) {
                 return null;
             }
         }
@@ -556,7 +559,7 @@ public class URIHandler
                                          IRI iri,
                                          boolean checkIfCollectionExists)
             throws BadRequestException {
-        if (("$join".equals(workspace) || "$aggregate".equals(workspace))) {
+        if ((JOIN_WORKSPACE_PATTERN.matcher(workspace).matches() || "$aggregate".equals(workspace))) {
             if (collection == null) {
                 throw new BadRequestException("you must specify a Category Scheme to use as the " +
                                               "collection for an aggregate feed or entry.");
