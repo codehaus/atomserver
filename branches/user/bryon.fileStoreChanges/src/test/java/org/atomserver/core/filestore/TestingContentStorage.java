@@ -64,13 +64,13 @@ public class TestingContentStorage extends FileBasedContentStorage {
         return super.readFileToString(file);
     }
 
-    protected File findExistingEntryFile(EntryDescriptor entry, boolean previousRev) {
+    protected File findExistingEntryFile(EntryDescriptor entry, int revisionsBack) {
         if ( isAlternatelyPass( testingAlternatelyFailOnFileReadNull,
                                 ++testingAlternatelyFailOnFileReadNullCount,
                                 testingAlternatelyFailOnFileReadNullPassCount  ) ) {
             return null;
         }
-        return super.findExistingEntryFile(entry, previousRev);
+        return super.findExistingEntryFile(entry, revisionsBack);
     }
 
     public void putContent(String contentXml, EntryDescriptor descriptor) {

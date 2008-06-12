@@ -35,10 +35,7 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 
 import java.io.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
@@ -305,7 +302,7 @@ public class FileBasedContentStorage implements ContentStorage {
             result = null;
             exceptionThrown = null;
             try {
-                File file = findExistingEntryFile(descriptor, false);
+                File file = findExistingEntryFile(descriptor);
 
                 if (file == null) {
                     log.warn("getFileLocation() returned NULL getting XML data for entry::  " + descriptor);
@@ -384,7 +381,7 @@ public class FileBasedContentStorage implements ContentStorage {
      * {@inheritDoc}
      */
     public boolean contentExists(EntryDescriptor descriptor) {
-        return findExistingEntryFile(descriptor, false) != null;
+        return findExistingEntryFile(descriptor) != null;
     }
 
     /**
@@ -403,7 +400,7 @@ public class FileBasedContentStorage implements ContentStorage {
             throw new AtomServerException(msg);
         }
 
-        File prevFile = findExistingEntryFile(descriptor, true);
+        File prevFile = findExistingEntryFile(descriptor, 1);
 
         if (prevFile == null) {
             String msg = "Last revision file does NOT exist [" + prevFile + "] (" + descriptor + ")";
@@ -432,7 +429,7 @@ public class FileBasedContentStorage implements ContentStorage {
      */
     public void deleteContent(String deletedContentXml, EntryDescriptor descriptor) {
         if (deletedContentXml == null) {
-            File file = findExistingEntryFile(descriptor, false);
+            File file = findExistingEntryFile(descriptor);
             if (file != null) {
                 file.delete();
             }
@@ -442,7 +439,7 @@ public class FileBasedContentStorage implements ContentStorage {
     }
 
     public void obliterateContent(EntryDescriptor descriptor) {
-        File entryFile = findExistingEntryFile(descriptor, false);
+        File entryFile = findExistingEntryFile(descriptor);
         try {
             FileUtils.deleteDirectory(entryFile.getParentFile());
             cleanUpToCollection(descriptor, entryFile);
@@ -455,7 +452,7 @@ public class FileBasedContentStorage implements ContentStorage {
      * {@inheritDoc}
      */
     public long lastModified(EntryDescriptor descriptor) {
-        File file = findExistingEntryFile(descriptor, false);
+        File file = findExistingEntryFile(descriptor);
         return file == null ? 0L : file.lastModified();
     }
 
@@ -481,8 +478,7 @@ public class FileBasedContentStorage implements ContentStorage {
                                             Locale locale,
                                             int revision) {
         return findExistingEntryFile(
-                new BaseEntryDescriptor(workspace, collection, entryId, locale, revision),
-                false);
+                new BaseEntryDescriptor(workspace, collection, entryId, locale, revision));
     }
 
     private EntryDescriptor getMetaDataFromFilePath(File file) {
@@ -576,13 +572,33 @@ public class FileBasedContentStorage implements ContentStorage {
                 trashDir = newTrashDir;
             }
 
-            // get a file pointer at the file we just wrote, and the one for the prev rev
-            final File oneRevBack = findExistingEntryFile(descriptor, true);
+            // get a file pointer at the previous revision of the file -- we DON'T want to delete it
+            final File oneRevBack = findExistingEntryFile(descriptor, 1);
+
+            // the set of directories to clean is the directories that contain (A) the previous
+            // revision, which may or may not be the same as the current rev, and (B) the one two
+            // revisions back, which may or may not be the same as the previous rev
+            Set<File> directoriesToClean = new HashSet<File>(2);
+
+            // if there was a previous rev
+            if (oneRevBack != null) {
+                // add it's dir to the ones to clean
+                directoriesToClean.add(oneRevBack.getParentFile());
+                // and if the revision is greater than 1
+                if (descriptor.getRevision() > 1) {
+                    // then two revs back is a reasonable thing to ask for...
+                    File twoRevsBack = findExistingEntryFile(descriptor, 2);
+                    // and if it exists, add its parent to the ones to clean
+                    if (twoRevsBack != null) {
+                        directoriesToClean.add(twoRevsBack.getParentFile());
+                    }
+                }
+            }
 
             // list out all of the files in the directory that are (a) files, and (b) not one of
             // the last two revisions
-            if (oneRevBack != null) {
-                final File[] toDelete = oneRevBack.getParentFile().listFiles(new FileFilter() {
+            for (File directoryToClean : directoriesToClean) {
+                final File[] toDelete = directoryToClean.listFiles(new FileFilter() {
                     public boolean accept(File fileToCheck) {
 
                         return fileToCheck != null &&
@@ -613,8 +629,7 @@ public class FileBasedContentStorage implements ContentStorage {
                                                   + file + ") to (" + moveTo + ")");
                         }
                     }
-                    File cleanDir = oneRevBack.getParentFile();
-                    cleanUpToCollection(descriptor, cleanDir);
+                    cleanUpToCollection(descriptor, directoryToClean);
                 }
             }
         }
@@ -628,23 +643,27 @@ public class FileBasedContentStorage implements ContentStorage {
     private void cleanUpToCollection(EntryDescriptor descriptor,
                                      File cleanDir)
             throws IOException {
+        // under no circumstances do we want to clean the collection directory.
         File stopDir = pathFromRoot(descriptor.getWorkspace(), descriptor.getCollection());
 
         if (log.isTraceEnabled()) {
-            log.trace("%> cleaning " + cleanDir + ", stopping at " + stopDir);
+            log.trace("cleaning " + cleanDir + ", stopping at " + stopDir);
         }
 
+        // if the stop dir is not an ancestor of the clean dir, we are in trouble.
         if (!cleanDir.getAbsolutePath().startsWith(stopDir.getAbsolutePath())) {
             throw new AtomServerException("the directory to clean (" + cleanDir + ") is not " +
                                           "within the collection of the provided entry (" +
                                           descriptor + ").");
         }
 
+        // as long as we are underneath the stop dir, and we are pointing at a directory that has
+        // no files at all, we should delete the directory and walk up to our parent.
         while (!cleanDir.equals(stopDir) &&
                cleanDir.isDirectory() &&
                cleanDir.listFiles().length == 0) {
             if (log.isTraceEnabled()) {
-                log.trace("%> deleting empty directory " + cleanDir);
+                log.trace("deleting empty directory " + cleanDir);
             }
             FileUtils.deleteDirectory(cleanDir);
             cleanDir = cleanDir.getParentFile();
@@ -670,14 +689,19 @@ public class FileBasedContentStorage implements ContentStorage {
         return null;
     }
 
+    protected File findExistingEntryFile(EntryDescriptor entry) {
+        return findExistingEntryFile(entry, 0);
+    }
+
     protected File findExistingEntryFile(EntryDescriptor entry,
-                                       boolean previousRev) {
+                                         int revisionsBack) {
         if (log.isTraceEnabled()) {
             log.trace("%> looking for entry file for " + entry);
         }
         for (PartitionPathGenerator pathGenerator : partitionPathGenerators) {
             if (isGzipEnabled()) {
-                File entryFile = generateEntryFilePath(entry, pathGenerator, true, previousRev);
+                File entryFile = generateEntryFilePath(entry, pathGenerator, true,
+                                                       entry.getRevision() - revisionsBack);
                 if (log.isTraceEnabled()) {
                     log.trace("%> checking file path " + entryFile);
                 }
@@ -688,7 +712,8 @@ public class FileBasedContentStorage implements ContentStorage {
                     return entryFile;
                 }
             }
-            File entryFile = generateEntryFilePath(entry, pathGenerator, false, previousRev);
+            File entryFile = generateEntryFilePath(entry, pathGenerator, false,
+                                                   entry.getRevision() - revisionsBack);
             if (log.isTraceEnabled()) {
                 log.trace("%> checking file path " + entryFile);
             }
@@ -703,17 +728,9 @@ public class FileBasedContentStorage implements ContentStorage {
     }
 
     private File getEntryFileForWriting(EntryDescriptor entry) {
-        return generateEntryFilePath(entry, partitionPathGenerators.get(0), isGzipEnabled(), false);
+        return generateEntryFilePath(entry, partitionPathGenerators.get(0), isGzipEnabled(), entry.getRevision());
     }
 
-
-    private File generateEntryFilePath(EntryDescriptor entry,
-                                       PartitionPathGenerator pathGenerator,
-                                       boolean gzipped,
-                                       boolean previousRev) {
-        return generateEntryFilePath(entry, pathGenerator, gzipped,
-                                     entry.getRevision() - (previousRev ? 1 : 0));
-    }
 
     public File generateEntryFilePath(EntryDescriptor entry,
                                       PartitionPathGenerator pathGenerator,
