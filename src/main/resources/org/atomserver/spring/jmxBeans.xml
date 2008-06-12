@@ -44,7 +44,7 @@
                        value-ref="org.atomserver-statsTracker"/>
 
                 <entry key="org.atomserver.beans:type=FileBasedContentStorage,name=FBContentStorage"
-                       value-ref="org.atomserver-fileContentStorage"/>
+                       value-ref="org.atomserver-contentStorage"/>
 
                 <!-- The key name is used as the ObjectName of the MBean -->
                 <!-- NOTE: this key name MUST match the code in HttpAdaptorMgr.java -->

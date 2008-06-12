@@ -25,6 +25,7 @@ import org.apache.abdera.protocol.client.AbderaClient;
 import org.apache.abdera.protocol.client.ClientResponse;
 import org.apache.abdera.protocol.client.RequestOptions;
 import org.apache.commons.lang.LocaleUtils;
+import org.apache.commons.io.FileUtils;
 import org.atomserver.core.*;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
 import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
@@ -36,6 +37,7 @@ import org.atomserver.uri.URIHandler;
 import org.springframework.context.ApplicationContext;
 
 import java.text.MessageFormat;
+import java.io.File;
 
 /**
  */
@@ -84,6 +86,10 @@ public class DBSTestCase extends AtomServerTestCase {
 
         // we may need something in the DB to run these tests
         if ( requiresDBSeeding() ) {
+
+            File file = new File(getClass().getResource("/testentries/var").toURI());
+            FileUtils.copyDirectory(file, TEST_DATA_DIR);
+
             DBSeeder.getInstance(springContext).seedEntriesClearingFirst();
         } else {
             DBSeeder.getInstance(springContext).createWidgetsDir();
@@ -93,7 +99,12 @@ public class DBSTestCase extends AtomServerTestCase {
         log.debug("startCount = " + startCount);
     }
 
-    public void tearDown() throws Exception { super.tearDown(); }
+    public void tearDown() throws Exception {
+        super.tearDown();
+        if (requiresDBSeeding()) {
+            FileUtils.deleteDirectory(TEST_DATA_DIR);            
+        }
+    }
 
     protected boolean requiresDBSeeding() { return false; }
 

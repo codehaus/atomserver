@@ -79,7 +79,7 @@ public class CRUDDBSTest extends CRUDDBSTestCase {
         response.release();
         if (contentStorage instanceof FileBasedContentStorage) {
             int rev = extractRevisionFromURI( finalEditLink );
-            File pFile = new File( getPropfileBase() + ".r" + rev);
+            File pFile = getEntryFile(rev);
             assertTrue( pFile != null && pFile.exists() );
         }
     }

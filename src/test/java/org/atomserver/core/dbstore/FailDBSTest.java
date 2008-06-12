@@ -29,9 +29,13 @@ import org.apache.abdera.protocol.client.RequestOptions;
 import org.atomserver.utils.locale.LocaleUtils;
 import org.atomserver.uri.EntryTarget;
 import org.atomserver.core.filestore.FileBasedContentStorage;
+import org.atomserver.core.filestore.TestingContentStorage;
 import org.atomserver.core.AtomServerTestCase;
 
 import org.atomserver.testutils.client.MockRequestContext;
+import org.atomserver.testutils.conf.TestConfUtil;
+
+import java.io.File;
 
 /**
  */
@@ -40,12 +44,18 @@ public class FailDBSTest extends DBSTestCase {
     private String propId = "34567";
     private IRI entryIRI = null;
     private String urlPath = null;
+    private TestingContentStorage testingContentStorage = null;
 
     public static Test suite()
     { return new TestSuite( FailDBSTest.class ); }
 
     public void setUp() throws Exception { 
+        TestConfUtil.preSetup("fileErrorsConf");
         super.setUp();
+
+        testingContentStorage =
+                (TestingContentStorage) getSpringFactory().getBean("org.atomserver-contentStorage");
+
         urlPath = "widgets/acme/" + propId + ".en.xml";
         entryIRI = IRI.create("http://localhost:8080/"
                               + widgetURIHelper.constructURIString( "widgets", "acme", propId,
@@ -54,6 +64,7 @@ public class FailDBSTest extends DBSTestCase {
 
     public void tearDown() throws Exception { 
         super.tearDown();
+        TestConfUtil.postTearDown();
         EntryTarget entryTarget = widgetURIHelper.getEntryTarget(new MockRequestContext(serviceContext, "GET", entryIRI.toString()), true);
         entriesDao.obliterateEntry(entryTarget);
     }
@@ -71,9 +82,9 @@ public class FailDBSTest extends DBSTestCase {
     }
 
     public void test500ErrorLogs() throws Exception {
-        FileBasedContentStorage.setTestingFailOnGet( true );
+        testingContentStorage.setTestingFailOnGet( true );
         badXMLTest( createWidgetXMLFileString( propId ), 500 );
-        FileBasedContentStorage.setTestingFailOnGet( false );        
+        testingContentStorage.setTestingFailOnGet( false );        
     }
     
 

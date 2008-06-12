@@ -53,7 +53,7 @@ public class KeepaliveDBSTest extends CRUDDBSTestCase {
         String fullURL = getServerURL() + urlPath;
         String id = urlPath;
 
-        File pFile = new File( userdir + "/var/widgets/acme/27/2797/en/2797.xml.r0" );
+        File pFile = new File( TEST_DATA_DIR + "/widgets/acme/27/2797/en/2797.xml.r0" );
         assertNotNull( pFile );
         assertTrue( pFile.exists() );
 

@@ -16,6 +16,8 @@
 package org.atomserver.utils;
 
 import java.io.File;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * PrefixPartitionPathGenerator - implemenation of PartitionPathGenerator that uses the leftmost N characters to partition.
@@ -30,6 +32,7 @@ public class PrefixPartitionPathGenerator implements PartitionPathGenerator {
 
     private static final int DEFAULT_NUM_CHARS = 2;
     private int numChars;
+    private Pattern pattern;
 
     /**
      * construct a PrefixPartitionPathGenerator with the default N.
@@ -45,10 +48,11 @@ public class PrefixPartitionPathGenerator implements PartitionPathGenerator {
      */
     public PrefixPartitionPathGenerator(int numChars) {
         if (numChars < 1) {
-            throw new IllegalArgumentException("you must use a positive number of integers to " +
+            throw new IllegalArgumentException("you must use a positive number of characters to " +
                                                "partition directories.");
         }
         this.numChars = numChars;
+        this.pattern = Pattern.compile("/?([^/]{" + numChars + "})/(\\1[^/]*)(.*)");
     }
 
     /**
@@ -56,5 +60,27 @@ public class PrefixPartitionPathGenerator implements PartitionPathGenerator {
      */
     public File generatePath(File parent, String seed) {
         return new File(parent, seed.substring(0, Math.min(numChars, seed.length())));
+    }
+
+    public ReverseMatch reverseMatch(File root, File file) {
+        String filePath = file.getAbsolutePath();
+        String rootPath = root.getAbsolutePath();
+        String relativePath = filePath.replace(rootPath, "");
+        final Matcher matcher = pattern.matcher(relativePath);
+        return matcher.matches() ?
+               new ReverseMatch() {
+                   public String getPartition() {
+                       return matcher.group(1);
+                   }
+
+                   public String getSeed() {
+                       return matcher.group(2);
+                   }
+
+                   public String getRest() {
+                       return matcher.group(3);
+                   }
+               } :
+                 null;
     }
 }

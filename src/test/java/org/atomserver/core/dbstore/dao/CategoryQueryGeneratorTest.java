@@ -25,6 +25,7 @@ import org.atomserver.utils.logic.Conjunction;
 
 import java.util.Arrays;
 
+// TODO: make this test actually test something.
 public class CategoryQueryGeneratorTest extends TestCase {
 
     public void testCategoryQueryGenerator() throws Exception {

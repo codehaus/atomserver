@@ -21,34 +21,41 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.apache.abdera.i18n.iri.IRI;
 import org.atomserver.core.filestore.FileBasedContentStorage;
+import org.atomserver.core.filestore.TestingContentStorage;
+import org.atomserver.testutils.conf.TestConfUtil;
 
 import java.io.File;
+import java.util.Locale;
 
 /**
  */
 public class FileRetryDBSTest extends CRUDDBSTestCase {
 
+    private TestingContentStorage testingContentStorage = null;
+
     public static Test suite()
     { return new TestSuite( FileRetryDBSTest.class ); }
 
     public void setUp() throws Exception { 
-        super.setUp(); 
+        TestConfUtil.preSetup("fileErrorsConf");
+        super.setUp();
+
+        testingContentStorage =
+                (TestingContentStorage) getSpringFactory().getBean("org.atomserver-contentStorage");
     }
 
     public void tearDown() throws Exception { 
         super.tearDown();
-        FileBasedContentStorage.setTestingAlternatelyFailOnFileReadException( false );
-        FileBasedContentStorage.setTestingAlternatelyFailOnFileReadNull( false );
+        TestConfUtil.postTearDown();
+        testingContentStorage.setTestingAlternatelyFailOnFileReadException( false );
+        testingContentStorage.setTestingAlternatelyFailOnFileReadNull( false );
         destroyEntry( wspace, coll, id, null, false );
     }
 
     protected String getStoreName() 
     { return "org.atomserver-atomService"; }
 
-    protected boolean requiresDBSeeding() 
-    { return false; }
-
-    private String wspace = "dummy"; 
+    private String wspace = "dummy";
     private String coll = "dumber"; 
     private String id = "54321"; 
     
@@ -63,12 +70,11 @@ public class FileRetryDBSTest extends CRUDDBSTestCase {
     }
 
     protected String getPropfileBase() {
-        return (userdir + "/var/" + wspace + "/" + coll + "/54/54321/54321.xml");
+        return (TEST_DATA_DIR + "/" + wspace + "/" + coll + "/54/54321/54321.xml");
     }
 
-    protected File getPropfile() {
-        File propFile = new File( getPropfileBase() + ".r0");
-        return propFile;
+    protected File getEntryFile(int revision) throws Exception {
+        return getEntryFile(wspace, coll, "54321", null, true, revision);
     }
 
     // --------------------
@@ -77,40 +83,40 @@ public class FileRetryDBSTest extends CRUDDBSTestCase {
 
     public void testFileRetry() throws Exception {
         // Set to pass this time
-        FileBasedContentStorage.setTestingAlternatelyFailOnFileReadException( true );
-        int maxRetries = FileBasedContentStorage.getMaxRetries(); 
-        FileBasedContentStorage.setTestingAlternatelyFailOnFileReadExceptionPassCount( maxRetries );
+        testingContentStorage.setTestingAlternatelyFailOnFileReadException( true );
+        int maxRetries = FileBasedContentStorage.MAX_RETRIES;
+        testingContentStorage.setTestingAlternatelyFailOnFileReadExceptionPassCount( maxRetries );
 
         insertThenSelect( 200 );
     }
 
     public void testFileRetry2() throws Exception {
         // Set to FAIL this time
-        FileBasedContentStorage.setTestingAlternatelyFailOnFileReadException( true );
-        int maxRetries = FileBasedContentStorage.getMaxRetries(); 
-        FileBasedContentStorage.setTestingAlternatelyFailOnFileReadExceptionPassCount( maxRetries+1 );
+        testingContentStorage.setTestingAlternatelyFailOnFileReadException( true );
+        int maxRetries = FileBasedContentStorage.MAX_RETRIES;
+        testingContentStorage.setTestingAlternatelyFailOnFileReadExceptionPassCount( maxRetries+1 );
 
         insertThenSelect( 500 );
-        FileBasedContentStorage.setTestingAlternatelyFailOnFileReadExceptionPassCount( maxRetries );
+        testingContentStorage.setTestingAlternatelyFailOnFileReadExceptionPassCount( maxRetries );
     }
 
     public void testFileRetry3() throws Exception {
         // Set to pass this time
-        FileBasedContentStorage.setTestingAlternatelyFailOnFileReadNull( true );
-        int maxRetries = FileBasedContentStorage.getMaxRetries(); 
-        FileBasedContentStorage.setTestingAlternatelyFailOnFileReadNullPassCount( maxRetries );
+        testingContentStorage.setTestingAlternatelyFailOnFileReadNull( true );
+        int maxRetries = FileBasedContentStorage.MAX_RETRIES;
+        testingContentStorage.setTestingAlternatelyFailOnFileReadNullPassCount( maxRetries );
 
         insertThenSelect( 200 );
     }
 
     public void testFileRetry4() throws Exception {
         // Set to FAIL this time
-        FileBasedContentStorage.setTestingAlternatelyFailOnFileReadNull( true );
-        int maxRetries = FileBasedContentStorage.getMaxRetries(); 
-        FileBasedContentStorage.setTestingAlternatelyFailOnFileReadNullPassCount( maxRetries+1 );
+        testingContentStorage.setTestingAlternatelyFailOnFileReadNull( true );
+        int maxRetries = FileBasedContentStorage.MAX_RETRIES;
+        testingContentStorage.setTestingAlternatelyFailOnFileReadNullPassCount( maxRetries+1 );
 
         insertThenSelect( 500 );
-        FileBasedContentStorage.setTestingAlternatelyFailOnFileReadNullPassCount( maxRetries );
+        testingContentStorage.setTestingAlternatelyFailOnFileReadNullPassCount( maxRetries );
     }
     
     void insertThenSelect( int expectedResult ) throws Exception { 

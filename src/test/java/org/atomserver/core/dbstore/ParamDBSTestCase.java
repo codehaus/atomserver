@@ -33,8 +33,8 @@ public class ParamDBSTestCase extends DBSTestCase {
 
     // -------------------------------------------------------
     public void tearDown() throws Exception {
-        super.tearDown();
         deleteEntry("widgets", "acme", stdPropId, stdLocale);
+        super.tearDown();
     }
 
 }

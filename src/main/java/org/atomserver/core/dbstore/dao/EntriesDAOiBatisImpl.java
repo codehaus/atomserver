@@ -499,7 +499,7 @@ public class EntriesDAOiBatisImpl
                                      locale, "selectEntriesByPageAndLocale", feed, null);
     }
 
-    public AggregateEntryMetaData selectAggregateEntry(EntryDescriptor entryDescriptor) {
+    public AggregateEntryMetaData selectAggregateEntry(EntryDescriptor entryDescriptor, List<String> joinWorkspaces) {
         ParamMap paramMap = paramMap()
                 .param("collection", entryDescriptor.getCollection())
                 .param("entryId", entryDescriptor.getEntryId());
@@ -507,9 +507,13 @@ public class EntriesDAOiBatisImpl
             paramMap.param("country", entryDescriptor.getLocale().getCountry());
             paramMap.param("language", entryDescriptor.getLocale().getLanguage());
         }
+        if (joinWorkspaces != null && !joinWorkspaces.isEmpty()) {
+            paramMap.param("joinWorkspaces", joinWorkspaces);
+        }
 
         Map<String, AggregateEntryMetaData> map =
                 AggregateEntryMetaData.aggregate(
+                        entryDescriptor.getWorkspace(),
                         entryDescriptor.getCollection(),
                         entryDescriptor.getLocale(),
                         getSqlMapClientTemplate().queryForList("selectAggregateEntry", paramMap));
@@ -523,10 +527,15 @@ public class EntriesDAOiBatisImpl
             Locale locale,
             int pageDelim,
             int pageSize,
-            Collection<BooleanExpression<AtomCategory>> categoriesQuery) {
+            Collection<BooleanExpression<AtomCategory>> categoriesQuery,
+            List<String> joinWorkspaces) {
         ParamMap paramMap = prepareParamMapForSelectEntries(
                 lastModifiedDate, pageDelim, pageSize,
                 locale == null ? null : locale.toString(), feed);
+
+        if (joinWorkspaces != null && !joinWorkspaces.isEmpty()) {
+            paramMap.param("joinWorkspaces", joinWorkspaces);
+        }
 
         if (categoriesQuery != null) {
             paramMap.param("categoryQuerySql",
@@ -536,7 +545,7 @@ public class EntriesDAOiBatisImpl
 
         List entries = getSqlMapClientTemplate().queryForList("selectAggregateEntriesByPage", paramMap);
         Map<String, AggregateEntryMetaData> map =
-                AggregateEntryMetaData.aggregate(feed.getCollection(), locale, entries);
+                AggregateEntryMetaData.aggregate(feed.getWorkspace(), feed.getCollection(), locale, entries);
         return new ArrayList(map.values());
     }
 
@@ -572,9 +581,7 @@ public class EntriesDAOiBatisImpl
         }
     }
 
-    /**
-     * NOTE: package scoped for use by EntryCategoryIBatisImpl
-     */
+    // NOTE: package scoped for use by EntryCategoryIBatisImpl
     ParamMap prepareParamMapForSelectEntries(Date lastModifiedDate, int pageDelim,
                                              int pageSize, String locale, FeedDescriptor feed) {
         ParamMap paramMap = paramMap()

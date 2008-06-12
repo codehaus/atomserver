@@ -29,16 +29,29 @@
                ON cat.term = matchedEntry.EntryId
         </isNotNull>
          WHERE cat.scheme = #collection#
-        <!-- when looking for the set of changed aggregate entry ids, and we have been asked for a
-             localized feed, we should ONLY look at entries in the proper locale, because we
-             require there to be at least one entry in the correct locale, and we collate the
-             results with a GROUP BY below, so we are only recoring "at least one" anyways... -->
-        <isNotNull property="country">
-           AND (entry.CountryCode = #country#)
-        </isNotNull>
+        <!-- if a localized aggregate feed has been requested, we filter the results to include
+             only aggregate entries that have at least one component in the requested locale. -->
         <isNotNull property="language">
-           AND (entry.LanCode = #language#)
+            AND cat.term IN (
+                SELECT localCat.term
+                  FROM EntryStore localEntry JOIN EntryCategory localCat
+                    ON localCat.scheme = #collection#
+                   AND localEntry.EntryStoreId = localCat.entryStoreId
+                   AND localEntry.LanCode = #language#
+                <isNotNull property="country">
+                   AND (localEntry.CountryCode = #country#)
+                </isNotNull>
+                <isNotNull property="joinWorkspaces">
+                    AND localEntry.Workspace IN 
+                    <iterate property="joinWorkspaces" open="(" close=")" conjunction=",">#joinWorkspaces[]#</iterate>
+                </isNotNull>
+            )
         </isNotNull>
+        <isNotNull property="joinWorkspaces">
+            AND entry.Workspace IN
+            <iterate property="joinWorkspaces" open="(" close=")" conjunction=",">#joinWorkspaces[]#</iterate>
+        </isNotNull>
+
       GROUP BY cat.term
         HAVING MAX(UpdateTimestamp) > #lastModifiedSeqNum#
       ORDER BY MAX(UpdateTimestamp)
@@ -58,6 +71,14 @@
           AND joincat.term IN (
                 <include refid="SELECT_modifiedAggregateEntryIds"/>
               )
+          AND (
+        <!-- we only want to include categories that are either (a) outside of the join scheme, or
+             (b) are matches to the SELECT_modifiedAggregateEntryIds query.  We are already joining
+             in that query as joincat, so we can just include the rows where joincat and cat are
+             referring to the same EntryCategory -->
+                cat.scheme != #collection# OR
+                cat.term = joincat.term
+              )
         <!-- if this is a localized feed, we want to pull in components that are in the proper
              locale, as well as things that are not localized at all -->
         <isNotNull property="country">
@@ -65,6 +86,10 @@
         </isNotNull>
         <isNotNull property="language">
            AND (entry.LanCode = #language# OR entry.LanCode = '**')
+        </isNotNull>
+        <isNotNull property="joinWorkspaces">
+            AND entry.Workspace IN 
+            <iterate property="joinWorkspaces" open="(" close=")" conjunction=",">#joinWorkspaces[]#</iterate>
         </isNotNull>
         ORDER BY UpdateTimestamp, Scheme, Term
     </select>
@@ -99,6 +124,10 @@
                                 GROUP BY c.term
            )
        </isNotNull>
+        <isNotNull property="joinWorkspaces">
+            AND entry.Workspace IN
+            <iterate property="joinWorkspaces" open="(" close=")" conjunction=",">#joinWorkspaces[]#</iterate>
+        </isNotNull>        
     </select>
 
 </sqlMap>

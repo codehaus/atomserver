@@ -18,6 +18,7 @@
 package org.atomserver.core.dbstore;
 
 import org.apache.abdera.i18n.iri.IRI;
+import org.apache.commons.io.FileUtils;
 import org.atomserver.core.CRUDAtomServerTestCase;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
 import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
@@ -26,6 +27,8 @@ import org.atomserver.testutils.client.MockRequestContext;
 import org.atomserver.uri.EntryTarget;
 import org.atomserver.utils.locale.LocaleUtils;
 import org.springframework.context.ApplicationContext;
+
+import java.io.File;
 
 /**
  */
@@ -43,6 +46,10 @@ abstract public class BaseCRUDDBSTestCase extends CRUDAtomServerTestCase {
 
         // we need something in the DB to run these tests
         if ( requiresDBSeeding()  ) {
+
+            File file = new File(getClass().getResource("/testentries/var").toURI());
+            FileUtils.copyDirectory(file, TEST_DATA_DIR);
+
             DBSeeder.getInstance(springContext).seedEntriesClearingFirst();
         } else {
             DBSeeder.getInstance(springContext).createWidgetsDir();

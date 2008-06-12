@@ -22,6 +22,8 @@ import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.dbstore.dao.ContentDAO;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
 
+import java.util.Locale;
+
 /**
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
@@ -107,4 +109,11 @@ public class DBBasedContentStorage implements ContentStorage {
                entriesDAO.selectEntry(entryDescriptor);
     }
 
+    public Object getPhysicalRepresentation(String workspace,
+                                            String collection,
+                                            String entryId,
+                                            Locale locale,
+                                            int revision) {
+        throw new UnsupportedOperationException("not implemented");        
+    }
 }

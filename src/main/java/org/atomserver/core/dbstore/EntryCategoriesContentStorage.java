@@ -394,4 +394,12 @@ public class EntryCategoriesContentStorage implements ContentStorage {
     public void revisionChangedWithoutContentChanging(EntryDescriptor descriptor) {
         // nothing to do for this case
     }
+
+    public Object getPhysicalRepresentation(String workspace,
+                                            String collection,
+                                            String entryId,
+                                            Locale locale,
+                                            int revision) {
+        throw new UnsupportedOperationException("not implemented");
+    }
 }

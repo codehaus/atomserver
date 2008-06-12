@@ -22,6 +22,7 @@ import junit.framework.TestSuite;
 
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.core.ErrorsAtomServerTestCase;
+import org.atomserver.testutils.conf.TestConfUtil;
 
 import java.io.File;
 
@@ -31,22 +32,14 @@ public class ErrorsFSTest extends ErrorsAtomServerTestCase {
 
     public static Test suite() { return new TestSuite(ErrorsFSTest.class); }
 
-    private String prevConfDir;
-
     public void setUp() throws Exception {
-        File confDir = new File(getClass().getClassLoader().getResource("filestore-conf").toURI());
-        prevConfDir = System.getProperty("atomserver.conf.dir");
-        System.setProperty("atomserver.conf.dir", confDir.getAbsolutePath());
+        TestConfUtil.preSetup("filestore-conf");
         super.setUp();
     }
 
     public void tearDown() throws Exception {
         super.tearDown();
-        if (prevConfDir == null) {
-            System.clearProperty("atomserver.conf.dir");
-        } else {
-            System.setProperty("atomserver.conf.dir", prevConfDir);
-        }
+        TestConfUtil.postTearDown();
     }
 
     protected String getStoreName() {

@@ -40,8 +40,8 @@ public class AggregateEntryMetaData extends EntryMetaData {
     );
     private final Set<EntryCategory> categories = new HashSet<EntryCategory>();
 
-    public AggregateEntryMetaData(String collection, Locale locale, String entryId) {
-        setWorkspace("$join");
+    public AggregateEntryMetaData(String workspace, String collection, Locale locale, String entryId) {
+        setWorkspace(workspace);
         setCollection(collection);
         setEntryId(entryId);
         setLocale(locale);
@@ -63,7 +63,7 @@ public class AggregateEntryMetaData extends EntryMetaData {
             }
             for (EntryCategory entryCategory : entry.getCategories()) {
                 EntryCategory category = new EntryCategory();
-                category.setWorkspace("$join");
+                category.setWorkspace(getWorkspace());
                 category.setCollection(getCollection());
                 category.setEntryId(getEntryId());
                 category.setScheme(entryCategory.getScheme());
@@ -82,7 +82,8 @@ public class AggregateEntryMetaData extends EntryMetaData {
         return members;
     }
 
-    public static Map<String, AggregateEntryMetaData> aggregate(String collectionName,
+    public static Map<String, AggregateEntryMetaData> aggregate(String workspace,
+                                                                String collectionName,
                                                                 Locale locale,
                                                                 Collection<EntryMetaData> metaData) {
         HashMap<String, AggregateEntryMetaData> map = new HashMap<String, AggregateEntryMetaData>();
@@ -92,7 +93,7 @@ public class AggregateEntryMetaData extends EntryMetaData {
                     AggregateEntryMetaData agg = map.get(category.getTerm());
                     if (agg == null) {
                         map.put(category.getTerm(), agg =
-                                new AggregateEntryMetaData(collectionName, locale, category.getTerm()));
+                                new AggregateEntryMetaData(workspace, collectionName, locale, category.getTerm()));
                     }
                     agg.add(entry);
                 }

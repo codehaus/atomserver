@@ -17,7 +17,7 @@
                 <property name="contextPath" value="${atomserver.servlet.mapping}"/>
             </bean>
         </property>
-        <property name="contentStorage" ref="org.atomserver-fileContentStorage" />
+        <property name="contentStorage" ref="org.atomserver-contentStorage" />
         <property name="workspaces">
             <set>
                 <bean class="org.atomserver.core.WorkspaceOptions">

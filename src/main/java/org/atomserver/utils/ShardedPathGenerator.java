@@ -20,6 +20,8 @@ import org.apache.commons.lang.StringUtils;
 import java.io.File;
 import static java.lang.Character.MAX_RADIX;
 import static java.lang.Character.MIN_RADIX;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 /**
  * ShardedPathGenerator - a hashing algorithm to generate a path of partition directories from a String seed.
@@ -56,6 +58,8 @@ public class ShardedPathGenerator implements PartitionPathGenerator {
     private final int depth;
     private final int nodesPerLevel;
 
+    private Pattern pattern;
+
     /**
      * construct a new ShardedPathGenerator with default values.
      */
@@ -78,6 +82,7 @@ public class ShardedPathGenerator implements PartitionPathGenerator {
                                                "use a value in the range [" + MIN_RADIX + "," +
                                                MAX_RADIX + "].");
         }
+
         this.radix = radix;
 
         if (depth < 1) {
@@ -85,26 +90,55 @@ public class ShardedPathGenerator implements PartitionPathGenerator {
         }
         this.depth = depth;
 
-        if (nodesPerLevel < radix) {
+        if (nodesPerLevel < this.radix) {
             throw new IllegalArgumentException("smaller nodes per level than radix makes no sense -" +
                                                "generally nodes per level would be on the order of " +
                                                "radix^2 or higher.  make sure you understand how to " +
                                                "use the ShardedPathGenerator.");
         }
         this.nodesPerLevel = nodesPerLevel;
+
+        this.pattern = Pattern.compile("/?([a-z0-9]+(?:/[a-z0-9]+){" + (depth - 1) + "})/([^/]*)(.*)");
     }
 
     /**
      * {@inheritDoc}
      */
     public File generatePath(File parent, String seed) {
+        return new File(parent, StringUtils.join(computeShards(seed), "/"));
+    }
+
+    private String[] computeShards(String seed) {
         String[] shards = new String[depth];
         int hash = hash(seed);
         for (int i = 0; i < depth; i++) {
             shards[i] = Integer.toString(
                     Math.abs(hash * prime(i)) % nodesPerLevel, radix);
         }
-        return new File(parent, StringUtils.join(shards, "/"));
+        return shards;
+    }
+
+    public ReverseMatch reverseMatch(File root, File file) {
+        String filePath = file.getAbsolutePath();
+        String rootPath = root.getAbsolutePath();
+        String relativePath = filePath.replace(rootPath, "");
+        final Matcher matcher = pattern.matcher(relativePath);
+        return matcher.matches() &&
+               matcher.group(1).equals(StringUtils.join(computeShards(matcher.group(2)), "/")) ?
+               new ReverseMatch() {
+                   public String getPartition() {
+                       return matcher.group(1);
+                   }
+
+                   public String getSeed() {
+                       return matcher.group(2);
+                   }
+
+                   public String getRest() {
+                       return matcher.group(3);
+                   }
+               } :
+                 null;
     }
 
     private static final int[] PRIMES = {8675309, 16661, 17};

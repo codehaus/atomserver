@@ -19,26 +19,18 @@ package org.atomserver.core;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.atomserver.testutils.client.JettyWebAppTestCase;
-
-import java.io.File;
+import org.atomserver.testutils.conf.TestConfUtil;
 
 public class ExtendedContextTest extends JettyWebAppTestCase {
-    private String prevConfDir = null;
 
     protected void setUp() throws Exception {
-        File confDir = new File(getClass().getClassLoader().getResource("confdir").toURI());
-        prevConfDir = System.getProperty("atomserver.conf.dir");
-        System.setProperty("atomserver.conf.dir", confDir.getAbsolutePath());
+        TestConfUtil.preSetup("confdir");
         super.setUp();
     }
 
     protected void tearDown() throws Exception {
         super.tearDown();
-        if (prevConfDir == null) {
-            System.clearProperty("atomserver.conf.dir");
-        } else {
-            System.setProperty("atomserver.conf.dir", prevConfDir);
-        }
+        TestConfUtil.postTearDown();
     }
 
 
