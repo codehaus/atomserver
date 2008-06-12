@@ -27,7 +27,7 @@
   </bean>
   
   <bean name="blogstore" class="org.atomserver.blogs.FileBasedBlogService">
-      <property name="rootDir" value="file:var/blogs"/>
+      <property name="rootDir" value="file:target/var/blogs"/>
       <property name="uriHandler" ref="blog_uriHandler"/>
   </bean>
 

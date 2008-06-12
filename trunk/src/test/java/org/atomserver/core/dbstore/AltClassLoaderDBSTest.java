@@ -46,9 +46,6 @@ public class AltClassLoaderDBSTest extends CRUDDBSTestCase {
     protected String getStoreName() 
     { return "org.atomserver-atomService"; }
 
-    protected boolean requiresDBSeeding() 
-    { return false; }
-
     private String wspace = "dummy"; 
     private String coll = "dumber"; 
     private String id = "34567"; 
@@ -64,7 +61,7 @@ public class AltClassLoaderDBSTest extends CRUDDBSTestCase {
     }
 
     protected File getPropfile() {
-        File propFile = new File(userdir + "/var/" + wspace + "/" + coll + "/34/34567/34567.xml");
+        File propFile = new File(TEST_DATA_DIR + "/" + wspace + "/" + coll + "/34/34567/34567.xml");
         return propFile;
     }
 

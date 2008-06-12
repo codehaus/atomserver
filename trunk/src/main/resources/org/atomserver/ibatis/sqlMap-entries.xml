@@ -134,7 +134,8 @@
         <!-- this fragment encapsulates selecting the relevant columns from the EntryStore and
              EntryCategory tables when pulling back entries, whether retrieving a single Entry or
              an entire Feed -->
-        SELECT entry.EntryStoreId AS EntryStoreId,
+        SELECT DISTINCT
+               entry.EntryStoreId AS EntryStoreId,
                entry.Workspace AS Workspace,
                entry.Collection AS Collection,
                entry.LanCode AS LanCode,
@@ -162,7 +163,8 @@
 
     <select id="selectEntry" parameterClass="map" resultMap="entryResult">
         <!-- SELECT a single Entry based on the 5-tuple key -->
-       SELECT entry.EntryStoreId AS EntryStoreId,
+       SELECT DISTINCT
+              entry.EntryStoreId AS EntryStoreId,
               entry.Workspace AS Workspace,
               entry.Collection AS Collection,
               entry.LanCode AS LanCode,

@@ -19,6 +19,7 @@ package org.atomserver.core.filestore;
 
 import org.atomserver.utils.locale.LocaleUtils;
 import org.atomserver.core.CRUDAtomServerTestCase;
+import org.atomserver.testutils.conf.TestConfUtil;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.apache.abdera.i18n.iri.IRI;
@@ -32,22 +33,14 @@ public class CRUDFSTest extends CRUDAtomServerTestCase {
 
     public static Test suite() { return new TestSuite(CRUDFSTest.class); }
 
-    private String prevConfDir;
-
     public void setUp() throws Exception {
-        File confDir = new File(getClass().getClassLoader().getResource("filestore-conf").toURI());
-        prevConfDir = System.getProperty("atomserver.conf.dir");
-        System.setProperty("atomserver.conf.dir", confDir.getAbsolutePath());
+        TestConfUtil.preSetup("filestore-conf");
         super.setUp();
     }
 
     public void tearDown() throws Exception {
         super.tearDown();
-        if (prevConfDir == null) {
-            System.clearProperty("atomserver.conf.dir");
-        } else {
-            System.setProperty("atomserver.conf.dir", prevConfDir);
-        }
+        TestConfUtil.postTearDown();
     }
 
     protected String getStoreName() {
@@ -97,7 +90,7 @@ public class CRUDFSTest extends CRUDAtomServerTestCase {
     }
 
     protected File getPropfile() {
-        return new File(userdir + "/var/widgets/acme/12/12345/en/12345.xml");
+        return new File(TEST_DATA_DIR + "/widgets/acme/12/12345/en/12345.xml");
     }
 
     // --------------------

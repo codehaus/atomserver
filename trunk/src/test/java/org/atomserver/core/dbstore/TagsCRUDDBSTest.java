@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.List;
+import java.util.Locale;
 
 /**
  */
@@ -53,13 +54,8 @@ public class TagsCRUDDBSTest extends CRUDDBSTestCase {
 
     protected String getURLPath() { return "tags:widgets/acme/642.en.xml"; }
 
-    protected String getPropfileBase() {
-        return (userdir + "/var/widgets/acme/64/642/en/642.xml");
-     }
-
-    protected File getPropfile() {
-        File propFile = new File( getPropfileBase() + "r0" );
-        return propFile;
+    protected File getEntryFile(int revision) throws Exception {
+        return getEntryFile("widgets", "acme", "642", null, true, revision);
     }
 
     // --------------------

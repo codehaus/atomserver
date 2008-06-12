@@ -22,6 +22,7 @@ import junit.framework.TestSuite;
 import org.apache.abdera.model.*;
 import org.apache.abdera.protocol.client.ClientResponse;
 import org.atomserver.core.AtomServerTestCase;
+import org.atomserver.testutils.conf.TestConfUtil;
 
 import java.io.File;
 import java.util.Date;
@@ -35,22 +36,14 @@ public class FilestoreTest extends AtomServerTestCase {
     public static Test suite()
     { return new TestSuite( FilestoreTest.class ); }
 
-    private String prevConfDir;
-
     public void setUp() throws Exception {
-        File confDir = new File(getClass().getClassLoader().getResource("filestore-conf").toURI());
-        prevConfDir = System.getProperty("atomserver.conf.dir");
-        System.setProperty("atomserver.conf.dir", confDir.getAbsolutePath());
+        TestConfUtil.preSetup("filestore-conf");
         super.setUp();
     }
 
     public void tearDown() throws Exception {
         super.tearDown();
-        if (prevConfDir == null) {
-            System.clearProperty("atomserver.conf.dir");
-        } else {
-            System.setProperty("atomserver.conf.dir", prevConfDir);
-        }
+        TestConfUtil.postTearDown();
     }
 
 
@@ -111,7 +104,7 @@ public class FilestoreTest extends AtomServerTestCase {
     public void XXXtestReadFeedSince() throws Exception {
         Date now = new Date();
         long lnow = now.getTime();
-        File touchFile = new File( userdir + "/var/widgets/acme/27/2788/en/2788.xml.r0" );
+        File touchFile = new File( TEST_DATA_DIR + "/widgets/acme/27/2788/en/2788.xml.r0" );
         long origLastModified = touchFile.lastModified();
         touchFile.setLastModified( lnow );
 
@@ -142,7 +135,7 @@ public class FilestoreTest extends AtomServerTestCase {
     public void XXXtestGetEntrySincePasses() throws Exception {
         Date now = new Date();
         long lnow = now.getTime();
-        File touchFile = new File( userdir + "/var/widgets/acme/99/9999/en/9999.xml.r0" );
+        File touchFile = new File( TEST_DATA_DIR + "/widgets/acme/99/9999/en/9999.xml.r0" );
         long origLastModified = touchFile.lastModified();
         touchFile.setLastModified( lnow );
 
@@ -159,7 +152,7 @@ public class FilestoreTest extends AtomServerTestCase {
     public void XXXtestGetEntrySinceFails() throws Exception {
         Date now = new Date();
         long lnow = now.getTime();
-        File touchFile = new File( userdir + "/var/widgets/acme/99/9999/en/9999.xml.r0" );
+        File touchFile = new File( TEST_DATA_DIR + "/widgets/acme/99/9999/en/9999.xml.r0" );
         long origLastModified = touchFile.lastModified();
         touchFile.setLastModified( lnow - 10000 );
 

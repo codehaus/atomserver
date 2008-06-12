@@ -25,6 +25,7 @@ import org.apache.abdera.protocol.client.RequestOptions;
 import org.apache.abdera.protocol.server.ServiceContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.io.FileUtils;
 import org.atomserver.AtomServer;
 import org.atomserver.ContentStorage;
 import org.atomserver.testutils.client.JettyWebAppTestCase;
@@ -34,6 +35,7 @@ import org.springframework.context.ApplicationContext;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.io.File;
 
 /**
  */
@@ -41,7 +43,7 @@ abstract public class AtomServerTestCase extends JettyWebAppTestCase {
     // ---------------------
     //   static variables
     // ---------------------
-    protected static final int DB_CATCHUP_SLEEP = 300; 
+    protected static final int DB_CATCHUP_SLEEP = 300;
 
     protected static final String APPLICATION_CONTEXT_CLASSPATH_LOCATION =
             "/org/atomserver/spring/atomServerApplicationContext.xml";
@@ -49,7 +51,7 @@ abstract public class AtomServerTestCase extends JettyWebAppTestCase {
     protected static Abdera abdera = new Abdera();
 
     protected static final String userdir = System.getProperty( "user.dir" );
-    
+
     private static final Pattern REVISION_PATTERN = Pattern.compile(".*/(\\d+)");
 
     static private final String CONTEXT_NAME =
@@ -69,6 +71,9 @@ abstract public class AtomServerTestCase extends JettyWebAppTestCase {
     protected String baseURI;
 
     protected ServiceContext serviceContext;
+    public static final File TEST_DATA_DIR = new File(
+            new File(System.getProperty("user.dir")),
+            System.getProperty("atomserver.data.dir").replaceFirst("^file\\:", ""));
 
     // -------------------------------------------------------
     //                    METHODS
@@ -93,7 +98,7 @@ abstract public class AtomServerTestCase extends JettyWebAppTestCase {
         widgetURIHelper = ((AbstractAtomService) springContext
                 .getBean("org.atomserver-atomService")).getURIHandler();
         baseURI = widgetURIHelper.getServiceBaseUri();
-        serviceContext = (ServiceContext) springContext.getBean(CONTEXT_NAME);        
+        serviceContext = (ServiceContext) springContext.getBean(CONTEXT_NAME);
         if (serviceContext.getAbdera() == null) {
             serviceContext.init(new Abdera(), null );
         }
@@ -122,7 +127,7 @@ abstract public class AtomServerTestCase extends JettyWebAppTestCase {
         store = (AbstractAtomService)( springContext.getBean( storeName ) );
         AtomServer provider = (AtomServer)(springContext.getBean("org.atomserver-atomServer"));
         provider.setService( store );
-        
+
         contentStorage = (ContentStorage) springContext.getBean("org.atomserver-contentStorage");
     }
 

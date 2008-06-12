@@ -21,6 +21,7 @@ import org.apache.abdera.i18n.iri.IRI;
 import org.atomserver.utils.locale.LocaleUtils;
 
 import java.io.File;
+import java.util.Locale;
 
 /**
  */
@@ -73,13 +74,11 @@ abstract public class CRUDDBSTestCase extends BaseCRUDDBSTestCase {
         return entryIRI;
     }
 
-    protected File getPropfile() {
-        File propFile = new File(getPropfileBase() + ".r0");
-        return propFile;
+    protected File getPropfile() throws Exception {
+        return getEntryFile(0);
     }
 
-    protected String getPropfileBase() {
-        return userdir + "/var/widgets/acme/12/12345/en/12345.xml";
+    protected File getEntryFile(int revision) throws Exception {
+        return getEntryFile("widgets", "acme", "12345", Locale.ENGLISH, true, revision);
     }
-
 }

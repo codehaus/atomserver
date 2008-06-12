@@ -25,41 +25,50 @@ import org.apache.abdera.protocol.client.AbderaClient;
 import org.apache.abdera.protocol.client.ClientResponse;
 import org.apache.abdera.protocol.client.RequestOptions;
 import org.atomserver.core.filestore.FileBasedContentStorage;
+import org.atomserver.core.filestore.TestingContentStorage;
+import org.atomserver.testutils.conf.TestConfUtil;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.io.File;
+import java.util.Locale;
 
 /**
  */
 public class TxnDBSTest extends CRUDDBSTestCase {
 
+    private TestingContentStorage testingContentStorage = null;
+
     public static Test suite()
     { return new TestSuite( TxnDBSTest.class ); }
 
-    public void setUp() throws Exception { 
-        super.setUp(); 
-        //FileBasedContentStorage.setTestingDeleteBackupsOnExit( false );
-        FileBasedContentStorage.setTestingAlternatelyFailOnPut( true );
+    public void setUp() throws Exception {
+        TestConfUtil.preSetup("fileErrorsConf");
+        super.setUp();
+
+        testingContentStorage =
+                (TestingContentStorage) getSpringFactory().getBean("org.atomserver-contentStorage");
+        testingContentStorage.setTestingAlternatelyFailOnPut( true );
     }
 
-    public void tearDown() throws Exception { 
+    public void tearDown() throws Exception {
         super.tearDown();
-        //FileBasedContentStorage.setTestingDeleteBackupsOnExit( true );
-        FileBasedContentStorage.setTestingAlternatelyFailOnPut( false );
+        TestConfUtil.postTearDown();
+
+        testingContentStorage.setTestingAlternatelyFailOnPut( false );
         destroyEntry( wspace, coll, id, null, false );
     }
 
     protected String getStoreName() 
     { return "org.atomserver-atomService"; }
 
-    protected boolean requiresDBSeeding() 
+    protected boolean requiresDBSeeding()
     { return false; }
 
-    private String wspace = "dummy"; 
+    private String wspace = "dummy";
     private String coll = "dumber"; 
-    private String id = "12345"; 
-    
+    private String id = "12345";
 
-    protected String getURLPath() 
+    protected String getURLPath()
     { return (wspace + "/" + coll + "/" + id + ".xml"); }
 
     protected IRI getEntryIRI() {
@@ -68,13 +77,13 @@ public class TxnDBSTest extends CRUDDBSTestCase {
         return entryIRI;
     }
 
-    protected String getPropfileBase() {
-        return (userdir + "/var/" + wspace + "/" + coll + "/12/12345/12345.xml");
+    protected File getEntryFile(int revision) throws Exception {
+        return getEntryFile(wspace, coll, "12345", null, true, revision);
     }
 
-    protected File getPropfile() {
-        File propFile = new File( getPropfileBase() + ".r0");
-        return propFile;
+
+    protected File getPropfile() throws Exception {
+        return getEntryFile(0);
     }
 
     // --------------------
@@ -129,13 +138,10 @@ public class TxnDBSTest extends CRUDDBSTestCase {
         // NOTE: the SELECT above has actually verified the content is the original content...
 
         File file = getPropfile();
+        log.debug("FILE :: " + file);
         assertTrue( file.exists() );
 
-        /*
-        File bakFile = new File(userdir + "/var/" + wspace + "/" + coll + "/12/12345/12345.xml.r0");
-        assertFalse( bakFile.exists() );
-        */
-        File newFile = new File(userdir + "/var/" + wspace + "/" + coll + "/12/12345/12345.xml.r1");
+        File newFile = new File(TEST_DATA_DIR + "/" + wspace + "/" + coll + "/12/12345/12345.xml.r1");
         assertTrue( !newFile.exists() ); 
 
     }

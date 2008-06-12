@@ -16,6 +16,8 @@
 
 package org.atomserver;
 
+import java.util.Locale;
+
 /**
  * ContentStorage - API for where to actually put the contents of Entries.
  * Implementations of this interface are wired to an AtomCollection.
@@ -87,4 +89,10 @@ public interface ContentStorage {
      * @param descriptor The descriptor of the entry to check.
      */
     void revisionChangedWithoutContentChanging(EntryDescriptor descriptor);
+
+    Object getPhysicalRepresentation(String workspace,
+                                     String collection,
+                                     String entryId,
+                                     Locale locale,
+                                     int revision);
 }

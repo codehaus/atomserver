@@ -22,7 +22,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.EntryDescriptor;
+import org.atomserver.ContentStorage;
 import org.atomserver.core.filestore.FileBasedContentStorage;
+import org.atomserver.core.filestore.TestingContentStorage;
 import org.atomserver.exceptions.AtomServerException;
 
 import java.io.File;
@@ -39,10 +41,11 @@ public class PhysicalStorageTest extends TestCase {
         File root = new File(System.getProperty("java.io.tmpdir"), "storage");
 
         try {
-            FileBasedContentStorage.setTestingFailOnGet(false);
-            FileBasedContentStorage storage = new FileBasedContentStorage(root);
+            TestingContentStorage fileBasedStorage = new TestingContentStorage(root);
+            TestingContentStorage storage = fileBasedStorage;
+            storage.setTestingFailOnGet(false);
             
-            assertEquals(root, storage.getRootDir());
+            assertEquals(root, fileBasedStorage.getRootDir());
             assertTrue(storage.canRead());
 
             EntryDescriptor my_1234_en = new BaseEntryDescriptor("widgets", "mine", "1234", Locale.ENGLISH, 1);     
@@ -68,13 +71,13 @@ public class PhysicalStorageTest extends TestCase {
             assertEquals("mine:1234:en", storage.getContent(my_1234_en));
             assertTrue(storage.contentExists(my_1234_en_GB));
             assertEquals("mine:1234:en_GB", storage.getContent(my_1234_en_GB));
-            assertTrue(storage.lastModified(my_1234_en) < storage.lastModified(my_1234_en_GB));
+            assertTrue(fileBasedStorage.lastModified(my_1234_en) < fileBasedStorage.lastModified(my_1234_en_GB));
 
-            File file_1234_en = storage.getFileLocation("widgets", "mine", "1234", Locale.ENGLISH, 1);
-            File file_1234_en_GB = storage.getFileLocation("widgets", "mine", "1234", Locale.UK, 0);
+            File file_1234_en = (File) storage.getPhysicalRepresentation("widgets", "mine", "1234", Locale.ENGLISH, 1);
+            File file_1234_en_GB = (File) storage.getPhysicalRepresentation("widgets", "mine", "1234", Locale.UK, 0);
 
             log.debug( "PATH= " + file_1234_en.getAbsolutePath() );
-            EntryDescriptor out_1234_en = storage.getEntryMetaData(file_1234_en.getAbsolutePath());
+            EntryDescriptor out_1234_en = fileBasedStorage.getEntryMetaData(file_1234_en.getAbsolutePath());
             assertNotNull( out_1234_en );
             assertEquals(my_1234_en.getWorkspace(), out_1234_en.getWorkspace());
             assertEquals(my_1234_en.getCollection(), out_1234_en.getCollection());
@@ -84,7 +87,7 @@ public class PhysicalStorageTest extends TestCase {
             // we started at rev1, so the file should match
             assertEquals(1, out_1234_en.getRevision());
 
-            EntryDescriptor out_1234_en_GB = storage.getEntryMetaData(file_1234_en_GB.getAbsolutePath());
+            EntryDescriptor out_1234_en_GB = fileBasedStorage.getEntryMetaData(file_1234_en_GB.getAbsolutePath());
             assertEquals(my_1234_en_GB.getWorkspace(), out_1234_en_GB.getWorkspace());
             assertEquals(my_1234_en_GB.getCollection(), out_1234_en_GB.getCollection());
             assertEquals(my_1234_en_GB.getEntryId(), out_1234_en_GB.getEntryId());

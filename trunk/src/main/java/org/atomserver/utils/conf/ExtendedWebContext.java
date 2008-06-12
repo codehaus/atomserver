@@ -39,10 +39,19 @@ public class ExtendedWebContext
     }
 
     public Resource[] getResources(String s) throws IOException {
+        log.trace("getting resources : " + s);
         try {
-            return super.getResources(s);
+            Resource[] resources = super.getResources(s);
+            if (log.isTraceEnabled() && resources != null) {
+                log.trace("found " + resources.length + " resources for " + s);
+                for (Resource resource : resources) {
+                    log.trace(" found resource : " + resource);
+                }
+            }
+            return resources;
         } catch (IOException e) {
             if (s.endsWith("*.xml")) {
+                log.warn("IOException getting resources - returning no resources");
                 return new Resource[0];
             } else {
                 throw e;

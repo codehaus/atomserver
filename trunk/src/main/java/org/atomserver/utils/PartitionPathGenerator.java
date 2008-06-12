@@ -43,4 +43,12 @@ public interface PartitionPathGenerator {
      * @return a File representing the partitioned path
      */
     public File generatePath(File parent, String seed);
+
+    public ReverseMatch reverseMatch(File root, File file);
+
+    public interface ReverseMatch {
+        String getPartition();
+        String getSeed();
+        String getRest();
+    }
 }
