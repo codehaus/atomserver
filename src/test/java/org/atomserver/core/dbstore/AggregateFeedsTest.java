@@ -25,7 +25,7 @@ public class AggregateFeedsTest extends DBSTestCase {
         entriesDao.deleteAllEntries(new BaseServiceDescriptor("cuckoos"));
         entriesDao.deleteAllEntries(new BaseServiceDescriptor("aloos"));
 
-        for (int i = 3000; i < 3024; i++) {
+        for (int i = 3006; i < 3018; i++) {
             String entryId = "" + i;
             modifyEntry("lalas", "my", entryId, Locale.US.toString(), lalaXml(i), true, "0");
             if (i % 2 == 0) {
@@ -48,15 +48,15 @@ public class AggregateFeedsTest extends DBSTestCase {
 
         // first, check that the individual entry feeds are the size we expect:
         feed = getPage("lalas/my");
-        assertEquals(24, feed.getEntries().size());
-        feed = getPage("cuckoos/my");
         assertEquals(12, feed.getEntries().size());
+        feed = getPage("cuckoos/my");
+        assertEquals(6, feed.getEntries().size());
         feed = getPage("aloos/my");
-        assertEquals(8, feed.getEntries().size());
+        assertEquals(4, feed.getEntries().size());
 
         // get the aggregate feed, and mark the end index
         feed = getPage("$join/urn:link");
-        assertEquals(24, feed.getEntries().size());
+        assertEquals(12, feed.getEntries().size());
         endIndex = feed.getSimpleExtension(AtomServerConstants.END_INDEX);
 
         // getting the next page should return a 304 NOT MODIFIED
@@ -168,7 +168,7 @@ public class AggregateFeedsTest extends DBSTestCase {
 
         // getting the same feed as a localized feed should return the same results
         feed = getPage("$join/urn:link?locale=en_US");
-        assertEquals(24, feed.getEntries().size());
+        assertEquals(12, feed.getEntries().size());
         endIndex = feed.getSimpleExtension(AtomServerConstants.END_INDEX);
 
         // changing one lala should result in a single entry in our aggregate feed
@@ -255,7 +255,7 @@ public class AggregateFeedsTest extends DBSTestCase {
 
 
         feed = getPage("$join(lalas,cuckoos)/urn:link");
-        assertEquals(24, feed.getEntries().size());
+        assertEquals(12, feed.getEntries().size());
         for (Entry entry : feed.getEntries()) {
             String entryUrl = getServerRoot() + entry.getLink("self").getHref();
             Entry fullEntry = getEntry(entryUrl);
@@ -284,18 +284,18 @@ public class AggregateFeedsTest extends DBSTestCase {
         endIndex = feed.getSimpleExtension(AtomServerConstants.END_INDEX);
 
         // modify all of the "odd" lalas
-        for (int i = 3001; i < 3024; i+=2) {
+        for (int i = 3007; i < 3018; i+=2) {
             String entryId = "" + i;
             modifyEntry("lalas", "my", entryId, Locale.US.toString(), lalaXml(i), false, "*");
         }
 
         // modify ONE "even" lala
-        modifyEntry("lalas", "my", "3002", Locale.US.toString(), lalaXml(3002), false, "*");
+        modifyEntry("lalas", "my", "3008", Locale.US.toString(), lalaXml(3008), false, "*");
 
         // we should see the one entry in the "even" feed
         feed = getPage("$join/urn:link/-/(urn:group)even?max-results=2&start-index=" + endIndex);
         assertEquals(1, feed.getEntries().size());
-        assertEquals("3002", feed.getEntries().get(0).getSimpleExtension(AtomServerConstants.ENTRY_ID));
+        assertEquals("3008", feed.getEntries().get(0).getSimpleExtension(AtomServerConstants.ENTRY_ID));
     }
 
     private static void dumpToFile(Base object) throws IOException {
