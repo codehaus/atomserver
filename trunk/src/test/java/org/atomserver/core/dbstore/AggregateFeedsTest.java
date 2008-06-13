@@ -272,6 +272,30 @@ public class AggregateFeedsTest extends DBSTestCase {
             assertTrue(entry.getContent().contains("<cuckoo"));
             assertFalse(entry.getContent().contains("<aloo"));
         }
+
+        // The following is a regression test against the bug we discovered where with a previous
+        // incarnation of the SQL, we would sometimes not return all of the aggregate entries in a
+        // feed because we were paginating the queries at the wrong level, and the intersection of
+        // the entries that matched the join with the entries that matched the category query was
+        // empty.
+
+        // move to the end of the "even" feed
+        feed = getPage("$join/urn:link/-/(urn:group)even");
+        endIndex = feed.getSimpleExtension(AtomServerConstants.END_INDEX);
+
+        // modify all of the "odd" lalas
+        for (int i = 3001; i < 3024; i+=2) {
+            String entryId = "" + i;
+            modifyEntry("lalas", "my", entryId, Locale.US.toString(), lalaXml(i), false, "*");
+        }
+
+        // modify ONE "even" lala
+        modifyEntry("lalas", "my", "3002", Locale.US.toString(), lalaXml(3002), false, "*");
+
+        // we should see the one entry in the "even" feed
+        feed = getPage("$join/urn:link/-/(urn:group)even?max-results=2&start-index=" + endIndex);
+        assertEquals(1, feed.getEntries().size());
+        assertEquals("3002", feed.getEntries().get(0).getSimpleExtension(AtomServerConstants.ENTRY_ID));
     }
 
     private static void dumpToFile(Base object) throws IOException {
