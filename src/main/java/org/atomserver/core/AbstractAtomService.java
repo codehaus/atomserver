@@ -240,4 +240,22 @@ abstract public class AbstractAtomService implements AtomService {
         }
     }
 
+    private int maxLinkAggregateEntriesPerPage = WorkspaceOptions.DEFAULT_MAX_LINK_ENTRIES_PER_PAGE;
+    private int maxFullAggregateEntriesPerPage = WorkspaceOptions.DEFAULT_MAX_FULL_ENTRIES_PER_PAGE;    
+
+    public int getMaxLinkAggregateEntriesPerPage() {
+        return maxLinkAggregateEntriesPerPage;
+    }
+
+    public int getMaxFullAggregateEntriesPerPage() {
+        return maxFullAggregateEntriesPerPage;
+    }
+
+    public void setMaxLinkAggregateEntriesPerPage(int maxLinkAggregateEntriesPerPage) {
+        this.maxLinkAggregateEntriesPerPage = maxLinkAggregateEntriesPerPage;
+    }
+
+    public void setMaxFullAggregateEntriesPerPage(int maxFullAggregateEntriesPerPage) {
+        this.maxFullAggregateEntriesPerPage = maxFullAggregateEntriesPerPage;
+    }
 }
