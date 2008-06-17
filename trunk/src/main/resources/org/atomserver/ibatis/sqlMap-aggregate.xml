@@ -39,8 +39,16 @@
                    AND localEntry.EntryStoreId = localCat.entryStoreId
                    AND localEntry.LanCode = #language#
                 <isNotNull property="country">
+                    <isNotEqual property="country" compareValue="">
                    AND (localEntry.CountryCode = #country#)
+                    </isNotEqual>
+                    <isEqual property="country" compareValue="">
+                   AND localEntry.CountryCode = '**'
+                    </isEqual>
                 </isNotNull>
+                <isNull property="country">
+                   AND localEntry.CountryCode = '**'
+                </isNull>
                 <isNotNull property="joinWorkspaces">
                     AND localEntry.Workspace IN 
                     <iterate property="joinWorkspaces" open="(" close=")" conjunction=",">#joinWorkspaces[]#</iterate>
@@ -81,11 +89,19 @@
               )
         <!-- if this is a localized feed, we want to pull in components that are in the proper
              locale, as well as things that are not localized at all -->
-        <isNotNull property="country">
-           AND (entry.CountryCode = #country# OR entry.CountryCode = '**')
-        </isNotNull>
         <isNotNull property="language">
            AND (entry.LanCode = #language# OR entry.LanCode = '**')
+            <isNotNull property="country">
+                <isNotEqual property="country" compareValue="">
+           AND (entry.CountryCode = #country# OR entry.CountryCode = '**')
+                </isNotEqual>
+                <isEqual property="country" compareValue="">
+           AND (entry.CountryCode = '**')
+                </isEqual>
+            </isNotNull>
+            <isNull property="country">
+           AND (entry.CountryCode = '**')
+            </isNull>
         </isNotNull>
         <isNotNull property="joinWorkspaces">
             AND entry.Workspace IN 
@@ -102,11 +118,19 @@
           AND joincat.term = #entryId#
        <!-- if this is a localized entry, we want to pull in things that are in the proper locale,
             as well as things that are not localized at all -->
-       <isNotNull property="country">
-          AND (entry.CountryCode = #country# OR entry.CountryCode = '**')
-       </isNotNull>
        <isNotNull property="language">
           AND (entry.LanCode = #language# OR entry.LanCode = '**')
+           <isNotNull property="country">
+               <isNotEqual property="country" compareValue="">
+          AND (entry.CountryCode = #country# OR entry.CountryCode = '**')
+               </isNotEqual>
+               <isEqual property="country" compareValue="">
+          AND (entry.CountryCode = '**')
+               </isEqual>
+           </isNotNull>
+           <isNull property="country">
+          AND (entry.CountryCode = '**')
+           </isNull>
        </isNotNull>
        <!-- but, in the case of a localized entry, we only want to return an entry if there is at
             least one localized component in the propert locale - this clause executes that filter
@@ -119,8 +143,16 @@
                                   AND c.term = #entryId#
                                   AND e.LanCode = #language#
            <isNotNull property="country">
+               <isNotEqual property="country" compareValue="">
                                   AND e.CountryCode = #country#
+               </isNotEqual>
+               <isEqual property="country" compareValue="">
+                                  AND e.CountryCode = '**'
+               </isEqual>
            </isNotNull>
+           <isNull property="country">
+                                  AND e.CountryCode = '**'
+           </isNull>
                                 GROUP BY c.term
            )
        </isNotNull>
