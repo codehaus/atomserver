@@ -157,4 +157,12 @@ public class FileBasedBlogService implements AtomService {
         }
     }
 
+    public int getMaxLinkAggregateEntriesPerPage() {
+        return 100;
+    }
+
+    public int getMaxFullAggregateEntriesPerPage() {
+        return 15;
+    }
+
 }
