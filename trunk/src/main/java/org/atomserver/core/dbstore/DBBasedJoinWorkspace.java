@@ -62,6 +62,14 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
     public AtomCollection newAtomCollection(AtomWorkspace parentWorkspace, String collectionName) {
         return new DBBasedAtomCollection(this, collectionName) {
 
+            protected int getMaxLinkEntriesPerPage() {
+                return getParentAtomService().getMaxLinkAggregateEntriesPerPage();
+            }
+
+            protected int getMaxFullEntriesPerPage() {
+                return getParentAtomService().getMaxFullAggregateEntriesPerPage();
+            }
+
             protected EntryMetaData innerGetEntry(EntryTarget entryTarget) {
                 return getEntriesDAO().selectAggregateEntry(entryTarget, joinWorkspaces);
             }

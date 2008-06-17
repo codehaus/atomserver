@@ -57,8 +57,8 @@ public class WorkspaceOptions {
 
     private AtomWorkspace affiliatedAtomWorkspace = null;
 
-    static private int DEFAULT_MAX_LINK_ENTRIES_PER_PAGE = 100;
-    static private int DEFAULT_MAX_FULL_ENTRIES_PER_PAGE = 15;
+    public static int DEFAULT_MAX_LINK_ENTRIES_PER_PAGE = 100;
+    public static int DEFAULT_MAX_FULL_ENTRIES_PER_PAGE = 15;
 
     private int maxLinkEntriesPerPage = DEFAULT_MAX_LINK_ENTRIES_PER_PAGE;
     private int maxFullEntriesPerPage = DEFAULT_MAX_FULL_ENTRIES_PER_PAGE;

@@ -87,4 +87,8 @@ public interface AtomService {
                                  String collection,
                                  IRI iri,
                                  boolean checkIfCollectionExists);
+
+    int getMaxLinkAggregateEntriesPerPage();
+
+    int getMaxFullAggregateEntriesPerPage();
 }
