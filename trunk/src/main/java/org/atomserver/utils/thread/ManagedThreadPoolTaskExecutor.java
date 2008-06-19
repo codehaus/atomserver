@@ -23,7 +23,7 @@ import org.springframework.jmx.export.annotation.ManagedAttribute;
 /**
  * A JMX managed Spring ThreadPoolTaskExecutor
  */
-@ManagedResource(description = "Haystack Thread Pool")
+@ManagedResource(description = "Throttled AtomServer Thread Pool")
 public class ManagedThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
 
     /**

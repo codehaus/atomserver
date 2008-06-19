@@ -103,8 +103,15 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
     protected <T> T executeTransactionally(final TransactionalTask<T> task) {
         return (T) getTransactionTemplate().execute(new TransactionCallback() {
             public Object doInTransaction(TransactionStatus transactionStatus) {
-                getEntriesDAO().acquireLock();
-                return task.execute();
+                StopWatch stopWatch = new AutomaticStopWatch();
+                try {
+                    getEntriesDAO().acquireLock();
+                    return task.execute();
+                } finally {
+                    if ( getPerformanceLog() != null ) {
+                        getPerformanceLog().log( "DB.txn", "DB,txn", stopWatch );
+                    }
+                }
             }
         });
     }

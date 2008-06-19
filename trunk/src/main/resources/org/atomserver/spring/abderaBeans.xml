@@ -40,37 +40,50 @@
         </a:targetResolver>
     </a:serviceContext>
 
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <bean id="org.atomserver-taskExecutor"
+          class="org.atomserver.utils.thread.ManagedThreadPoolTaskExecutor"
+          depends-on="org.atomserver-propertyConfigurer" 
+          lazy-init="true" >
+      <property name="corePoolSize" value="${atomserver.poolsize.core}" />
+      <property name="maxPoolSize" value="${atomserver.poolsize.max}" />
+      <property name="queueCapacity" value="${atomserver.queue.capacity}" />
+      <property name="keepAliveSeconds" value="${atomserver.keepAlive.secs}" />
+    </bean>
 
+    <bean name="org.atomserver-throttledAtomServer"
+          class="org.atomserver.ThrottledAtomServer"
+          depends-on="org.atomserver-propertyConfigurer"
+          lazy-init="true" >
+        <property name="service" ref="org.atomserver-atomService"/>
+        <property name="performanceLog" ref="org.atomserver-performanceLog"/>
+        <property name="errorLog" ref="org.atomserver-errorLog"/>
+
+        <property name="threadPool" ref="org.atomserver-taskExecutor"/>
+        <property name="taskTimeout" value="${atomserver.timeout.task.ms}"/>
+    </bean>
+
+    <bean name="org.atomserver-normalAtomServer"
+          class="org.atomserver.AtomServer"
+          depends-on="org.atomserver-propertyConfigurer"
+          lazy-init="true" >
+        <property name="service" ref="org.atomserver-atomService"/>
+        <property name="performanceLog" ref="org.atomserver-performanceLog"/>
+        <property name="errorLog" ref="org.atomserver-errorLog"/>
+    </bean>
+
+    <bean name="org.atomserver-atomServer"
+          class="org.atomserver.DelegatingProvider" >
+        <property name="providers">
+            <map>
+                <entry key="throttled" value-ref="org.atomserver-throttledAtomServer" />
+                <entry key="normal" value-ref="org.atomserver-normalAtomServer" />
+            </map>
+        </property>
+        <property name="currentProviderName" value="${atomserver.type}" />
+    </bean>
 
     <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
-    <!--
-    <bean id="taskExecutor"
-          class="org.atomserver.utils.thread.ManagedThreadPoolTaskExecutor">
-      <property name="corePoolSize" value="20" />
-      <property name="maxPoolSize" value="50" />
-      <property name="queueCapacity" value="1000" />
-      <property name="keepAliveSeconds" value="30" />
-    </bean>
-
-    <bean name="org.atomserver-atomServer" class="org.atomserver.ThrottledAtomServer">
-        <property name="service" ref="org.atomserver-atomService"/>
-        <property name="performanceLog" ref="org.atomserver-performanceLog"/>
-        <property name="errorLog" ref="org.atomserver-errorLog"/>
-
-        <property name="threadPool" ref="taskExecutor"/>
-        <property name="taskTimeout" value="30000"/>
-    </bean>
-    -->
-
-    <bean name="org.atomserver-atomServer" class="org.atomserver.AtomServer">
-        <property name="service" ref="org.atomserver-atomService"/>
-        <property name="performanceLog" ref="org.atomserver-performanceLog"/>
-        <property name="errorLog" ref="org.atomserver-errorLog"/>
-    </bean>
-
-
-
-
     <bean id="org.atomserver-simpleXMLContentValidator"
           class="org.atomserver.core.validators.SimpleXMLContentValidator"/>
 

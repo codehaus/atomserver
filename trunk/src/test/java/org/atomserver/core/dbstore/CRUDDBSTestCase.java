@@ -34,6 +34,8 @@ abstract public class CRUDDBSTestCase extends BaseCRUDDBSTestCase {
 
     public void tearDown() throws Exception { super.tearDown(); }
 
+    protected void cleanUp() throws Exception{ super.cleanUp(); }
+
     static protected final String propId = "12345";
 
     protected String getURLPath() { return "widgets/acme/" + propId + ".en.xml"; }
