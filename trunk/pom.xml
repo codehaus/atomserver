@@ -170,13 +170,10 @@
             <id>atomserver.org</id>
             <url>http://maven.atomserver.org/</url>
         </repository>
-
-        <!-- Codehaus is DOWN
         <repository>
             <id>Codehaus</id>
             <url>http://repository.codehaus.org/</url>
         </repository>
-        -->
         <repository>
             <id>Apache Incubator</id>
             <url>http://people.apache.org/repo/m2-incubating-repository/</url>
@@ -184,7 +181,6 @@
     </repositories>
 
     <pluginRepositories>
-        <!--  Codehaus is DOWN
         <pluginRepository>
             <id>Codehaus</id>
             <url>http://repository.codehaus.org/</url>
@@ -197,7 +193,6 @@
             <id>Codehaus Snapshots</id>
             <url>http://snapshots.repository.codehaus.org/</url>
         </pluginRepository>
-        --> 
         <pluginRepository>
             <id>Maven2</id>
             <url>http://repo1.maven.org/maven2/</url>
