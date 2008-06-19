@@ -46,6 +46,16 @@
                 <entry key="org.atomserver.beans:type=FileBasedContentStorage,name=FBContentStorage"
                        value-ref="org.atomserver-contentStorage"/>
 
+                <entry key="org.atomserver.beans:type=DelegatingProvider,name=DelegatingProvider"
+                       value-ref="org.atomserver-atomServer" />
+
+                <entry key="org.atomserver.beans:type=ThrottledAtomServer,name=ThrottledAtomServer"
+                       value-ref="org.atomserver-throttledAtomServer" />
+
+                <entry key="org.atomserver.beans:type=ThrottledAtomServerThreadPool,name=ThrottledAtomServerThreadPool"
+                       value-ref="org.atomserver-taskExecutor" />
+
+
                 <!-- The key name is used as the ObjectName of the MBean -->
                 <!-- NOTE: this key name MUST match the code in HttpAdaptorMgr.java -->
                 <entry key="Server:name=HttpAdaptor">

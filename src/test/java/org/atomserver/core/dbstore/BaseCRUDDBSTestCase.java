@@ -58,6 +58,8 @@ abstract public class BaseCRUDDBSTestCase extends CRUDAtomServerTestCase {
 
     public void tearDown() throws Exception { super.tearDown(); }
 
+    protected void cleanUp() throws Exception{ super.cleanUp(); }
+
     protected boolean requiresDBSeeding() { return false; }
 
     protected String getStoreName() { return "org.atomserver-atomService"; }

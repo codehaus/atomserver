@@ -25,9 +25,8 @@ import org.apache.abdera.model.Link;
 import org.apache.abdera.protocol.client.AbderaClient;
 import org.apache.abdera.protocol.client.ClientResponse;
 import org.apache.abdera.protocol.client.RequestOptions;
-import org.atomserver.core.filestore.FileBasedContentStorage;
-import org.atomserver.core.filestore.TestingContentStorage;
 import org.atomserver.core.etc.AtomServerConstants;
+import org.atomserver.core.filestore.FileBasedContentStorage;
 import org.atomserver.utils.PartitionPathGenerator;
 
 import javax.xml.namespace.QName;
@@ -56,7 +55,10 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
     // -------------------------------------------------------
     public void tearDown() throws Exception {
         super.tearDown();
+        cleanUp();
+    }
 
+    protected void cleanUp() throws Exception{
         if ( contentStorage instanceof FileBasedContentStorage) {
             // the test; runTest() can create revs 0 thru 5
             for ( int revision = 0 ; revision < 6; revision++ ) {

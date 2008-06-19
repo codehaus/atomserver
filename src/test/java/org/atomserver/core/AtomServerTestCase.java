@@ -25,17 +25,17 @@ import org.apache.abdera.protocol.client.RequestOptions;
 import org.apache.abdera.protocol.server.ServiceContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.io.FileUtils;
 import org.atomserver.AtomServer;
 import org.atomserver.ContentStorage;
+import org.atomserver.DelegatingProvider;
 import org.atomserver.testutils.client.JettyWebAppTestCase;
 import org.atomserver.uri.URIHandler;
 import org.springframework.context.ApplicationContext;
 
+import java.io.File;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.io.File;
 
 /**
  */
@@ -71,6 +71,9 @@ abstract public class AtomServerTestCase extends JettyWebAppTestCase {
     protected String baseURI;
 
     protected ServiceContext serviceContext;
+
+    protected DelegatingProvider provider;
+
     public static final File TEST_DATA_DIR = new File(
             new File(System.getProperty("user.dir")),
             System.getProperty("atomserver.data.dir").replaceFirst("^file\\:", ""));
@@ -125,8 +128,8 @@ abstract public class AtomServerTestCase extends JettyWebAppTestCase {
 
         String storeName = getStoreName();
         store = (AbstractAtomService)( springContext.getBean( storeName ) );
-        AtomServer provider = (AtomServer)(springContext.getBean("org.atomserver-atomServer"));
-        provider.setService( store );
+        provider = (DelegatingProvider)(springContext.getBean("org.atomserver-atomServer"));
+        ((AtomServer)provider.getCurrentProvider()).setService( store );
 
         contentStorage = (ContentStorage) springContext.getBean("org.atomserver-contentStorage");
     }
