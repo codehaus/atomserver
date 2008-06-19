@@ -109,7 +109,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                     return task.execute();
                 } finally {
                     if ( getPerformanceLog() != null ) {
-                        getPerformanceLog().log( "DB.txn", "DB,txn", stopWatch );
+                        getPerformanceLog().log( "DB.txn", "DB.txn", stopWatch );
                     }
                 }
             }
