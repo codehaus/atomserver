@@ -184,4 +184,26 @@ public class ShardedPathGenerator implements PartitionPathGenerator {
         }
         return hash;
     }
+
+    /**
+     * print out the base directory for a listing - based on the default sharding algorithm.
+     *
+     * This isn't terribly generic - it would have to be rewritten a bit to support custom
+     * paramters to the ShardedPathGenerator.
+     * 
+     * @param args command line args - should be exactly three (workspace, collection, entryId)
+     */
+    public static void main(String[] args) {
+        if (args.length != 3) {
+            System.out.println("usage : ShardedPathGenerator workspace collection entryId");
+        }
+        ShardedPathGenerator shardedPathGenerator = new ShardedPathGenerator();
+        StringBuilder builder = new StringBuilder();
+        builder.append(args[0]).append("/").append(args[1]).append("/");
+        for (String shard : shardedPathGenerator.computeShards(args[2])) {
+            builder.append(shard).append("/");
+        }
+        builder.append(args[2]);
+        System.out.println(builder);
+    }
 }
