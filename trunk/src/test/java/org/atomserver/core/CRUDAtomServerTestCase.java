@@ -529,6 +529,10 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
     //      delete
     //=========================
     protected String delete(String fullURL) throws Exception {
+        return delete( fullURL, 409 );
+    }
+
+    protected String delete(String fullURL, int errorStatusCode ) throws Exception {
         AbderaClient client = new AbderaClient();
         RequestOptions options = client.getDefaultRequestOptions();
         options.setHeader("Connection", "close");
@@ -539,22 +543,26 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         if (getStoreName().equals("org.atomserver-atomService")) {
             IRI editLink = null;
             if (response.getStatus() != 200) {
-                assertEquals(409, response.getStatus());
+                assertEquals(errorStatusCode, response.getStatus());
                 Document<ExtensibleElement> doc = response.getDocument();
                 ExtensibleElement error = doc.getRoot();
                 log.debug("&&&&&&&&&&&&&& error = " + error);
 
                 Link link = error.getExtension(LINK);
                 log.debug("&&&&&&&&&&&&&& editLink = " + editLink);
-                editLink = link.getResolvedHref();
+                if ( link != null ) {
+                    editLink = link.getResolvedHref();
+                }
             } else {
                 Document<Entry> doc = response.getDocument();
                 Entry entryOut = doc.getRoot();
                 assertEquals(200, response.getStatus());
                 editLink = entryOut.getEditLinkResolvedHref();
             }
-            assertNotNull("link rel='edit' must not be null", editLink);
-            editLinkStr = editLink.toString();
+            if ( response.getStatus() == 200 || response.getStatus() == 409 ) {
+               assertNotNull("link rel='edit' must not be null", editLink);
+               editLinkStr = editLink.toString();
+            }
         } else {
             assertEquals(200, response.getStatus());
         }

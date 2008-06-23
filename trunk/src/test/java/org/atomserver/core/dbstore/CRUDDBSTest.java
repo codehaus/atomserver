@@ -83,4 +83,9 @@ public class CRUDDBSTest extends CRUDDBSTestCase {
             assertTrue( pFile != null && pFile.exists() );
         }
     }
+
+    public void testDeleteNonExistent() throws Exception {
+        String fullURL = getServerURL() + "widgets/acme/678901234.en.xml";
+        delete( fullURL, 404 );
+    }
 }
