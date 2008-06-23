@@ -24,7 +24,7 @@
  AtomServer stands on the shoulders of giants. It is built on top of several open source projects -
  most notably, Apache Abdera (a Java-based Atom Publishing framework) and Spring.
 
- Because AtomServer is an Atom Data Store, it requires a relational database to run.
+ Because AtomServer is an "Atom Store", it requires a relational database to run.
  AtomServer currently supports; PostgresSQL, SQLServer, and HSQLDB.
  Using HSQLDB, AtomServer requires zero configuration and can run out-of-the-box.
  While this configuration is suitable for many applications, those that see significant load
