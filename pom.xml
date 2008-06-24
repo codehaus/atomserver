@@ -680,6 +680,16 @@
                             <value>${env.plotsVisible}</value>
                         </property>
 
+                        <property>
+                            <name>csvfile</name>
+                            <value>${csvfile}</value>
+                        </property>
+
+                        <property>
+                            <name>title</name>
+                            <value>${title}</value>
+                        </property>
+
                     </systemProperties>
                 </configuration>
             </plugin>
