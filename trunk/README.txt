@@ -8,7 +8,7 @@ env  is the atomserver environment to use. It controls which environment propert
            These files live at src/main/resources/env. And follow the naming convention {env}.properties
            postgres.properties is setup for a local Postgres Server.
 
-$ mvn -Denv=postgres install
+$ mvn -Denv=postgres clean install
 
 BTW; you can also control logging somewhat this same way; 
 rootLoglevel    is the root log4j log level (default=DEBUG)
@@ -24,12 +24,6 @@ Just use this backdoor JUnit (which clears all rows from the tables)
 (of course, you can just use a SQL client with "DELETE *  FROM EntryStore" to do the same, assuming you have access)
 
 $ mvn -Denv=postgres -DENABLE_DB_CLEAR_ALL=true -Dtest=DBClearTest test
-
-B) The JUnits seed the DB with Widget files from ./var/widgets. If the build fails or is killed mid-flight, it will
-sometimes be necessary to delete spurious files (otherwise the build may see files it is not expecting to...). 
-There is a convenience script for this cleanup;
-
-$ ./bin/clean-test-files.sh 
 
 
 =======================================================
