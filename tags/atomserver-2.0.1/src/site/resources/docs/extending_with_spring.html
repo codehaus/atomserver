@@ -1,0 +1,97 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+<link rel="StyleSheet" href="css/style.css" type="text/css">
+<meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><title>Extending Atomserver with Spring</title>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-4603527-1");
+pageTracker._initData();
+pageTracker._trackPageview();
+</script>
+</head>
+
+<body class="maincontent">
+<h1><img src="images/atom-logo.gif" alt="logo">
+Extending Atomserver with Spring</h1>
+<br>
+<div class="content"><span style="font-style: italic;">Chris
+Berry,
+Bryon Jacob.
+Updated 05/07/08</span><br>
+<br>In <a href="configuration.html">Atomserver Configuration</a>, we explained how you can put your own resources and classes into the classpath that Atomserver uses.<br><br>To
+specify additional Spring configuration for Atomserver, put one or more
+XML files containing Spring bean definitions into the <span style="font-weight: bold;">/org/atomserver/spring/ext</span>
+package, and Atomserver will load them as part of the application
+context. &nbsp;There are a number of beans defined in Atomserver's
+default configuration, all of which are available for you to inject by
+name into your own beans. &nbsp;You can also override the definition of
+any of the default beans by providing your own bean with the same name.
+&nbsp;In that case, any of the default beans that injects a dependency
+of that name will inject YOUR definition instead.<br><br><h2>Atomserver Beans</h2><ol><li><a href="#1-Workspaces">Workspaces</a></li><ul style="list-style-type: disc;"><li><a href="#org.atomserver-workspaces"><span style="font-weight: bold;">org.atomserver-workspaces</span></a></li></ul><li><a href="#2-Database_Beans">Database Beans</a></li><ul style="list-style-type: disc;"><li><a href="#org.atomserver-dataSource"><span style="font-weight: bold;">org.atomserver-dataSource</span></a></li><li><a href="#org.atomserver-sqlMapClient"><span style="font-weight: bold;">org.atomserver-sqlMapClient</span></a></li><li><a href="#org.atomserver-entriesDAO"><span style="font-weight: bold;">org.atomserver-entriesDAO</span></a></li><li><a href="#org.atomserver-contentDAO"><span style="font-weight: bold;">org.atomserver-contentDAO</span></a></li><li><a href="#org.atomserver-entryCategoriesDAO"><span style="font-weight: bold;">org.atomserver-entryCategoriesDAO</span></a></li></ul><li><a href="#3-Abdera_Atomserver_Beans">Abdera/Atomserver Beans</a></li><ul style="list-style-type: disc;"><li><a href="#org.atomserver-uriHandler"><span style="font-weight: bold;">org.atomserver-uriHandler</span></a></li><li><a href="#org.atomserver-atomServer"><span style="font-weight: bold;">org.atomserver-atomServer</span></a></li><li><a href="#org.atomserver-atomService"><span style="font-weight: bold;">org.atomserver-atomService</span></a></li><li><a href="#org.atomserver-simpleXMLContentValidator"><span style="font-weight: bold;">org.atomserver-simpleXMLContentValidator</span></a></li><li><a href="#org.atomserver-isAliveHandler"><span style="font-weight: bold;">org.atomserver-isAliveHandler</span></a></li></ul><li><a href="#4-Storage_Beans">Storage Beans</a></li><ul style="list-style-type: disc;"><li><a href="#org.atomserver-contentStorage"><span style="font-weight: bold;">org.atomserver-contentStorage&nbsp;<span style="font-style: italic;">(org.atomserver-fileContentStorage, org.atomserver-dbContentStorage)</span></span></a></li><li><a href="#org.atomserver-entryCategoriesContentStorage"><span style="font-weight: bold;">org.atomserver-entryCategoriesContentStorage</span></a></li><li><a href="#org.atomserver-entryCategoriesHandler"><span style="font-weight: bold;">org.atomserver-entryCategoriesHandler</span></a></li></ul><li><a href="#5-Startup_Beans">Startup Beans</a></li><ul style="list-style-type: disc;"><li><a href="#org.atomserver-propertyConfigurer"><span style="font-weight: bold;">org.atomserver-propertyConfigurer</span></a></li><li><a href="#org.atomserver-bootstrappers"><span style="font-weight: bold;">org.atomserver-bootstrappers</span></a></li></ul><li><a href="#6-Logging_Stats_Beans">Logging/Stats Beans</a></li><ul style="list-style-type: disc;"><li><a href="#org.atomserver-statsTracker"><span style="font-weight: bold;">org.atomserver-statsTracker</span></a></li><li><a href="#org.atomserver-performanceLog"><span style="font-weight: bold;">org.atomserver-performanceLog</span></a></li><li><a href="#org.atomserver-errorLog"><span style="font-weight: bold;">org.atomserver-errorLog</span></a></li></ul><li><a href="#7-JMX_Beans">JMX Beans</a></li><ul style="list-style-type: disc;"><li><a href="#org.atomserver-mBeanServerLocator"><span style="font-weight: bold;">org.atomserver-mBeanServerLocator</span></a></li><li><a href="#org.atomserver-mBeanServer"><span style="font-weight: bold;">org.atomserver-mBeanServer</span></a></li><li><a href="#org.atomserver-mBeanExporter"><span style="font-weight: bold;">org.atomserver-mBeanExporter</span></a></li></ul></ol><span style="font-weight: bold;"><br></span><span style="font-weight: bold;"></span><h3><a name="1-Workspaces"></a>1. Workspaces</h3>The
+most common extension point, this is the set of supported workspaces
+for the server -- it is injected into the default AtomService instance
+and defines the kind of entries that the server deals with.<dl><dt><span style="font-weight: bold;"><a name="org.atomserver-workspaces"></a>org.atomserver-workspaces</span></dt><dd>This bean is the most common thing for you to override - it is how you
+configure the set of Workspaces of which the Atomserver is aware. &nbsp;This
+bean should always be an instance of <span style="font-weight: bold;">java.util.Set</span> that contains instances of <span style="font-weight: bold;">org.atomserver.core.WorkspaceOptions</span>.</dd></dl><h3><a name="2-Database_Beans"></a>2. &nbsp;Database Beans</h3>These
+beans deal with Atomserver's interaction with relational DBs.
+&nbsp;This includes the base DataSource that is used to interact with
+the DB via JDBC, the SQL map client that uses Spring JDBC templates and
+iBatis to abstract away the DB interaction, and the various DAO methods
+that encapsulate the DB methods into a consise Java API for
+manipulating the relational data.<dl><dt><span style="font-weight: bold;"><a name="org.atomserver-dataSource"></a>org.atomserver-dataSource</span></dt><dd>This bean is an instance of <span style="font-weight: bold;">javax.sql.DataSource</span>,
+which is used by all of the Atomserver classes that interact with a
+relational database. &nbsp;You can also use this bean if you want to
+access data in the same data source, or you can override this bean if
+you need to have fine-grained control over the specific DataSource
+implementation that is used. &nbsp;Usually, this won't be necessary -
+see <a href="database_configuration.html">Atomserver Database Configuration</a>.</dd></dl><dl><dt><span style="font-weight: bold;"><a name="org.atomserver-sqlMapClient"></a>org.atomserver-sqlMapClient</span></dt><dd>Atomserver uses iBatis to manage our SQL interactions, and this is an instance of&nbsp;<span style="font-weight: bold;">org.springframework.orm.ibatis.SqlMapClientFactoryBean</span> that loads the Atomserver iBatis files from the classpath. &nbsp;It is injected into all of the DAOs.</dd></dl><dl><dt><span style="font-weight: bold;"><a name="org.atomserver-entriesDAO"></a>org.atomserver-entriesDAO</span></dt><dd>This is the DAO that contains methods for managing all of the database interaction relating to atom Entries.</dd></dl><dl><dt><span style="font-weight: bold;"><a name="org.atomserver-entryCategoriesDAO"></a>org.atomserver-entryCategoriesDAO</span></dt><dd>This is the DAO that contains methods for managing the categories attached to atom Entries in the database.</dd></dl><dl><dt><span style="font-weight: bold;"><a name="org.atomserver-contentDAO"></a>org.atomserver-contentDAO</span></dt><dd>This
+is the DAO that manages Entry content in the database (when the DB
+based content storage is used - this DAO is not initialized when the
+File based content storage is used.)</dd></dl><h3><a name="3-Abdera_Atomserver_Beans"></a>3. &nbsp;Abdera/Atomserver Beans</h3>These
+beans are the core of the application, providing the bridge between
+Abdera's Atom URI handling on the front end and the various layers of
+workspace, collection, and entry handling in the server. &nbsp;You
+shouldn't need to inject or override these beans for most basic server
+deployments, but if you want to re-implement any of the core AtomServer
+functionality for an advanced use - this is where you would do so.<dl><dt><span style="font-weight: bold;"><a name="org.atomserver-uriHandler"></a>org.atomserver-uriHandler</span></dt><dd>This bean is an instance of <span style="font-weight: bold;">org.atomserver.uri.URIHandler</span>.
+&nbsp;It is used to extract the atom-relevant data from URIs that are
+used to access the system, and to route requests to the correct
+behavior based on the contents of the URI and the HTTP method used.</dd></dl><dl><dt><span style="font-weight: bold;"><a name="org.atomserver-atomServer"></a>org.atomserver-atomServer</span></dt><dd>This is the entry point for the Atomserver application - this instance of <span style="font-weight: bold;">org.atomserver.AtomServer</span> is the class to which Abdera routes HTTP requests, and this class delegates downward to the other Atomserver objects.</dd></dl><dl><dt><span style="font-weight: bold;"><a name="org.atomserver-atomService"></a>org.atomserver-atomService</span></dt><dd>This is an instance of <span style="font-weight: bold;">org.atomserver.AtomService</span> - the abstract representation of an atom service. &nbsp;By default, this will be an <span style="font-weight: bold;">org.atomserver.core.dbstore.DBBasedAtomService</span>.</dd></dl><dl><dt><span style="font-weight: bold;"><a name="org.atomserver-simpleXMLContentValidator"></a>org.atomserver-</span><span style="font-weight: bold;">simpleXMLContentValidator</span></dt><dd>This
+is a content validator that only verifies whether the content passed to
+it is well-formed XML - it does not validate against any particular
+schema. This bean is useful to inject into a <span style="font-weight: bold;">WorkspaceOptions</span> object if you want to accept any well-formed XML as content for a workspace.</dd></dl><dl><dt><span style="font-weight: bold;"><a name="org.atomserver-isAliveHandler"></a>org.atomserver-isAliveHandler</span></dt><dd>This
+is an object that is used to monitor and control the availablity of the
+Atomserver. &nbsp;This object can be polled to determine whether the
+server is <span style="font-weight: bold;">OK</span>, <span style="font-weight: bold;">DOWN</span>, or in an <span style="font-weight: bold;">ERROR</span> state, and can be used to set the state to <span style="font-weight: bold;">OK</span> or <span style="font-weight: bold;">DOWN</span>. &nbsp;Read the javadoc for <span style="font-weight: bold;">org.atomserver.core.dbstore.AtomServerIsAliveHandler</span> for more details.</dd></dl><h3><a name="4-Storage_Beans"></a>4. &nbsp;Storage Beans</h3>These
+beans relate to how the content of Atom Entries is handled. &nbsp;This
+is kept distinct from where the entry meta data is stored so that the
+two choices can be made independently (in the default implementation,
+meta data is in a relational DB, and entry content lives on the file
+system.)<dl><dt><span style="font-weight: bold;"><a name="org.atomserver-contentStorage"></a>org.atomserver-contentStorage&nbsp;<span style="font-style: italic;">(org.atomserver-fileContentStorage, org.atomserver-dbContentStorage)</span></span></dt><dd>The bean named <span style="font-weight: bold;">org.atomserver-contentStorage</span> must be an instance of <span style="font-weight: bold;">org.atomserver.ContentStorage</span>, and is
+used to facilitate storage of entry content. &nbsp;Internally, there
+are two lazy-init beans defined for the two default implementations of
+ContentStorage (file and DB storage), with an alias pointing <span style="font-weight: bold;">org.atomserver-contentStorage</span>
+to the file-based implementation. &nbsp;If you would like to use the
+DB-based one instead, you can simply create an alias to point at the
+other bean. &nbsp;If you have written your own custom ContentStorage
+implementation, then you can simply instantiate it and name it <span style="font-weight: bold;">org.atomserver-contentStorage</span> and it will be used.</dd></dl><dl><dt><span style="font-weight: bold;"><a name="org.atomserver-entryCategoriesHandler"></a>org.atomserver-entryCategoriesHandler</span></dt></dl><dl><dt><span style="font-weight: bold;"><a name="org.atomserver-entryCategoriesContentStorage"></a>org.atomserver-entryCategoriesContentStorage</span></dt></dl><dl><dd><dd>These
+two beans are the Handler and the ContentStorage instance that is used
+to handle "categories documents". &nbsp;You would override these if you
+have implemented a different strategy for how you manage the categories
+on an entry (which you are fairly unlikely to do...)</dd></dd></dl><span style="font-weight: bold;"></span><h3><a name="5-Startup_Beans"></a>5. &nbsp;Startup Beans</h3>These
+beans provide the basic environment configuration, and the opportunity
+to run some code on startup to do some static initialization of the
+system (we use this when using HSQLDB to make sure that the HSQL DB
+exists, and create it if not).<dl><dt><span style="font-weight: bold;"><a name="org.atomserver-propertyConfigurer"></a>org.atomserver-propertyConfigurer</span></dt><dd>This is an instance of Spring's <span style="font-weight: bold;">PropertyPlaceholderConfigurer</span> class, which is used to load environmental properties from the environment properties file and from the java system properties.</dd></dl><dl><dt><span style="font-weight: bold;"><a name="org.atomserver-bootstrappers"></a>org.atomserver-bootstrappers</span></dt><dd>This is an instance of <span style="font-weight: bold;">org.atomserver.utils.BootstrapperLoader</span> that is used to execute "bootstrappers" when the spring context is loaded. &nbsp;The <span style="font-weight: bold;">bootstrappers</span>
+environment property should contain a comma-separated list of
+fully-qualified class names. &nbsp;Each of those classes should have a
+no-args constructor and implement <span style="font-weight: bold;">java.lang.Runnable</span>. &nbsp;Each of the bootstrapper classes will be loaded and their <span style="font-weight: bold;">run() </span>&nbsp;method executed, in the order specified. &nbsp;If a bean depends upon the bootstrappers having been run, it can specify <span style="font-weight: bold;">depends-on="bootstrappers"</span> in its bean configuration.</dd></dl><h3><a name="6-Logging_Stats_Beans"></a>6. &nbsp;Logging / Stats Beans</h3>These
+beans handle specialized logging and performance tracking functionality
+- allowing for detailed analysis of the behaviour of the running system.<dl><dt><span style="font-weight: bold;"><a name="org.atomserver-statsTracker"></a>org.atomserver-statsTracker</span></dt><dd>Instance of&nbsp;<span style="font-weight: bold;">org.atomserver.utils.stats.StatsTracker</span> - used for tracking the runtime performance of various operations in the Atomserver.</dd></dl><dl><dt><span style="font-weight: bold;"><a name="org.atomserver-performanceLog"></a>org.atomserver-performanceLog</span></dt><dd>Instance of&nbsp;<span style="font-weight: bold;">org.atomserver.utils.perf.PerformanceLog</span> - used to log event timings for performance analysis of various operations in Atomserver - calls through to the&nbsp;<span style="font-weight: bold;">org.atomserver-statsTracker</span> bean for runtime analysis.</dd></dl><dl><dt><span style="font-weight: bold;"><a name="org.atomserver-errorLog"></a>org.atomserver-errorLog</span></dt><dd>Instance of&nbsp;<span style="font-weight: bold;">org.atomserver.utils.IOCLog</span> that is used to log stack traces for all&nbsp;HTTP&nbsp;<span style="font-weight: bold;">50X(500, 503, etc.)</span> errors that Atomserver returns.&nbsp;</dd></dl><h3><a name="7-JMX_Beans"></a>7. &nbsp;JMX Beans</h3>These beans handle exposing the managed beans out through a JMX Server.<dl><dt><span style="font-weight: bold;"><a name="org.atomserver-mBeanServer"></a>org.atomserver-mBeanServer</span></dt><dd>This bean is an instance of <span style="font-weight: bold;">javax.management.MBeanServer</span> that is used to expose the managed beans inside Atomserver. &nbsp;</dd></dl><dl><dt><span style="font-weight: bold;"><a name="org.atomserver-mBeanServerLocator"></a>org.atomserver-mBeanServerLocator</span></dt><dd>This bean is an instance of <span style="font-weight: bold;">org.atomserver.utils.jmx.MBeanServerLocator</span>,
+which tries to look up an MBeanServer from the JNDI tree if we are
+running inside a Resin server -- otherwise, fall back to the default
+Java 5 MBean Server. &nbsp;The default value for the <span style="font-weight: bold;">org.atomserver-mBeanServer</span> bean is located by this bean.</dd></dl><dl><dt><span style="font-weight: bold;"><a name="org.atomserver-mBeanExporter"></a>org.atomserver-mBeanExporter</span></dt><dd>This bean is responsible for exporting the manageb beans to the MBeanServer.</dd></dl></div>
+</body></html>
