@@ -1,5 +1,8 @@
 package org.atomserver.core.dbstore;
 
+import org.apache.abdera.model.Entry;
+import org.apache.abdera.model.Feed;
+import org.apache.commons.lang.LocaleUtils;
 import org.atomserver.core.BaseServiceDescriptor;
 import org.atomserver.core.etc.AtomServerConstants;
 import org.atomserver.core.filestore.FileBasedContentStorage;
@@ -7,8 +10,6 @@ import org.atomserver.testutils.conf.TestConfUtil;
 import org.atomserver.utils.PrefixPartitionPathGenerator;
 import org.atomserver.utils.ShardedPathGenerator;
 import static org.atomserver.utils.ShardedPathGenerator.DEFAULT_RADIX;
-import org.apache.abdera.model.Feed;
-import org.apache.abdera.model.Entry;
 
 import java.io.File;
 import java.util.Arrays;
@@ -298,6 +299,17 @@ public class GzipAndShardingMigrationTest extends DBSTestCase {
             String entryId = entry.getSimpleExtension(AtomServerConstants.ENTRY_ID);
             assertEquals(createWidgetXMLFileString(entryId), entry.getContent());
         }
+
+        deleteEntry2("http://localhost:60080" +
+                     widgetURIHelper.constructURIString("dummy", "dumbo", "6001", null) + "/*");
+        deleteEntry2("http://localhost:60080" +
+                     widgetURIHelper.constructURIString("widgets", "acme", "7000", Locale.ENGLISH) + "/*");
+
+        assertTrue(new File(TEST_DATA_DIR, "/dummy/dumbo/60/6001/6001.xml.r0").exists());
+        assertTrue(generateShardedDir("dummy/dumbo", "6001", "6001/6001.xml.r1.gz").exists());
+
+        assertTrue(generateShardedDir("widgets/acme", "7000", "7000/en/7000.xml.r0.gz").exists());
+        assertTrue(generateShardedDir("widgets/acme", "7000", "7000/en/7000.xml.r1.gz").exists());        
     }
 
     private File generateShardedDir(String collectionDir, String entryId, String subPath) {
