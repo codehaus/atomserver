@@ -18,51 +18,66 @@
 -->
 <sqlMap>
 
+    <sql id="aggregateEntries">
+        <isNotNull property="language">
+        SELECT L.Collection,
+               L.EntryId,
+               L.LanCode,
+               L.CountryCode,
+               MAX(N.UpdateTimestamp) AS UpdateTimestamp,
+               MAX(N.UpdateDate) AS UpdateDate,
+               MIN(N.CreateDate) AS CreateDate
+          FROM VW_AggregateEntry L
+               <isEqual property="dbType" compareValue="sqlserver" >WITH (NOEXPAND)</isEqual>
+          JOIN VW_AggregateEntry N
+               <isEqual property="dbType" compareValue="sqlserver" >WITH (NOEXPAND)</isEqual>
+            ON L.Collection = N.Collection
+           AND L.EntryId = N.EntryId
+           AND L.LanCode = #language#
+            <isNotNull property="country">
+                <isEqual property="country" compareValue="">
+           AND L.CountryCode = '**'
+                </isEqual>
+                <isNotEqual property="country" compareValue="">
+           AND L.CountryCode = #country#
+                </isNotEqual>
+            </isNotNull>
+            <isNull property="country">
+           AND L.CountryCode = '**'
+            </isNull>
+           AND (N.LanCode = L.LanCode OR N.LanCode = '**')
+         WHERE L.Collection = #collection#
+           AND N.UpdateTimestamp > #lastModifiedSeqNum#
+        GROUP BY L.Collection, L.EntryId, L.LanCode, L.CountryCode
+
+        UNION ALL
+        </isNotNull>
+
+        SELECT Collection,
+               EntryId,
+               '**' AS LanCode,
+               '**' AS CountryCode,
+               MAX(UpdateTimestamp) AS UpdateTimestamp,
+               MAX(UpdateDate) AS UpdateDate,
+               MIN(CreateDate) AS CreateDate
+        FROM VW_AggregateEntry
+             <isEqual property="dbType" compareValue="sqlserver" >WITH (NOEXPAND)</isEqual>
+        WHERE Collection = #collection#
+          AND UpdateTimestamp > #lastModifiedSeqNum#
+        GROUP BY Collection, EntryId
+    </sql>
+
     <sql id="SELECT_modifiedAggregateEntryIds">
         SELECT
         <include refid="paginationPrefix"/>
-               cat.term as EntryId
-          FROM EntryStore entry JOIN EntryCategory cat
-            ON entry.EntryStoreId = cat.EntryStoreId
+               AggregateEntry.EntryId AS EntryId
+          FROM (
+                <include refid="aggregateEntries"/>
+               ) AggregateEntry
         <isNotNull property="categoryQuerySql">
-            INNER JOIN ( $categoryQuerySql$ ) matchedEntry
-               ON cat.term = matchedEntry.EntryId
+         INNER JOIN ( $categoryQuerySql$ ) matchedEntry
+            ON AggregateEntry.EntryId = matchedEntry.EntryId
         </isNotNull>
-         WHERE cat.scheme = #collection#
-        <!-- if a localized aggregate feed has been requested, we filter the results to include
-             only aggregate entries that have at least one component in the requested locale. -->
-        <isNotNull property="language">
-            AND cat.term IN (
-                SELECT localCat.term
-                  FROM EntryStore localEntry JOIN EntryCategory localCat
-                    ON localCat.scheme = #collection#
-                   AND localEntry.EntryStoreId = localCat.entryStoreId
-                   AND localEntry.LanCode = #language#
-                <isNotNull property="country">
-                    <isNotEqual property="country" compareValue="">
-                   AND (localEntry.CountryCode = #country#)
-                    </isNotEqual>
-                    <isEqual property="country" compareValue="">
-                   AND localEntry.CountryCode = '**'
-                    </isEqual>
-                </isNotNull>
-                <isNull property="country">
-                   AND localEntry.CountryCode = '**'
-                </isNull>
-                <isNotNull property="joinWorkspaces">
-                    AND localEntry.Workspace IN 
-                    <iterate property="joinWorkspaces" open="(" close=")" conjunction=",">#joinWorkspaces[]#</iterate>
-                </isNotNull>
-            )
-        </isNotNull>
-        <isNotNull property="joinWorkspaces">
-            AND entry.Workspace IN
-            <iterate property="joinWorkspaces" open="(" close=")" conjunction=",">#joinWorkspaces[]#</iterate>
-        </isNotNull>
-
-      GROUP BY cat.term
-        HAVING MAX(UpdateTimestamp) > #lastModifiedSeqNum#
-      ORDER BY MAX(UpdateTimestamp)
         <include refid="paginationSuffix"/>
     </sql>
 
@@ -72,23 +87,33 @@
     </select>
 
     <select id="selectAggregateEntriesByPage" parameterClass="map" resultMap="entryResult">
-        <include refid="SELECT_EntryStore_JOIN_EntryCategory"/>
-        INNER JOIN EntryCategory joincat
-           ON entry.EntryStoreId = joincat.EntryStoreId
-          AND joincat.scheme = #collection#
-          AND joincat.term IN (
-                <include refid="SELECT_modifiedAggregateEntryIds"/>
-              )
-          AND (
+        SELECT DISTINCT
+               entry.EntryStoreId AS EntryStoreId,
+               entry.Workspace AS Workspace,
+               entry.Collection AS Collection,
+               entry.LanCode AS LanCode,
+               entry.CountryCode AS CountryCode,
+               entry.EntryId AS EntryId,
+               entry.UpdateDate AS UpdateDate,
+               entry.CreateDate AS CreateDate,
+               <include refid="timestampColumn" />,
+               entry.DeleteFlag AS DeleteFlag,
+               entry.RevisionNum AS RevisionNum,
+               cat.Scheme AS Scheme,
+               cat.Term AS Term,
+               cat.Label AS Label
+          FROM ( <include refid="SELECT_modifiedAggregateEntryIds"/> ) agg
+          JOIN EntryCategory joincat ON joincat.Scheme = #collection# AND agg.EntryId = joincat.Term
+          JOIN EntryStore entry ON joincat.EntryStoreId = entry.EntryStoreId
+          JOIN EntryCategory cat ON entry.EntryStoreId = cat.EntryStoreId
+           AND (
         <!-- we only want to include categories that are either (a) outside of the join scheme, or
              (b) are matches to the SELECT_modifiedAggregateEntryIds query.  We are already joining
              in that query as joincat, so we can just include the rows where joincat and cat are
              referring to the same EntryCategory -->
                 cat.scheme != #collection# OR
                 cat.term = joincat.term
-              )
-        <!-- if this is a localized feed, we want to pull in components that are in the proper
-             locale, as well as things that are not localized at all -->
+               )
         <isNotNull property="language">
            AND (entry.LanCode = #language# OR entry.LanCode = '**')
             <isNotNull property="country">
@@ -104,10 +129,10 @@
             </isNull>
         </isNotNull>
         <isNotNull property="joinWorkspaces">
-            AND entry.Workspace IN 
+           AND entry.Workspace IN
             <iterate property="joinWorkspaces" open="(" close=")" conjunction=",">#joinWorkspaces[]#</iterate>
         </isNotNull>
-        ORDER BY UpdateTimestamp, Scheme, Term
+         ORDER BY UpdateTimestamp, Scheme, Term
     </select>
 
     <select id="selectAggregateEntry" parameterClass="map" resultMap="entryResult">
@@ -133,7 +158,7 @@
            </isNull>
        </isNotNull>
        <!-- but, in the case of a localized entry, we only want to return an entry if there is at
-            least one localized component in the propert locale - this clause executes that filter
+            least one localized component in the proper locale - this clause executes that filter
             and causes an empty result set in that case -->
        <isNotNull property="language">
           AND joincat.term IN (SELECT c.term

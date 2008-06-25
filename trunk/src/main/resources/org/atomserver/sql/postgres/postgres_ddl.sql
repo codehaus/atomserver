@@ -4,6 +4,7 @@ DROP TABLE IF EXISTS EntryCategory CASCADE;
 DROP TABLE IF EXISTS EntryStore CASCADE;
 DROP TABLE IF EXISTS AtomCollection CASCADE;
 DROP TABLE IF EXISTS AtomWorkspace CASCADE;
+DROP VIEW IF EXISTS vw_AggregateEntry;
 
 /*==============================================================*/
 /* Table: AtomWorkspace                                         */
@@ -79,3 +80,23 @@ PRIMARY KEY (EntryStoreId),
 FOREIGN KEY (EntryStoreId) REFERENCES EntryStore(EntryStoreId)
 );
 
+/*==============================================================*/
+/* View: vw_AggregateEntries                                    */
+/* NOTE: in SQL Server, we get a significant performance boost  */
+/*       by indexing this view -- since PostgreSQL does not     */
+/*       support indexed or materialized views, this view does  */
+/*       not provide any real performance boost, but it is      */
+/*       created to keep the queries for aggregate feeds as     */
+/*       similar as possible.                                   */
+/*==============================================================*/
+CREATE VIEW vw_AggregateEntry AS
+    SELECT joincat.Scheme AS Collection,
+           joincat.Term AS EntryId,
+           entries.LanCode,
+           entries.CountryCode,
+           entries.UpdateTimestamp AS UpdateTimestamp,
+           entries.UpdateDate AS UpdateDate,
+           entries.CreateDate AS CreateDate
+      FROM EntryCategory joincat
+      JOIN EntryStore entries
+        ON joincat.EntryStoreId = entries.EntryStoreId;        
