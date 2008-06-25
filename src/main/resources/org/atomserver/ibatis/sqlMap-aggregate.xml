@@ -45,14 +45,14 @@
             <isNull property="country">
            AND L.CountryCode = '**'
             </isNull>
-           AND (N.LanCode = L.LanCode OR N.LanCode = '**')
+            AND (N.LanCode = L.LanCode OR N.LanCode = '**')
+            AND (N.CountryCode = L.CountryCode OR N.CountryCode = '**')
          WHERE L.Collection = #collection#
            AND N.UpdateTimestamp > #lastModifiedSeqNum#
         GROUP BY L.Collection, L.EntryId, L.LanCode, L.CountryCode
-
-        UNION ALL
         </isNotNull>
 
+        <isNull property="language">
         SELECT Collection,
                EntryId,
                '**' AS LanCode,
@@ -65,6 +65,7 @@
         WHERE Collection = #collection#
           AND UpdateTimestamp > #lastModifiedSeqNum#
         GROUP BY Collection, EntryId
+        </isNull>
     </sql>
 
     <sql id="SELECT_modifiedAggregateEntryIds">
