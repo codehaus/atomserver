@@ -28,6 +28,8 @@
             pageTracker._initData();
             pageTracker._trackPageview();
         </script>
+
+        <meta name="verify-v1" content="sRQSq4VA5FRMhwzFB4U3I9AtgLMtIWTdpVVO6jg1az4=" />
         </head>
 
         <links>
