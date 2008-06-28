@@ -40,7 +40,7 @@
             </list>
         </property>
     </bean>
-
+            
     <bean id="org.atomserver-entryCategoriesContentStorage"
           class="org.atomserver.core.dbstore.EntryCategoriesContentStorage"
           depends-on="org.atomserver-propertyConfigurer"

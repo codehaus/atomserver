@@ -27,6 +27,7 @@
         <property name="contentStorage" ref="org.atomserver-contentStorage"/>
         <property name="entriesDAO" ref="org.atomserver-entriesDAO"/>
         <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO"/>
+        <property name="contentDAO" ref="org.atomserver-contentDAO"/>
     </bean>
 
     <bean name="dbpurger"

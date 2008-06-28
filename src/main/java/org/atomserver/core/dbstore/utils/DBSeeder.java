@@ -25,6 +25,7 @@ import org.atomserver.core.BaseEntryDescriptor;
 import org.atomserver.core.BaseServiceDescriptor;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.dbstore.DBBasedContentStorage;
+import org.atomserver.core.dbstore.dao.ContentDAO;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
 import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
 import org.atomserver.core.filestore.FileBasedContentStorage;
@@ -56,7 +57,8 @@ public class DBSeeder extends DBTool {
 
     private EntriesDAO entriesDAO;
     private EntryCategoriesDAO entryCategoriesDAO;
-    private ContentStorage contentStorage = null;
+    private ContentStorage contentStorage;
+    private ContentDAO contentDAO;
 
     //--------------------------------
     //      static methods
@@ -86,6 +88,10 @@ public class DBSeeder extends DBTool {
         this.entriesDAO = entriesDAO;
     }
 
+    public void setContentDAO(ContentDAO contentDAO) {
+        this.contentDAO = contentDAO;
+    }
+
     public void setEntryCategoriesDAO(EntryCategoriesDAO entryCategoriesDAO) {
         this.entryCategoriesDAO = entryCategoriesDAO;
     }
@@ -99,6 +105,11 @@ public class DBSeeder extends DBTool {
     }
 
     public void clearDB() throws AtomServerException {
+        log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+        log.info("==========> DELETING *ALL* ROWS in EntryContent !!!!!!!!!!!!!");
+        log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+        contentDAO.deleteAllContent();
+
         log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.info("==========> DELETING *ALL* ROWS in EntryCategory !!!!!!!!!!!!!");
         log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
@@ -164,16 +175,18 @@ public class DBSeeder extends DBTool {
         }
     }
 
-    public void insertWidget(BaseEntryDescriptor entryDescriptor) throws IOException {
+    public void insertWidget(BaseEntryDescriptor entryDescriptor) throws Exception {
         entriesDAO.insertEntry(entryDescriptor);
         if (contentStorage instanceof DBBasedContentStorage) {
             String entryId = entryDescriptor.getEntryId();
-            File f = new File(MessageFormat.format("var/{0}/{1}/{2}/{3}/{4}/{3}.xml",
+
+            File f = new File( getClass().getClassLoader().
+                    getResource(MessageFormat.format("testentries/var/{0}-ORIG/{1}/{2}/{3}/{4}/{3}.xml.r0",
                                                    entryDescriptor.getWorkspace(),
                                                    entryDescriptor.getCollection(),
                                                    entryId.length() <= 2 ? entryId : entryId.substring(0, 2),
                                                    entryId,
-                                                   entryDescriptor.getLocale().toString()));
+                                                   entryDescriptor.getLocale().toString()) ).toURI());
 
             String content = FileUtils.readFileToString(f);
             contentStorage.putContent(content, entryDescriptor);
