@@ -24,6 +24,7 @@ import org.apache.abdera.protocol.client.AbderaClient;
 import org.apache.abdera.protocol.client.RequestOptions;
 import org.atomserver.uri.EntryTarget;
 import org.atomserver.testutils.client.MockRequestContext;
+import org.atomserver.core.filestore.FileBasedContentStorage;
 
 /**
  */
@@ -51,7 +52,9 @@ public class RevisionDBSTest extends CRUDDBSTestCase {
 
         //INSERT
         String editURI = insert(id, fullURL);
-        assertTrue( getPropfile().exists());
+        if (contentStorage instanceof FileBasedContentStorage) {
+            assertTrue( getPropfile().exists());
+        }
 
         // SELECT
         String fullURL0 = fullURL + "/0";
@@ -105,10 +108,6 @@ public class RevisionDBSTest extends CRUDDBSTestCase {
         assertEquals(404,
                      client.delete(getServerURL() + "widgets/acme/23456789.en.xml/*", options).getStatus());
         
-        // try to delete the entry that we just removed, and verify that we get a 404
-        //assertEquals(404,
-        //             client.delete(fullURL + "/*", options).getStatus());
-
         // try to delete the entry that we just removed, and verify that we get a 200
         //  We now allow this condition.....
         assertEquals(200, client.delete(fullURL + "/*", options).getStatus());

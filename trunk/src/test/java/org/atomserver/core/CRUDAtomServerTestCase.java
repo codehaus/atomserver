@@ -91,7 +91,6 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
                                 int revision) 
             throws Exception {
         FileBasedContentStorage contentStorage = (FileBasedContentStorage)this.contentStorage;
-//                (FileBasedContentStorage) getSpringFactory().getBean("org.atomserver-contentStorage");
         PartitionPathGenerator pathGenerator = contentStorage.getPartitionPathGenerators().get(0);
         log.debug("PATH GENERATOR CLASS : " + pathGenerator.getClass());
         return contentStorage.generateEntryFilePath(
