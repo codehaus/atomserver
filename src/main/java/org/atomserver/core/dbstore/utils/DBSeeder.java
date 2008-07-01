@@ -18,6 +18,7 @@
 package org.atomserver.core.dbstore.utils;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.ContentStorage;
@@ -30,11 +31,14 @@ import org.atomserver.core.dbstore.dao.EntriesDAO;
 import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
 import org.atomserver.core.filestore.FileBasedContentStorage;
 import org.atomserver.exceptions.AtomServerException;
+import org.atomserver.utils.io.JarUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Locale;
 
@@ -51,7 +55,9 @@ import java.util.Locale;
 public class DBSeeder extends DBTool {
 
     static private final Log log = LogFactory.getLog(DBSeeder.class);
-    static private final int SLEEP_TIME = 2000;
+    static private final int SLEEP_TIME = 2500;
+
+    static private final String SAMPLE_WIDGETS_DIR = "widgets";
 
     static private ClassPathXmlApplicationContext springFactory = null;
 
@@ -126,6 +132,7 @@ public class DBSeeder extends DBTool {
             if (contentStorage instanceof FileBasedContentStorage) {
                 FileBasedContentStorage fileStorage = (FileBasedContentStorage) contentStorage;
                 File rootDir = fileStorage.getRootDir();
+                log.debug( "ROOT DIR = " + rootDir );
 
                 File widgetsDir = new File(rootDir, "widgets");
 
@@ -143,8 +150,12 @@ public class DBSeeder extends DBTool {
             if (contentStorage instanceof FileBasedContentStorage) {
                 FileBasedContentStorage fileStorage = (FileBasedContentStorage) contentStorage;
                 File rootDir = fileStorage.getRootDir();
+                log.debug( "ROOT DIR = " + rootDir );
 
+                // root dir is the actual data dir. In tests this is "target/var"
                 File widgetsDir = new File(rootDir, "widgets");
+
+                /*
                 File widgetsOrigDir = new File(rootDir, "widgets-ORIG");
 
                 // when used by the dbseed.sh to add a few test widgets to a Server for smoke testing
@@ -154,6 +165,20 @@ public class DBSeeder extends DBTool {
                     FileUtils.deleteDirectory(widgetsDir);
                     FileUtils.copyDirectory(widgetsOrigDir, widgetsDir);
                 }
+                */
+
+                FileUtils.deleteDirectory(widgetsDir);
+
+                URL widgetsORIGURL = getClass().getClassLoader().getResource( SAMPLE_WIDGETS_DIR );
+                if ( JarUtils.isJarURL(widgetsORIGURL) ) {
+                    URL widgetsORIGJarURL = JarUtils.getJarFromJarURL( widgetsORIGURL );
+                    File jarFile = new File(widgetsORIGJarURL.toURI());
+                    JarUtils.copyJarFolder(jarFile, SAMPLE_WIDGETS_DIR, rootDir );
+                } else {
+                    File widgetsOrigDir = new File(widgetsORIGURL.toURI());
+                    FileUtils.copyDirectory( widgetsOrigDir, widgetsDir);
+                }
+
             }
 
             entriesDAO.deleteAllEntries(new BaseServiceDescriptor("widgets"));
@@ -180,15 +205,24 @@ public class DBSeeder extends DBTool {
         if (contentStorage instanceof DBBasedContentStorage) {
             String entryId = entryDescriptor.getEntryId();
 
-            File f = new File( getClass().getClassLoader().
-                    getResource(MessageFormat.format("testentries/var/{0}-ORIG/{1}/{2}/{3}/{4}/{3}.xml.r0",
+            /*
+            String filename = MessageFormat.format("testentries/var/{0}-ORIG/{1}/{2}/{3}/{4}/{3}.xml.r0",
                                                    entryDescriptor.getWorkspace(),
                                                    entryDescriptor.getCollection(),
                                                    entryId.length() <= 2 ? entryId : entryId.substring(0, 2),
                                                    entryId,
-                                                   entryDescriptor.getLocale().toString()) ).toURI());
+                                                   entryDescriptor.getLocale().toString());
+                                                   */
+            String filename = MessageFormat.format(SAMPLE_WIDGETS_DIR + "/{0}/{1}/{2}/{3}/{2}.xml.r0",
+                                                   entryDescriptor.getCollection(),
+                                                   entryId.length() <= 2 ? entryId : entryId.substring(0, 2),
+                                                   entryId,
+                                                   entryDescriptor.getLocale().toString());
+            log.debug( "LOOKING FOR " + filename );
 
-            String content = FileUtils.readFileToString(f);
+            InputStream is = getClass().getClassLoader().getResource( filename ).openStream();
+
+            String content = IOUtils.toString( is );
             contentStorage.putContent(content, entryDescriptor);
         }
     }

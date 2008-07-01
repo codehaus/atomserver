@@ -389,7 +389,7 @@ log "---------------------------------"
 #
 # ----- atomserver specific arguments
 #
-ATOMSERVER_ARGS="-Datomserver.home=$ATOMSERVER_HOME  "
+ATOMSERVER_ARGS="-Datomserver.home=$ATOMSERVER_HOME"
 ATOMSERVER_ARGS="-Datomserver.data.dir=$ATOMSERVER_DATA_DIR $ATOMSERVER_ARGS"
 ATOMSERVER_ARGS="-Datomserver.conf.dir=$ATOMSERVER_CONF_DIR $ATOMSERVER_ARGS"
 ATOMSERVER_ARGS="-Datomserver.ops.conf.dir=$ATOMSERVER_OPSCONF_DIR $ATOMSERVER_ARGS"

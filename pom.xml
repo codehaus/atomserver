@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation=" http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation=" http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -132,8 +133,8 @@
         <dataDir>file:target/var</dataDir>
 
         <!-- configuration dirs -->
-        <confDir />
-        <opsConfDir />
+        <confDir/>
+        <opsConfDir/>
 
         <!-- JMX (jmxBeans.xml) -->
         <jmxHttpPort>50505</jmxHttpPort>
@@ -143,8 +144,7 @@
         <rootAppender>Stdout</rootAppender>
 
         <rootLogLevel>DEBUG</rootLogLevel>
-        <logLevel>TRACE</logLevel>
-        <!--<logLevel>DEBUG</logLevel>-->
+        <logLevel>DEBUG</logLevel>
         <logDir>${basedir}/target</logDir>
         <logFileNamePrefix>atomserver</logFileNamePrefix>
 
@@ -452,6 +452,49 @@
           ======= -->
     <build>
         <plugins>
+
+            <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+            <!-- Force the classes and resources into A JAR within the WAR -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>war</goal>
+                        </goals>
+                        <configuration>
+                            <archiveClasses>true</archiveClasses>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+            <!-- Force the deploy of a JAR as well as a WAR -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <packaging>jar</packaging>
+                            <artifactId>${project.artifactId}</artifactId>
+                            <groupId>${project.groupId}</groupId>
+                            <version>${project.version}</version>
+                            <file>
+                                ${project.build.directory}/${project.artifactId}-${project.version}/WEB-INF/lib/${project.artifactId}-${project.version}.jar
+                            </file>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            
             <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -496,17 +539,17 @@
                         <inherited>false</inherited>
                         <configuration>
                             <tasks>
-                                <mkdir dir="${project.build.directory}" />
+                                <mkdir dir="${project.build.directory}"/>
                                 <exec executable="svn" output="${project.build.directory}/version.properties">
-                                    <arg value="info" />
-                                    <arg value="." />
+                                    <arg value="info"/>
+                                    <arg value="."/>
                                     <redirector>
                                         <outputfilterchain>
                                             <linecontains>
-                                                <contains value="Revision" />
+                                                <contains value="Revision"/>
                                             </linecontains>
                                             <tokenfilter>
-                                                <replacestring from="Revision: " to="atomserver.revision=" />
+                                                <replacestring from="Revision: " to="atomserver.revision="/>
                                             </tokenfilter>
                                         </outputfilterchain>
                                     </redirector>
@@ -514,7 +557,7 @@
                                 <echo file="${project.build.directory}/version.properties" append="true">
                                     atomserver.version=${project.version}
                                 </echo>
-                                <fixcrlf srcdir="${project.build.directory}" eol="lf" includes="version.properties" />
+                                <fixcrlf srcdir="${project.build.directory}" eol="lf" includes="version.properties"/>
                             </tasks>
                         </configuration>
                         <goals>
