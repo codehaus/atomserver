@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<document url="http://java-build.wvrgroup.internal:/opt/sites/atomserver/releases.html">
+
+    <properties>
+        <title>Release Notes</title>
+        <author email="chriswberry@gmail.com">Chris Berry</author>
+    </properties>
+
+    <body>
+        <section name="Release 2.0.1 (6/23/08)">
+            <ol>
+                <li>Added a "throttled" AtomServer. This AtomServer throttles all PUTs, POSTs, and DELETEs
+                    using a ThreadPool front-ended with a Blocking Queue. When all Threads in the Pool are in use,
+                    incoming requests are queued up. The theory is that, because we serialize all writes to the DB,
+                    when it is overloaded its performance degrades significantly, and that by throttling DB input
+                    to some optimum threshold we can maximize performance. This theory was proven out in
+                    performance testing. We saw a 220% decrease in average response time for PUTs for
+                    the throttled AtomServer, with a relatively constant TPM, and smooth behavior.
+                    In contrast the "normal" AtomServer saw spiky behavior, and significant performance degradation.
+                    </li>
+                <li>Aggregate Feeds were completely rewritten.</li>
+                <li>Added "sharded paths" file-based ContentStorage. </li>
+                <li>Gzipping for file-based ContentStorage.</li>
+                <li>Cleaned up the Junits significantly. The tests no longer use a local "var" directory. </li>
+                <li>Google Analytics for the site</li>
+            </ol>
+        </section>
+
+        <section name="Release 2.0 (5/13/08)">
+            <ol>
+                <li>This is the initial open source release.
+                It is numbered 2.0 because the code behind AtomServer has been around
+                as an internal application for about 1 year, and over that time went through many revisions</li>
+            </ol>
+        </section>
+
+    </body>
+</document>
+
+
+
+
+
+
+
+
+                 

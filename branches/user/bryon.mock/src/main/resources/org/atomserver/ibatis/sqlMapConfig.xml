@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMapConfig
+        PUBLIC "-//iBATIS.com//DTD SQL Map Config 2.0//EN"
+        "http://www.ibatis.com/dtd/sql-map-config-2.dtd">
+<!--
+ Copyright (c) 2007 HomeAway, Inc.
+  All rights reserved.  http://www.atomserver.org
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<!-- iBatis SQL Map CONFIG -->
+<sqlMapConfig>
+
+    <!-- FIXME postgres doesn't implement timeout
+    <settings
+             defaultStatementTimeout="${db.timeout.sql.stmts}"
+             classInfoCacheEnabled="true"
+             statementCachingEnabled="true"/>
+             -->
+    <settings
+             classInfoCacheEnabled="true"
+             statementCachingEnabled="true"/>
+
+    <!--reusable SQL fragments and type definitions shared by the sqlMaps below
+        NOTE: this MUST be first to load !! -->
+    <sqlMap resource="org/atomserver/ibatis/sqlMap-fragments.xml"/>
+
+    <!--the ibatis SQL map that defines the sysDate function for the current DB-->
+    <sqlMap resource="org/atomserver/ibatis/sqlMap-sysDate.xml"/>
+
+    <!--the ibatis SQL map that defines the SQL for EntryStore -->
+    <sqlMap resource="org/atomserver/ibatis/sqlMap-entries.xml"/>
+
+    <!--the ibatis SQL map that defines the SQL for DB Content Storage -->
+    <sqlMap resource="org/atomserver/ibatis/sqlMap-content.xml"/>
+
+    <!--the ibatis SQL map that defines the SQL EntryCategory -->
+    <sqlMap resource="org/atomserver/ibatis/sqlMap-categories.xml"/>
+
+    <!--the ibatis SQL map that defines the SQL Category queries on EntryStore -->
+    <sqlMap resource="org/atomserver/ibatis/sqlMap-category-queries.xml"/>
+
+    <!--the ibatis SQL map that defines the SQL for Aggregate feeds -->
+    <sqlMap resource="org/atomserver/ibatis/sqlMap-aggregate.xml"/>
+
+</sqlMapConfig>
+
