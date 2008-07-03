@@ -494,7 +494,7 @@
                 </executions>
             </plugin>
 
-            
+
             <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -525,6 +525,25 @@
                     <!-- do not create unique binaries for each snapshot -->
                     <uniqueVersion>false</uniqueVersion>
                 </configuration>
+                <executions>
+                    <execution>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>deploy-file</goal>
+                        </goals>
+                        <configuration>
+                            <packaging>jar</packaging>
+                            <artifactId>${project.artifactId}</artifactId>
+                            <groupId>${project.groupId}</groupId>
+                            <version>${project.version}</version>
+                            <file>
+                                ${project.build.directory}/${project.artifactId}-${project.version}/WEB-INF/lib/${project.artifactId}-${project.version}.jar
+                            </file>
+                            <repositoryId>codehaus.org</repositoryId>
+                            <url>dav:https://dav.codehaus.org/snapshots.repository/atomserver/</url>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
             <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
