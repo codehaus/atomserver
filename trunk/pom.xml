@@ -477,8 +477,7 @@
                             <goal>war</goal>
                         </goals>
                         <configuration>
-                            <!-- FIXME --> 
-                            <!-- <archiveClasses>true</archiveClasses>  -->
+                            <archiveClasses>true</archiveClasses> 
                             <attachClasses>true</attachClasses>
                         </configuration>
                     </execution>
@@ -503,34 +502,6 @@
                  </execution>
                </executions>
              </plugin>
-
-
-            <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
-            <!-- Force the deploy of a JAR as well as a WAR -->
-            <!--
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-install-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <packaging>jar</packaging>
-                            <artifactId>${project.artifactId}</artifactId>
-                            <groupId>${project.groupId}</groupId>
-                            <version>${project.version}</version>
-                            <file>
-                                ${project.build.directory}/${project.artifactId}-${project.version}/WEB-INF/lib/${project.artifactId}-${project.version}.jar
-                            </file>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            -->
-
 
             <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
             <plugin>
@@ -562,29 +533,6 @@
                     <!-- do not create unique binaries for each snapshot -->
                     <uniqueVersion>false</uniqueVersion>
                 </configuration>
-                <!--
-                <executions>
-                    <execution>
-                        <phase>deploy</phase>
-                        <goals>
-                            <goal>deploy-file</goal>
-                        </goals>
-                        <configuration>
-                            <packaging>jar</packaging>
-                            <file>
-                                ${project.build.directory}/${project.artifactId}-${project.version}/WEB-INF/lib/${project.artifactId}-${project.version}.jar
-                            </file>
-                            <repositoryId>codehaus.org</repositoryId>
-
-                            <url>${project.distributionManagement.snapshotRepository.url}</url>
-
-                            <pomFile>
-                               ${basedir}/pom.xml
-                            </pomFile>
-                        </configuration>
-                    </execution>
-                </executions>
-                -->
             </plugin>
 
             <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
