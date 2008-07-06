@@ -46,6 +46,15 @@
         </fileSet>
 
         <fileSet>
+            <directory>target/jetty-lib</directory>
+            <outputDirectory>/atomserver/lib</outputDirectory>
+            <excludes>
+                <exclude>**/_svn</exclude>
+                <exclude>**/_svn/**</exclude>
+            </excludes>
+        </fileSet>
+
+        <fileSet>
             <directory>src/main/dist/conf</directory>
             <outputDirectory>/atomserver/conf</outputDirectory>
             <excludes>
