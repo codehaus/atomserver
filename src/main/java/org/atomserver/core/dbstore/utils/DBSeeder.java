@@ -155,18 +155,6 @@ public class DBSeeder extends DBTool {
                 // root dir is the actual data dir. In tests this is "target/var"
                 File widgetsDir = new File(rootDir, "widgets");
 
-                /*
-                File widgetsOrigDir = new File(rootDir, "widgets-ORIG");
-
-                // when used by the dbseed.sh to add a few test widgets to a Server for smoke testing
-                //  the widgets-ORIG is not there. It has already been copied to widgets,
-                //  so we just skip this step
-                if (widgetsOrigDir.exists()) {
-                    FileUtils.deleteDirectory(widgetsDir);
-                    FileUtils.copyDirectory(widgetsOrigDir, widgetsDir);
-                }
-                */
-
                 FileUtils.deleteDirectory(widgetsDir);
 
                 URL widgetsORIGURL = getClass().getClassLoader().getResource( SAMPLE_WIDGETS_DIR );
@@ -205,14 +193,6 @@ public class DBSeeder extends DBTool {
         if (contentStorage instanceof DBBasedContentStorage) {
             String entryId = entryDescriptor.getEntryId();
 
-            /*
-            String filename = MessageFormat.format("testentries/var/{0}-ORIG/{1}/{2}/{3}/{4}/{3}.xml.r0",
-                                                   entryDescriptor.getWorkspace(),
-                                                   entryDescriptor.getCollection(),
-                                                   entryId.length() <= 2 ? entryId : entryId.substring(0, 2),
-                                                   entryId,
-                                                   entryDescriptor.getLocale().toString());
-                                                   */
             String filename = MessageFormat.format(SAMPLE_WIDGETS_DIR + "/{0}/{1}/{2}/{3}/{2}.xml.r0",
                                                    entryDescriptor.getCollection(),
                                                    entryId.length() <= 2 ? entryId : entryId.substring(0, 2),
