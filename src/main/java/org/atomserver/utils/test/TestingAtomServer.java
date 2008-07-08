@@ -22,6 +22,7 @@ import org.atomserver.core.autotaggers.XPathAutoTagger;
 import org.atomserver.core.dbstore.DBBasedContentStorage;
 import org.atomserver.core.validators.RelaxNGValidator;
 import org.atomserver.server.servlet.AtomServerServlet;
+import org.atomserver.utils.hsql.HsqlBootstrapper;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.ServletHolder;
@@ -61,6 +62,11 @@ import java.util.Properties;
 public class TestingAtomServer {
     private Server httpServer;
     private int port;
+
+    public TestingAtomServer() {
+        // reset this value, so that each time we NEW a TestingAtomServer, we get a new DB
+        HsqlBootstrapper.setHasBootstrapped(false);
+    }
 
     public int start(String atomserverServletContext, String atomserverServletMapping) throws Exception {
         if (this.httpServer != null) {
