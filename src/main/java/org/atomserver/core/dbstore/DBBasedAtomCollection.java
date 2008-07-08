@@ -125,14 +125,13 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
     //--------------------------------
     /**
      */
-    protected long getEntries(RequestContext request,
+    protected long getEntries(Abdera abdera,
+                              IRI iri,
                               FeedTarget feedTarget,
                               long ifModifiedSinceLong,
-                              Feed feed)
+                              Feed feed
+    )
             throws AtomServerException {
-
-        Abdera abdera = request.getServiceContext().getAbdera();
-        IRI iri = request.getUri();
 
         Date ifModifiedSince = new Date(ifModifiedSinceLong);
         String collection = feedTarget.getCollection();
@@ -209,8 +208,8 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
      * NOTE: "deleted" entries ARE returned (since they are never really deleted from the DB)
      * And Feed clients will want to know that an entry has been deleted
      */
-    protected EntryMetaData getEntry(RequestContext request,
-                                     EntryTarget entryTarget)
+    protected EntryMetaData getEntry(
+            EntryTarget entryTarget)
             throws AtomServerException {
 
         String workspace = entryTarget.getWorkspace();
@@ -401,7 +400,6 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
     /**
      */
     protected EntryMetaData modifyEntry(Object internalId,
-                                        RequestContext request,
                                         EntryTarget entryTarget,
                                         boolean mustAlreadyExist)
             throws AtomServerException {
@@ -493,9 +491,9 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
      * <p/>
      * NOTE: we do NOT actually delete the row from the DB, we simply mark it as "deleted"
      */
-    protected EntryMetaData deleteEntry(RequestContext request,
-                                        final EntryTarget entryTarget,
-                                        final boolean setDeletedFlag)
+    protected EntryMetaData deleteEntry(
+            final EntryTarget entryTarget,
+            final boolean setDeletedFlag)
             throws AtomServerException {
 
         String workspace = entryTarget.getWorkspace();

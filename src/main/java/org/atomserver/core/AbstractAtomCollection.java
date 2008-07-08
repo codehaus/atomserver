@@ -37,7 +37,7 @@ import org.atomserver.ext.batch.Operation;
 import org.atomserver.uri.*;
 import org.atomserver.utils.perf.AutomaticStopWatch;
 import org.atomserver.utils.perf.StopWatch;
-import org.atomserver.utils.xml.XML; 
+import org.atomserver.utils.xml.XML;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -58,14 +58,16 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     /**
      * The getEntries() method on the AtomCollection API delegates to this method within the subclass
      * to do the real work. This method will, most likely, return only a "page" of results.
-     * @param request The Abdera RequestContext.
+     * @param abdera
+     * @param iri
      * @param feedTarget  The FeedTarget, which was decoded from the URI
      * @param ifModifiedSince  The ifModifiedSince Date (as a long) determined using either the Header or a Query param.
-     * @param feed The Feed to which to add Entries 
+     * @param feed The Feed to which to add Entries
      * @return  The latest lastModified Date (as a long) for an Entry in this Feed. Used to set the <updated> element in the Feed
      * @throws AtomServerException
      */
-    abstract protected long getEntries(RequestContext request,
+    abstract protected long getEntries(Abdera abdera,
+                                       IRI iri,
                                        FeedTarget feedTarget,
                                        long ifModifiedSince,
                                        Feed feed) throws AtomServerException;
@@ -73,13 +75,11 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     /**
      * The getEntry() method on the AtomCollection API delegates to this method within the subclass
      * to do the real work.
-     * @param request The Abdera RequestContext.
      * @param entryTarget The EntryTarget, which was decoded from the URI
      * @return The EntryMetaData associated with the requested Entry.
      * @throws AtomServerException
      */
-    abstract protected EntryMetaData getEntry(RequestContext request,
-                                              EntryTarget entryTarget) throws AtomServerException;
+    abstract protected EntryMetaData getEntry(EntryTarget entryTarget) throws AtomServerException;
 
     /**
      * The updateEntry() method on the AtomCollection API delegates to this method within the subclass
@@ -87,29 +87,25 @@ abstract public class AbstractAtomCollection implements AtomCollection {
      * @param internalId  The internalId of this Entry. In general, this is pre-selected from the database,
      * although this is not required. The method getInternalId() is used to obtain thisi value.
      * It is used to determine whether this is an insert or an update within modifyEntry()
-     * @param request The Abdera RequestContext
      * @param entryTarget The EntryTarget, which was decoded from the URI
      * @param mustAlreadyExist Should this Entry already exist?
      * @return The EntryMetaData associated with the requested Entry.
      * @throws AtomServerException
      */
     abstract protected EntryMetaData modifyEntry(Object internalId,
-                                                 RequestContext request,
                                                  EntryTarget entryTarget,
                                                  boolean mustAlreadyExist) throws AtomServerException;
 
     /**
      * The deleteEntry() method on the AtomCollection API delegates to this method within the subclass
      * to do the real work.
-     * @param request The Abdera RequestContext
      * @param entryTarget The EntryTarget, which was decoded from the URI
      * @param setDeletedFlag  Should the deleted flag be set for this Entry?
      * @return The EntryMetaData associated with the requested Entry.
      * @throws AtomServerException
      */
-    abstract protected EntryMetaData deleteEntry(RequestContext request,
-                                                 EntryTarget entryTarget,
-                                                 boolean setDeletedFlag ) throws AtomServerException;
+    abstract protected EntryMetaData deleteEntry(EntryTarget entryTarget,
+                                                 boolean setDeletedFlag) throws AtomServerException;
 
     // ----------
     //   statics
@@ -352,7 +348,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                 java.util.Collection<BatchEntryResult> beans = new ArrayList<BatchEntryResult>();
                 for (EntryTarget entryTarget : entriesURIData) {
                     try {
-                        EntryMetaData entryMetaData = modifyEntry(null, request, entryTarget, false );
+                        EntryMetaData entryMetaData = modifyEntry(null, entryTarget, false );
                         beans.add(new BatchEntryResult(entryTarget, entryMetaData));
                     } catch (Exception e) {
                         beans.add(new BatchEntryResult(entryTarget, e));
@@ -381,7 +377,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                java.util.Collection<BatchEntryResult> beans = new ArrayList<BatchEntryResult>();
                for (EntryTarget entryTarget : entriesURIData) {
                    try {
-                       EntryMetaData entryMetaData = deleteEntry(request, entryTarget, true);
+                       EntryMetaData entryMetaData = deleteEntry(entryTarget, true);
                        beans.add(new BatchEntryResult(entryTarget, entryMetaData));
                    } catch (Exception e) {
                        beans.add(new BatchEntryResult(entryTarget, e));
@@ -425,7 +421,11 @@ abstract public class AbstractAtomCollection implements AtomCollection {
 
          Feed feed = AtomServer.getFactory( abdera ).newFeed();
 
-         long lastModified = getEntries(request, feedTarget, ifModifiedSince, feed);
+         long lastModified = getEntries(request.getServiceContext().getAbdera(),
+                                        request.getUri(),
+                                        feedTarget,
+                                        ifModifiedSince,
+                                        feed);
 
          if (lastModified != 0L) {
              try {
@@ -459,7 +459,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
              entryTarget = entryTarget.cloneWithNewWorkspace( getCategoriesAffilliatedWorkspaceName() );
          }
 
-         EntryMetaData entryMetaData = getEntry(request, entryTarget);
+         EntryMetaData entryMetaData = getEntry(entryTarget);
 
          long thisLastModified =
              (entryMetaData.getLastModifiedDate() != null) ? entryMetaData.getLastModifiedDate().getTime() : 0L;
@@ -518,7 +518,6 @@ abstract public class AbstractAtomCollection implements AtomCollection {
 
                          final Object internalId = getInternalId(target);
                          EntryMetaData metaData = modifyEntry(internalId,
-                                                              request,
                                                               target,
                                                               mustAlreadyExist);
 
@@ -700,7 +699,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                  if (metaData == null) {
                      EntryTarget target = result.getEntryTarget().cloneWithNewRevision(URIHandler.REVISION_OVERRIDE);
                      try {
-                         metaData = getEntry(request, target);
+                         metaData = getEntry(target);
                      } catch (AtomServerException e) {
                          metaData = null;
                      }
@@ -783,7 +782,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                  if (result.getException() != null) {
                      deleteEntry.setException(result.getException());
                  }
-                 
+
                  Integer listOrder = orderMap.get( result.getEntryTarget() );
                  if ( listOrder == null ) {
                      // This should never happen....
@@ -821,7 +820,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                 new TransactionalTask<EntryMetaData>() {
                     public EntryMetaData execute() {
                         EntryMetaData entryMetaData =
-                                deleteEntry(request, entryTarget, !isCategoriesWorkspace());
+                                deleteEntry(entryTarget, !isCategoriesWorkspace());
 
                         // Replace the XML file with a "deleted file"
                         //  we wait to do this now that we know that the delete was successfull
@@ -830,7 +829,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                         int currentRevision = entryMetaData.getRevision();
                         entryMetaDataClone.setRevision( (currentRevision - 1) );
 
-                        getContentStorage().deleteContent( createDeletedEntryXML(entryMetaDataClone), 
+                        getContentStorage().deleteContent( createDeletedEntryXML(entryMetaDataClone),
                                                            entryMetaData );
 
                         return entryMetaData;
@@ -852,7 +851,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                  autoTagger.tag(entryMetaData, entryXml);
              } finally {
                  if ( getPerformanceLog() != null ) {
-                     getPerformanceLog().log( "XML.autoTagger", getPerformanceLog().getPerfLogEntryString(entryMetaData), 
+                     getPerformanceLog().log( "XML.autoTagger", getPerformanceLog().getPerfLogEntryString(entryMetaData),
                                               stopWatch );
                  }
              }
@@ -1034,7 +1033,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
          addEditLink(revision, factory, entry, fileURI);
 
          entry.addSimpleExtension(AtomServerConstants.ENTRY_ID, entryId);
-         
+
          return entry;
      }
 
@@ -1094,7 +1093,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                  org.apache.abdera.model.Category category =
                          AtomServer.getFactory(abdera).newCategory();
                  if (entryCategory.getScheme() != null) {
-                     category.setAttributeValue(Constants.SCHEME, 
+                     category.setAttributeValue(Constants.SCHEME,
                                                 entryCategory.getScheme());
                  } else {
                      category.removeAttribute(Constants.SCHEME);

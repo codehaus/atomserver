@@ -63,14 +63,12 @@ public class FileBasedAtomCollection
     //--------------------------------
     //      public methods
     //--------------------------------
-    protected long getEntries(RequestContext request,
+    protected long getEntries(Abdera abdera,
+                              IRI iri,
                               FeedTarget feedTarget,
                               long ifModifiedSince,
                               Feed feed) throws AtomServerException {
         log.debug("FileBasedAtomCollection::getEntries");
-
-        Abdera abdera = request.getServiceContext().getAbdera();
-        IRI iri = request.getUri();
 
         String workspace = feedTarget.getWorkspace();
         File workspaceDir = new File(((FileBasedContentStorage) getContentStorage()).getRootDir(),
@@ -87,8 +85,8 @@ public class FileBasedAtomCollection
 
     /**
      */
-    protected EntryMetaData getEntry(RequestContext request,
-                                     EntryTarget entryTarget)
+    protected EntryMetaData getEntry(
+            EntryTarget entryTarget)
             throws AtomServerException {
         log.debug("FileBasedAtomCollection::getEntry");
         String workspace = entryTarget.getWorkspace();
@@ -109,7 +107,6 @@ public class FileBasedAtomCollection
     /**
      */
     protected EntryMetaData modifyEntry(Object internalId,
-                                        RequestContext request,
                                         EntryTarget entryTarget,
                                         boolean mustAlreadyExist)
             throws AtomServerException {
@@ -117,8 +114,6 @@ public class FileBasedAtomCollection
         String collection = entryTarget.getCollection();
         Locale locale = entryTarget.getLocale();
         String entryId = entryTarget.getEntryId();
-
-        IRI iri = request.getUri();
 
         boolean isNewlyCreated = !contentExists(workspace,entryTarget);
 
@@ -135,9 +130,9 @@ public class FileBasedAtomCollection
 
     /**
      */
-    protected EntryMetaData deleteEntry(RequestContext request,
-                                        EntryTarget entryTarget,
-                                        boolean setDeletedFlag )
+    protected EntryMetaData deleteEntry(
+            EntryTarget entryTarget,
+            boolean setDeletedFlag)
             throws AtomServerException {
         String workspace = entryTarget.getWorkspace();
         String collection = entryTarget.getCollection();
