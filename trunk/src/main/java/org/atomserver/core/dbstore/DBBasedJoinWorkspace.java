@@ -22,7 +22,6 @@ import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
 import static org.apache.abdera.model.Content.Type.XML;
-import org.apache.abdera.protocol.server.RequestContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.*;
@@ -74,13 +73,11 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
                 return getEntriesDAO().selectAggregateEntry(entryTarget, joinWorkspaces);
             }
 
-            protected long getEntries(RequestContext request,
+            protected long getEntries(Abdera abdera,
+                                      IRI iri,
                                       FeedTarget feedTarget,
                                       long ifModifiedSinceLong,
                                       Feed feed) throws AtomServerException {
-
-                Abdera abdera = request.getServiceContext().getAbdera();
-                IRI iri = request.getUri();
 
                 EntryType entryType = (feedTarget.getEntryTypeParam() != null) ? feedTarget.getEntryTypeParam() : EntryType.link;
                 int pageSize = calculatePageSize(feedTarget, entryType);
