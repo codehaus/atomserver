@@ -53,18 +53,18 @@
         </isNotNull>
 
         <isNull property="language">
-        SELECT Collection,
-               EntryId,
+        SELECT A.Collection,
+               A.EntryId,
                '**' AS LanCode,
                '**' AS CountryCode,
-               MAX(UpdateTimestamp) AS UpdateTimestamp,
-               MAX(UpdateDate) AS UpdateDate,
-               MIN(CreateDate) AS CreateDate
-        FROM VW_AggregateEntry
+               MAX(A.UpdateTimestamp) AS UpdateTimestamp,
+               MAX(A.UpdateDate) AS UpdateDate,
+               MIN(A.CreateDate) AS CreateDate
+        FROM VW_AggregateEntry A
              <isEqual property="dbType" compareValue="sqlserver" >WITH (NOEXPAND)</isEqual>
-        WHERE Collection = #collection#
-          AND UpdateTimestamp > #lastModifiedSeqNum#
-        GROUP BY Collection, EntryId
+        WHERE A.Collection = #collection#
+          AND A.UpdateTimestamp > #lastModifiedSeqNum#
+        GROUP BY A.Collection, A.EntryId
         </isNull>
     </sql>
 
