@@ -33,7 +33,7 @@ import org.atomserver.*;
  * @author Bryon Jacob (bryon at jacob.net)
  */
 public class WorkspaceOptions {
-    static private final Log log = LogFactory.getLog(CollectionOptions.class);
+    static private final Log log = LogFactory.getLog(WorkspaceOptions.class);
 
     private String name = null;
 

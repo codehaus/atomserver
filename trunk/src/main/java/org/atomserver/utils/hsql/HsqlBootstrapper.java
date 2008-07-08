@@ -38,6 +38,10 @@ public class HsqlBootstrapper
 
     private static boolean hasBootstrapped = false;
 
+    public static void setHasBootstrapped(boolean hasBootstrapped) {
+        HsqlBootstrapper.hasBootstrapped = hasBootstrapped;
+    }
+
     public void run() {
         try {
             // make sure we only bootstrap once per VM
