@@ -22,6 +22,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.commons.httpclient.methods.PostMethod;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -48,6 +49,16 @@ public class TestingAtomServerTest extends TestCase {
             "  <content type=\"xhtml\">\n" +
             "    <div xmlns=\"http://www.w3.org/1999/xhtml\">\n" +
             "      <bar xmlns=\"http://atomserver.org/bars\"><name>Aquarium</name></bar>\n" +
+            "    </div>\n" +
+            "  </content>\n" +
+            "</entry>";
+
+    // a BAZ to POST
+    private static final String BAZ =
+            "<entry xmlns=\"http://www.w3.org/2005/Atom\">\n" +
+            "  <content type=\"xhtml\">\n" +
+            "    <div xmlns=\"http://www.w3.org/1999/xhtml\">\n" +
+            "      <baz xmlns=\"http://atomserver.org/baz\">I am a baz</baz>\n" +
             "    </div>\n" +
             "  </content>\n" +
             "</entry>";
@@ -107,6 +118,9 @@ public class TestingAtomServerTest extends TestCase {
             assertTrue(Arrays.asList("bars", "baz").contains(ws.getTitle()));
         }
 
+        postEntry("http://localhost:" + port + "/atomserver/v1/baz/" + collection + "?locale=en_US",
+                 BAZ, 201);
+
         server.stop();
     }
 
@@ -121,6 +135,19 @@ public class TestingAtomServerTest extends TestCase {
                 "UTF-8"));
 
         assertEquals(expectedResponse, client.executeMethod(put));
+    }
+
+    private void postEntry(String url, String content, int expectedResponse) throws IOException {
+        HttpClient client = new HttpClient();
+        PostMethod post = new PostMethod(url);
+        post.setRequestHeader("Content-type", "text/xml; charset=UTF-8");
+
+        post.setRequestEntity(new StringRequestEntity(
+                content,
+                "application/xml",
+                "UTF-8"));
+
+        assertEquals(expectedResponse, client.executeMethod(post));
     }
 
     private <T extends Element> T get(Class<T> clazz, String url) throws IOException {
