@@ -6,7 +6,7 @@
  http-equiv="content-type">
   <meta name="verify-v1"
  content="sRQSq4VA5FRMhwzFB4U3I9AtgLMtIWTdpVVO6jg1az4=">
-  <title>AtomServer BLAH</title>
+  <title>Deploying AtomServer</title>
   <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
 document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
@@ -103,7 +103,8 @@ $CATALINA_HOME/bin/setenv.sh, copy our tomcat-setenv.sh to
 $CATALINA_HOME/bin/setenv.sh. If you do already have a
 $CATALINA_HOME/bin/setenv.sh, you will need to merge the contents of
 our tomcat-setenv.sh with it. Note that the Tomcat startup script
-(catalina.sh) already calls out to this script ($CATALINA_HOME/bin/setenv.sh)
+(catalina.sh) already calls out to this script
+($CATALINA_HOME/bin/setenv.sh)
 if it is there. This is Tomcat's convenience mechanism for setting up
 application specific environments. <br>
     </p>
