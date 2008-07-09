@@ -1,8 +1,0 @@
-namespace n = "http://atomserver.org/bars"
-
-grammar {
-start = BAR
-    BAR = element n:bar {
-        text
-    }
-}
