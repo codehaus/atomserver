@@ -32,7 +32,6 @@ import org.atomserver.core.etc.AtomServerPerformanceLog;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.exceptions.BadContentException;
 import org.atomserver.exceptions.BadRequestException;
-import org.atomserver.exceptions.MovedPermanentlyException;
 import org.atomserver.ext.batch.Operation;
 import org.atomserver.uri.*;
 import org.atomserver.utils.perf.AutomaticStopWatch;
@@ -171,16 +170,66 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         }
     }
 
+
+
+
+
     /**
      * {@inheritDoc}
      */
-   public CategoriesHandler getCategoriesHandler() {
+    public CategoriesHandler getCategoriesHandler() {
         if ( options != null && options.getCategoriesHandler() != null ) {
             return options.getCategoriesHandler();
         } else {
             return parentAtomWorkspace.getOptions().getDefaultCategoriesHandler();
         }
     }
+
+    /**
+     * A convenience method to determine whether this is a Categories Workspace, which is a special
+     * internal Workspace created to handle Category manipulation.
+     * @return true or false
+     */
+    /*
+    protected boolean isCategoriesWorkspace() {
+        if ( log.isTraceEnabled() )
+            log.trace("For workspace(" + parentAtomWorkspace.getName() +
+                      ") isCategoriesWorkspace= " + parentAtomWorkspace.getOptions().isCategoriesWorkspace());
+        return parentAtomWorkspace.getOptions().isCategoriesWorkspace();
+    }
+    */
+
+    /**
+     * A convenience method to determine the acual is a Workspace affliated with a Cateories Workspace,
+     * which is a special internal Workspace created to handle Category manipulation.
+     * @return The affliated Workspace name
+     */
+    /*
+    protected String getCategoriesAffilliatedWorkspaceName() {
+        return ((parentAtomWorkspace.getOptions().getAffiliatedAtomWorkspace() != null )
+                ? parentAtomWorkspace.getOptions().getAffiliatedAtomWorkspace().getName()
+                : null );
+    }
+    */
+
+
+
+
+    //>>>>>>>>>>>>>>
+    protected EntryTarget getEntryTarget(RequestContext request) {
+        return getURIHandler().getEntryTarget(request, true);
+    }
+
+    protected boolean mustAlreadyExist() {
+        return false;
+    }
+
+    protected boolean setDeletedFlag() {
+        return true;
+    }
+
+
+    
 
     /**
      * {@inheritDoc}
@@ -300,29 +349,6 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     }
 
     /**
-     * A convenience method to determine whether this is a Categories Workspace, which is a special
-     * internal Workspace created to handle Category manipulation.
-     * @return true or false
-     */
-    protected boolean isCategoriesWorkspace() {
-        if ( log.isTraceEnabled() )
-            log.trace("For workspace(" + parentAtomWorkspace.getName() +
-                      ") isCategoriesWorkspace= " + parentAtomWorkspace.getOptions().isCategoriesWorkspace());
-        return parentAtomWorkspace.getOptions().isCategoriesWorkspace();
-    }
-
-    /**
-     * A convenience method to determine the acual is a Workspace affliated with a Cateories Workspace,
-     * which is a special internal Workspace created to handle Category manipulation.
-     * @return The affliated Workspace name
-     */
-    protected String getCategoriesAffilliatedWorkspaceName() {
-        return ((parentAtomWorkspace.getOptions().getAffiliatedAtomWorkspace() != null )
-                ? parentAtomWorkspace.getOptions().getAffiliatedAtomWorkspace().getName()
-                : null );
-    }
-
-    /**
      * A convenience method to pull the Service Base URI from the affliated AtomService.
      * @return The Service Base URI
      */
@@ -392,6 +418,8 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     /**
      * {@inheritDoc}
      */
+
+    // FIXME :: make it delegate to the associated VirtualWorkspace
      public java.util.Collection<org.apache.abdera.model.Category> listCategories( RequestContext request, String workspace, String collection ) {
          CategoriesHandler categoriesHandler= getCategoriesHandler();
          if ( categoriesHandler != null ) {
@@ -407,7 +435,9 @@ abstract public class AbstractAtomCollection implements AtomCollection {
          Abdera abdera = request.getServiceContext().getAbdera();
          FeedTarget feedTarget = getURIHandler().getFeedTarget(request);
 
+         /*
          String workspace = feedTarget.getWorkspace();
+
          if ( isCategoriesWorkspace() ) {
              String msg = "Cannot ask for a Feed to a tags: workspace (" + request.getResolvedUri() + ")" ;
              log.warn( msg );
@@ -417,6 +447,8 @@ abstract public class AbstractAtomCollection implements AtomCollection {
 
              throw new MovedPermanentlyException( msg, uri );
          }
+         */
+
          long ifModifiedSince = getIfModifiedSince(feedTarget, request);
 
          Feed feed = AtomServer.getFactory( abdera ).newFeed();
@@ -450,14 +482,19 @@ abstract public class AbstractAtomCollection implements AtomCollection {
       */
      public Entry getEntry(RequestContext request) throws AtomServerException {
          Abdera abdera = request.getServiceContext().getAbdera();
+
+         /*
          IRI iri = request.getUri();
 
          EntryTarget entryTarget = getURIHandler().getEntryTarget(request, true);
-
          String origWorkspace = entryTarget.getWorkspace();
          if ( isCategoriesWorkspace() ) {
              entryTarget = entryTarget.cloneWithNewWorkspace( getCategoriesAffilliatedWorkspaceName() );
          }
+         */
+         EntryTarget entryTarget = getEntryTarget( request );
+
+
 
          EntryMetaData entryMetaData = getEntry(entryTarget);
 
@@ -468,9 +505,11 @@ abstract public class AbstractAtomCollection implements AtomCollection {
          Entry entry = null;
          if (thisLastModified > ifModifiedSince) {
 
+             /*
              if ( isCategoriesWorkspace() ) {
                  entryMetaData.setWorkspace( origWorkspace );
              }
+             */
 
              EntryType entryType =
                  (entryTarget.getEntryTypeParam() != null) ? entryTarget.getEntryTypeParam() : EntryType.full;
@@ -484,11 +523,12 @@ abstract public class AbstractAtomCollection implements AtomCollection {
      */
      public UpdateCreateOrDeleteEntry.CreateOrUpdateEntry updateEntry(final RequestContext request) throws AtomServerException {
          Abdera abdera = request.getServiceContext().getAbdera();
-         IRI iri = request.getUri();
+
+         //IRI iri = request.getUri();
 
          final EntryTarget entryTarget = getURIHandler().getEntryTarget(request, false);
 
-         final String workspace = entryTarget.getWorkspace();
+         //final String workspace = entryTarget.getWorkspace();
          String collection = entryTarget.getCollection();
 
          ensureCollectionExists(collection);
@@ -499,6 +539,8 @@ abstract public class AbstractAtomCollection implements AtomCollection {
          EntryMetaData entryMetaData = executeTransactionally(
                  new TransactionalTask<EntryMetaData>() {
                      public EntryMetaData execute() {
+
+                         /*
                          EntryTarget target = entryTarget;
                          boolean mustAlreadyExist = false;
                          if (isCategoriesWorkspace()) {
@@ -506,6 +548,10 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                                      getCategoriesAffilliatedWorkspaceName());
                              mustAlreadyExist = true;
                          }
+                         */
+                         final EntryTarget target = getEntryTarget( request );
+
+                         
                          // determine if we are creating the entryId -- i.e. if this was a POST
                          if ( EntryTarget.UNASSIGNED_ID.equals(target.getEntryId()) ) {
                              if ( getEntryIdGenerator() == null ) {
@@ -519,7 +565,12 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                          final Object internalId = getInternalId(target);
                          EntryMetaData metaData = modifyEntry(internalId,
                                                               target,
+                                                              mustAlreadyExist() );
+                         /*
+                         EntryMetaData metaData = modifyEntry(internalId,
+                                                              target,
                                                               mustAlreadyExist);
+                                                              */
 
                          // Copy the new file contents into the File
                          //  do this as late as possible -- when we're completely sure that it has all passed
@@ -810,17 +861,26 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     public Entry deleteEntry(final RequestContext request) throws AtomServerException {
         Abdera abdera = request.getServiceContext().getAbdera();
 
+        /*
         final EntryTarget originalEntryTarget = getURIHandler().getEntryTarget(request, true);
         final EntryTarget entryTarget = isCategoriesWorkspace() ?
                                         originalEntryTarget.cloneWithNewWorkspace(
                                                 getCategoriesAffilliatedWorkspaceName()) :
                                         originalEntryTarget;
+                                        */
+        final EntryTarget entryTarget = getEntryTarget( request );
+
 
         EntryMetaData entryMetaData = executeTransactionally(
                 new TransactionalTask<EntryMetaData>() {
                     public EntryMetaData execute() {
+
+                        /*
                         EntryMetaData entryMetaData =
-                                deleteEntry(entryTarget, !isCategoriesWorkspace());
+                                deleteEntry(entryTarget, !isCategoriesWorkspace() );
+                                */
+                        EntryMetaData entryMetaData =
+                                deleteEntry(entryTarget, setDeletedFlag() );
 
                         // Replace the XML file with a "deleted file"
                         //  we wait to do this now that we know that the delete was successfull
@@ -948,7 +1008,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
      }
 
      //~~~~~~~~~~~~~~~~~~~~~~
-     private long getIfModifiedSince(URITarget uriTarget,
+     protected long getIfModifiedSince(URITarget uriTarget,
                                        RequestContext request)
              throws BadRequestException {
 
@@ -983,9 +1043,14 @@ abstract public class AbstractAtomCollection implements AtomCollection {
 
              String fileURI = getURIHandler().constructURIString(workspace, collection, entryId, locale);
 
+
+             /*
              if ( ! isCategoriesWorkspace() ) {
                  addCategoriesToEntry( entry, entryMetaData, abdera);
              }
+             */
+             addCategoriesToEntry( entry, entryMetaData, abdera);
+
 
              if ( entryType == EntryType.full ) {
                  addFullEntryContent(abdera, entryMetaData, entry );

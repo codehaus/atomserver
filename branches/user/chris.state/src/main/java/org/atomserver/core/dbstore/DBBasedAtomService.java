@@ -168,7 +168,8 @@ public class DBBasedAtomService extends AbstractAtomService {
                      catWorkspaceName = DEFAULT_CATEGORIES_WORKSPACE_PREFIX + wspace.getName();
                 }
 
-                AtomWorkspace catWorkspace = newAtomWorkspace( this, catWorkspaceName );
+                //AtomWorkspace catWorkspace = newAtomWorkspace( this, catWorkspaceName );
+                AtomWorkspace catWorkspace = new DBBasedVirtualAtomWorkspace( this, catWorkspaceName );
 
                 WorkspaceOptions catOptions = new WorkspaceOptions();
                 catOptions.setName( catWorkspaceName );
