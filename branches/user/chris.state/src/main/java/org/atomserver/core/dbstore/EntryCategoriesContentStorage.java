@@ -63,12 +63,12 @@ public class EntryCategoriesContentStorage implements ContentStorage {
         return serviceContext;
     }
 
-    // FIXME:: we need a better way to set this info up....
+    // FIXME:: we need a better way to set this info up....   (called in DBBasedAtomService)
     public void setCategoriesToEntriesMap( java.util.Map<String, String> categoriesToEntriesMap ){
         this.categoriesToEntriesMap = categoriesToEntriesMap;
     }
 
-    // FIXME:: this needs to change
+    // FIXME:: this needs to change  (set from Spring)
     public void setRealContentStorage( ContentStorage realContentStorage) {
         this.realContentStorage = realContentStorage;
     }
