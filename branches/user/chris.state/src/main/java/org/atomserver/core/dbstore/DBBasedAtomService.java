@@ -19,9 +19,7 @@ package org.atomserver.core.dbstore;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.atomserver.AtomService;
-import org.atomserver.AtomWorkspace;
-import org.atomserver.EntryDescriptor;
+import org.atomserver.*;
 import org.atomserver.core.AbstractAtomService;
 import org.atomserver.core.BaseEntryDescriptor;
 import org.atomserver.core.EntryMetaData;
@@ -48,7 +46,9 @@ public class DBBasedAtomService extends AbstractAtomService {
     static private final Log log = LogFactory.getLog(DBBasedAtomCollection.class);
 
     private EntriesDAO entriesDAO = null;
-    private EntryCategoriesDAO entryCategoriesDAO = null;
+
+    //>>>>>>>>>
+    //private EntryCategoriesDAO entryCategoriesDAO = null;
 
     //>>>>>>>>>>
     //protected ContentStorage categoriesContentStorage = null;
@@ -73,7 +73,11 @@ public class DBBasedAtomService extends AbstractAtomService {
         return this.categoriesContentStorage;
     }
     */
-    
+    public void setCategoriesContentStorage( ContentStorage categoriesContentStorage ) {
+        log.error( "setEntryCategoriesDAO() is no longer valid on Atomservice. It is DEPRICATED");
+        setCategoriesHandler( (CategoriesHandler)categoriesContentStorage ) ;
+    }
+
 
     public void setEntriesDAO( EntriesDAO entriesDAO ) {
         this.entriesDAO = entriesDAO;
@@ -82,12 +86,18 @@ public class DBBasedAtomService extends AbstractAtomService {
         return entriesDAO;
     }
 
+    /*
     public void setEntryCategoriesDAO( EntryCategoriesDAO entryCategoriesDAO ) {
         this.entryCategoriesDAO = entryCategoriesDAO;
     }
     public EntryCategoriesDAO getEntryCategoriesDAO() {
         return entryCategoriesDAO;
     }
+    */
+    public void setEntryCategoriesDAO( EntryCategoriesDAO entryCategoriesDAO ) {
+        log.error( "setEntryCategoriesDAO() is no longer valid on Atomservice. It is ignored");
+    }
+
 
     public void setTransactionTemplate( TransactionTemplate transactionTemplate ) {
         this.transactionTemplate = transactionTemplate;

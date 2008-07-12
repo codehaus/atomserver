@@ -107,10 +107,11 @@
           depends-on="org.atomserver-propertyConfigurer" >
 
         <property name="entriesDAO" ref="org.atomserver-entriesDAO"/>
-        <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO"/>
 
+        <!-- <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO"/> -->
         <!-- <property name="categoriesContentStorage" ref="org.atomserver-entryCategoriesContentStorage"/>  --> 
         <!-- <property name="categoriesContentStorage" ref="org.atomserver-entryCategoriesHandler"/> -->
+        
         <property name="categoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>  
         <property name="serviceContext" ref="org.apache.abdera.protocol.server.ServiceContext"/>
 

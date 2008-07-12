@@ -71,9 +71,16 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
          return ((DBBasedAtomService)parentAtomWorkspace.getParentAtomService()).getEntriesDAO();
     }
 
-     public EntryCategoriesDAO getEntryCategoriesDAO() {
-         return ((DBBasedAtomService)parentAtomWorkspace.getParentAtomService()).getEntryCategoriesDAO();
-     }
+    /*
+    public EntryCategoriesDAO getEntryCategoriesDAO() {
+        return ((DBBasedAtomService)parentAtomWorkspace.getParentAtomService()).getEntryCategoriesDAO();
+    }
+    */
+    
+    public EntryCategoriesDAO getEntryCategoriesDAO() {
+        return ((EntryCategoriesHandler)parentAtomWorkspace.getParentAtomService().getCategoriesHandler())
+                .getEntryCategoriesDAO();
+    }
 
      public TransactionTemplate getTransactionTemplate() {
          return ((DBBasedAtomService)parentAtomWorkspace.getParentAtomService()).getTransactionTemplate();

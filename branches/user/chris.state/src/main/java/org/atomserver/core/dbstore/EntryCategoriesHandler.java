@@ -118,6 +118,10 @@ public class EntryCategoriesHandler
          return atomService;
     }
 
+    /**
+     * Set by the AtomService, not Spring
+     * @param atomService
+     */
     public void setAtomService(AtomService atomService) {
         this.atomService = atomService;
     }
@@ -186,6 +190,10 @@ public class EntryCategoriesHandler
         this.entryCategoriesDAO = entryCategoriesDAO;
     }
 
+    //>>>>>>>
+    public EntryCategoriesDAO getEntryCategoriesDAO() {
+        return entryCategoriesDAO;
+    }
 
     public void initializeWorkspace(String workspace) {
         // do nothing.
