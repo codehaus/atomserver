@@ -18,30 +18,27 @@
 package org.atomserver.core.dbstore;
 
 import org.apache.abdera.factory.Factory;
-import org.apache.abdera.model.Category;
 import org.apache.abdera.model.Categories;
+import org.apache.abdera.model.Category;
 import org.apache.abdera.model.Document;
-import org.apache.abdera.protocol.server.ServiceContext;
 import org.apache.abdera.parser.Parser;
+import org.apache.abdera.protocol.server.ServiceContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.atomserver.AtomServer;
-import org.atomserver.CategoriesHandler;
-import org.atomserver.ContentStorage;
-import org.atomserver.EntryDescriptor;
-import org.atomserver.exceptions.AtomServerException;
-import org.atomserver.exceptions.BadRequestException;
-import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
+import org.atomserver.*;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryMetaData;
+import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
+import org.atomserver.exceptions.AtomServerException;
+import org.atomserver.exceptions.BadRequestException;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Locale;
-import java.io.StringWriter;
 import java.io.IOException;
 import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * @author Chris Berry  (chriswberry at gmail.com)
@@ -113,6 +110,19 @@ public class EntryCategoriesHandler
 
     //static private final Log log = LogFactory.getLog(EntryCategoriesContentStorage.class);
 
+
+    //>>>>>>>>>>>>
+    private AtomService atomService ;
+
+    public AtomService getAtomService() {
+         return atomService;
+    }
+
+    public void setAtomService(AtomService atomService) {
+        this.atomService = atomService;
+    }
+    //  <<<<<<<<<<<
+
     protected EntryCategoriesDAO entryCategoriesDAO = null;
     private java.util.Map<String, String> categoriesToEntriesMap = null;
     private ServiceContext serviceContext = null;
@@ -133,16 +143,27 @@ public class EntryCategoriesHandler
     }
 
     // FIXME:: this needs to change  (set from Spring)
+
+    /*
     public void setRealContentStorage( ContentStorage realContentStorage) {
         this.realContentStorage = realContentStorage;
     }
+    */
+    public void setRealContentStorage( ContentStorage realContentStorage) {
+        log.error( "setRealContentStorage is DEPRICATED, and no longer used"); 
+    }
 
 
-    
+    //>>>>>>>>>>>>
     private ContentStorage getAffliatedContentStorage( EntryDescriptor descriptor ) {
         
-        return realContentStorage;
+        //return realContentStorage;
+
+        String workspace = descriptor.getWorkspace();
+        return atomService.getAtomWorkspace( workspace ).getOptions().getDefaultContentStorage() ;
     }
+    //<<<<<<<<<<<<<<
+
 
     //--------------------------------
     //      public methods

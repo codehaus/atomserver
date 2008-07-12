@@ -215,6 +215,7 @@ public class DBBasedAtomService extends AbstractAtomService {
         }
         */
         categoryHandler.setCategoriesToEntriesMap( categoriesMap );
+        categoryHandler.setAtomService( this );
 
 
         if ( log.isTraceEnabled() )
