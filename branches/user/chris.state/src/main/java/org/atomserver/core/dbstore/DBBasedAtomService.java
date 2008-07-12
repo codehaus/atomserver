@@ -198,8 +198,13 @@ public class DBBasedAtomService extends AbstractAtomService {
         }
         // FIXME : need a cleaner way to set this up....
         if ( categoriesContentStorage != null ) {
+            /*
             if ( categoriesContentStorage instanceof EntryCategoriesContentStorage) {
                 ((EntryCategoriesContentStorage)categoriesContentStorage).setCategoriesToEntriesMap( categoriesMap );
+            }
+            */
+            if ( categoriesContentStorage instanceof EntryCategoriesHandler) {
+                ((EntryCategoriesHandler)categoriesContentStorage).setCategoriesToEntriesMap( categoriesMap );
             }
         }
         if ( log.isTraceEnabled() )
