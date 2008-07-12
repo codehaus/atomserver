@@ -46,7 +46,9 @@ public class WorkspaceOptions {
 
     private ContentStorage defaultContentStorage = null;
     private ContentValidator defaultContentValidator = null;
-    private CategoriesHandler defaultCategoriesHandler = null;
+
+    //private CategoriesHandler defaultCategoriesHandler = null;
+
     private EntryAutoTagger defaultAutoTagger = null;
 
     private EntryIdGenerator entryIdGenerator = null;
@@ -141,12 +143,20 @@ public class WorkspaceOptions {
         return defaultContentValidator;
     }
 
+    //>>>>>>>>>>>>>>>>>>>>>>>
+    /*
     public void setDefaultCategoriesHandler( CategoriesHandler categoriesHandler ) {
         this.defaultCategoriesHandler = categoriesHandler;
     }
     public CategoriesHandler getDefaultCategoriesHandler() {
         return defaultCategoriesHandler;
     }
+    */
+    public void setDefaultCategoriesHandler( CategoriesHandler categoriesHandler ) {
+        log.error( "DefaultCategoriesHandler is deprecated, and does nothing");
+    }
+    //<<<<<<<<<<<<<<<<<<<
+
 
     public void setDefaultAutoTagger(EntryAutoTagger autoTagger) {
         this.defaultAutoTagger = autoTagger;
@@ -162,7 +172,7 @@ public class WorkspaceOptions {
         return verboseDeletions;
     }
 
-    /*
+    /*     only used in code
     public boolean isCategoriesWorkspace() {
         return isCategoryWorkspace;
     }
@@ -171,7 +181,7 @@ public class WorkspaceOptions {
     }
     */
 
-    /*
+    /*    only used in code
     public AtomWorkspace getAffiliatedAtomWorkspace() {
         return affiliatedAtomWorkspace;
     }

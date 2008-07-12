@@ -178,12 +178,17 @@ abstract public class AbstractAtomCollection implements AtomCollection {
      * {@inheritDoc}
      */
     public CategoriesHandler getCategoriesHandler() {
+        /*
         if ( options != null && options.getCategoriesHandler() != null ) {
             return options.getCategoriesHandler();
         } else {
             return parentAtomWorkspace.getOptions().getDefaultCategoriesHandler();
         }
+        */
+        return parentAtomWorkspace.getParentAtomService().getCategoriesHandler();
     }
+
+
 
     /**
      * A convenience method to determine whether this is a Categories Workspace, which is a special

@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.AtomService;
 import org.atomserver.AtomWorkspace;
+import org.atomserver.CategoriesHandler;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.exceptions.BadRequestException;
 import org.atomserver.uri.URIHandler;
@@ -69,6 +70,14 @@ public class FileBasedBlogService implements AtomService {
     public String getServiceBaseUri() {
         return this.uriHandler.getServiceBaseUri();
     }
+
+    //>>>>>>>>>>>>
+    public CategoriesHandler getCategoriesHandler(){
+        return null;
+    }
+    public void setCategoriesHandler(CategoriesHandler handler) {
+    }
+    //<<<<<<<<    
 
     public int getNumberOfWorkspaces()
     { return 1; }

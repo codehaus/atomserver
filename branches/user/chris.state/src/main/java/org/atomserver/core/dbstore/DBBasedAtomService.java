@@ -17,31 +17,26 @@
 
 package org.atomserver.core.dbstore;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.atomserver.AtomService;
+import org.atomserver.AtomWorkspace;
+import org.atomserver.EntryDescriptor;
 import org.atomserver.core.AbstractAtomService;
 import org.atomserver.core.BaseEntryDescriptor;
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.WorkspaceOptions;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
 import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
-
-import org.atomserver.EntryDescriptor;
-import org.atomserver.ContentStorage;
-import org.atomserver.AtomWorkspace;
-import org.atomserver.AtomService;
 import org.atomserver.utils.locale.LocaleUtils;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import org.springframework.transaction.support.TransactionTemplate;
-
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
+import org.springframework.transaction.support.TransactionTemplate;
 
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /** 
  * @author Chris Berry  (chriswberry at gmail.com)
@@ -54,8 +49,9 @@ public class DBBasedAtomService extends AbstractAtomService {
 
     private EntriesDAO entriesDAO = null;
     private EntryCategoriesDAO entryCategoriesDAO = null;
-    
-    protected ContentStorage categoriesContentStorage = null;
+
+    //>>>>>>>>>>
+    //protected ContentStorage categoriesContentStorage = null;
 
     // single TransactionTemplate shared amongst all methods/threads in this instance
     private TransactionTemplate transactionTemplate;
@@ -68,12 +64,16 @@ public class DBBasedAtomService extends AbstractAtomService {
     //--------------------------------
     //      public methods
     //--------------------------------
+
+    /*
     public void setCategoriesContentStorage( ContentStorage categoriesContentStorage ) {
         this.categoriesContentStorage = categoriesContentStorage;
     }       
     protected ContentStorage getCategoriesContentStorage() {
         return this.categoriesContentStorage;
     }
+    */
+    
 
     public void setEntriesDAO( EntriesDAO entriesDAO ) {
         this.entriesDAO = entriesDAO;
@@ -159,6 +159,9 @@ public class DBBasedAtomService extends AbstractAtomService {
         java.util.Map<String, AtomWorkspace> wspaceMap = new java.util.HashMap<String, AtomWorkspace>( workspaces );
         java.util.Map<String, String> categoriesMap = new java.util.HashMap<String, String>();
 
+        //>>>>>
+        EntryCategoriesHandler categoryHandler = (EntryCategoriesHandler)getCategoriesHandler();
+
         for ( AtomWorkspace wspace : wspaceMap.values() ) {
             WorkspaceOptions options = wspace.getOptions();
 
@@ -187,7 +190,8 @@ public class DBBasedAtomService extends AbstractAtomService {
                 //catOptions.setIsCategoriesWorkspace( true );
                 //catOptions.setAffiliatedAtomWorkspace( wspace );
 
-                catOptions.setDefaultContentStorage( categoriesContentStorage );
+                //catOptions.setDefaultContentStorage( categoriesContentStorage );
+                catOptions.setDefaultContentStorage( categoryHandler );
 
                 catWorkspace.setOptions( catOptions );
 
@@ -197,16 +201,22 @@ public class DBBasedAtomService extends AbstractAtomService {
             }
         }
         // FIXME : need a cleaner way to set this up....
+
+
+
+        /*
         if ( categoriesContentStorage != null ) {
-            /*
-            if ( categoriesContentStorage instanceof EntryCategoriesContentStorage) {
-                ((EntryCategoriesContentStorage)categoriesContentStorage).setCategoriesToEntriesMap( categoriesMap );
-            }
-            */
+            //if ( categoriesContentStorage instanceof EntryCategoriesContentStorage) {
+            //    ((EntryCategoriesContentStorage)categoriesContentStorage).setCategoriesToEntriesMap( categoriesMap );
+            //}
             if ( categoriesContentStorage instanceof EntryCategoriesHandler) {
                 ((EntryCategoriesHandler)categoriesContentStorage).setCategoriesToEntriesMap( categoriesMap );
             }
         }
+        */
+        categoryHandler.setCategoriesToEntriesMap( categoriesMap );
+
+
         if ( log.isTraceEnabled() )
             log.trace("workspaces after initialization for = " + workspaces );
     }

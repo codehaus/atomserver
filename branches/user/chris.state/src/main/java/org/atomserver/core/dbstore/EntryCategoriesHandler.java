@@ -137,6 +137,13 @@ public class EntryCategoriesHandler
         this.realContentStorage = realContentStorage;
     }
 
+
+    
+    private ContentStorage getAffliatedContentStorage( EntryDescriptor descriptor ) {
+        
+        return realContentStorage;
+    }
+
     //--------------------------------
     //      public methods
     //--------------------------------
@@ -200,7 +207,8 @@ public class EntryCategoriesHandler
         EntryDescriptor descriptorClone = cloneDescriptorWithEntriesWorkspace(descriptor);
         deleteCategories(descriptorClone);
 
-        realContentStorage.revisionChangedWithoutContentChanging(descriptorClone);
+        //realContentStorage.revisionChangedWithoutContentChanging(descriptorClone);
+        getAffliatedContentStorage(descriptor).revisionChangedWithoutContentChanging(descriptorClone);
     }
 
     /**
@@ -219,7 +227,8 @@ public class EntryCategoriesHandler
         // INSERT the input Categories to the DB
         insertCategories(contentXml, descriptorClone, true);
 
-        realContentStorage.revisionChangedWithoutContentChanging(descriptorClone);
+        //>>>>>>> realC...
+        getAffliatedContentStorage(descriptor).revisionChangedWithoutContentChanging(descriptorClone);
     }
 
     //--------------------------------

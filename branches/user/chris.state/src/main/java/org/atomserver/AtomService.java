@@ -91,4 +91,9 @@ public interface AtomService {
     int getMaxLinkAggregateEntriesPerPage();
 
     int getMaxFullAggregateEntriesPerPage();
+
+
+    //>>>>>>>>>>>>
+    CategoriesHandler getCategoriesHandler();
+    void setCategoriesHandler(CategoriesHandler handler);
 }

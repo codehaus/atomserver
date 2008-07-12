@@ -110,7 +110,8 @@
         <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO"/>
 
         <!-- <property name="categoriesContentStorage" ref="org.atomserver-entryCategoriesContentStorage"/>  --> 
-        <property name="categoriesContentStorage" ref="org.atomserver-entryCategoriesHandler"/>
+        <!-- <property name="categoriesContentStorage" ref="org.atomserver-entryCategoriesHandler"/> -->
+        <property name="categoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>  
 
         <property name="transactionTemplate">
             <bean class="org.springframework.transaction.support.TransactionTemplate">

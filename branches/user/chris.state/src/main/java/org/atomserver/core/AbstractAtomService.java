@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.AtomService;
 import org.atomserver.AtomWorkspace;
+import org.atomserver.CategoriesHandler;
 import org.atomserver.exceptions.BadRequestException;
 import org.atomserver.core.etc.AtomServerPerformanceLog;
 import org.atomserver.uri.ServiceTarget;
@@ -61,6 +62,8 @@ abstract public class AbstractAtomService implements AtomService {
     protected URIHandler uriHandler = null;
     protected java.util.Map<String, AtomWorkspace> workspaces = null;
     protected AtomServerPerformanceLog perflog;
+
+    protected CategoriesHandler categoriesHandler;
 
     /**
      * {@inheritDoc}
@@ -126,6 +129,18 @@ abstract public class AbstractAtomService implements AtomService {
     public String getServiceBaseUri() {
         return this.uriHandler.getServiceBaseUri();
     }
+
+
+    //>>>>>>>>>>>>
+    public CategoriesHandler getCategoriesHandler() {
+        return categoriesHandler ;
+    }
+
+    public void setCategoriesHandler(CategoriesHandler categoriesHandler) {
+        this.categoriesHandler = categoriesHandler;
+    }
+    //<<<<<<<<<
+
 
     /**
      * Set the AtomWorkspaces for this AtomService. Probably this method is called from an IOC container like Spring.
