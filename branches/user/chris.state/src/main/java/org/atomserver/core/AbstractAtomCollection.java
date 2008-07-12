@@ -419,8 +419,10 @@ abstract public class AbstractAtomCollection implements AtomCollection {
      * {@inheritDoc}
      */
 
-    // FIXME :: make it delegate to the associated VirtualWorkspace
-     public java.util.Collection<org.apache.abdera.model.Category> listCategories( RequestContext request, String workspace, String collection ) {
+     // FIXME :: make it delegate to the associated VirtualWorkspace
+     public java.util.Collection<org.apache.abdera.model.Category> listCategories( RequestContext request,
+                                                                                  String workspace,
+                                                                                  String collection ) {
          CategoriesHandler categoriesHandler= getCategoriesHandler();
          if ( categoriesHandler != null ) {
              return categoriesHandler.listCategories( workspace, collection  );
@@ -1021,12 +1023,62 @@ abstract public class AbstractAtomCollection implements AtomCollection {
          return (ifModifiedSinceDate == null) ? 0L : ifModifiedSinceDate.getTime();
      }
 
+    
+    //~~~~~~~~~~~~~~~~~~~~~~
+    protected Entry newEntry(Abdera abdera, EntryMetaData entryMetaData, EntryType entryType)
+        throws AtomServerException {
+
+        StopWatch stopWatch = new AutomaticStopWatch();
+        try {
+            Entry entry = newEntryWithCommonContentOnly(abdera, entryMetaData);
+
+            java.util.Date updated = entryMetaData.getLastModifiedDate();
+            java.util.Date published = entryMetaData.getPublishedDate();
+
+            entry.setUpdated( updated );
+            if ( published != null )
+                entry.setPublished( published );
+
+            String workspace = entryMetaData.getWorkspace();
+            String collection = entryMetaData.getCollection();
+            String entryId = entryMetaData.getEntryId();
+            java.util.Locale locale = entryMetaData.getLocale();
+
+            String fileURI = getURIHandler().constructURIString(workspace, collection, entryId, locale);
+
+            addCategoriesToEntry( entry, entryMetaData, abdera);
+
+            if ( entryType == EntryType.full ) {
+                addFullEntryContent(abdera, entryMetaData, entry );
+            } else if ( entryType == EntryType.link ) {
+                addLinkToEntry(AtomServer.getFactory(abdera), entry, fileURI, "alternate");
+            } else {
+                throw new AtomServerException( "Must define the EntryType -- full or link" );
+            }
+
+            return entry;
+        } finally {
+            if ( getPerformanceLog() != null ) {
+                getPerformanceLog().log( "XML.fine.entry", getPerformanceLog().getPerfLogEntryString(entryMetaData), stopWatch );
+            }
+        }
+    }
+
+    /*
      //~~~~~~~~~~~~~~~~~~~~~~
      protected Entry newEntry(Abdera abdera, EntryMetaData entryMetaData, EntryType entryType)
          throws AtomServerException {
 
          StopWatch stopWatch = new AutomaticStopWatch();
          try {
+
+             //>>>>>>>>>>>>>>>>>>>>>>>
+             // we reset this here for the virtual workspaces, which is much cleaner than reproducing newEntry()
+             log.debug("&&&&&&&&&&&&&&&&&&&&&&&&&& " + parentAtomWorkspace.getName() );
+             entryMetaData.setWorkspace( parentAtomWorkspace.getName() );
+
+
+
              Entry entry = newEntryWithCommonContentOnly(abdera, entryMetaData);
 
              java.util.Date updated = entryMetaData.getLastModifiedDate();
@@ -1044,12 +1096,12 @@ abstract public class AbstractAtomCollection implements AtomCollection {
              String fileURI = getURIHandler().constructURIString(workspace, collection, entryId, locale);
 
 
-             /*
-             if ( ! isCategoriesWorkspace() ) {
-                 addCategoriesToEntry( entry, entryMetaData, abdera);
-             }
-             */
+             //>>>>>>>>>>>>>>>>>>>
+             //if ( ! isCategoriesWorkspace() ) {
+             //    addCategoriesToEntry( entry, entryMetaData, abdera);
+             //}
              addCategoriesToEntry( entry, entryMetaData, abdera);
+
 
 
              if ( entryType == EntryType.full ) {
@@ -1067,6 +1119,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
              }
          }
      }
+     */
 
      //~~~~~~~~~~~~~~~~~~~~~~
      protected Entry newEntryWithCommonContentOnly(Abdera abdera, EntryDescriptor entryMetaData)
@@ -1123,7 +1176,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
 
      //~~~~~~~~~~~~~~~~~~~~~~
      // Add Categories to the Entry, if a CategoriesHandler has been registered
-     private void addCategoriesToEntry(Entry entry, EntryMetaData entryMetaData, Abdera abdera) {
+     protected void addCategoriesToEntry(Entry entry, EntryMetaData entryMetaData, Abdera abdera) {
          if ( (entryMetaData.getCategories() != null) && (entryMetaData.getCategories().size() > 0) ) {
              Collections.sort(entryMetaData.getCategories(),
                               new Comparator<EntryCategory>() {

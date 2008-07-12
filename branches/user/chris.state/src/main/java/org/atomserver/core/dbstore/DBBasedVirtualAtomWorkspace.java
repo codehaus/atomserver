@@ -16,23 +16,21 @@
 
 package org.atomserver.core.dbstore;
 
+import org.apache.abdera.Abdera;
+import org.apache.abdera.model.Entry;
+import org.apache.abdera.model.Feed;
+import org.apache.abdera.protocol.server.RequestContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.abdera.model.Feed;
-import org.apache.abdera.model.Entry;
-import org.apache.abdera.protocol.server.RequestContext;
-import org.apache.abdera.Abdera;
-import org.atomserver.*;
-import org.atomserver.utils.perf.StopWatch;
-import org.atomserver.utils.perf.AutomaticStopWatch;
-import org.atomserver.uri.FeedTarget;
-import org.atomserver.uri.EntryTarget;
+import org.atomserver.AtomCollection;
+import org.atomserver.AtomService;
+import org.atomserver.AtomWorkspace;
+import org.atomserver.EntryType;
+import org.atomserver.core.EntryMetaData;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.exceptions.MovedPermanentlyException;
-import org.atomserver.core.WorkspaceOptions;
-import org.atomserver.core.EntryMetaData;
-
-import java.util.List;
+import org.atomserver.uri.EntryTarget;
+import org.atomserver.uri.FeedTarget;
 
 
 public class DBBasedVirtualAtomWorkspace extends DBBasedAtomWorkspace {
@@ -50,11 +48,24 @@ public class DBBasedVirtualAtomWorkspace extends DBBasedAtomWorkspace {
              * which is a special internal Workspace created to handle Category manipulation.
              * @return The affliated Workspace name
              */
+            /*
             protected String getCategoriesAffilliatedWorkspaceName() {
                 return ((parentAtomWorkspace.getOptions().getAffiliatedAtomWorkspace() != null )
                         ? parentAtomWorkspace.getOptions().getAffiliatedAtomWorkspace().getName()
                         : null );
             }
+            */
+
+            protected String getAffilliatedWorkspaceName() {
+                String workspaceName = parentAtomWorkspace.getName();
+                log.debug( "+++++++++++++++++++++++++++++++++ " + workspaceName );
+                String[] parts = workspaceName.split( ":" );
+                if ( parts.length != 2 ) {
+                    return null;
+                }
+                return parts[1];
+            }
+
 
             /**
              * {@inheritDoc}
@@ -67,14 +78,16 @@ public class DBBasedVirtualAtomWorkspace extends DBBasedAtomWorkspace {
                 log.warn(msg);
 
                 String uri = request.getResolvedUri().toString();
-                uri = uri.replaceAll(workspace, getCategoriesAffilliatedWorkspaceName());
+                //uri = uri.replaceAll(workspace, getCategoriesAffilliatedWorkspaceName());
+                uri = uri.replaceAll(workspace, getAffilliatedWorkspaceName());
 
                 throw new MovedPermanentlyException(msg, uri);
             }
 
             protected EntryTarget getEntryTarget(RequestContext request) {
                 EntryTarget entryTarget = getURIHandler().getEntryTarget(request, true);
-                entryTarget = entryTarget.cloneWithNewWorkspace(getCategoriesAffilliatedWorkspaceName());
+                //entryTarget = entryTarget.cloneWithNewWorkspace(getCategoriesAffilliatedWorkspaceName());
+                entryTarget = entryTarget.cloneWithNewWorkspace(getAffilliatedWorkspaceName());
                 return entryTarget;
             }
 
@@ -86,55 +99,17 @@ public class DBBasedVirtualAtomWorkspace extends DBBasedAtomWorkspace {
                 return false;
             }
 
+            protected void addCategoriesToEntry(Entry entry, EntryMetaData entryMetaData, Abdera abdera) {                
+            }
+
             //~~~~~~~~~~~~~~~~~~~~~~
             protected Entry newEntry(Abdera abdera, EntryMetaData entryMetaData, EntryType entryType)
                 throws AtomServerException {
 
-                StopWatch stopWatch = new AutomaticStopWatch();
-                try {
+                log.debug("&&&&&&&&&&&&&&&&&&&&&&&&&& " + parentAtomWorkspace.getName() );
+                entryMetaData.setWorkspace( parentAtomWorkspace.getName() );
 
-                    //>>>>>>>>>>
-                    log.debug("&&&&&&&&&&&&&&&&&&&&&&&&&& " + parentAtomWorkspace.getName() );
-                    entryMetaData.setWorkspace( parentAtomWorkspace.getName() );
-
-
-                    Entry entry = newEntryWithCommonContentOnly(abdera, entryMetaData);
-
-                    java.util.Date updated = entryMetaData.getLastModifiedDate();
-                    java.util.Date published = entryMetaData.getPublishedDate();
-
-                    entry.setUpdated( updated );
-                    if ( published != null )
-                        entry.setPublished( published );
-
-                    String workspace = entryMetaData.getWorkspace();
-                    String collection = entryMetaData.getCollection();
-                    String entryId = entryMetaData.getEntryId();
-                    java.util.Locale locale = entryMetaData.getLocale();
-
-                    String fileURI = getURIHandler().constructURIString(workspace, collection, entryId, locale);
-
-                    /*
-                    if ( ! isCategoriesWorkspace() ) {
-                        addCategoriesToEntry( entry, entryMetaData, abdera);
-                    }
-                    */
-
-                    if ( entryType == EntryType.full ) {
-                        addFullEntryContent(abdera, entryMetaData, entry );
-                    } else if ( entryType == EntryType.link ) {
-                        addLinkToEntry(AtomServer.getFactory(abdera), entry, fileURI, "alternate");
-                    } else {
-                        throw new AtomServerException( "Must define the EntryType -- full or link" );
-                    }
-
-                    return entry;
-                } finally {
-                    if ( getPerformanceLog() != null ) {
-                        getPerformanceLog().log("XML.fine.entry",
-                                                getPerformanceLog().getPerfLogEntryString(entryMetaData),stopWatch);
-                    }
-                }
+                return super.newEntry(abdera, entryMetaData, entryType);
             }
 
         };
