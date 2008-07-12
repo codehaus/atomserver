@@ -52,6 +52,10 @@ public class FileBasedBlogWorkspace implements AtomWorkspace {
         return name;
     }
 
+    public String getVisibleName() {
+        return name;
+    }
+
     public AtomService getParentAtomService() {
         return parentService;
     }

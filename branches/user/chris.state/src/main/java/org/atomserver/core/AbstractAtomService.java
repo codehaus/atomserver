@@ -183,9 +183,15 @@ abstract public class AbstractAtomService implements AtomService {
             // A workspace-specific Service doc was requested
             AtomWorkspace wspace = getAtomWorkspace( workspace );
             if ( wspace != null ) {
+
+                //>>>>>>>>>>>>>>>
+                /*
                 if ( wspace.getOptions().isCategoriesWorkspace() )
                    workspace = wspace.getOptions().getAffiliatedAtomWorkspace().getName();
+                
                 workspaceList = java.util.Collections.singleton( workspace );
+                */
+                workspaceList = java.util.Collections.singleton( wspace.getVisibleName() );
             }
         } else {
             // A list of all workspaces was requested

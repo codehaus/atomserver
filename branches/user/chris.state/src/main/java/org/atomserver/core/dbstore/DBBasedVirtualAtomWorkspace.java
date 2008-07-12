@@ -37,8 +37,34 @@ public class DBBasedVirtualAtomWorkspace extends DBBasedAtomWorkspace {
 
     private static final Log log = LogFactory.getLog(DBBasedJoinWorkspace.class);
 
+    static String getAffilliatedWorkspaceName( String workspaceName ) {
+         log.debug( "+++++++++++++++++++++++++++++++++ " + workspaceName );
+         String[] parts = workspaceName.split( ":" );
+         if ( parts.length != 2 ) {
+             return null;
+         }
+         return parts[1];
+    }
+
     public DBBasedVirtualAtomWorkspace(AtomService parentAtomService, String name) {
         super(parentAtomService, name);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public String getVisibleName() {
+        return getAffilliatedWorkspaceName( getName() );
+    }
+
+    protected String getAffilliatedWorkspaceName() {
+         String workspaceName = getName();
+         log.debug( "+++++++++++++++++++++++++++++++++ " + workspaceName );
+         String[] parts = workspaceName.split( ":" );
+         if ( parts.length != 2 ) {
+             return null;
+         }
+         return parts[1];
     }
 
     public AtomCollection newAtomCollection(AtomWorkspace parentWorkspace, String collectionName) {
@@ -57,15 +83,8 @@ public class DBBasedVirtualAtomWorkspace extends DBBasedAtomWorkspace {
             */
 
             protected String getAffilliatedWorkspaceName() {
-                String workspaceName = parentAtomWorkspace.getName();
-                log.debug( "+++++++++++++++++++++++++++++++++ " + workspaceName );
-                String[] parts = workspaceName.split( ":" );
-                if ( parts.length != 2 ) {
-                    return null;
-                }
-                return parts[1];
+                return DBBasedVirtualAtomWorkspace.getAffilliatedWorkspaceName( parentAtomWorkspace.getName() );
             }
-
 
             /**
              * {@inheritDoc}

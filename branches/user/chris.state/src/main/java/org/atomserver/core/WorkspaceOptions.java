@@ -37,7 +37,6 @@ public class WorkspaceOptions {
 
     private String name = null;
 
-    private boolean isCategoryWorkspace = false;
     private boolean localized = false;
     private boolean visible = true;
     private boolean verboseDeletions = true;
@@ -53,9 +52,12 @@ public class WorkspaceOptions {
     private EntryIdGenerator entryIdGenerator = null;
 
     private boolean allowCategories = true;
-    private String categoryWorkspaceName = null;
 
+    /*
+    private String categoryWorkspaceName = null;
+    private boolean isCategoryWorkspace = false;
     private AtomWorkspace affiliatedAtomWorkspace = null;
+    */
 
     public static int DEFAULT_MAX_LINK_ENTRIES_PER_PAGE = 100;
     public static int DEFAULT_MAX_FULL_ENTRIES_PER_PAGE = 15;
@@ -71,19 +73,23 @@ public class WorkspaceOptions {
         this.name = name;
     }
 
+    /*
     public boolean isCategoryWorkspace() {
         return isCategoryWorkspace;
     }
     public void setIsCategoryWorkspace(boolean categoryWorkspace) {
         isCategoryWorkspace = categoryWorkspace;
     }
+    */
 
+    /*
     public String getCategoryWorkspaceName() {
         return categoryWorkspaceName;
     }
     public void setCategoryWorkspaceName(String categoryWorkspaceName) {
         this.categoryWorkspaceName = categoryWorkspaceName;
     }
+    */
 
     public boolean isAllowCategories() {
         return allowCategories;
@@ -156,13 +162,16 @@ public class WorkspaceOptions {
         return verboseDeletions;
     }
 
+    /*
     public boolean isCategoriesWorkspace() {
         return isCategoryWorkspace;
     }
     public void setIsCategoriesWorkspace(boolean isCategoryWorkspace) {
         this.isCategoryWorkspace = isCategoryWorkspace;
     }
+    */
 
+    /*
     public AtomWorkspace getAffiliatedAtomWorkspace() {
         return affiliatedAtomWorkspace;
     }
@@ -170,6 +179,7 @@ public class WorkspaceOptions {
     public void setAffiliatedAtomWorkspace(AtomWorkspace affiliatedAtomWorkspace) {
         this.affiliatedAtomWorkspace = affiliatedAtomWorkspace;
     }
+    */
 
     public int getDefaultMaxLinkEntriesPerPage() {
         return maxLinkEntriesPerPage;

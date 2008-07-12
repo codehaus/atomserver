@@ -41,6 +41,13 @@ public interface AtomWorkspace {
     String getName();
 
     /**
+     * Return the visible name associated with this AtomWorkspace
+     * For virtual workspaces, this is the name of real, affliated workspace 
+     * @return The name associated with this AtomWorkspace
+     */
+    String getVisibleName();
+
+    /**
      * Returns the AtomService to which this AtomWorkspace belongs
      * @return The AtomService to which this AtomWorkspace belongs
      */

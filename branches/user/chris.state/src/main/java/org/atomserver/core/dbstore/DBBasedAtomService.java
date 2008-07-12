@@ -163,10 +163,15 @@ public class DBBasedAtomService extends AbstractAtomService {
             WorkspaceOptions options = wspace.getOptions();
 
             if ( options.isAllowCategories() ) {
+
+                /*
                 String catWorkspaceName = options.getCategoryWorkspaceName();
                 if ( catWorkspaceName == null ) {
                      catWorkspaceName = DEFAULT_CATEGORIES_WORKSPACE_PREFIX + wspace.getName();
                 }
+                */
+                String catWorkspaceName = DEFAULT_CATEGORIES_WORKSPACE_PREFIX + wspace.getName();
+
 
                 //>>>>>>>>>>>>>>>>>>>>>>>
                 //AtomWorkspace catWorkspace = newAtomWorkspace( this, catWorkspaceName );
@@ -177,8 +182,10 @@ public class DBBasedAtomService extends AbstractAtomService {
                 catOptions.setVisible( false );
                 catOptions.setDefaultLocalized( options.getDefaultLocalized() );
                 catOptions.setAllowCategories( false );
-                catOptions.setIsCategoriesWorkspace( true );
-                catOptions.setAffiliatedAtomWorkspace( wspace );
+
+                //>>>>>>>>>>>>
+                //catOptions.setIsCategoriesWorkspace( true );
+                //catOptions.setAffiliatedAtomWorkspace( wspace );
 
                 catOptions.setDefaultContentStorage( categoriesContentStorage );
 
