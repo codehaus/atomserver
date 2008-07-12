@@ -45,37 +45,45 @@ import java.util.Map;
  * @author Bryon Jacob (bryon at jacob.net)
  */
 public class EntryCategoriesHandler
-    // extends EntryCategoriesContentStorage
-    // implements CategoriesHandler {
-    implements CategoriesHandler, ContentStorage {
+        implements CategoriesHandler, ContentStorage {
 
     static private final Log log = LogFactory.getLog(EntryCategoriesHandler.class);
 
-    //--------------------------------
-    //      public methods
-    //--------------------------------
+    private AtomService atomService;
+    private EntryCategoriesDAO entryCategoriesDAO = null;
+    private java.util.Map<String, String> categoriesToEntriesMap = null;
+
+    // -----------------------------------
+    //                IOC
+    // -----------------------------------
     /**
-     * Write the Categories element to the Entry for this EntryDescriptor.
-     * <p/>
-     * NOTE: The workspace entering this method (in the EntryDescriptor) 
-     * is assumed to be a "regular" workspace
-     * <p/>
-     * i.e. NOT a "Categories workspace" (e.g. widgets vs. tags:widgets)
+     * Note; this is set by the AtomService itself, not Spring
+     * @param atomService
      */
-    /*
-    public void writeEntryCategories( Entry entry, EntryDescriptor descriptor ) {
-
-        Categories categoriesToWrite = getCategories(descriptor);
-        if ( categoriesToWrite == null ) 
-            return;
-
-        List<Category> categoryList = categoriesToWrite.getCategories();
-        for ( Category category : categoryList ) {
-            entry.addCategory( category );
-        }         
+    public void setAtomService(AtomService atomService) {
+        this.atomService = atomService;
     }
-    */
+    public AtomService getAtomService() {
+        return atomService;
+    }
 
+    public void setCategoriesToEntriesMap(java.util.Map<String, String> categoriesToEntriesMap) {
+        this.categoriesToEntriesMap = categoriesToEntriesMap;
+    }
+
+    /**
+     * Used by Spring
+     */
+    public void setEntryCategoriesDAO(EntryCategoriesDAO entryCategoriesDAO) {
+        this.entryCategoriesDAO = entryCategoriesDAO;
+    }
+    public EntryCategoriesDAO getEntryCategoriesDAO() {
+        return entryCategoriesDAO;
+    }
+
+    // -----------------------------------
+    //        CategoriesHandler
+    // -----------------------------------
     /**
      * Get a List of all Categories for this Workspace/Collection
      * <p/>
@@ -83,118 +91,35 @@ public class EntryCategoriesHandler
      * <p/>
      * i.e. NOT a "Categories workspace" (e.g. widgets vs. tags:widgets)
      */
-    public List<Category> listCategories( String workspace, String collection ) {
-        if ( log.isTraceEnabled() )
-            log.trace( "EntryCategoriesContentStorage:: listCategories:: [" + workspace + ", " + collection +"]" );
+    public List<Category> listCategories(String workspace, String collection) {
+        if (log.isTraceEnabled()) {
+            log.trace("EntryCategoriesContentStorage:: listCategories:: [" + workspace + ", " + collection + "]");
+        }
 
-        List schemeTermMapList = entryCategoriesDAO.selectDistictCategoriesPerCollection( workspace, collection );
-        if ( schemeTermMapList == null || schemeTermMapList.size() <= 0 ) 
-            return null; 
+        List schemeTermMapList = entryCategoriesDAO.selectDistictCategoriesPerCollection(workspace, collection);
+        if (schemeTermMapList == null || schemeTermMapList.size() <= 0) {
+            return null;
+        }
 
         Factory factory = AtomServer.getFactory(getServiceContext().getAbdera());
         List<Category> categoryList = new ArrayList<Category>();
-        for ( Object obj : schemeTermMapList ) {
-            Map schemeTermMap = (Map)obj;
+        for (Object obj : schemeTermMapList) {
+            Map schemeTermMap = (Map) obj;
 
             Category category = factory.newCategory();
-            
-            category.setScheme( (String)(schemeTermMap.get( "scheme" )) );
-            category.setTerm( (String)(schemeTermMap.get( "term" )) );            
+
+            category.setScheme((String) (schemeTermMap.get("scheme")));
+            category.setTerm((String) (schemeTermMap.get("term")));
             // FIXME: deal w/ labels
-             
-            categoryList.add( category );
+
+            categoryList.add(category);
         }
         return categoryList;
     }
 
-
-    //static private final Log log = LogFactory.getLog(EntryCategoriesContentStorage.class);
-
-
-    //>>>>>>>>>>>>
-    private AtomService atomService ;
-
-    public AtomService getAtomService() {
-         return atomService;
-    }
-
-    /**
-     * Set by the AtomService, not Spring
-     * @param atomService
-     */
-    public void setAtomService(AtomService atomService) {
-        this.atomService = atomService;
-    }
-    //  <<<<<<<<<<<
-
-    protected EntryCategoriesDAO entryCategoriesDAO = null;
-    private java.util.Map<String, String> categoriesToEntriesMap = null;
-
-    //>>>>>>>>>>>>
-    //private ServiceContext serviceContext = null;
-    //private ContentStorage realContentStorage = null;
-
-
-    /*
-    // FIXME: we need a better way to get the ServiceContext
-    //        For now, let's inject it from Spring
-    public void setServiceContext( ServiceContext serviceContext ) {
-        this.serviceContext = serviceContext;
-    }
-    protected ServiceContext getServiceContext() {
-        return serviceContext;
-    }
-    */
-    public void setServiceContext( ServiceContext serviceContext ) {
-        log.error( "setServiceContext is DEPRICATED, and no longer used");
-    }
-    protected ServiceContext getServiceContext() {
-        return ((DBBasedAtomService)atomService).getServiceContext();
-    }
-
-    // FIXME:: we need a better way to set this info up....   (called in DBBasedAtomService)
-    public void setCategoriesToEntriesMap( java.util.Map<String, String> categoriesToEntriesMap ){
-        this.categoriesToEntriesMap = categoriesToEntriesMap;
-    }
-
-
-    /*
-    // FIXME:: this needs to change  (set from Spring)
-    public void setRealContentStorage( ContentStorage realContentStorage) {
-        this.realContentStorage = realContentStorage;
-    }
-    */
-    public void setRealContentStorage( ContentStorage realContentStorage) {
-        log.error( "setRealContentStorage is DEPRICATED, and no longer used"); 
-    }
-
-
-    //>>>>>>>>>>>>
-    private ContentStorage getAffliatedContentStorage( EntryDescriptor descriptor ) {
-        
-        //return realContentStorage;
-
-        String workspace = descriptor.getWorkspace();
-        return atomService.getAtomWorkspace( workspace ).getOptions().getDefaultContentStorage() ;
-    }
-    //<<<<<<<<<<<<<<
-
-
-    //--------------------------------
-    //      public methods
-    //--------------------------------
-    /**
-     * Used by Spring
-     */
-    public void setEntryCategoriesDAO(EntryCategoriesDAO entryCategoriesDAO) {
-        this.entryCategoriesDAO = entryCategoriesDAO;
-    }
-
-    //>>>>>>>
-    public EntryCategoriesDAO getEntryCategoriesDAO() {
-        return entryCategoriesDAO;
-    }
-
+    // -----------------------------------
+    //           ContentStorage
+    // -----------------------------------
     public void initializeWorkspace(String workspace) {
         // do nothing.
     }
@@ -247,7 +172,6 @@ public class EntryCategoriesHandler
         EntryDescriptor descriptorClone = cloneDescriptorWithEntriesWorkspace(descriptor);
         deleteCategories(descriptorClone);
 
-        //realContentStorage.revisionChangedWithoutContentChanging(descriptorClone);
         getAffliatedContentStorage(descriptor).revisionChangedWithoutContentChanging(descriptorClone);
     }
 
@@ -267,18 +191,53 @@ public class EntryCategoriesHandler
         // INSERT the input Categories to the DB
         insertCategories(contentXml, descriptorClone, true);
 
-        //>>>>>>> realC...
-        //getAffliatedContentStorage(descriptor).revisionChangedWithoutContentChanging(descriptorClone);
         getAffliatedContentStorage(descriptorClone).revisionChangedWithoutContentChanging(descriptorClone);
     }
 
-    //--------------------------------
-    //      private methods
-    //--------------------------------
-    protected String getEntriesWorkspace(String categoriesWorkspaceName ) {
+
+    public boolean canRead() {
+        try {
+            testAvailability();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean contentExists(EntryDescriptor descriptor) {
+        List categoryList = entryCategoriesDAO.selectEntryCategories(descriptor);
+        return !(categoryList == null || categoryList.size() <= 0);
+    }
+
+    public void revisionChangedWithoutContentChanging(EntryDescriptor descriptor) {
+        // nothing to do for this case
+    }
+
+    public Object getPhysicalRepresentation(String workspace,
+                                            String collection,
+                                            String entryId,
+                                            Locale locale,
+                                            int revision) {
+        throw new UnsupportedOperationException("not implemented");
+    }
+
+    // -----------------------------------
+    //            Support Code
+    // -----------------------------------
+    private ServiceContext getServiceContext() {
+        return ((DBBasedAtomService) atomService).getServiceContext();
+    }
+
+    private ContentStorage getAffliatedContentStorage(EntryDescriptor descriptor) {
+        String workspace = descriptor.getWorkspace();
+        return atomService.getAtomWorkspace(workspace).getOptions().getDefaultContentStorage();
+    }
+
+    private String getEntriesWorkspace(String categoriesWorkspaceName) {
         String entriesWorkspaceName = null;
-        if ( categoriesToEntriesMap != null )
-            entriesWorkspaceName = categoriesToEntriesMap.get( categoriesWorkspaceName );
+        if (categoriesToEntriesMap != null) {
+            entriesWorkspaceName = categoriesToEntriesMap.get(categoriesWorkspaceName);
+        }
 
         if (log.isDebugEnabled()) {
             log.debug("workspace[ " + categoriesWorkspaceName + " ] maps to [ " + entriesWorkspaceName + " ]");
@@ -289,7 +248,7 @@ public class EntryCategoriesHandler
     /**
      * Clone the descriptor and substitute the Categories workspace
      */
-    protected EntryDescriptor cloneDescriptorWithEntriesWorkspace(final EntryDescriptor descriptor) {
+    private EntryDescriptor cloneDescriptorWithEntriesWorkspace(final EntryDescriptor descriptor) {
         return new EntryDescriptor() {
             public String getWorkspace() {
                 String mappedWorkspace = getEntriesWorkspace(descriptor.getWorkspace());
@@ -320,7 +279,7 @@ public class EntryCategoriesHandler
      * But are stored in the EntryCategories table with the unadorned "workspace" (e.g. "widgets")
      * so that we can do proper SELECTs against the actual workspace Entries (e.g. "widgets")
      */
-    protected Categories getCategories(EntryDescriptor descriptor) {
+    private Categories getCategories(EntryDescriptor descriptor) {
         if (log.isTraceEnabled()) {
             log.trace("EntryCategoriesContentStorage:: getCategories:: [" + descriptor + "]");
         }
@@ -352,7 +311,7 @@ public class EntryCategoriesHandler
      * But are stored in the EntryCategories table with the unadorned "workspace" (e.g. "widgets")
      * so that we can do proper SELECTs against the actual workspace Entries (e.g. "widgets")
      */
-    protected void deleteCategories(EntryDescriptor descriptor) {
+    private void deleteCategories(EntryDescriptor descriptor) {
         if (log.isTraceEnabled()) {
             log.trace("EntryCategoriesContentStorage:: deleteCategories:: [" + descriptor + "]");
         }
@@ -367,11 +326,11 @@ public class EntryCategoriesHandler
             return;
         }
 
-        List<EntryCategory> entryCatList = new ArrayList<EntryCategory>( categoryList.size() );
+        List<EntryCategory> entryCatList = new ArrayList<EntryCategory>(categoryList.size());
         for (Category category : categoryList) {
             EntryCategory entryIn = new EntryCategory();
             if (descriptor instanceof EntryMetaData) {
-                entryIn.setEntryStoreId(((EntryMetaData)descriptor).getEntryStoreId());
+                entryIn.setEntryStoreId(((EntryMetaData) descriptor).getEntryStoreId());
             } else {
                 entryIn.setWorkspace(descriptor.getWorkspace());
                 entryIn.setCollection(descriptor.getCollection());
@@ -381,11 +340,11 @@ public class EntryCategoriesHandler
             entryIn.setScheme(category.getScheme().toString());
             entryIn.setTerm(category.getTerm());
 
-            entryCatList.add( entryIn );
+            entryCatList.add(entryIn);
         }
 
         // BATCH DELETE
-        entryCategoriesDAO.deleteEntryCategoryBatch( entryCatList );
+        entryCategoriesDAO.deleteEntryCategoryBatch(entryCatList);
     }
 
     /**
@@ -395,10 +354,10 @@ public class EntryCategoriesHandler
      * so that we can do proper SELECTs against the actual workspace Entries (e.g. "widgets")
      */
     private void insertCategories(String contentXml, EntryDescriptor descriptor, boolean wasDeletedFirst) {
-        if ( ! wasDeletedFirst) {
+        if (!wasDeletedFirst) {
             String msg = "Requires that all Records be deleted first";
             log.error(msg);
-            throw new AtomServerException( msg );
+            throw new AtomServerException(msg);
         }
 
         Parser parser = getServiceContext().getAbdera().getParser();
@@ -412,27 +371,27 @@ public class EntryCategoriesHandler
             throw new BadRequestException(msg);
         }
 
-        List<EntryCategory> entryCatList = getEntryCategoryList( descriptor, categoryList );
+        List<EntryCategory> entryCatList = getEntryCategoryList(descriptor, categoryList);
 
         // BATCH INSERT
-        entryCategoriesDAO.insertEntryCategoryBatch( entryCatList );
+        entryCategoriesDAO.insertEntryCategoryBatch(entryCatList);
     }
 
     /**
      */
-    private List<EntryCategory> getEntryCategoryList( EntryDescriptor descriptor,  List<Category> categoryList ) {
-        List<EntryCategory> entryCatList = new ArrayList<EntryCategory>( categoryList.size() );
+    private List<EntryCategory> getEntryCategoryList(EntryDescriptor descriptor, List<Category> categoryList) {
+        List<EntryCategory> entryCatList = new ArrayList<EntryCategory>(categoryList.size());
 
         for (Category category : categoryList) {
             EntryCategory entryIn = new EntryCategory();
 
             if (descriptor instanceof EntryMetaData) {
-                entryIn.setEntryStoreId(((EntryMetaData)descriptor).getEntryStoreId());
+                entryIn.setEntryStoreId(((EntryMetaData) descriptor).getEntryStoreId());
             } else {
                 String workspace = descriptor.getWorkspace();
                 if (workspace == null || workspace.trim().equals("")) {
                     String msg = "A Category MUST be defined for a workspace. The Category [" + category +
-                        "] was not properly formatted";
+                                 "] was not properly formatted";
                     log.error(msg);
                     throw new BadRequestException(msg);
                 }
@@ -441,7 +400,7 @@ public class EntryCategoriesHandler
                 String collection = descriptor.getCollection();
                 if (collection == null || collection.trim().equals("")) {
                     String msg = "A Category MUST be defined for a collection. The Category [" + category +
-                        "] was not properly formatted";
+                                 "] was not properly formatted";
                     log.error(msg);
                     throw new BadRequestException(msg);
                 }
@@ -450,7 +409,7 @@ public class EntryCategoriesHandler
                 String entryId = descriptor.getEntryId();
                 if (entryId == null || entryId.trim().equals("")) {
                     String msg = "A Category MUST be defined for an entryId. The Category [" + category +
-                        "] was not properly formatted";
+                                 "] was not properly formatted";
                     log.error(msg);
                     throw new BadRequestException(msg);
                 }
@@ -462,7 +421,7 @@ public class EntryCategoriesHandler
             String scheme = category.getScheme().toString();
             if (scheme == null || scheme.trim().equals("")) {
                 String msg = "A Category MUST have a scheme attached. The Category [" + category +
-                    "] was not properly formatted";
+                             "] was not properly formatted";
                 log.error(msg);
                 throw new BadRequestException(msg);
             }
@@ -471,7 +430,7 @@ public class EntryCategoriesHandler
             String term = category.getTerm();
             if (term == null || term.trim().equals("")) {
                 String msg = "A Category MUST have a term attached. The Category [" + category +
-                    "] was not properly formatted";
+                             "] was not properly formatted";
                 log.error(msg);
                 throw new BadRequestException(msg);
             }
@@ -482,40 +441,19 @@ public class EntryCategoriesHandler
             if (log.isTraceEnabled()) {
                 log.trace("EntryCategoriesContentStorage:: entryIn:: [" + entryIn + "]");
             }
-            entryCatList.add( entryIn );
+            entryCatList.add(entryIn);
         }
         return entryCatList;
     }
 
-    protected List<String> getCollections(String workspace) {
-        return (List<String>) entryCategoriesDAO.selectDistictCollections(workspace);
+    //>>>>>>>>>>>>>>>>>>>>>>>>>>
+    // DEPRECATED OPTIONS -- remove in 2.0.5
+    public void setServiceContext(ServiceContext serviceContext) {
+        log.error("setServiceContext is DEPRICATED, and no longer used");
     }
 
-    public boolean canRead() {
-        try {
-            testAvailability();
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
+    public void setRealContentStorage(ContentStorage realContentStorage) {
+        log.error("setRealContentStorage is DEPRICATED, and no longer used");
     }
-
-    public boolean contentExists(EntryDescriptor descriptor) {
-        List categoryList = entryCategoriesDAO.selectEntryCategories(descriptor);
-        return !(categoryList == null || categoryList.size() <= 0);
-    }
-
-    public void revisionChangedWithoutContentChanging(EntryDescriptor descriptor) {
-        // nothing to do for this case
-    }
-
-    public Object getPhysicalRepresentation(String workspace,
-                                            String collection,
-                                            String entryId,
-                                            Locale locale,
-                                            int revision) {
-        throw new UnsupportedOperationException("not implemented");
-    }
-
-
+    // <<<<<<<<<<<<<<<<<<<<<<<<<
 }

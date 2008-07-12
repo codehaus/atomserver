@@ -36,76 +36,39 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/** 
+/**
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
 @ManagedResource(description = "DB-Based Atom Service")
 public class DBBasedAtomService extends AbstractAtomService {
-    
+
     static private final Log log = LogFactory.getLog(DBBasedAtomCollection.class);
 
-    private EntriesDAO entriesDAO = null;
-
-    //>>>>>>>>>
-    //private EntryCategoriesDAO entryCategoriesDAO = null;
-
-    //>>>>>>>>>>
-    //protected ContentStorage categoriesContentStorage = null;
-
-    // single TransactionTemplate shared amongst all methods/threads in this instance
-    private TransactionTemplate transactionTemplate;
-
-    private static final Pattern ENTRY_ID_PATTERN = Pattern.compile(
+    static private final Pattern ENTRY_ID_PATTERN = Pattern.compile(
             "([^!/\\?]+)(?:/([^!/\\?]+)(?:/([^!/\\?]+))?)?(?:\\?locale=([a-z]{2}(?:_[A-Z]{2})?))?\\!?");
-    private static final int DEFAULT_OBLITERATE_THRESHOLD = 10;
+    static private final int DEFAULT_OBLITERATE_THRESHOLD = 10;
+
+    private EntriesDAO entriesDAO = null;
+    private TransactionTemplate transactionTemplate;
     private int obliterateThreshold = DEFAULT_OBLITERATE_THRESHOLD;
 
-    //--------------------------------
-    //      public methods
-    //--------------------------------
-
-    /*
-    public void setCategoriesContentStorage( ContentStorage categoriesContentStorage ) {
-        this.categoriesContentStorage = categoriesContentStorage;
-    }       
-    protected ContentStorage getCategoriesContentStorage() {
-        return this.categoriesContentStorage;
-    }
-    */
-    public void setCategoriesContentStorage( ContentStorage categoriesContentStorage ) {
-        log.error( "setEntryCategoriesDAO() is no longer valid on Atomservice. It is DEPRICATED");
-        setCategoriesHandler( (CategoriesHandler)categoriesContentStorage ) ;
-    }
-
-
-    public void setEntriesDAO( EntriesDAO entriesDAO ) {
+    public void setEntriesDAO(EntriesDAO entriesDAO) {
         this.entriesDAO = entriesDAO;
     }
+
     public EntriesDAO getEntriesDAO() {
         return entriesDAO;
     }
 
-    /*
-    public void setEntryCategoriesDAO( EntryCategoriesDAO entryCategoriesDAO ) {
-        this.entryCategoriesDAO = entryCategoriesDAO;
-    }
-    public EntryCategoriesDAO getEntryCategoriesDAO() {
-        return entryCategoriesDAO;
-    }
-    */
-    public void setEntryCategoriesDAO( EntryCategoriesDAO entryCategoriesDAO ) {
-        log.error( "setEntryCategoriesDAO() is no longer valid on Atomservice. It is ignored");
-    }
-
-
-    public void setTransactionTemplate( TransactionTemplate transactionTemplate ) {
+    public void setTransactionTemplate(TransactionTemplate transactionTemplate) {
         this.transactionTemplate = transactionTemplate;
     }
+
     public TransactionTemplate getTransactionTemplate() {
         return transactionTemplate;
     }
-    
+
     @ManagedAttribute
     public int getObliterateThreshold() {
         return obliterateThreshold;
@@ -138,9 +101,9 @@ public class DBBasedAtomService extends AbstractAtomService {
                             .append(list.size()).append(") - try ").append(query).append("! instead.");
                 } else {
                     for (EntryMetaData entry : list) {
-                        ((DBBasedAtomCollection)getAtomWorkspace(descriptor.getWorkspace()).
-                                getAtomCollection(descriptor.getCollection())).obliterateEntry( entry );
-                   }
+                        ((DBBasedAtomCollection) getAtomWorkspace(descriptor.getWorkspace()).
+                                getAtomCollection(descriptor.getCollection())).obliterateEntry(entry);
+                    }
                     builder.append("obliterated ").append(list.size()).append(" entries.");
                 }
             } else {
@@ -162,74 +125,56 @@ public class DBBasedAtomService extends AbstractAtomService {
     public void initialize() {
         super.initialize();
 
-        if ( log.isTraceEnabled() )
-            log.trace("Initializing Categories workspaces for = " + workspaces );
+        if (log.isTraceEnabled()) {
+            log.trace("Initializing Categories workspaces for = " + workspaces);
+        }
 
         // setup the Categories Workspaces
-        java.util.Map<String, AtomWorkspace> wspaceMap = new java.util.HashMap<String, AtomWorkspace>( workspaces );
+        java.util.Map<String, AtomWorkspace> wspaceMap = new java.util.HashMap<String, AtomWorkspace>(workspaces);
         java.util.Map<String, String> categoriesMap = new java.util.HashMap<String, String>();
 
-        //>>>>>
-        EntryCategoriesHandler categoryHandler = (EntryCategoriesHandler)getCategoriesHandler();
+        EntryCategoriesHandler categoryHandler = (EntryCategoriesHandler) getCategoriesHandler();
 
-        for ( AtomWorkspace wspace : wspaceMap.values() ) {
+        for (AtomWorkspace wspace : wspaceMap.values()) {
             WorkspaceOptions options = wspace.getOptions();
 
-            if ( options.isAllowCategories() ) {
+            if (options.isAllowCategories()) {
 
-                /*
-                String catWorkspaceName = options.getCategoryWorkspaceName();
-                if ( catWorkspaceName == null ) {
-                     catWorkspaceName = DEFAULT_CATEGORIES_WORKSPACE_PREFIX + wspace.getName();
-                }
-                */
                 String catWorkspaceName = DEFAULT_CATEGORIES_WORKSPACE_PREFIX + wspace.getName();
 
-
-                //>>>>>>>>>>>>>>>>>>>>>>>
-                //AtomWorkspace catWorkspace = newAtomWorkspace( this, catWorkspaceName );
-                AtomWorkspace catWorkspace = new DBBasedVirtualAtomWorkspace( this, catWorkspaceName );
+                AtomWorkspace catWorkspace = new DBBasedVirtualAtomWorkspace(this, catWorkspaceName);
 
                 WorkspaceOptions catOptions = new WorkspaceOptions();
-                catOptions.setName( catWorkspaceName );
-                catOptions.setVisible( false );
-                catOptions.setDefaultLocalized( options.getDefaultLocalized() );
-                catOptions.setAllowCategories( false );
+                catOptions.setName(catWorkspaceName);
+                catOptions.setVisible(false);
+                catOptions.setDefaultLocalized(options.getDefaultLocalized());
+                catOptions.setAllowCategories(false);
+                catOptions.setDefaultContentStorage(categoryHandler);
 
-                //>>>>>>>>>>>>
-                //catOptions.setIsCategoriesWorkspace( true );
-                //catOptions.setAffiliatedAtomWorkspace( wspace );
+                catWorkspace.setOptions(catOptions);
 
-                //catOptions.setDefaultContentStorage( categoriesContentStorage );
-                catOptions.setDefaultContentStorage( categoryHandler );
+                this.workspaces.put(catWorkspaceName, catWorkspace);
 
-                catWorkspace.setOptions( catOptions );
-
-                this.workspaces.put( catWorkspaceName, catWorkspace );
-
-                categoriesMap.put( catWorkspaceName, wspace.getName() );
+                categoriesMap.put(catWorkspaceName, wspace.getName());
             }
         }
-        // FIXME : need a cleaner way to set this up....
+        categoryHandler.setCategoriesToEntriesMap(categoriesMap);
+        categoryHandler.setAtomService(this);
 
-
-
-        /*
-        if ( categoriesContentStorage != null ) {
-            //if ( categoriesContentStorage instanceof EntryCategoriesContentStorage) {
-            //    ((EntryCategoriesContentStorage)categoriesContentStorage).setCategoriesToEntriesMap( categoriesMap );
-            //}
-            if ( categoriesContentStorage instanceof EntryCategoriesHandler) {
-                ((EntryCategoriesHandler)categoriesContentStorage).setCategoriesToEntriesMap( categoriesMap );
-            }
+        if (log.isTraceEnabled()) {
+            log.trace("workspaces after initialization for = " + workspaces);
         }
-        */
-        categoryHandler.setCategoriesToEntriesMap( categoriesMap );
-        categoryHandler.setAtomService( this );
-
-
-        if ( log.isTraceEnabled() )
-            log.trace("workspaces after initialization for = " + workspaces );
     }
 
+    //>>>>>>>>>>>>>>>>>>>>>>>>>>
+    // DEPRECATED OPTIONS -- remove in 2.0.5
+    public void setEntryCategoriesDAO(EntryCategoriesDAO entryCategoriesDAO) {
+        log.error("setEntryCategoriesDAO() is no longer valid on Atomservice. It is ignored");
+    }
+
+    public void setCategoriesContentStorage(ContentStorage categoriesContentStorage) {
+        log.error("setEntryCategoriesDAO() is no longer valid on Atomservice. It is DEPRICATED");
+        setCategoriesHandler((CategoriesHandler) categoriesContentStorage);
+    }
+    //<<<<<<<<<<<<<<<<<<<<<<<<<<
 }

@@ -38,6 +38,7 @@ import java.util.regex.Matcher;
 
 /**
  * The abstract, base AtomService implementation. Subclasses must implement newAtomWorkspace().
+ *
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
@@ -47,17 +48,19 @@ abstract public class AbstractAtomService implements AtomService {
      * Create an appropriate AtomWorkspace for this AtomService, delegating to the actual AtomService implementation.
      * The AtomWorkspace is created "empty" by the setWorkspaces method, which then delegates to the AtomWorkspace's
      * setOptions() and bootstrap() methods.
+     *
      * @param parentService This AtomService.
-     * @param name The name associated with this AtomWorkspace
-     * @return  The newly created AtoWorkspace.
+     * @param name          The name associated with this AtomWorkspace
+     * @return The newly created AtoWorkspace.
      */
-    abstract public AtomWorkspace newAtomWorkspace( AtomService parentService, String name );
+    abstract public AtomWorkspace newAtomWorkspace(AtomService parentService, String name);
+
     protected AtomWorkspace getJoinWorkspace(List<String> joinWorkspaces) {
         throw new UnsupportedOperationException("this service does not support join feeds.");
     }
 
     static private final Log log = LogFactory.getLog(AbstractAtomService.class);
-    static public final String DEFAULT_CATEGORIES_WORKSPACE_PREFIX= "tags:";
+    static public final String DEFAULT_CATEGORIES_WORKSPACE_PREFIX = "tags:";
 
 
     protected URIHandler uriHandler = null;
@@ -74,13 +77,13 @@ abstract public class AbstractAtomService implements AtomService {
         Matcher matcher = URIHandler.JOIN_WORKSPACE_PATTERN.matcher(workspace);
         return matcher.matches() ?
                getJoinWorkspace(joinWorkspaces(matcher.group(1))) :
-               workspaces.get( workspace );
+               workspaces.get(workspace);
     }
 
     private List<String> joinWorkspaces(String commaSeparatedWorkspaceList) {
         return (List<String>) (commaSeparatedWorkspaceList == null ?
-                    Collections.EMPTY_LIST :
-                    Arrays.asList(commaSeparatedWorkspaceList.split("\\s*,\\s*")));
+                               Collections.EMPTY_LIST :
+                               Arrays.asList(commaSeparatedWorkspaceList.split("\\s*,\\s*")));
     }
 
     public void initialize() {}
@@ -93,9 +96,10 @@ abstract public class AbstractAtomService implements AtomService {
      * inject an PerformanceLog which has been configured externally in an IOC container like Spring.
      * It is in this external configuration that you specify such details as the logger name, which, in turn,
      * will define the actual name of the performance log file.
-     * @param perflog   The AtomServerPerformanceLog
+     *
+     * @param perflog The AtomServerPerformanceLog
      */
-    public void setPerformanceLog( AtomServerPerformanceLog perflog ) {
+    public void setPerformanceLog(AtomServerPerformanceLog perflog) {
         if (log.isTraceEnabled()) {
             log.trace("setPerformanceLog: perflog= " + perflog);
         }
@@ -103,7 +107,7 @@ abstract public class AbstractAtomService implements AtomService {
     }
 
     /**
-     * Returns the optional Performance log.
+     * Returns the optional Performance log.     *
      * @return The AtomServerPerformanceLog
      */
     public AtomServerPerformanceLog getPerformanceLog() {
@@ -133,9 +137,9 @@ abstract public class AbstractAtomService implements AtomService {
     }
 
 
-    //>>>>>>>>>>>>
+    // FIXME : javadoc
     public CategoriesHandler getCategoriesHandler() {
-        return categoriesHandler ;
+        return categoriesHandler;
     }
 
     public void setCategoriesHandler(CategoriesHandler categoriesHandler) {
@@ -148,9 +152,7 @@ abstract public class AbstractAtomService implements AtomService {
 
     public void setServiceContext(ServiceContext serviceContext) {
         this.serviceContext = serviceContext;
-    }//>>>>>>>
-    //<<<<<<<<<
-
+    }
 
     /**
      * Set the AtomWorkspaces for this AtomService. Probably this method is called from an IOC container like Spring.
@@ -158,14 +160,15 @@ abstract public class AbstractAtomService implements AtomService {
      * is delgated to the newAtomWorkspace method, which created an "empty" AtomWorkspace. And then subsequently,
      * the AtomWorkspace is provisioned by calling first the setOptions method, and then the bootstrap method on
      * the newly created AtomWorkspace.
+     *
      * @param workspaceOptionsSet The Set of WorkspaceOptions
      */
-    public void setWorkspaces(java.util.Set<WorkspaceOptions> workspaceOptionsSet ) {
+    public void setWorkspaces(java.util.Set<WorkspaceOptions> workspaceOptionsSet) {
         this.workspaces = new java.util.HashMap<String, AtomWorkspace>();
-        for ( WorkspaceOptions options : workspaceOptionsSet) {
+        for (WorkspaceOptions options : workspaceOptionsSet) {
             String workspaceName = options.getName();
-            AtomWorkspace workspace = newAtomWorkspace( this, workspaceName );
-            workspace.setOptions( options );
+            AtomWorkspace workspace = newAtomWorkspace(this, workspaceName);
+            workspace.setOptions(options);
             workspace.bootstrap();
             this.workspaces.put(workspaceName, workspace);
         }
@@ -173,10 +176,11 @@ abstract public class AbstractAtomService implements AtomService {
 
     /**
      * Returns the actual number of Workspaces associated with this AtomService, including "invisible" Workspaces
+     *
      * @return the number of workspaces
      */
     public int getNumberOfWorkspaces() {
-        return ( this.workspaces != null ) ? this.workspaces.size() : 0 ;
+        return (this.workspaces != null) ? this.workspaces.size() : 0;
     }
 
     /**
@@ -184,9 +188,10 @@ abstract public class AbstractAtomService implements AtomService {
      */
     public int getNumberOfVisibleWorkspaces() {
         int count = 0;
-        for ( AtomWorkspace wspace : workspaces.values() ) {
-            if ( wspace.getOptions().isVisible() )
+        for (AtomWorkspace wspace : workspaces.values()) {
+            if (wspace.getOptions().isVisible()) {
                 count++;
+            }
         }
         return count;
     }
@@ -194,7 +199,7 @@ abstract public class AbstractAtomService implements AtomService {
     /**
      * {@inheritDoc}
      */
-    public java.util.Collection<String> listWorkspaces( RequestContext request ) {
+    public java.util.Collection<String> listWorkspaces(RequestContext request) {
         IRI iri = request.getUri();
         if (log.isDebugEnabled()) {
             log.debug("listWorkspaces:: iri= " + iri);
@@ -204,26 +209,19 @@ abstract public class AbstractAtomService implements AtomService {
         String workspace = serviceTarget.getWorkspace();
         java.util.Collection<String> workspaceList = null;
 
-        if ( !StringUtils.isEmpty( workspace ) ) {
+        if (!StringUtils.isEmpty(workspace)) {
             // A workspace-specific Service doc was requested
-            AtomWorkspace wspace = getAtomWorkspace( workspace );
-            if ( wspace != null ) {
-
-                //>>>>>>>>>>>>>>>
-                /*
-                if ( wspace.getOptions().isCategoriesWorkspace() )
-                   workspace = wspace.getOptions().getAffiliatedAtomWorkspace().getName();
-                
-                workspaceList = java.util.Collections.singleton( workspace );
-                */
-                workspaceList = java.util.Collections.singleton( wspace.getVisibleName() );
+            AtomWorkspace wspace = getAtomWorkspace(workspace);
+            if (wspace != null) {
+                workspaceList = java.util.Collections.singleton(wspace.getVisibleName());
             }
         } else {
             // A list of all workspaces was requested
             workspaceList = new java.util.ArrayList<String>();
-            for ( AtomWorkspace wspace : workspaces.values() ) {
-                if ( wspace.getOptions().isVisible() )
-                    workspaceList.add( wspace.getName() );
+            for (AtomWorkspace wspace : workspaces.values()) {
+                if (wspace.getOptions().isVisible()) {
+                    workspaceList.add(wspace.getName());
+                }
             }
         }
 
@@ -247,11 +245,11 @@ abstract public class AbstractAtomService implements AtomService {
 
         // FIXME this needs to be cleaned up....
         String wspace = workspace;
-        if ( workspace.startsWith( AbstractAtomService.DEFAULT_CATEGORIES_WORKSPACE_PREFIX )){
-            wspace = wspace.replaceFirst( AbstractAtomService.DEFAULT_CATEGORIES_WORKSPACE_PREFIX, "" );
+        if (workspace.startsWith(AbstractAtomService.DEFAULT_CATEGORIES_WORKSPACE_PREFIX)) {
+            wspace = wspace.replaceFirst(AbstractAtomService.DEFAULT_CATEGORIES_WORKSPACE_PREFIX, "");
         }
 
-        if (!workspaces.keySet().contains(wspace) ) {
+        if (!workspaces.keySet().contains(wspace)) {
             String msg = "The URL (" + iri + ") does not indicate a recognized Atom workspace (" + workspace + ")";
             log.error(msg);
             throw new BadRequestException(msg);
@@ -263,7 +261,7 @@ abstract public class AbstractAtomService implements AtomService {
             throw new BadRequestException(msg);
         }
 
-        if (!getAtomWorkspace(workspace).collectionExists( collection) && checkIfCollectionExists) {
+        if (!getAtomWorkspace(workspace).collectionExists(collection) && checkIfCollectionExists) {
             String msg = "The URL (" + iri + ") does not indicate an existing " +
                          "Atom collection (" + collection + ")";
             log.error(msg);
@@ -272,7 +270,7 @@ abstract public class AbstractAtomService implements AtomService {
     }
 
     private int maxLinkAggregateEntriesPerPage = WorkspaceOptions.DEFAULT_MAX_LINK_ENTRIES_PER_PAGE;
-    private int maxFullAggregateEntriesPerPage = WorkspaceOptions.DEFAULT_MAX_FULL_ENTRIES_PER_PAGE;    
+    private int maxFullAggregateEntriesPerPage = WorkspaceOptions.DEFAULT_MAX_FULL_ENTRIES_PER_PAGE;
 
     public int getMaxLinkAggregateEntriesPerPage() {
         return maxLinkAggregateEntriesPerPage;

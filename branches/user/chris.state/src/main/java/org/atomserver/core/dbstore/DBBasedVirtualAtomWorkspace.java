@@ -37,13 +37,14 @@ public class DBBasedVirtualAtomWorkspace extends DBBasedAtomWorkspace {
 
     private static final Log log = LogFactory.getLog(DBBasedJoinWorkspace.class);
 
-    static String getAffilliatedWorkspaceName( String workspaceName ) {
-         log.debug( "+++++++++++++++++++++++++++++++++ " + workspaceName );
-         String[] parts = workspaceName.split( ":" );
-         if ( parts.length != 2 ) {
-             return null;
-         }
-         return parts[1];
+    static String getAffilliatedWorkspaceName(String workspaceName) {
+        String[] parts = workspaceName.split(":");
+        String affliatedWorkspace = null;
+        if (parts.length == 2) {
+            affliatedWorkspace = parts[1];
+        }
+        log.debug("AFFLIATED WORKSPACE for " + workspaceName + " is " + affliatedWorkspace);
+        return affliatedWorkspace;
     }
 
     public DBBasedVirtualAtomWorkspace(AtomService parentAtomService, String name) {
@@ -54,36 +55,15 @@ public class DBBasedVirtualAtomWorkspace extends DBBasedAtomWorkspace {
      * {@inheritDoc}
      */
     public String getVisibleName() {
-        return getAffilliatedWorkspaceName( getName() );
-    }
-
-    protected String getAffilliatedWorkspaceName() {
-         String workspaceName = getName();
-         log.debug( "+++++++++++++++++++++++++++++++++ " + workspaceName );
-         String[] parts = workspaceName.split( ":" );
-         if ( parts.length != 2 ) {
-             return null;
-         }
-         return parts[1];
+        return getAffilliatedWorkspaceName(getName());
     }
 
     public AtomCollection newAtomCollection(AtomWorkspace parentWorkspace, String collectionName) {
+
         return new DBBasedAtomCollection(this, collectionName) {
-            /**
-             * A convenience method to determine the acual is a Workspace affliated with a Cateories Workspace,
-             * which is a special internal Workspace created to handle Category manipulation.
-             * @return The affliated Workspace name
-             */
-            /*
-            protected String getCategoriesAffilliatedWorkspaceName() {
-                return ((parentAtomWorkspace.getOptions().getAffiliatedAtomWorkspace() != null )
-                        ? parentAtomWorkspace.getOptions().getAffiliatedAtomWorkspace().getName()
-                        : null );
-            }
-            */
 
             protected String getAffilliatedWorkspaceName() {
-                return DBBasedVirtualAtomWorkspace.getAffilliatedWorkspaceName( parentAtomWorkspace.getName() );
+                return DBBasedVirtualAtomWorkspace.getAffilliatedWorkspaceName(parentAtomWorkspace.getName());
             }
 
             /**
@@ -97,7 +77,6 @@ public class DBBasedVirtualAtomWorkspace extends DBBasedAtomWorkspace {
                 log.warn(msg);
 
                 String uri = request.getResolvedUri().toString();
-                //uri = uri.replaceAll(workspace, getCategoriesAffilliatedWorkspaceName());
                 uri = uri.replaceAll(workspace, getAffilliatedWorkspaceName());
 
                 throw new MovedPermanentlyException(msg, uri);
@@ -105,7 +84,6 @@ public class DBBasedVirtualAtomWorkspace extends DBBasedAtomWorkspace {
 
             protected EntryTarget getEntryTarget(RequestContext request) {
                 EntryTarget entryTarget = getURIHandler().getEntryTarget(request, true);
-                //entryTarget = entryTarget.cloneWithNewWorkspace(getCategoriesAffilliatedWorkspaceName());
                 entryTarget = entryTarget.cloneWithNewWorkspace(getAffilliatedWorkspaceName());
                 return entryTarget;
             }
@@ -118,15 +96,15 @@ public class DBBasedVirtualAtomWorkspace extends DBBasedAtomWorkspace {
                 return false;
             }
 
-            protected void addCategoriesToEntry(Entry entry, EntryMetaData entryMetaData, Abdera abdera) {                
+            protected void addCategoriesToEntry(Entry entry, EntryMetaData entryMetaData, Abdera abdera) {
+                // do nothing
             }
 
-            //~~~~~~~~~~~~~~~~~~~~~~
             protected Entry newEntry(Abdera abdera, EntryMetaData entryMetaData, EntryType entryType)
-                throws AtomServerException {
+                    throws AtomServerException {
 
-                log.debug("&&&&&&&&&&&&&&&&&&&&&&&&&& " + parentAtomWorkspace.getName() );
-                entryMetaData.setWorkspace( parentAtomWorkspace.getName() );
+                log.debug("&&&&&&&&&&&&&&&&&&&&&&&&&& " + parentAtomWorkspace.getName());
+                entryMetaData.setWorkspace(parentAtomWorkspace.getName());
 
                 return super.newEntry(abdera, entryMetaData, entryType);
             }

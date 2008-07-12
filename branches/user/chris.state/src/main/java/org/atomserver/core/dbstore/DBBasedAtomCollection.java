@@ -70,12 +70,6 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
     public EntriesDAO getEntriesDAO() {
          return ((DBBasedAtomService)parentAtomWorkspace.getParentAtomService()).getEntriesDAO();
     }
-
-    /*
-    public EntryCategoriesDAO getEntryCategoriesDAO() {
-        return ((DBBasedAtomService)parentAtomWorkspace.getParentAtomService()).getEntryCategoriesDAO();
-    }
-    */
     
     public EntryCategoriesDAO getEntryCategoriesDAO() {
         return ((EntryCategoriesHandler)parentAtomWorkspace.getParentAtomService().getCategoriesHandler())
@@ -215,8 +209,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
      * NOTE: "deleted" entries ARE returned (since they are never really deleted from the DB)
      * And Feed clients will want to know that an entry has been deleted
      */
-    protected EntryMetaData getEntry(
-            EntryTarget entryTarget)
+    protected EntryMetaData getEntry(EntryTarget entryTarget)
             throws AtomServerException {
 
         String workspace = entryTarget.getWorkspace();
@@ -263,7 +256,8 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
     /**
      */
     protected Collection<BatchEntryResult> deleteEntries(RequestContext request,
-                                                         Collection<EntryTarget> allEntriesUriData) throws AtomServerException {
+                                                         Collection<EntryTarget> allEntriesUriData)
+            throws AtomServerException {
 
         MultiMap<Locale, EntryTarget> dataByLocale = new MultiHashMap<Locale, EntryTarget>();
         for (EntryTarget uriData : allEntriesUriData) {
@@ -320,7 +314,9 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
     /**
      */
     protected Collection<BatchEntryResult> modifyEntries(RequestContext request,
-                                                         Collection<EntryTarget> allEntriesUriData) throws AtomServerException {
+                                                         Collection<EntryTarget> allEntriesUriData)
+            throws AtomServerException {
+
         MultiMap<Locale, EntryTarget> dataByLocale = new MultiHashMap<Locale, EntryTarget>();
         for (EntryTarget uriData : allEntriesUriData) {
             dataByLocale.put(uriData.getLocale(), uriData);
@@ -498,9 +494,8 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
      * <p/>
      * NOTE: we do NOT actually delete the row from the DB, we simply mark it as "deleted"
      */
-    protected EntryMetaData deleteEntry(
-            final EntryTarget entryTarget,
-            final boolean setDeletedFlag)
+    protected EntryMetaData deleteEntry(final EntryTarget entryTarget,
+                                        final boolean setDeletedFlag)
             throws AtomServerException {
 
         String workspace = entryTarget.getWorkspace();
