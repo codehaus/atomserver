@@ -19,21 +19,22 @@ package org.atomserver.core;
 
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.protocol.server.RequestContext;
+import org.apache.abdera.protocol.server.ServiceContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.AtomService;
 import org.atomserver.AtomWorkspace;
 import org.atomserver.CategoriesHandler;
-import org.atomserver.exceptions.BadRequestException;
 import org.atomserver.core.etc.AtomServerPerformanceLog;
+import org.atomserver.exceptions.BadRequestException;
 import org.atomserver.uri.ServiceTarget;
 import org.atomserver.uri.URIHandler;
 
-import java.util.regex.Matcher;
-import java.util.List;
-import java.util.Collections;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.regex.Matcher;
 
 /**
  * The abstract, base AtomService implementation. Subclasses must implement newAtomWorkspace().
@@ -64,6 +65,7 @@ abstract public class AbstractAtomService implements AtomService {
     protected AtomServerPerformanceLog perflog;
 
     protected CategoriesHandler categoriesHandler;
+    protected ServiceContext serviceContext;
 
     /**
      * {@inheritDoc}
@@ -139,6 +141,14 @@ abstract public class AbstractAtomService implements AtomService {
     public void setCategoriesHandler(CategoriesHandler categoriesHandler) {
         this.categoriesHandler = categoriesHandler;
     }
+
+    public ServiceContext getServiceContext() {
+        return serviceContext;
+    }
+
+    public void setServiceContext(ServiceContext serviceContext) {
+        this.serviceContext = serviceContext;
+    }//>>>>>>>
     //<<<<<<<<<
 
 

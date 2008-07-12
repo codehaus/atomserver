@@ -64,7 +64,7 @@
           depends-on="org.atomserver-propertyConfigurer"
           lazy-init="true">
         <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO"/>
-        <property name="serviceContext" ref="org.apache.abdera.protocol.server.ServiceContext"/>
+        <!-- <property name="serviceContext" ref="org.apache.abdera.protocol.server.ServiceContext"/>  -->
         <!-- <property name="realContentStorage" ref="org.atomserver-contentStorage"/> --> 
     </bean>
 

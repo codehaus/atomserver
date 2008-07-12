@@ -125,9 +125,13 @@ public class EntryCategoriesHandler
 
     protected EntryCategoriesDAO entryCategoriesDAO = null;
     private java.util.Map<String, String> categoriesToEntriesMap = null;
-    private ServiceContext serviceContext = null;
-    private ContentStorage realContentStorage = null;
 
+    //>>>>>>>>>>>>
+    //private ServiceContext serviceContext = null;
+    //private ContentStorage realContentStorage = null;
+
+
+    /*
     // FIXME: we need a better way to get the ServiceContext
     //        For now, let's inject it from Spring
     public void setServiceContext( ServiceContext serviceContext ) {
@@ -136,15 +140,22 @@ public class EntryCategoriesHandler
     protected ServiceContext getServiceContext() {
         return serviceContext;
     }
+    */
+    public void setServiceContext( ServiceContext serviceContext ) {
+        log.error( "setServiceContext is DEPRICATED, and no longer used");
+    }
+    protected ServiceContext getServiceContext() {
+        return ((DBBasedAtomService)atomService).getServiceContext();
+    }
 
     // FIXME:: we need a better way to set this info up....   (called in DBBasedAtomService)
     public void setCategoriesToEntriesMap( java.util.Map<String, String> categoriesToEntriesMap ){
         this.categoriesToEntriesMap = categoriesToEntriesMap;
     }
 
-    // FIXME:: this needs to change  (set from Spring)
 
     /*
+    // FIXME:: this needs to change  (set from Spring)
     public void setRealContentStorage( ContentStorage realContentStorage) {
         this.realContentStorage = realContentStorage;
     }
@@ -249,7 +260,8 @@ public class EntryCategoriesHandler
         insertCategories(contentXml, descriptorClone, true);
 
         //>>>>>>> realC...
-        getAffliatedContentStorage(descriptor).revisionChangedWithoutContentChanging(descriptorClone);
+        //getAffliatedContentStorage(descriptor).revisionChangedWithoutContentChanging(descriptorClone);
+        getAffliatedContentStorage(descriptorClone).revisionChangedWithoutContentChanging(descriptorClone);
     }
 
     //--------------------------------
