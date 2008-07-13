@@ -28,6 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.atomserver.*;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryMetaData;
+import org.atomserver.core.WorkspaceOptions;
 import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.exceptions.BadRequestException;
@@ -48,10 +49,34 @@ public class EntryCategoriesHandler
         implements CategoriesHandler, ContentStorage {
 
     static private final Log log = LogFactory.getLog(EntryCategoriesHandler.class);
+    static public final String DEFAULT_CATEGORIES_WORKSPACE_PREFIX = "tags:";
 
     private AtomService atomService;
     private EntryCategoriesDAO entryCategoriesDAO = null;
-    private java.util.Map<String, String> categoriesToEntriesMap = null;
+
+    public String getCategoriesWorkspaceName(String entriesWorkspaceName) {
+        return DEFAULT_CATEGORIES_WORKSPACE_PREFIX + entriesWorkspaceName;
+    }
+
+    public AtomWorkspace newCategoriesWorkspace(AtomService parentService, WorkspaceOptions options) {
+        String catWorkspaceName = getCategoriesWorkspaceName(options.getName());
+        log.debug( "CREATING CategoriesWorkspace= " + catWorkspaceName);
+
+        AtomWorkspace catWorkspace = new DBBasedVirtualAtomWorkspace(parentService, catWorkspaceName);
+
+        WorkspaceOptions catOptions = new WorkspaceOptions();
+        catOptions.setName(catWorkspaceName);
+        catOptions.setVisible(false);
+        catOptions.setDefaultLocalized(options.getDefaultLocalized());
+        catOptions.setAllowCategories(false);
+        catOptions.setDefaultContentStorage(this);
+
+        catWorkspace.setOptions(catOptions);
+
+        setAtomService(parentService);
+
+        return catWorkspace;
+    }
 
     // -----------------------------------
     //                IOC
@@ -65,10 +90,6 @@ public class EntryCategoriesHandler
     }
     public AtomService getAtomService() {
         return atomService;
-    }
-
-    public void setCategoriesToEntriesMap(java.util.Map<String, String> categoriesToEntriesMap) {
-        this.categoriesToEntriesMap = categoriesToEntriesMap;
     }
 
     /**
@@ -234,15 +255,7 @@ public class EntryCategoriesHandler
     }
 
     private String getEntriesWorkspace(String categoriesWorkspaceName) {
-        String entriesWorkspaceName = null;
-        if (categoriesToEntriesMap != null) {
-            entriesWorkspaceName = categoriesToEntriesMap.get(categoriesWorkspaceName);
-        }
-
-        if (log.isDebugEnabled()) {
-            log.debug("workspace[ " + categoriesWorkspaceName + " ] maps to [ " + entriesWorkspaceName + " ]");
-        }
-        return entriesWorkspaceName;
+        return DBBasedVirtualAtomWorkspace.getEntriesWorkspaceName(categoriesWorkspaceName);
     }
 
     /**
@@ -454,6 +467,10 @@ public class EntryCategoriesHandler
 
     public void setRealContentStorage(ContentStorage realContentStorage) {
         log.error("setRealContentStorage is DEPRICATED, and no longer used");
+    }
+
+    public void setCategoriesToEntriesMap(java.util.Map<String, String> categoriesToEntriesMap) {
+        log.error("setCategoriesToEntriesMap() is DEPRICATED, and no longer used");
     }
     // <<<<<<<<<<<<<<<<<<<<<<<<<
 }

@@ -37,7 +37,7 @@ public class DBBasedVirtualAtomWorkspace extends DBBasedAtomWorkspace {
 
     private static final Log log = LogFactory.getLog(DBBasedJoinWorkspace.class);
 
-    static String getAffilliatedWorkspaceName(String workspaceName) {
+    static String getEntriesWorkspaceName(String workspaceName) {
         String[] parts = workspaceName.split(":");
         String affliatedWorkspace = null;
         if (parts.length == 2) {
@@ -55,15 +55,15 @@ public class DBBasedVirtualAtomWorkspace extends DBBasedAtomWorkspace {
      * {@inheritDoc}
      */
     public String getVisibleName() {
-        return getAffilliatedWorkspaceName(getName());
+        return getEntriesWorkspaceName(getName());
     }
 
     public AtomCollection newAtomCollection(AtomWorkspace parentWorkspace, String collectionName) {
 
         return new DBBasedAtomCollection(this, collectionName) {
 
-            protected String getAffilliatedWorkspaceName() {
-                return DBBasedVirtualAtomWorkspace.getAffilliatedWorkspaceName(parentAtomWorkspace.getName());
+            protected String getEntriesWorkspaceName() {
+                return DBBasedVirtualAtomWorkspace.getEntriesWorkspaceName(parentAtomWorkspace.getName());
             }
 
             /**
@@ -77,14 +77,14 @@ public class DBBasedVirtualAtomWorkspace extends DBBasedAtomWorkspace {
                 log.warn(msg);
 
                 String uri = request.getResolvedUri().toString();
-                uri = uri.replaceAll(workspace, getAffilliatedWorkspaceName());
+                uri = uri.replaceAll(workspace, getEntriesWorkspaceName());
 
                 throw new MovedPermanentlyException(msg, uri);
             }
 
             protected EntryTarget getEntryTarget(RequestContext request) {
                 EntryTarget entryTarget = getURIHandler().getEntryTarget(request, true);
-                entryTarget = entryTarget.cloneWithNewWorkspace(getAffilliatedWorkspaceName());
+                entryTarget = entryTarget.cloneWithNewWorkspace(getEntriesWorkspaceName());
                 return entryTarget;
             }
 

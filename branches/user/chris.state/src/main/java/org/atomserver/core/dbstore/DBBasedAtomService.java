@@ -128,10 +128,8 @@ public class DBBasedAtomService extends AbstractAtomService {
         if (log.isTraceEnabled()) {
             log.trace("Initializing Categories workspaces for = " + workspaces);
         }
-
         // setup the Categories Workspaces
         java.util.Map<String, AtomWorkspace> wspaceMap = new java.util.HashMap<String, AtomWorkspace>(workspaces);
-        java.util.Map<String, String> categoriesMap = new java.util.HashMap<String, String>();
 
         EntryCategoriesHandler categoryHandler = (EntryCategoriesHandler) getCategoriesHandler();
 
@@ -139,28 +137,10 @@ public class DBBasedAtomService extends AbstractAtomService {
             WorkspaceOptions options = wspace.getOptions();
 
             if (options.isAllowCategories()) {
-
-                String catWorkspaceName = DEFAULT_CATEGORIES_WORKSPACE_PREFIX + wspace.getName();
-
-                AtomWorkspace catWorkspace = new DBBasedVirtualAtomWorkspace(this, catWorkspaceName);
-
-                WorkspaceOptions catOptions = new WorkspaceOptions();
-                catOptions.setName(catWorkspaceName);
-                catOptions.setVisible(false);
-                catOptions.setDefaultLocalized(options.getDefaultLocalized());
-                catOptions.setAllowCategories(false);
-                catOptions.setDefaultContentStorage(categoryHandler);
-
-                catWorkspace.setOptions(catOptions);
-
-                this.workspaces.put(catWorkspaceName, catWorkspace);
-
-                categoriesMap.put(catWorkspaceName, wspace.getName());
+                AtomWorkspace catWorkspace = categoryHandler.newCategoriesWorkspace(this, options);
+                this.workspaces.put(catWorkspace.getName(), catWorkspace);
             }
         }
-        categoryHandler.setCategoriesToEntriesMap(categoriesMap);
-        categoryHandler.setAtomService(this);
-
         if (log.isTraceEnabled()) {
             log.trace("workspaces after initialization for = " + workspaces);
         }

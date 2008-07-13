@@ -55,13 +55,7 @@ abstract public class AbstractAtomService implements AtomService {
      */
     abstract public AtomWorkspace newAtomWorkspace(AtomService parentService, String name);
 
-    protected AtomWorkspace getJoinWorkspace(List<String> joinWorkspaces) {
-        throw new UnsupportedOperationException("this service does not support join feeds.");
-    }
-
     static private final Log log = LogFactory.getLog(AbstractAtomService.class);
-    static public final String DEFAULT_CATEGORIES_WORKSPACE_PREFIX = "tags:";
-
 
     protected URIHandler uriHandler = null;
     protected java.util.Map<String, AtomWorkspace> workspaces = null;
@@ -84,6 +78,10 @@ abstract public class AbstractAtomService implements AtomService {
         return (List<String>) (commaSeparatedWorkspaceList == null ?
                                Collections.EMPTY_LIST :
                                Arrays.asList(commaSeparatedWorkspaceList.split("\\s*,\\s*")));
+    }
+
+    protected AtomWorkspace getJoinWorkspace(List<String> joinWorkspaces) {
+        throw new UnsupportedOperationException("this service does not support join feeds.");
     }
 
     public void initialize() {}
@@ -135,7 +133,6 @@ abstract public class AbstractAtomService implements AtomService {
     public String getServiceBaseUri() {
         return this.uriHandler.getServiceBaseUri();
     }
-
 
     // FIXME : javadoc
     public CategoriesHandler getCategoriesHandler() {
@@ -243,11 +240,13 @@ abstract public class AbstractAtomService implements AtomService {
             throw new BadRequestException(msg);
         }
 
-        // FIXME this needs to be cleaned up....
-        String wspace = workspace;
-        if (workspace.startsWith(AbstractAtomService.DEFAULT_CATEGORIES_WORKSPACE_PREFIX)) {
-            wspace = wspace.replaceFirst(AbstractAtomService.DEFAULT_CATEGORIES_WORKSPACE_PREFIX, "");
+
+        if (getAtomWorkspace(workspace) == null) {
+            String msg = "The URL (" + iri + ") does not indicate a recognized Atom workspace (" + workspace + ")";
+            log.error(msg);
+            throw new BadRequestException(msg);
         }
+        String wspace = getAtomWorkspace(workspace).getVisibleName();
 
         if (!workspaces.keySet().contains(wspace)) {
             String msg = "The URL (" + iri + ") does not indicate a recognized Atom workspace (" + workspace + ")";
