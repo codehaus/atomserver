@@ -313,20 +313,22 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
     /**
      */
     protected Collection<BatchEntryResult> modifyEntries(RequestContext request,
-                                                         Collection<EntryTarget> allEntriesUriData) throws AtomServerException {
-        MultiMap<Locale, EntryTarget> dataByLocale = new MultiHashMap<Locale, EntryTarget>();
-        for (EntryTarget uriData : allEntriesUriData) {
-            dataByLocale.put(uriData.getLocale(), uriData);
+                                                         Collection<EntryTargetAndCategories> allEntries)
+            throws AtomServerException {
+        MultiMap<Locale, EntryTargetAndCategories> dataByLocale =
+                new MultiHashMap<Locale, EntryTargetAndCategories>();
+        for (EntryTargetAndCategories entryURIData : allEntries) {
+            dataByLocale.put(entryURIData.getLocale(), entryURIData);
         }
 
         List<BatchEntryResult> returnValue = new ArrayList<BatchEntryResult>();
 
-        for (Set<EntryTarget> entriesURIData : dataByLocale.values()) {
+        for (Set<EntryTargetAndCategories> entriesURIData : dataByLocale.values()) {
 
             Set<EntryDescriptor> descriptors = new HashSet<EntryDescriptor>();
-            for (EntryTarget entryTarget : entriesURIData) {
-                log.debug("about to update " + entryTarget.getEntryId());
-                descriptors.add(entryTarget);
+            for (EntryTargetAndCategories entryURIData : entriesURIData) {
+                log.debug("about to update " + entryURIData.getEntryId());
+                descriptors.add(entryURIData);
             }
 
             EntryMap<EntryMetaData> metaData = new EntryMap<EntryMetaData>();
@@ -336,12 +338,12 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                 metaData.put(metaDatum, metaDatum);
             }
 
-            List<EntryDescriptor> toInsert = new ArrayList<EntryDescriptor>();
-            List<EntryDescriptor> toUpdate = new ArrayList<EntryDescriptor>();
+            List<EntryTargetAndCategories> toInsert = new ArrayList<EntryTargetAndCategories>();
+            List<EntryTargetAndCategories> toUpdate = new ArrayList<EntryTargetAndCategories>();
             EntryMap<AtomServerException> failed = new EntryMap<AtomServerException>();
 
 
-            for (EntryTarget entryURIData : entriesURIData) {
+            for (EntryTargetAndCategories entryURIData : entriesURIData) {
                 String workspace = entryURIData.getWorkspace();
                 String collection = entryURIData.getCollection();
                 Locale locale = entryURIData.getLocale();
@@ -360,7 +362,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                             entryMetaData == null ? null :
                             getURIHandler().constructURIString(workspace, entryMetaData.getCollection(), entryMetaData.getEntryId(),
                                                               entryMetaData.getLocale(), entryMetaData.getRevision());
-                    failed.put(entryURIData, new OptimisticConcurrencyException(msg, editURI));
+                    failed.put(entryURIData.getTarget(), new OptimisticConcurrencyException(msg, editURI));
                     continue;
                 }
 
@@ -369,27 +371,71 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
 
             EntryMap<EntryMetaData> metaDataAfterModified = new EntryMap<EntryMetaData>();
             if (!toInsert.isEmpty()) {
+                EntryMap<List<Category>> categoriesByEntry = new EntryMap<List<Category>>();
+                for (EntryTargetAndCategories entryTargetAndCategories : toInsert) {
+                    if (entryTargetAndCategories.getCatgeories() != null) {
+                        categoriesByEntry.put(entryTargetAndCategories.getTarget(),
+                                          entryTargetAndCategories.getCatgeories());
+                    }
+                }
                 getEntriesDAO().insertEntryBatch(toInsert.get(0).getWorkspace(), toInsert);
                 List<EntryMetaData> afterModified = getEntriesDAO().selectEntryBatch(toInsert);
+                List<EntryCategory> entryCategories = new ArrayList<EntryCategory>();
                 for (EntryMetaData metaDatum : afterModified) {
                     metaDatum.setNewlyCreated(true);
                     metaDataAfterModified.put(metaDatum, metaDatum);
+                    if (categoriesByEntry.get(metaDatum) != null) {
+                        getEntryCategoriesDAO().deleteEntryCategories(metaDatum);
+                        for (Category category : categoriesByEntry.get(metaDatum)) {
+                            EntryCategory entryCategory = new EntryCategory();
+                            entryCategory.setEntryStoreId(metaDatum.getEntryStoreId());
+                            entryCategory.setScheme(category.getScheme().toString());
+                            entryCategory.setTerm(category.getTerm());
+                            entryCategory.setLabel(category.getLabel());
+                            entryCategories.add(entryCategory);
+                        }
+                    }
+                }
+                if (!entryCategories.isEmpty()) {
+                    getEntryCategoriesDAO().insertEntryCategoryBatch(entryCategories);
                 }
             }
             if (!toUpdate.isEmpty()) {
+                EntryMap<List<Category>> categoriesByEntry = new EntryMap<List<Category>>();
+                for (EntryTargetAndCategories entryTargetAndCategories : toUpdate) {
+                    if (entryTargetAndCategories.getCatgeories() != null) {
+                        categoriesByEntry.put(entryTargetAndCategories.getTarget(),
+                                          entryTargetAndCategories.getCatgeories());
+                    }
+                }
                 getEntriesDAO().updateEntryBatch(toUpdate.get(0).getWorkspace(), toUpdate);
                 List<EntryMetaData> afterModified = getEntriesDAO().selectEntryBatch(toUpdate);
+                List<EntryCategory> entryCategories = new ArrayList<EntryCategory>();
                 for (EntryMetaData metaDatum : afterModified) {
                     metaDatum.setNewlyCreated(false);
                     metaDataAfterModified.put(metaDatum, metaDatum);
+                    if (categoriesByEntry.get(metaDatum) != null) {
+                        getEntryCategoriesDAO().deleteEntryCategories(metaDatum);
+                        for (Category category : categoriesByEntry.get(metaDatum)) {
+                            EntryCategory entryCategory = new EntryCategory();
+                            entryCategory.setEntryStoreId(metaDatum.getEntryStoreId());
+                            entryCategory.setScheme(category.getScheme().toString());
+                            entryCategory.setTerm(category.getTerm());
+                            entryCategory.setLabel(category.getLabel());
+                            entryCategories.add(entryCategory);
+                        }
+                    }
+                }
+                if (!entryCategories.isEmpty()) {
+                    getEntryCategoriesDAO().insertEntryCategoryBatch(entryCategories);
                 }
             }
 
-            for (EntryTarget entry : entriesURIData) {
+            for (EntryTargetAndCategories entry : entriesURIData) {
                 if (failed.get(entry) != null) {
-                    returnValue.add(new BatchEntryResult(entry, metaDataAfterModified.get(entry), failed.get(entry)));
+                    returnValue.add(new BatchEntryResult(entry.getTarget(), metaDataAfterModified.get(entry), failed.get(entry)));
                 } else {
-                    returnValue.add(new BatchEntryResult(entry, metaDataAfterModified.get(entry)));
+                    returnValue.add(new BatchEntryResult(entry.getTarget(), metaDataAfterModified.get(entry)));
                 }
             }
         }
@@ -401,7 +447,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
      */
     protected EntryMetaData modifyEntry(Object internalId,
                                         EntryTarget entryTarget,
-                                        boolean mustAlreadyExist)
+                                        Collection<Category> categories, boolean mustAlreadyExist)
             throws AtomServerException {
 
         String workspace = entryTarget.getWorkspace();
@@ -464,6 +510,19 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         // SELECT -- We must select again
         //  because we need data that was set during the INSERT or UPDATE (e.g. published & lastModified)
         EntryMetaData bean = getEntriesDAO().selectEntryByInternalId(internalId);
+        if (categories != null && !categories.isEmpty()) {
+            getEntryCategoriesDAO().deleteEntryCategories(bean);
+            List<EntryCategory> entryCategories = new ArrayList<EntryCategory>();
+            for (Category category : categories) {
+                EntryCategory entryCategory = new EntryCategory();
+                entryCategory.setEntryStoreId(bean.getEntryStoreId());
+                entryCategory.setScheme(category.getScheme().toString());
+                entryCategory.setTerm(category.getTerm());
+                entryCategory.setLabel(category.getLabel());
+                entryCategories.add(entryCategory);
+            }
+            getEntryCategoriesDAO().insertEntryCategoryBatch(entryCategories);
+        }
         if (bean == null) {
             String msg = "Entry [" + workspace + ", " + collection + ", " + entryId + ", " + locale
                          + "] returned an empty row (Null ResultSet) AFTER an INSERT or UPDATE!";

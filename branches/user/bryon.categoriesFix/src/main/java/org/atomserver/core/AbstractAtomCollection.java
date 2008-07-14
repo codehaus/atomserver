@@ -88,12 +88,13 @@ abstract public class AbstractAtomCollection implements AtomCollection {
      * although this is not required. The method getInternalId() is used to obtain thisi value.
      * It is used to determine whether this is an insert or an update within modifyEntry()
      * @param entryTarget The EntryTarget, which was decoded from the URI
-     * @param mustAlreadyExist Should this Entry already exist?
-     * @return The EntryMetaData associated with the requested Entry.
+     * @param categories the categories attached to the entry, if any
+     *@param mustAlreadyExist Should this Entry already exist? @return The EntryMetaData associated with the requested Entry.
      * @throws AtomServerException
      */
     abstract protected EntryMetaData modifyEntry(Object internalId,
                                                  EntryTarget entryTarget,
+                                                 Collection<Category> categories,
                                                  boolean mustAlreadyExist) throws AtomServerException;
 
     /**
@@ -336,22 +337,23 @@ abstract public class AbstractAtomCollection implements AtomCollection {
      * do a better job, but this simple implementation will suffice for functional correctness, by simply iterating
      * over the batch and calling the one-at-a-time methods above.
      * @param request The Abdera RequestContext
-     * @param entriesURIData The list of EntryURIData for this batch
+     * @param entries The list of EntryURIData for this batch
      * @return A list of BatchEntryResults
      * @throws AtomServerException
      */
     protected java.util.Collection<BatchEntryResult> modifyEntries(final RequestContext request,
-                                                                   final java.util.Collection<EntryTarget> entriesURIData)
+                                                                   final Collection<EntryTargetAndCategories> entries)
             throws AtomServerException {
         return executeTransactionally(new TransactionalTask<Collection<BatchEntryResult>>() {
             public Collection<BatchEntryResult> execute() {
                 java.util.Collection<BatchEntryResult> beans = new ArrayList<BatchEntryResult>();
-                for (EntryTarget entryTarget : entriesURIData) {
+                for (EntryTargetAndCategories entry : entries) {
                     try {
-                        EntryMetaData entryMetaData = modifyEntry(null, entryTarget, false );
-                        beans.add(new BatchEntryResult(entryTarget, entryMetaData));
+                        EntryMetaData entryMetaData = modifyEntry(null, entry.getTarget(),
+                                                                  entry.getCatgeories(), false );
+                        beans.add(new BatchEntryResult(entry.getTarget(), entryMetaData));
                     } catch (Exception e) {
-                        beans.add(new BatchEntryResult(entryTarget, e));
+                        beans.add(new BatchEntryResult(entry.getTarget(), e));
                     }
                 }
                 return beans;
@@ -494,6 +496,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
          ensureCollectionExists(collection);
 
          Entry entry = parseEntry(entryTarget, request );
+         final List<Category> categories = entry.getCategories();
          final String entryXml = validateAndPreprocessEntryContents(entry, entryTarget);
 
          EntryMetaData entryMetaData = executeTransactionally(
@@ -519,6 +522,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                          final Object internalId = getInternalId(target);
                          EntryMetaData metaData = modifyEntry(internalId,
                                                               target,
+                                                              categories,
                                                               mustAlreadyExist);
 
                          // Copy the new file contents into the File
@@ -559,6 +563,44 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         return -1;
      }
 
+     protected class EntryTargetAndCategories implements EntryDescriptor {
+         private final EntryTarget target;
+         private final List<Category> catgeories;
+
+         private EntryTargetAndCategories(EntryTarget target, List<Category> catgeories) {
+             this.target = target;
+             this.catgeories = catgeories;
+         }
+
+         public EntryTarget getTarget() {
+             return target;
+         }
+
+         public List<Category> getCatgeories() {
+             return catgeories;
+         }
+
+         public String getWorkspace() {
+             return target.getWorkspace();
+         }
+
+         public String getCollection() {
+             return target.getCollection();
+         }
+
+         public String getEntryId() {
+             return target.getEntryId();
+         }
+
+         public Locale getLocale() {
+             return target.getLocale();
+         }
+
+         public int getRevision() {
+             return target.getRevision();
+         }
+     }
+
     /**
      * {@inheritDoc}
      */
@@ -579,7 +621,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                                           getMaxFullEntriesPerPage()));
          }
 
-         final List<EntryTarget> entriesToUpdate = new ArrayList<EntryTarget>();
+         final List<EntryTargetAndCategories> entriesToUpdate = new ArrayList<EntryTargetAndCategories>();
          final List<EntryTarget> entriesToDelete = new ArrayList<EntryTarget>();
          final EntryMap<String> entryXmlMap = new EntryMap<String>();
          final HashMap<EntryTarget, Integer> orderMap = new HashMap<EntryTarget, Integer>();
@@ -656,7 +698,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                      orderMap.put( entryTarget, order);
                  } else if ("update".equalsIgnoreCase(operation) || "insert".equalsIgnoreCase(operation)) {
                      String entryXml = validateAndPreprocessEntryContents(entry, entryTarget);
-                     entriesToUpdate.add(entryTarget);
+                     entriesToUpdate.add(new EntryTargetAndCategories(entryTarget, entry.getCategories()));
                      entryXmlMap.put(entryTarget, entryXml);
                      orderMap.put( entryTarget, order);
                  }

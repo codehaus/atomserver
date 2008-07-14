@@ -21,6 +21,7 @@ import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
+import org.apache.abdera.model.Category;
 import org.apache.abdera.protocol.client.AbderaClient;
 import org.apache.abdera.protocol.client.ClientResponse;
 import org.apache.abdera.protocol.client.RequestOptions;
@@ -38,6 +39,7 @@ import org.springframework.context.ApplicationContext;
 
 import java.text.MessageFormat;
 import java.io.File;
+import java.util.List;
 
 /**
  */
@@ -132,6 +134,15 @@ public class DBSTestCase extends AtomServerTestCase {
         modifyEntry(workspace, collection, entryId, locale, xmlFileString, true, null);
     }
 
+    protected void createWidget(String workspace,
+                                String collection,
+                                String entryId,
+                                String locale,
+                                String xmlFileString,
+                                List<Category> categories) throws Exception {
+        modifyEntry(workspace, collection, entryId, locale, xmlFileString, categories, true, null, true, true);
+    }
+
     protected void updateWidget(String workspace,
                                 String collection,
                                 String entryId,
@@ -162,11 +173,24 @@ public class DBSTestCase extends AtomServerTestCase {
         modifyEntry(workspace, collection, entryId, locale, xmlFileString, creating, revision, checkContent, true);
      }
 
-     protected void modifyEntry(String workspace,
+    protected void modifyEntry(String workspace,
+                               String collection,
+                               String entryId,
+                               String locale,
+                               String xmlFileString,
+                               boolean creating,
+                               String revision,
+                               boolean checkContent,
+                               boolean checkCount) throws Exception {
+        modifyEntry(workspace, collection, entryId, locale, xmlFileString, null, creating, revision, checkContent, checkCount);
+    }
+
+    protected void modifyEntry(String workspace,
                                    String collection,
                                    String entryId,
                                    String locale,
                                    String xmlFileString,
+                                   List<Category> categories,
                                    boolean creating,
                                    String revision,
                                    boolean checkContent,
@@ -187,6 +211,11 @@ public class DBSTestCase extends AtomServerTestCase {
         options.setHeader("Connection", "close");
 
         Entry entry = AtomServerTestCase.getFactory().newEntry();
+        if (categories != null) {
+            for (Category category : categories) {
+                entry.addCategory(category);
+            }
+        }
         entry.setId(getURLPath(workspace, collection, entryId, locale, revision));
         entry.setContentAsXhtml(xmlFileString.replaceFirst("<\\?[^\\?]*\\?>", ""));
 

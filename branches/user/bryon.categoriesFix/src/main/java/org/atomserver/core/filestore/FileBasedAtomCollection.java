@@ -108,7 +108,7 @@ public class FileBasedAtomCollection
      */
     protected EntryMetaData modifyEntry(Object internalId,
                                         EntryTarget entryTarget,
-                                        boolean mustAlreadyExist)
+                                        Collection<Category> categories, boolean mustAlreadyExist)
             throws AtomServerException {
         String workspace = entryTarget.getWorkspace();
         String collection = entryTarget.getCollection();
