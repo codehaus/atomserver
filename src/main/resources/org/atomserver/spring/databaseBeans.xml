@@ -81,4 +81,13 @@
         <property name="performanceLog" ref="org.atomserver-performanceLog"/>
     </bean>
 
+    <bean id="org.atomserver-entryStateDAO"
+          class="org.atomserver.core.dbstore.dao.EntryStateDAOiBatisImpl"
+          depends-on="org.atomserver-propertyConfigurer">
+        <property name="dataSource" ref="org.atomserver-dataSource"/>
+        <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
+        <property name="databaseType" value="${db.type}"/>
+        <property name="performanceLog" ref="org.atomserver-performanceLog"/>
+    </bean>
+
 </beans>

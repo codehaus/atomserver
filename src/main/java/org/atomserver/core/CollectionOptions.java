@@ -42,7 +42,7 @@ public class CollectionOptions {
 
     private ContentStorage contentStorage = null;
     private ContentValidator contentValidator = null;
-    private CategoriesHandler categoriesHandler = null;
+
     private EntryAutoTagger autoTagger = null;
 
     private EntryIdGenerator entryIdGenerator = null;
@@ -93,13 +93,6 @@ public class CollectionOptions {
         return contentValidator;
     }
 
-    public void setCategoriesHandler( CategoriesHandler categoriesHandler ) {
-        this.categoriesHandler = categoriesHandler;
-    }       
-    public CategoriesHandler getCategoriesHandler() {
-        return categoriesHandler;
-    }
-
     public void setAutoTagger(EntryAutoTagger autoTagger) {
         this.autoTagger = autoTagger;
     }
@@ -135,4 +128,11 @@ public class CollectionOptions {
     public void setEntryIdGenerator(EntryIdGenerator entryIdGenerator) {
         this.entryIdGenerator = entryIdGenerator;
     }
+        
+    //>>>>>>>>>>>>>>>>>>>>>>>>>>
+    // DEPRECATED OPTIONS -- remove in 2.0.5
+    public void setCategoriesHandler( CategoriesHandler categoriesHandler ) {
+        log.error("setAllowCategories() is deprecated, and does nothing");
+    }
+    //<<<<<<<<<<<<<
 }

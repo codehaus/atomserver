@@ -91,4 +91,6 @@ public interface AtomService {
     int getMaxLinkAggregateEntriesPerPage();
 
     int getMaxFullAggregateEntriesPerPage();
+
+    public VirtualWorkspaceHandler getVirtualWorkspaceHandler( String id );
 }

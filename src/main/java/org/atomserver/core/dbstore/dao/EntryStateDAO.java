@@ -13,26 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.atomserver.core.dbstore.dao;
 
-package org.atomserver;
+import org.atomserver.core.EntryState;
 
-import org.apache.abdera.model.Category;
-
-import java.util.List;
 
 /**
- * CategoriesHandler - The API for handling AtomPub Categories.
- * Implementations of this interface are wired to an AtomCollection.
+ * The DAO for accessing an Entry's State
+ *
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
-public interface CategoriesHandler extends VirtualWorkspaceHandler {
+public interface EntryStateDAO  extends AtomServerDAO {
 
-    /**
-     * Returns the list of Abdera Categories associated with this workspace and collection
-     * @param workspace The name of this workspace.
-     * @param collection The name of this collection
-     * @return The list of Abdera Categories
-     */
-    List<Category> listCategories( String workspace, String collection );
+    //======================================
+    //          CRUD OPERATIONS
+    //======================================
+    public Object insertEntryState(EntryState entry);
+
+    public EntryState selectEntryState(EntryState entryQuery);
+
+    public void deleteEntryState(EntryState entryQuery);
+
 }
