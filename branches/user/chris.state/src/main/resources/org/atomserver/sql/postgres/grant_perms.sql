@@ -8,5 +8,4 @@ grant all privileges on VW_AggregateEntry to atomserver;
 grant all privileges on entrycategory_entrycategoryid_seq to atomserver;
 grant all privileges on entrystore_entrystoreid_seq to atomserver;
 grant all privileges on entrystore_updatetimestamp_seq to atomserver;
-grant all privileges on entrystate_entrystateid_seq to atomserver;
 

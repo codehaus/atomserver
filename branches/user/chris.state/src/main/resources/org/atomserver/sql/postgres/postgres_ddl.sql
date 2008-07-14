@@ -80,23 +80,6 @@ PRIMARY KEY (EntryStoreId),
 FOREIGN KEY (EntryStoreId) REFERENCES EntryStore(EntryStoreId)
 );
 
-
-/*==============================================================*/
-/* Table: EntryState                                           */
-/*==============================================================*/
-CREATE TABLE EntryState (
-EntryStateId        SERIAL                  NOT NULL,
-EntryStoreId        INT                     NOT NULL,
-CreateDate          TIMESTAMP               NOT NULL,
-ServerIp            VARCHAR(15)             NOT NULL,
-ServiceName         VARCHAR(128)            NOT NULL,
-State               VARCHAR(128)            NOT NULL,
-Message             VARCHAR(512)            NOT NULL,
-PRIMARY KEY (EntryStateId),
-FOREIGN KEY (EntryStoreId) REFERENCES EntryStore(EntryStoreId)
-);
-
-
 /*==============================================================*/
 /* View: vw_AggregateEntries                                    */
 /* NOTE: in SQL Server, we get a significant performance boost  */
