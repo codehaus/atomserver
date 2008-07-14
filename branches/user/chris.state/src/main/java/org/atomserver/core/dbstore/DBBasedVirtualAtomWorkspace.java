@@ -35,7 +35,7 @@ import org.atomserver.uri.FeedTarget;
 
 public class DBBasedVirtualAtomWorkspace extends DBBasedAtomWorkspace {
 
-    private static final Log log = LogFactory.getLog(DBBasedJoinWorkspace.class);
+    private static final Log log = LogFactory.getLog(DBBasedVirtualAtomWorkspace.class);
 
     static String getEntriesWorkspaceName(String workspaceName) {
         String[] parts = workspaceName.split(":");

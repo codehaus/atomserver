@@ -41,31 +41,11 @@
         </property>
     </bean>
 
-    <!--
-    <bean id="org.atomserver-entryCategoriesContentStorage"
-          class="org.atomserver.core.dbstore.EntryCategoriesContentStorage"
-          depends-on="org.atomserver-propertyConfigurer"
-          lazy-init="true">
-        <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO"/>
-        <property name="serviceContext" ref="org.apache.abdera.protocol.server.ServiceContext"/>
-        <property name="realContentStorage" ref="org.atomserver-contentStorage"/>
-    </bean>
-
     <bean id="org.atomserver-entryCategoriesHandler"
           class="org.atomserver.core.dbstore.EntryCategoriesHandler"
           depends-on="org.atomserver-propertyConfigurer"
           lazy-init="true">
         <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO"/>
-        <property name="serviceContext" ref="org.apache.abdera.protocol.server.ServiceContext"/>
-    </bean>
-    -->
-    <bean id="org.atomserver-entryCategoriesHandler"
-          class="org.atomserver.core.dbstore.EntryCategoriesHandler"
-          depends-on="org.atomserver-propertyConfigurer"
-          lazy-init="true">
-        <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO"/>
-        <!-- <property name="serviceContext" ref="org.apache.abdera.protocol.server.ServiceContext"/>  -->
-        <!-- <property name="realContentStorage" ref="org.atomserver-contentStorage"/> --> 
     </bean>
 
 

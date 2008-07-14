@@ -26,14 +26,13 @@ import org.apache.commons.logging.LogFactory;
 import org.atomserver.AtomService;
 import org.atomserver.AtomWorkspace;
 import org.atomserver.CategoriesHandler;
+import org.atomserver.VirtualWorkspaceHandler;
 import org.atomserver.core.etc.AtomServerPerformanceLog;
 import org.atomserver.exceptions.BadRequestException;
 import org.atomserver.uri.ServiceTarget;
 import org.atomserver.uri.URIHandler;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 
 /**
@@ -61,7 +60,9 @@ abstract public class AbstractAtomService implements AtomService {
     protected java.util.Map<String, AtomWorkspace> workspaces = null;
     protected AtomServerPerformanceLog perflog;
 
-    protected CategoriesHandler categoriesHandler;
+    protected Map<String, VirtualWorkspaceHandler> virtualWorkspaceHandlers =
+            new HashMap<String, VirtualWorkspaceHandler>();
+
     protected ServiceContext serviceContext;
 
     /**
@@ -105,7 +106,7 @@ abstract public class AbstractAtomService implements AtomService {
     }
 
     /**
-     * Returns the optional Performance log.     *
+     * Returns the optional Performance log.     
      * @return The AtomServerPerformanceLog
      */
     public AtomServerPerformanceLog getPerformanceLog() {
@@ -134,14 +135,21 @@ abstract public class AbstractAtomService implements AtomService {
         return this.uriHandler.getServiceBaseUri();
     }
 
-    // FIXME : javadoc
     public CategoriesHandler getCategoriesHandler() {
-        return categoriesHandler;
+        return (CategoriesHandler)getVirtualWorkspaceHandler( VirtualWorkspaceHandler.Id.CATEGORIES.toString() );
     }
 
-    public void setCategoriesHandler(CategoriesHandler categoriesHandler) {
-        this.categoriesHandler = categoriesHandler;
+    public void setVirtualWorkspaceHandlers(Map<String, VirtualWorkspaceHandler> virtualWorkspaceHandlers) {
+        this.virtualWorkspaceHandlers = virtualWorkspaceHandlers;
     }
+
+    public VirtualWorkspaceHandler getVirtualWorkspaceHandler( String id ) {
+        return virtualWorkspaceHandlers.get(id);
+    }
+
+    public void addVirtualWorkspaceHandler( String id, VirtualWorkspaceHandler handler ) {
+        virtualWorkspaceHandlers.put( id, handler );
+    }    
 
     public ServiceContext getServiceContext() {
         return serviceContext;

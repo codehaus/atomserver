@@ -18,8 +18,11 @@ package org.atomserver.core;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.atomserver.*;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * WorkspaceOptions - The options which may be set for an AtomWorkspace.
@@ -35,6 +38,9 @@ import org.atomserver.*;
  */
 public class WorkspaceOptions {
     static private final Log log = LogFactory.getLog(WorkspaceOptions.class);
+
+    static public int DEFAULT_MAX_LINK_ENTRIES_PER_PAGE = 100;
+    static public int DEFAULT_MAX_FULL_ENTRIES_PER_PAGE = 15;
 
     private String name = null;
 
@@ -52,14 +58,11 @@ public class WorkspaceOptions {
 
     private EntryIdGenerator entryIdGenerator = null;
 
-    private boolean allowCategories = true;
-
-    public static int DEFAULT_MAX_LINK_ENTRIES_PER_PAGE = 100;
-    public static int DEFAULT_MAX_FULL_ENTRIES_PER_PAGE = 15;
+    private String allowed[] = { VirtualWorkspaceHandler.Id.CATEGORIES.toString() };
+    private Set<String> allowedVirtualWorkspaces = new HashSet<String>(Arrays.asList(allowed));
 
     private int maxLinkEntriesPerPage = DEFAULT_MAX_LINK_ENTRIES_PER_PAGE;
     private int maxFullEntriesPerPage = DEFAULT_MAX_FULL_ENTRIES_PER_PAGE;
-
 
     public String getName() {
         return name;
@@ -69,12 +72,8 @@ public class WorkspaceOptions {
         this.name = name;
     }
 
-    public boolean isAllowCategories() {
-        return allowCategories;
-    }
-
-    public void setAllowCategories(boolean allowCategories) {
-        this.allowCategories = allowCategories;
+    public Set<String> getAllowedVirtualWorkspaces() {
+        return allowedVirtualWorkspaces;
     }
 
     public void setDefaultLocalized(boolean localized) {
@@ -178,6 +177,10 @@ public class WorkspaceOptions {
 
     public void setCategoryWorkspaceName(String categoryWorkspaceName) {
         log.error("setCategoryWorkspaceName() is deprecated, and does nothing");
+    }
+
+    public void setAllowCategories(boolean allowCategories) {
+        log.error("setAllowCategories() is deprecated, and does nothing");
     }
     //<<<<<<<<<<<<<<<<<<<<
 }

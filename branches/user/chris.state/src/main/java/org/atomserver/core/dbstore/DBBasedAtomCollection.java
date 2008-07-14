@@ -72,7 +72,8 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
     }
     
     public EntryCategoriesDAO getEntryCategoriesDAO() {
-        return ((EntryCategoriesHandler)parentAtomWorkspace.getParentAtomService().getCategoriesHandler())
+        return ((EntryCategoriesHandler)( parentAtomWorkspace.getParentAtomService().
+                getVirtualWorkspaceHandler(VirtualWorkspaceHandler.Id.CATEGORIES.toString())))
                 .getEntryCategoriesDAO();
     }
 

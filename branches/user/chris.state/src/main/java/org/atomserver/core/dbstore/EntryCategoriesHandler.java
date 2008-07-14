@@ -45,7 +45,8 @@ import java.util.Map;
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
-public class EntryCategoriesHandler
+public class
+        EntryCategoriesHandler
         implements CategoriesHandler, ContentStorage {
 
     static private final Log log = LogFactory.getLog(EntryCategoriesHandler.class);
@@ -58,7 +59,7 @@ public class EntryCategoriesHandler
         return DEFAULT_CATEGORIES_WORKSPACE_PREFIX + entriesWorkspaceName;
     }
 
-    public AtomWorkspace newCategoriesWorkspace(AtomService parentService, WorkspaceOptions options) {
+    public AtomWorkspace newVirtualWorkspace(AtomService parentService, WorkspaceOptions options) {
         String catWorkspaceName = getCategoriesWorkspaceName(options.getName());
         log.debug( "CREATING CategoriesWorkspace= " + catWorkspaceName);
 

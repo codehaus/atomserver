@@ -92,8 +92,5 @@ public interface AtomService {
 
     int getMaxFullAggregateEntriesPerPage();
 
-
-    //>>>>>>>>>>>>
-    CategoriesHandler getCategoriesHandler();
-    void setCategoriesHandler(CategoriesHandler handler);
+    public VirtualWorkspaceHandler getVirtualWorkspaceHandler( String id );
 }

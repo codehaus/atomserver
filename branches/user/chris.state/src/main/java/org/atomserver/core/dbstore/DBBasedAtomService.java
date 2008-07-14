@@ -33,6 +33,7 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -131,14 +132,16 @@ public class DBBasedAtomService extends AbstractAtomService {
         // setup the Categories Workspaces
         java.util.Map<String, AtomWorkspace> wspaceMap = new java.util.HashMap<String, AtomWorkspace>(workspaces);
 
-        EntryCategoriesHandler categoryHandler = (EntryCategoriesHandler) getCategoriesHandler();
-
         for (AtomWorkspace wspace : wspaceMap.values()) {
             WorkspaceOptions options = wspace.getOptions();
 
-            if (options.isAllowCategories()) {
-                AtomWorkspace catWorkspace = categoryHandler.newCategoriesWorkspace(this, options);
-                this.workspaces.put(catWorkspace.getName(), catWorkspace);
+            Set<String> allowedVirtualWorkspaces = options.getAllowedVirtualWorkspaces();
+
+            for ( String allowedVirtualWorkspaceId : allowedVirtualWorkspaces )  {
+                VirtualWorkspaceHandler handler = getVirtualWorkspaceHandler(allowedVirtualWorkspaceId);
+                AtomWorkspace virtualWorkspace = handler.newVirtualWorkspace(this, options);
+                this.workspaces.put(virtualWorkspace.getName(), virtualWorkspace);
+
             }
         }
         if (log.isTraceEnabled()) {
@@ -154,7 +157,14 @@ public class DBBasedAtomService extends AbstractAtomService {
 
     public void setCategoriesContentStorage(ContentStorage categoriesContentStorage) {
         log.error("setEntryCategoriesDAO() is no longer valid on Atomservice. It is DEPRICATED");
-        setCategoriesHandler((CategoriesHandler) categoriesContentStorage);
+        addVirtualWorkspaceHandler( VirtualWorkspaceHandler.Id.CATEGORIES.toString(),
+                                    (CategoriesHandler) categoriesContentStorage );
+    }
+
+    public void setCategoriesHandler(CategoriesHandler categoriesHandler) {
+        log.error("setCategoriesHandler() is no longer valid on AtomService. It is ignored");
+        addVirtualWorkspaceHandler( VirtualWorkspaceHandler.Id.CATEGORIES.toString(),
+                                    categoriesHandler );
     }
     //<<<<<<<<<<<<<<<<<<<<<<<<<<
 }

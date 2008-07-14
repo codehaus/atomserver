@@ -180,7 +180,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
      * {@inheritDoc}
      */
     public CategoriesHandler getCategoriesHandler() {
-        return parentAtomWorkspace.getParentAtomService().getCategoriesHandler();
+        return ((AbstractAtomService)parentAtomWorkspace.getParentAtomService()).getCategoriesHandler();
     }
 
     // FIXME:: javadoc
