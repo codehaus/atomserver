@@ -1,0 +1,5 @@
+<pet type="cat">
+    <breed>Mixed</breed>
+    <name>Fluffy</name>
+    <owner>Alex Victoria</owner>
+</pet>
