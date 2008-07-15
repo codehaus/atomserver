@@ -463,15 +463,15 @@ public class
     //>>>>>>>>>>>>>>>>>>>>>>>>>>
     // DEPRECATED OPTIONS -- remove in 2.0.5
     public void setServiceContext(ServiceContext serviceContext) {
-        log.error("setServiceContext is DEPRICATED, and no longer used");
+        log.error("setServiceContext is DEPRECATED, and no longer used");
     }
 
     public void setRealContentStorage(ContentStorage realContentStorage) {
-        log.error("setRealContentStorage is DEPRICATED, and no longer used");
+        log.error("setRealContentStorage is DEPRECATED, and no longer used");
     }
 
     public void setCategoriesToEntriesMap(java.util.Map<String, String> categoriesToEntriesMap) {
-        log.error("setCategoriesToEntriesMap() is DEPRICATED, and no longer used");
+        log.error("setCategoriesToEntriesMap() is DEPRECATED, and no longer used");
     }
     // <<<<<<<<<<<<<<<<<<<<<<<<<
 }

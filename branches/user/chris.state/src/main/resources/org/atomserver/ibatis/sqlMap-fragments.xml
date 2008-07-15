@@ -25,7 +25,6 @@
     <!-- #################### common definitions ############### -->
     <typeAlias type="org.atomserver.core.EntryMetaData" alias="entryMetaData"/>
     <typeAlias type="org.atomserver.core.EntryCategory" alias="entryCategory"/>
-    <typeAlias type="org.atomserver.core.EntryState" alias="entryState"/>
     <typeAlias type="org.atomserver.EntryDescriptor" alias="entryDescriptor"/>
 
 
@@ -66,19 +65,6 @@
         <result property="scheme" column="Scheme"/>
         <result property="term" column="Term"/>
         <result property="label" column="Label"/>
-    </resultMap>
-
-    <resultMap class="entryState" id="entryStateResult">
-        <result property="entryStoreId" column="EntryStoreId"/>
-        <result property="entryStateId" column="EntryStateId"/>
-        <result property="workspace" column="Workspace"/>
-        <result property="collection" column="Collection"/>
-        <result property="entryId" column="EntryId"/>
-        <result property="createDate" column="CreateDate"/>
-        <result property="serverIp" column="ServerIp"/>
-        <result property="serviceName" column="ServiceName"/>
-        <result property="state" column="State"/>
-        <result property="message" column="Message"/>
     </resultMap>
 
 

@@ -127,9 +127,8 @@ public class DBBasedAtomService extends AbstractAtomService {
         super.initialize();
 
         if (log.isTraceEnabled()) {
-            log.trace("Initializing Categories workspaces for = " + workspaces);
+            log.trace("Initializing Virtual workspaces for = " + workspaces);
         }
-        // setup the Categories Workspaces
         java.util.Map<String, AtomWorkspace> wspaceMap = new java.util.HashMap<String, AtomWorkspace>(workspaces);
 
         for (AtomWorkspace wspace : wspaceMap.values()) {
@@ -141,7 +140,6 @@ public class DBBasedAtomService extends AbstractAtomService {
                 VirtualWorkspaceHandler handler = getVirtualWorkspaceHandler(allowedVirtualWorkspaceId);
                 AtomWorkspace virtualWorkspace = handler.newVirtualWorkspace(this, options);
                 this.workspaces.put(virtualWorkspace.getName(), virtualWorkspace);
-
             }
         }
         if (log.isTraceEnabled()) {
@@ -156,14 +154,14 @@ public class DBBasedAtomService extends AbstractAtomService {
     }
 
     public void setCategoriesContentStorage(ContentStorage categoriesContentStorage) {
-        log.error("setEntryCategoriesDAO() is no longer valid on Atomservice. It is DEPRICATED");
-        addVirtualWorkspaceHandler( VirtualWorkspaceHandler.Id.CATEGORIES.toString(),
+        log.error("setEntryCategoriesDAO() is no longer valid on Atomservice. It is DEPRECATED");
+        addVirtualWorkspaceHandler( VirtualWorkspaceHandler.CATEGORIES,
                                     (CategoriesHandler) categoriesContentStorage );
     }
 
     public void setCategoriesHandler(CategoriesHandler categoriesHandler) {
         log.error("setCategoriesHandler() is no longer valid on AtomService. It is ignored");
-        addVirtualWorkspaceHandler( VirtualWorkspaceHandler.Id.CATEGORIES.toString(),
+        addVirtualWorkspaceHandler( VirtualWorkspaceHandler.CATEGORIES,
                                     categoriesHandler );
     }
     //<<<<<<<<<<<<<<<<<<<<<<<<<<

@@ -58,8 +58,8 @@ public class WorkspaceOptions {
 
     private EntryIdGenerator entryIdGenerator = null;
 
-    private String allowed[] = { VirtualWorkspaceHandler.Id.CATEGORIES.toString() };
-    private Set<String> allowedVirtualWorkspaces = new HashSet<String>(Arrays.asList(allowed));
+    private Set<String> allowedVirtualWorkspaces = 
+            new HashSet<String>(Arrays.asList(VirtualWorkspaceHandler.CATEGORIES));
 
     private int maxLinkEntriesPerPage = DEFAULT_MAX_LINK_ENTRIES_PER_PAGE;
     private int maxFullEntriesPerPage = DEFAULT_MAX_FULL_ENTRIES_PER_PAGE;

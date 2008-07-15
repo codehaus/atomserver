@@ -136,7 +136,7 @@ abstract public class AbstractAtomService implements AtomService {
     }
 
     public CategoriesHandler getCategoriesHandler() {
-        return (CategoriesHandler)getVirtualWorkspaceHandler( VirtualWorkspaceHandler.Id.CATEGORIES.toString() );
+        return (CategoriesHandler)getVirtualWorkspaceHandler( VirtualWorkspaceHandler.CATEGORIES );
     }
 
     public void setVirtualWorkspaceHandlers(Map<String, VirtualWorkspaceHandler> virtualWorkspaceHandlers) {

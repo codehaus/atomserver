@@ -54,8 +54,5 @@
     <!--the ibatis SQL map that defines the SQL for Aggregate feeds -->
     <sqlMap resource="org/atomserver/ibatis/sqlMap-aggregate.xml"/>
 
-    <!--the ibatis SQL map that defines the SQL EntryState -->
-    <sqlMap resource="org/atomserver/ibatis/sqlMap-state.xml"/>
-
 </sqlMapConfig>
 
