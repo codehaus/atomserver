@@ -26,7 +26,7 @@ import java.util.List;
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
-public interface CategoriesHandler {
+public interface CategoriesHandler extends VirtualWorkspaceHandler {
 
     /**
      * Returns the list of Abdera Categories associated with this workspace and collection

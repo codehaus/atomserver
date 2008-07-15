@@ -22,9 +22,8 @@ import org.apache.abdera.protocol.server.ServiceContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.AtomService;
-import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
 import org.atomserver.uri.URIHandler;
-import org.springframework.context.ApplicationContext;
+import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.Date;

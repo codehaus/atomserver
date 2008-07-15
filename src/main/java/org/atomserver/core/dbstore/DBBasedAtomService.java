@@ -17,85 +17,59 @@
 
 package org.atomserver.core.dbstore;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.atomserver.*;
 import org.atomserver.core.AbstractAtomService;
 import org.atomserver.core.BaseEntryDescriptor;
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.WorkspaceOptions;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
 import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
-
-import org.atomserver.EntryDescriptor;
-import org.atomserver.ContentStorage;
-import org.atomserver.AtomWorkspace;
-import org.atomserver.AtomService;
 import org.atomserver.utils.locale.LocaleUtils;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import org.springframework.transaction.support.TransactionTemplate;
-
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
+import org.springframework.transaction.support.TransactionTemplate;
 
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-/** 
+/**
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
 @ManagedResource(description = "DB-Based Atom Service")
 public class DBBasedAtomService extends AbstractAtomService {
-    
+
     static private final Log log = LogFactory.getLog(DBBasedAtomCollection.class);
 
-    private EntriesDAO entriesDAO = null;
-    private EntryCategoriesDAO entryCategoriesDAO = null;
-    
-    protected ContentStorage categoriesContentStorage = null;
-
-    // single TransactionTemplate shared amongst all methods/threads in this instance
-    private TransactionTemplate transactionTemplate;
-
-    private static final Pattern ENTRY_ID_PATTERN = Pattern.compile(
+    static private final Pattern ENTRY_ID_PATTERN = Pattern.compile(
             "([^!/\\?]+)(?:/([^!/\\?]+)(?:/([^!/\\?]+))?)?(?:\\?locale=([a-z]{2}(?:_[A-Z]{2})?))?\\!?");
-    private static final int DEFAULT_OBLITERATE_THRESHOLD = 10;
+    static private final int DEFAULT_OBLITERATE_THRESHOLD = 10;
+
+    private EntriesDAO entriesDAO = null;
+    private TransactionTemplate transactionTemplate;
     private int obliterateThreshold = DEFAULT_OBLITERATE_THRESHOLD;
 
-    //--------------------------------
-    //      public methods
-    //--------------------------------
-    public void setCategoriesContentStorage( ContentStorage categoriesContentStorage ) {
-        this.categoriesContentStorage = categoriesContentStorage;
-    }       
-    protected ContentStorage getCategoriesContentStorage() {
-        return this.categoriesContentStorage;
-    }
-
-    public void setEntriesDAO( EntriesDAO entriesDAO ) {
+    public void setEntriesDAO(EntriesDAO entriesDAO) {
         this.entriesDAO = entriesDAO;
     }
+
     public EntriesDAO getEntriesDAO() {
         return entriesDAO;
     }
 
-    public void setEntryCategoriesDAO( EntryCategoriesDAO entryCategoriesDAO ) {
-        this.entryCategoriesDAO = entryCategoriesDAO;
-    }
-    public EntryCategoriesDAO getEntryCategoriesDAO() {
-        return entryCategoriesDAO;
-    }
-
-    public void setTransactionTemplate( TransactionTemplate transactionTemplate ) {
+    public void setTransactionTemplate(TransactionTemplate transactionTemplate) {
         this.transactionTemplate = transactionTemplate;
     }
+
     public TransactionTemplate getTransactionTemplate() {
         return transactionTemplate;
     }
-    
+
     @ManagedAttribute
     public int getObliterateThreshold() {
         return obliterateThreshold;
@@ -128,9 +102,9 @@ public class DBBasedAtomService extends AbstractAtomService {
                             .append(list.size()).append(") - try ").append(query).append("! instead.");
                 } else {
                     for (EntryMetaData entry : list) {
-                        ((DBBasedAtomCollection)getAtomWorkspace(descriptor.getWorkspace()).
-                                getAtomCollection(descriptor.getCollection())).obliterateEntry( entry );
-                   }
+                        ((DBBasedAtomCollection) getAtomWorkspace(descriptor.getWorkspace()).
+                                getAtomCollection(descriptor.getCollection())).obliterateEntry(entry);
+                    }
                     builder.append("obliterated ").append(list.size()).append(" entries.");
                 }
             } else {
@@ -152,49 +126,43 @@ public class DBBasedAtomService extends AbstractAtomService {
     public void initialize() {
         super.initialize();
 
-        if ( log.isTraceEnabled() )
-            log.trace("Initializing Categories workspaces for = " + workspaces );
+        if (log.isTraceEnabled()) {
+            log.trace("Initializing Virtual workspaces for = " + workspaces);
+        }
+        java.util.Map<String, AtomWorkspace> wspaceMap = new java.util.HashMap<String, AtomWorkspace>(workspaces);
 
-        // setup the Categories Workspaces
-        java.util.Map<String, AtomWorkspace> wspaceMap = new java.util.HashMap<String, AtomWorkspace>( workspaces );
-        java.util.Map<String, String> categoriesMap = new java.util.HashMap<String, String>();
-
-        for ( AtomWorkspace wspace : wspaceMap.values() ) {
+        for (AtomWorkspace wspace : wspaceMap.values()) {
             WorkspaceOptions options = wspace.getOptions();
 
-            if ( options.isAllowCategories() ) {
-                String catWorkspaceName = options.getCategoryWorkspaceName();
-                if ( catWorkspaceName == null ) {
-                     catWorkspaceName = DEFAULT_CATEGORIES_WORKSPACE_PREFIX + wspace.getName();
-                }
+            Set<String> allowedVirtualWorkspaces = options.getAllowedVirtualWorkspaces();
 
-                AtomWorkspace catWorkspace = newAtomWorkspace( this, catWorkspaceName );
-
-                WorkspaceOptions catOptions = new WorkspaceOptions();
-                catOptions.setName( catWorkspaceName );
-                catOptions.setVisible( false );
-                catOptions.setDefaultLocalized( options.getDefaultLocalized() );
-                catOptions.setAllowCategories( false );
-                catOptions.setIsCategoriesWorkspace( true );
-                catOptions.setAffiliatedAtomWorkspace( wspace );
-
-                catOptions.setDefaultContentStorage( categoriesContentStorage );
-
-                catWorkspace.setOptions( catOptions );
-
-                this.workspaces.put( catWorkspaceName, catWorkspace );
-
-                categoriesMap.put( catWorkspaceName, wspace.getName() );
+            for ( String allowedVirtualWorkspaceId : allowedVirtualWorkspaces )  {
+                VirtualWorkspaceHandler handler = getVirtualWorkspaceHandler(allowedVirtualWorkspaceId);
+                AtomWorkspace virtualWorkspace = handler.newVirtualWorkspace(this, options);
+                this.workspaces.put(virtualWorkspace.getName(), virtualWorkspace);
             }
         }
-        // FIXME : need a cleaner way to set this up....
-        if ( categoriesContentStorage != null ) {
-            if ( categoriesContentStorage instanceof EntryCategoriesContentStorage) {
-                ((EntryCategoriesContentStorage)categoriesContentStorage).setCategoriesToEntriesMap( categoriesMap );
-            }
+        if (log.isTraceEnabled()) {
+            log.trace("workspaces after initialization for = " + workspaces);
         }
-        if ( log.isTraceEnabled() )
-            log.trace("workspaces after initialization for = " + workspaces );
     }
 
+    //>>>>>>>>>>>>>>>>>>>>>>>>>>
+    // DEPRECATED OPTIONS -- remove in 2.0.5
+    public void setEntryCategoriesDAO(EntryCategoriesDAO entryCategoriesDAO) {
+        log.error("setEntryCategoriesDAO() is no longer valid on Atomservice. It is ignored");
+    }
+
+    public void setCategoriesContentStorage(ContentStorage categoriesContentStorage) {
+        log.error("setEntryCategoriesDAO() is no longer valid on Atomservice. It is DEPRECATED");
+        addVirtualWorkspaceHandler( VirtualWorkspaceHandler.CATEGORIES,
+                                    (CategoriesHandler) categoriesContentStorage );
+    }
+
+    public void setCategoriesHandler(CategoriesHandler categoriesHandler) {
+        log.error("setCategoriesHandler() is no longer valid on AtomService. It is ignored");
+        addVirtualWorkspaceHandler( VirtualWorkspaceHandler.CATEGORIES,
+                                    categoriesHandler );
+    }
+    //<<<<<<<<<<<<<<<<<<<<<<<<<<
 }
