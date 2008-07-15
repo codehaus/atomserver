@@ -342,7 +342,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
                 return editLinkStr;
             }
             else {
-                assertTrue( "status must be either 200 or 201", statusIs200or201 );
+                assertTrue( "status must be either 200 or 201 (" + status + ")", statusIs200or201 );
             }
         }
 
