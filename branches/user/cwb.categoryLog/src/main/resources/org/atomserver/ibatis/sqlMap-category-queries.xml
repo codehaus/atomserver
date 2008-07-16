@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE sqlMap
+        PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<!--
+ Copyright (c) 2007 HomeAway, Inc.
+  All rights reserved.  http://www.atomserver.org
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<!-- the iBatis SQL map that defines the SQL Category queries on EntryStore -->
+<sqlMap>
+
+    <select id="selectCategoriesForEntries" parameterClass="map" resultMap="entryCategoryResult">
+        SELECT EntryStore.EntryStoreId AS EntryStoreId, Workspace, Collection, EntryId, Scheme, Term, Label
+          FROM EntryCategory JOIN EntryStore On EntryCategory.EntryStoreId = EntryStore.EntryStoreId
+         WHERE Workspace = #workspace#
+           AND Collection = #collection#
+           AND EntryId IN
+           <iterate property="entryIds" open="(" close=")" conjunction=",">#entryIds[]#</iterate>
+    </select>
+
+    <select id="selectEntriesByPagePerCategory" parameterClass="map" resultMap="entryResultSansCategories">
+        SELECT
+        <include refid="paginationPrefix"/>
+
+        entry.* FROM
+        ( SELECT
+        <include refid="selectEntriesByPageSansCategories_fragment"/>
+        ) AS entry
+        INNER JOIN
+        ( $categoryQuerySql$ ) AS catMatches
+        ON entry.EntryStoreId = catMatches.EntryStoreId
+        ORDER BY entry.UpdateTimestamp
+
+        <include refid="paginationSuffix"/>
+    </select>
+
+    <select id="selectEntriesByPageAndLocalePerCategory" parameterClass="map" resultMap="entryResultSansCategories">
+        SELECT
+        <include refid="paginationPrefix"/>
+
+        entry.* FROM
+        ( SELECT
+        <include refid="selectEntriesByPageAndLocaleSansCategories_fragment"/>
+        ) AS entry
+        INNER JOIN
+        ( $categoryQuerySql$ ) AS catMatches
+        ON entry.EntryStoreId = catMatches.EntryStoreId
+        ORDER BY entry.UpdateTimestamp
+
+        <include refid="paginationSuffix"/>
+    </select>
+
+</sqlMap>
+
