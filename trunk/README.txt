@@ -11,8 +11,8 @@ env  is the atomserver environment to use. It controls which environment propert
 $ mvn -Denv=postgres clean install
 
 BTW; you can also control logging somewhat this same way; 
-rootLoglevel    is the root log4j log level (default=DEBUG)
-loglevel        is the log4j log level for "org.atomserver" (default=TRACE)
+  rootLoglevel    is the root log4j log level (default=DEBUG)
+  loglevel        is the log4j log level for "org.atomserver" (default=TRACE)
 
 $ mvn -Denv=postgres -DrootLogLevel=WARN install
 
