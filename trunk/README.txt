@@ -18,13 +18,11 @@ $ mvn -Denv=postgres -DrootLogLevel=WARN install
 
 NOTES
 ------
-
 A)   If you kill a build mid-flight you might leave the DB in a "bad state". So you may need to "clear it".
 Just use this backdoor JUnit (which clears all rows from the tables)
 (of course, you can just use a SQL client with "DELETE *  FROM EntryStore" to do the same, assuming you have access)
 
 $ mvn -Denv=postgres -DENABLE_DB_CLEAR_ALL=true -Dtest=DBClearTest test
-
 
 =======================================================
 Database Information
