@@ -16,84 +16,32 @@
 
 package org.atomserver.core;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.EqualsBuilder;
 
-import java.util.Locale;
+import java.util.Date;
 
 /**
- * Describes the fundamental things that identify an entry Category in an AtomServer - the
+ * Describes the fundamental things that identify an entry Category Log Event in an AtomServer - the
  * (workspace, collection, entryId, scheme, term) tuple.
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
-public class EntryCategory {
-    protected Long entryStoreId = null;
-    protected String workspace = null;
-    protected String collection = null;
-    protected String entryId = null;
-    protected String language = "**";
-    protected String country = "**";
+public class EntryCategoryLogEvent extends EntryCategory {
+    private Date createDate = null;
 
-    protected String scheme = null;
-    protected String term = null;
-    protected String label = null;
-
-    public EntryCategory() {}
-
-    public Long getEntryStoreId() { return entryStoreId; }
-
-    public void setEntryStoreId(Long entryStoreId) { this.entryStoreId = entryStoreId; }
-
-    public String getWorkspace() { return workspace; }
-
-    public void setWorkspace(String workspace) { this.workspace = workspace; }
-
-    public String getCollection() { return collection; }
-
-    public void setCollection(String collection) { this.collection = collection; }
-
-    public void setLocale(Locale locale) {
-        setLanguage(locale == null ? null : locale.getLanguage());
-        setCountry(locale == null ? null : locale.getCountry());
+    public Date getCreateDate() {
+        return createDate;
     }
 
-    public String getLanguage() { return language; }
-
-    public void setLanguage(String language) { this.language = StringUtils.isEmpty(language) ? "**" : language; }
-
-    public String getCountry() { return country; }
-
-    public void setCountry(String country) { this.country = StringUtils.isEmpty(country) ? "**" : country; }
-
-    public String getEntryId() { return entryId; }
-
-    public void setEntryId(String entryId) { this.entryId = entryId; }
-
-    public String getScheme() { return scheme; }
-
-    public void setScheme(String scheme) { this.scheme = scheme; }
-
-    public String getTerm() { return term; }
-
-    public void setTerm(String term) { this.term = term; }
-
-    public String getLabel() { return label; }
-
-    public void setLabel(String label) { this.label = label; }
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
+    }
 
     public String toString() {
         StringBuffer buff = new StringBuffer();
-        buff.append("[ ").append(entryStoreId)
-            .append(", ").append(workspace)
-            .append(", ").append(collection)
-            .append(", ").append(entryId)
-            .append(", ").append(language)
-            .append(", ").append(country)
-            .append(", ").append(scheme)
-            .append(", ").append(term)
-            .append(", ").append(label).append("]");
+        buff.append( super.toString() );
+        buff.append(" - ").append(createDate);
         return buff.toString();
     }
 
@@ -103,10 +51,12 @@ public class EntryCategory {
                        .append(workspace).append(collection).append(entryId)
                        .append(language).append(country)
                        .append(scheme).append(term).append(label)
+                       .append(createDate)
                        .toHashCode() :
                                      new HashCodeBuilder(17, 8675309)
                                              .append(entryStoreId)
                                              .append(scheme).append(term).append(label)
+                                             .append(createDate)
                                              .toHashCode();
     }
 
@@ -114,7 +64,7 @@ public class EntryCategory {
         if (obj == null || obj.getClass() != this.getClass()) {
             return false;
         }
-        EntryCategory other = (EntryCategory) obj;
+        EntryCategoryLogEvent other = (EntryCategoryLogEvent) obj;
         return (entryStoreId == null || other.entryStoreId == null) ?
                new EqualsBuilder()
                        .append(workspace, other.workspace)
@@ -125,12 +75,14 @@ public class EntryCategory {
                        .append(scheme, other.scheme)
                        .append(term, other.term)
                        .append(label, other.label)
+                       .append(createDate, other.createDate)
                        .isEquals() :
                                    new EqualsBuilder()
                                            .append(entryStoreId, other.entryStoreId)
                                            .append(scheme, other.scheme)
                                            .append(term, other.term)
                                            .append(label, other.label)
+                                           .append(createDate, other.createDate)
                                            .isEquals();
     }
 }

@@ -26,6 +26,7 @@
     <typeAlias type="org.atomserver.core.EntryMetaData" alias="entryMetaData"/>
     <typeAlias type="org.atomserver.core.EntryCategory" alias="entryCategory"/>
     <typeAlias type="org.atomserver.EntryDescriptor" alias="entryDescriptor"/>
+    <typeAlias type="org.atomserver.core.EntryCategoryLogEvent" alias="entryCategoryLogEvent"/>
 
 
     <resultMap class="entryMetaData" id="entryResultSansCategories">
@@ -67,6 +68,16 @@
         <result property="label" column="Label"/>
     </resultMap>
 
+    <resultMap class="entryCategoryLogEvent" id="entryCategoryLogEventResult">
+        <result property="entryStoreId" column="EntryStoreId"/>
+        <result property="workspace" column="Workspace"/>
+        <result property="collection" column="Collection"/>
+        <result property="entryId" column="EntryId"/>
+        <result property="scheme" column="Scheme"/>
+        <result property="term" column="Term"/>
+        <result property="label" column="Label"/>
+        <result property="createDate" column="CreateDate"/>
+    </resultMap>
 
     <sql id="selectEntryStoreIdByPage_fragment">
         EntryStoreId, UpdateTimestamp

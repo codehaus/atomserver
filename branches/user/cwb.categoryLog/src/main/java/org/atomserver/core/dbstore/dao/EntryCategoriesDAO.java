@@ -29,7 +29,8 @@ import java.util.Set;
  *
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
- *         TODO: ideally, we would like to change all of the methods that refer to workspace or collection as strings into ones that take a descriptor of some sort.
+ *         TODO: ideally, we would like to change all of the methods that refer
+ *               to workspace or collection as strings into ones that take a descriptor of some sort.
  */
 public interface EntryCategoriesDAO
         extends AtomServerDAO {
@@ -37,56 +38,49 @@ public interface EntryCategoriesDAO
     //======================================
     //          CRUD OPERATIONS
     //======================================
-    public int insertEntryCategory(EntryCategory entry);
+    int insertEntryCategory(EntryCategory entry);
 
-    public EntryCategory selectEntryCategory(EntryCategory entryQuery);
+    EntryCategory selectEntryCategory(EntryCategory entryQuery);
 
-    public void deleteEntryCategory(EntryCategory entryQuery);
+    void deleteEntryCategory(EntryCategory entryQuery);
 
     //======================================
     //          BATCH OPERATIONS
     //======================================
-    public void insertEntryCategoryBatch(List<EntryCategory> entryCategoryList);
+    void insertEntryCategoryBatch(List<EntryCategory> entryCategoryList);
 
-    public void deleteEntryCategoryBatch(List<EntryCategory> entryCategoryList);
+    void deleteEntryCategoryBatch(List<EntryCategory> entryCategoryList);
 
     //======================================
     //          LIST QUERIES
     //======================================
-    public List<EntryCategory> selectEntriesCategories(String workspace,
-                                                       String collection,
-                                                       Set<String> entryIds);
+    List<EntryCategory> selectEntriesCategories(String workspace, String collection, Set<String> entryIds);
 
-    public List<EntryCategory> selectEntryCategories(EntryDescriptor entryQuery);
+    List<EntryCategory> selectEntryCategories(EntryDescriptor entryQuery);
 
-    public List<EntryCategory> selectEntryCategoriesInScheme(EntryDescriptor entryQuery,
-                                                             String scheme);
+    List<EntryCategory> selectEntryCategoriesInScheme(EntryDescriptor entryQuery, String scheme);
 
-    public void deleteEntryCategories(EntryDescriptor entryQuery);
+    void deleteEntryCategories(EntryDescriptor entryQuery);
 
-    public void deleteEntryCategoriesInScheme(EntryMetaData entryQuery,
-                                              String scheme);
+    void deleteEntryCategoriesInScheme(EntryMetaData entryQuery, String scheme);
 
-    public List<String> selectDistictCollections(String workspace);
+    List<String> selectDistictCollections(String workspace);
 
-    public List<Map<String, String>> selectDistictCategoriesPerCollection(String workspace,
-                                                                          String collection);
+    List<Map<String, String>> selectDistictCategoriesPerCollection(String workspace, String collection);
 
     //======================================
     //          LIST OPERATIONS
     //======================================
-    public void deleteAllEntryCategories(String workspace);
+    void deleteAllEntryCategories(String workspace);
 
-    public void deleteAllEntryCategories(String workspace,
-                                         String collection);
+    void deleteAllEntryCategories(String workspace, String collection);
 
-    public void deleteAllRowsFromEntryCategories();
+    void deleteAllRowsFromEntryCategories();
 
     //======================================
     //          COUNT QUERIES
     //======================================
-    public int getTotalCount(String workspace);
+    int getTotalCount(String workspace);
 
-    public int getTotalCount(String workspace,
-                             String collection);
+    int getTotalCount(String workspace, String collection);
 }
