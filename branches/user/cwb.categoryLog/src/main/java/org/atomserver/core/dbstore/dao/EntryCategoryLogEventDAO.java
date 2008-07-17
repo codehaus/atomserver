@@ -40,6 +40,11 @@ public interface EntryCategoryLogEventDAO
     void deleteEntryCategoryLogEvent(EntryCategory entryQuery);
 
     //======================================
+    //          BATCH OPERATIONS
+    //======================================
+    public void insertEntryCategoryLogEventBatch(List<EntryCategory> entryCategoryList); 
+
+    //======================================
     //          COUNT QUERIES
     //======================================
     public int getTotalCount(String workspace);

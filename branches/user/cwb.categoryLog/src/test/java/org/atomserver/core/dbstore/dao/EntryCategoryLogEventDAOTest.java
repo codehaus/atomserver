@@ -113,4 +113,74 @@ public class EntryCategoryLogEventDAOTest
         log.debug("finalCount = " + finalCount);
         assertEquals(startCount, finalCount);
     }
+
+    public void testSelect() throws Exception {
+        // COUNT
+        int startCount = entryCategoryLogEventDAO.getTotalCount(workspace);
+        log.debug("startCount = " + startCount);
+
+        String sysId = "acme";
+        String propId = "31300";
+        String scheme = "urn:ha/widgets";
+
+        // INSERT the Entry
+        EntryDescriptor descriptor  = new BaseEntryDescriptor(workspace, sysId, propId, null,0);
+        entriesDAO.ensureCollectionExists(descriptor.getWorkspace(), descriptor.getCollection());
+        entriesDAO.insertEntry(descriptor);
+        EntryMetaData metaData = entriesDAO.selectEntry(descriptor);
+
+        // DELETE, then INSERT the Categories
+        int numTags = 5;
+        String[] terms = { "batman", "robin", "batman", "alfred", "robin" };
+        EntryCategory[] entryIn = new EntryCategory[numTags];
+        for ( int ii=0; ii< numTags; ii++ ) {
+            entryIn[ii] = new EntryCategory();
+            entryIn[ii].setEntryStoreId(metaData.getEntryStoreId());
+            entryIn[ii].setScheme( scheme );
+            entryIn[ii].setTerm( terms[ii]);
+
+            entryCategoriesDAO.deleteEntryCategory(entryIn[ii]);
+            int numRows = entryCategoriesDAO.insertEntryCategory(entryIn[ii]);
+            assertTrue(numRows > 0);
+
+            numRows = entryCategoryLogEventDAO.insertEntryCategoryLogEvent(entryIn[ii]);
+            assertTrue(numRows > 0);
+        }
+
+        // SELECT the EntryCategoryLogEvent
+        verifySelectLogEvent( entryIn[0], 2, sysId, propId, scheme, "batman" );
+        verifySelectLogEvent( entryIn[1], 2, sysId, propId, scheme, "robin" );
+        verifySelectLogEvent( entryIn[3], 1, sysId, propId, scheme, "alfred" );         
+
+        // DELETE
+        for ( int ii=0; ii< numTags; ii++ ) {
+            entryCategoryLogEventDAO.deleteEntryCategoryLogEvent(entryIn[ii]);
+            entryCategoriesDAO.deleteEntryCategory(entryIn[ii]);
+        }
+        entriesDAO.obliterateEntry(descriptor);
+
+        // COUNT
+        Thread.sleep(500); // give the DB a chance to catch up
+        int finalCount = entryCategoriesDAO.getTotalCount(workspace);
+        log.debug("finalCount = " + finalCount);
+        assertEquals(startCount, finalCount);
+    }
+
+    void verifySelectLogEvent( EntryCategory tag, int size, String sysId, String propId, String scheme, String term ){
+        assertEquals( term, tag.getTerm() );
+
+        List<EntryCategoryLogEvent> logEvents = entryCategoryLogEventDAO.selectEntryCategoryLogEvent(tag);
+        log.debug("====> logEvents = " + logEvents);
+        assertNotNull(logEvents);
+        assertTrue(logEvents.size() == size);
+
+        for (EntryCategoryLogEvent logEvent : logEvents) {
+            assertEquals(sysId, logEvent.getCollection());
+            assertEquals(propId, logEvent.getEntryId());
+            assertEquals(scheme, logEvent.getScheme());
+            assertEquals(term, logEvent.getTerm());
+            assertNotNull(logEvent.getCreateDate());
+        }
+    }
+
 }

@@ -16,11 +16,16 @@
 
 package org.atomserver.core.dbstore.dao;
 
+import com.ibatis.sqlmap.client.SqlMapExecutor;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryCategoryLogEvent;
 import org.atomserver.utils.perf.AutomaticStopWatch;
 import org.atomserver.utils.perf.StopWatch;
+import org.springframework.orm.ibatis.SqlMapClientCallback;
 
+import java.sql.SQLException;
 import java.util.List;
 
 
@@ -35,6 +40,9 @@ public class EntryCategoryLogEventDAOiBatisImpl
     //======================================
     //           CRUD methods
     //======================================
+    /**
+     * Insert a single EntryCategoryLogEvent
+     */
     public int insertEntryCategoryLogEvent(EntryCategory entry) {
         StopWatch stopWatch = new AutomaticStopWatch();
         if (log.isDebugEnabled()) {
@@ -54,6 +62,10 @@ public class EntryCategoryLogEventDAOiBatisImpl
         return numRowsAffected;
     }
 
+    /**
+     * Select ALL EntryCategoryLogEvents for a given EntryCategory.
+     * I.e. Return EntryCategoryLogEvents that match both Entry and Scheme/Term.
+     */
     public List<EntryCategoryLogEvent> selectEntryCategoryLogEvent(EntryCategory entryQuery) {
         StopWatch stopWatch = new AutomaticStopWatch();
         if (log.isDebugEnabled()) {
@@ -70,6 +82,11 @@ public class EntryCategoryLogEventDAOiBatisImpl
         }
     }
 
+    /**
+     * NOTE: This method is really only here for Unit Testing
+     * Delete ALL EntryCategoryLogEvents for a given EntryCategory.
+     * If an Entry has, say two LogEvents for (urn:foo)bar, both will be deleted
+     */
     public void deleteEntryCategoryLogEvent(EntryCategory entryQuery) {
         StopWatch stopWatch = new AutomaticStopWatch();
         if (log.isDebugEnabled()) {
@@ -81,6 +98,43 @@ public class EntryCategoryLogEventDAOiBatisImpl
         finally {
             if (perflog != null) {
                 perflog.log("DB.deleteEntryCategoryLogEvents", perflog.getPerfLogEntryCategoryString(entryQuery), stopWatch);
+            }
+        }
+    }
+
+    //======================================
+    //          BATCH OPERATIONS
+    //======================================
+    static class EntryCategoryLogEventBatcher implements SqlMapClientCallback {
+        static final Log log = LogFactory.getLog(EntryCategoryLogEventBatcher.class);
+
+        private List<EntryCategory> entryCategoryList = null;
+
+        EntryCategoryLogEventBatcher(List<EntryCategory> entryCategoryList) {
+            this.entryCategoryList = entryCategoryList;
+        }
+
+        public Object doInSqlMapClient(SqlMapExecutor executor) throws SQLException {
+            executor.startBatch();
+            for (EntryCategory entryCategory : entryCategoryList) {
+                executor.insert("insertEntryCategoryLogEvent", entryCategory);
+            }
+            executor.executeBatch();
+            return null;
+        }
+    }
+
+    public void insertEntryCategoryLogEventBatch(List<EntryCategory> entryCategoryList) {
+        StopWatch stopWatch = new AutomaticStopWatch();
+        if (log.isTraceEnabled()) {
+            log.trace("EntryCategoryLogEventDAOiBatisImpl INSERT BATCH==> " + entryCategoryList);
+        }
+        try {
+            getSqlMapClientTemplate().execute(new EntryCategoryLogEventBatcher(entryCategoryList));
+        }
+        finally {
+            if (perflog != null) {
+                perflog.log("DB.insertEntryCategoryLogEventBATCH", "", stopWatch);
             }
         }
     }
