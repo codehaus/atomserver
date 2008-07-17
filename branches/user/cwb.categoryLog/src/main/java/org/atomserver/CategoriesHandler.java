@@ -17,8 +17,10 @@
 package org.atomserver;
 
 import org.apache.abdera.model.Category;
+import org.atomserver.core.EntryCategory;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * CategoriesHandler - The API for handling AtomPub Categories.
@@ -35,4 +37,14 @@ public interface CategoriesHandler extends VirtualWorkspaceHandler {
      * @return The list of Abdera Categories
      */
     List<Category> listCategories( String workspace, String collection );
+
+    void deleteEntryCategories(EntryDescriptor entryQuery);
+
+    List<EntryCategory> selectEntryCategories(EntryDescriptor entryQuery);
+
+    List<EntryCategory> selectEntriesCategories(String workspace, String collection, Set<String> entryIds);
+
+    void insertEntryCategoryBatch(List<EntryCategory> entryCategoryList);
+
+    void deleteEntryCategoryBatch(List<EntryCategory> entryCategoryList);    
 }

@@ -30,7 +30,6 @@ import org.apache.commons.logging.LogFactory;
 import org.atomserver.*;
 import org.atomserver.core.*;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
-import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
 import org.atomserver.core.etc.AtomServerConstants;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.exceptions.BadRequestException;
@@ -70,11 +69,17 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
     public EntriesDAO getEntriesDAO() {
          return ((DBBasedAtomService)parentAtomWorkspace.getParentAtomService()).getEntriesDAO();
     }
-    
+
+    /*
     public EntryCategoriesDAO getEntryCategoriesDAO() {
         return ((EntryCategoriesHandler)( parentAtomWorkspace.getParentAtomService().
                 getVirtualWorkspaceHandler(VirtualWorkspaceHandler.CATEGORIES)))
                 .getEntryCategoriesDAO();
+    }
+    */
+    public CategoriesHandler getcategoriesHandler() {
+        return (EntryCategoriesHandler)( parentAtomWorkspace.getParentAtomService().
+                getVirtualWorkspaceHandler(VirtualWorkspaceHandler.CATEGORIES));
     }
 
      public TransactionTemplate getTransactionTemplate() {
@@ -91,7 +96,8 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             getTransactionTemplate().execute(new TransactionCallbackWithoutResult() {
                 protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                     getEntriesDAO().obliterateEntry(entryMetaData);
-                    getEntryCategoriesDAO().deleteEntryCategories(entryMetaData);
+                    //getEntryCategoriesDAO().deleteEntryCategories(entryMetaData);
+                    getCategoriesHandler().deleteEntryCategories(entryMetaData);
                     getContentStorage().obliterateContent(entryMetaData);
                 }
             });
@@ -625,7 +631,8 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         }
 
         List<EntryCategory> entryCategories =
-            getEntryCategoriesDAO().selectEntriesCategories( workspace, collection, entriesByEntryId.keySet());
+                getCategoriesHandler().selectEntriesCategories( workspace, collection, entriesByEntryId.keySet());
+        //getEntryCategoriesDAO().selectEntriesCategories( workspace, collection, entriesByEntryId.keySet());
 
         for (EntryCategory entryCategory : entryCategories) {
             EntryMetaData metaData = entriesByEntryId.get(entryCategory.getEntryId());

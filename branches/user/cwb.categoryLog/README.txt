@@ -25,7 +25,7 @@ $ mvn -Denv=asdev-postgres -DENABLE_DB_CLEAR_ALL=true -Dtest=DBClearTest test
 
 =======================================================
 Database Information
-==============
+====================
 
 Setting up Postgres
 ---------------------

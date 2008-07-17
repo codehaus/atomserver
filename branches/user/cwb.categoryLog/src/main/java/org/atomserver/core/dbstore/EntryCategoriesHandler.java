@@ -30,16 +30,14 @@ import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.WorkspaceOptions;
 import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
+import org.atomserver.core.dbstore.dao.EntryCategoryLogEventDAO;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.exceptions.BadRequestException;
 
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Chris Berry  (chriswberry at gmail.com)
@@ -52,8 +50,12 @@ public class EntryCategoriesHandler
     static public final String DEFAULT_CATEGORIES_WORKSPACE_PREFIX = "tags:";
 
     private AtomService atomService;
-    private EntryCategoriesDAO entryCategoriesDAO = null;
+    private EntryCategoriesDAO entryCategoriesDAO;
 
+    private boolean isLoggingAllCategoryEvents = false;
+    private EntryCategoryLogEventDAO entryCategoryLogEventDAO;
+
+    // -----------------------------------
     public String getCategoriesWorkspaceName(String entriesWorkspaceName) {
         return DEFAULT_CATEGORIES_WORKSPACE_PREFIX + entriesWorkspaceName;
     }
@@ -102,6 +104,20 @@ public class EntryCategoriesHandler
         return entryCategoriesDAO;
     }
 
+    public boolean isLoggingAllCategoryEvents() {
+        return isLoggingAllCategoryEvents;
+    }
+    public void setLoggingAllCategoryEvents(boolean loggingAllCategoryEvents) {
+        isLoggingAllCategoryEvents = loggingAllCategoryEvents;
+    }
+
+    public EntryCategoryLogEventDAO getEntryCategoryLogEventDAO() {
+        return entryCategoryLogEventDAO;
+    }
+    public void setEntryCategoryLogEventDAO(EntryCategoryLogEventDAO entryCategoryLogEventDAO) {
+        this.entryCategoryLogEventDAO = entryCategoryLogEventDAO;
+    }
+
     // -----------------------------------
     //        CategoriesHandler
     // -----------------------------------
@@ -137,6 +153,26 @@ public class EntryCategoriesHandler
         }
         return categoryList;
     }
+
+    public void deleteEntryCategories(EntryDescriptor entryQuery){
+        entryCategoriesDAO.deleteEntryCategories(entryQuery);
+    }
+
+    public List<EntryCategory> selectEntryCategories(EntryDescriptor entryQuery){
+        return entryCategoriesDAO.selectEntryCategories(entryQuery);
+    }
+
+    public List<EntryCategory> selectEntriesCategories(String workspace, String collection, Set<String> entryIds){
+        return entryCategoriesDAO.selectEntriesCategories(workspace, collection, entryIds);
+    }
+
+    public void insertEntryCategoryBatch(List<EntryCategory> entryCategoryList) {
+        entryCategoriesDAO.insertEntryCategoryBatch(entryCategoryList);
+    }
+
+    public void deleteEntryCategoryBatch(List<EntryCategory> entryCategoryList) {
+        entryCategoriesDAO.deleteEntryCategoryBatch(entryCategoryList);
+    }    
 
     // -----------------------------------
     //           ContentStorage
@@ -198,6 +234,8 @@ public class EntryCategoriesHandler
 
     /**
      * {@inheritDoc}
+     * NOTE: putContent for EntryCategoriesHandler always first DELETEs all Categories, and then
+     * INSERTs any Categories in the contentXML
      */
     public void putContent(String contentXml, EntryDescriptor descriptor) {
         if (log.isTraceEnabled()) {
@@ -214,7 +252,6 @@ public class EntryCategoriesHandler
 
         getAffliatedContentStorage(descriptorClone).revisionChangedWithoutContentChanging(descriptorClone);
     }
-
 
     public boolean canRead() {
         try {
@@ -388,6 +425,10 @@ public class EntryCategoriesHandler
 
         // BATCH INSERT
         entryCategoriesDAO.insertEntryCategoryBatch(entryCatList);
+
+        if (isLoggingAllCategoryEvents) {
+            entryCategoryLogEventDAO.insertEntryCategoryLogEventBatch(entryCatList);
+        }
     }
 
     /**

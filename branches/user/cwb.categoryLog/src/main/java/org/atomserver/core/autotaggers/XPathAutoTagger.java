@@ -99,7 +99,8 @@ import java.util.regex.Pattern;
 public class XPathAutoTagger
         extends BaseAutoTagger
         implements NamespaceContext {
-    private static final Log log = LogFactory.getLog(XPathAutoTagger.class);
+
+    //private static final Log log = LogFactory.getLog(XPathAutoTagger.class);
 
     private final ThreadLocal<XPath> xPath = new ThreadLocal<XPath>() {
         protected XPath initialValue() {
@@ -123,7 +124,8 @@ public class XPathAutoTagger
         // verify that nothing needs to change.
 
         // load the initial list of categories for the entry
-        List<EntryCategory> initialState = getEntryCategoriesDAO().selectEntryCategories(entry);
+        //List<EntryCategory> initialState = getEntryCategoriesDAO().selectEntryCategories(entry);
+        List<EntryCategory> initialState = getCategoriesHandler().selectEntryCategories(entry);
         for (EntryCategory entryCategory : initialState) {
             log.debug("TAG-INITIAL:" + entryCategory);
         }
@@ -160,14 +162,16 @@ public class XPathAutoTagger
                     log.debug("TAG-WRITE:" + entryCategory);
                 }
             }
-            getEntryCategoriesDAO().insertEntryCategoryBatch(new ArrayList<EntryCategory>(categoryMods));
+            //getEntryCategoriesDAO().insertEntryCategoryBatch(new ArrayList<EntryCategory>(categoryMods));
+            getCategoriesHandler().insertEntryCategoryBatch(new ArrayList<EntryCategory>(categoryMods));
         }
         // delete anything that needs to be deleted
         if (!toDelete.isEmpty()) {
             if (log.isDebugEnabled()) {
                 log.debug("autotagger performing " + toDelete.size() + " deletes");
             }
-            getEntryCategoriesDAO().deleteEntryCategoryBatch(toDelete);
+            //getEntryCategoriesDAO().deleteEntryCategoryBatch(toDelete);
+            getCategoriesHandler().deleteEntryCategoryBatch(toDelete);
         }
     }
 
