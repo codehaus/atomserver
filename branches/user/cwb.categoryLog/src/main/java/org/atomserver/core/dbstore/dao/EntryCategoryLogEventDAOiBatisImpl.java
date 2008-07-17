@@ -66,18 +66,39 @@ public class EntryCategoryLogEventDAOiBatisImpl
      * Select ALL EntryCategoryLogEvents for a given EntryCategory.
      * I.e. Return EntryCategoryLogEvents that match both Entry and Scheme/Term.
      */
+    public List<EntryCategoryLogEvent> selectEntryCategoryLogEventBySchemeAndTerm(EntryCategory entryQuery) {
+        StopWatch stopWatch = new AutomaticStopWatch();
+        if (log.isDebugEnabled()) {
+            log.debug("EntryCategoryLogEventDAOiBatisImpl SELECT ==> " + entryQuery);
+        }
+        try {
+            return (List<EntryCategoryLogEvent>)
+                    (getSqlMapClientTemplate().queryForList("selectEntryCategoryLogEventsBySchemeTerm",entryQuery));
+        }
+        finally {
+            if (perflog != null) {
+                perflog.log("DB.selectEntryCategoryLogEventsBySchemeTerm",
+                            perflog.getPerfLogEntryCategoryString(entryQuery), stopWatch);
+            }
+        }
+    }
+
+    /**
+     * Select ALL EntryCategoryLogEvents for a given Entry
+     */
     public List<EntryCategoryLogEvent> selectEntryCategoryLogEvent(EntryCategory entryQuery) {
         StopWatch stopWatch = new AutomaticStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntryCategoryLogEventDAOiBatisImpl SELECT ==> " + entryQuery);
         }
         try {
-            return (List<EntryCategoryLogEvent>)(getSqlMapClientTemplate().queryForList("selectEntryCategoryLogEvents",
-                                                                                        entryQuery));
+            return (List<EntryCategoryLogEvent>)
+                    (getSqlMapClientTemplate().queryForList("selectEntryCategoryLogEvents",entryQuery));
         }
         finally {
             if (perflog != null) {
-                perflog.log("DB.selectEntryCategoryLogEvents", perflog.getPerfLogEntryCategoryString(entryQuery), stopWatch);
+                perflog.log("DB.selectEntryCategoryLogEvents",
+                            perflog.getPerfLogEntryCategoryString(entryQuery), stopWatch);
             }
         }
     }

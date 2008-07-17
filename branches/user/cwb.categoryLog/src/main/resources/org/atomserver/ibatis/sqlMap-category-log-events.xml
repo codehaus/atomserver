@@ -43,27 +43,36 @@
   </insert>
 
   <!-- #################### select ############### -->
-  <select id="selectEntryCategoryLogEvents" parameterClass="entryCategory" resultMap="entryCategoryLogEventResult" >
-    SELECT
-    EntryStore.EntryStoreId AS EntryStoreId,
-      Workspace, Collection, EntryId,
-      EntryCategoryLogEvent.CreateDate AS CreateDate,
-      Scheme, Term, Label
-    FROM EntryCategoryLogEvent JOIN EntryStore ON EntryCategoryLogEvent.EntryStoreId = EntryStore.EntryStoreId
-      <isNotNull property="entryStoreId">
-          WHERE EntryStore.EntryStoreId = #entryStoreId#
-      </isNotNull>
-      <isNull property="entryStoreId">
-          WHERE EntryStore.EntryStoreId = (SELECT EntryStoreId FROM EntryStore
-                                            WHERE Workspace=#workspace#
-                                              AND Collection=#collection#
-                                              AND EntryId=#entryId#
-                                              AND LanCode=#language#
-                                              AND CountryCode=#country#)
-      </isNull>
-    AND Scheme=#scheme#
-    AND Term=#term#
-  </select>
+    <sql id="selectEntryCategoryLogEventsFragment">
+        SELECT
+        EntryStore.EntryStoreId AS EntryStoreId,
+          Workspace, Collection, EntryId,
+          EntryCategoryLogEvent.CreateDate AS CreateDate,
+          Scheme, Term, Label
+        FROM EntryCategoryLogEvent JOIN EntryStore ON EntryCategoryLogEvent.EntryStoreId = EntryStore.EntryStoreId
+          <isNotNull property="entryStoreId">
+              WHERE EntryStore.EntryStoreId = #entryStoreId#
+          </isNotNull>
+          <isNull property="entryStoreId">
+              WHERE EntryStore.EntryStoreId = (SELECT EntryStoreId FROM EntryStore
+                                                WHERE Workspace=#workspace#
+                                                  AND Collection=#collection#
+                                                  AND EntryId=#entryId#
+                                                  AND LanCode=#language#
+                                                  AND CountryCode=#country#)
+          </isNull>
+    </sql>
+
+    <select id="selectEntryCategoryLogEventsBySchemeTerm"
+            parameterClass="entryCategory" resultMap="entryCategoryLogEventResult" >
+        <include refid="selectEntryCategoryLogEventsFragment" />
+        AND Scheme=#scheme#
+        AND Term=#term#
+    </select>
+
+    <select id="selectEntryCategoryLogEvents" parameterClass="entryCategory" resultMap="entryCategoryLogEventResult" >
+        <include refid="selectEntryCategoryLogEventsFragment" />
+    </select>
 
     <!-- #################### delete  ############### -->
     <delete id="deleteEntryCategoryLogEvents" parameterClass="entryCategory" >

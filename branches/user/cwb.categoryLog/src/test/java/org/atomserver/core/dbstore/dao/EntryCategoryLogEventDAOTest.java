@@ -24,6 +24,7 @@ import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryCategoryLogEvent;
 import org.atomserver.core.EntryMetaData;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -85,17 +86,8 @@ public class EntryCategoryLogEventDAOTest
         assertEquals((startCount + 1), count);
 
         // SELECT
-        List<EntryCategoryLogEvent> logEvents = entryCategoryLogEventDAO.selectEntryCategoryLogEvent(entryIn);
-        log.debug("====> %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% logEvents = " + logEvents);
-        assertNotNull(logEvents);
-        assertTrue(logEvents.size() == 1);
-
-        EntryCategoryLogEvent logEvent = logEvents.get(0);
-        assertEquals(sysId, logEvent.getCollection() );
-        assertEquals(propId, logEvent.getEntryId());
-        assertEquals(scheme, logEvent.getScheme());
-        assertEquals(term, logEvent.getTerm());
-        assertNotNull( logEvent.getCreateDate() );
+        verifySelectLogEventBySchemeAndTerm( entryIn, 1, sysId, propId, scheme, term );
+        verifySelectLogEvent( entryIn, 1, sysId, propId, scheme );
 
         // DELETE
         entryCategoryLogEventDAO.deleteEntryCategoryLogEvent(entryIn);
@@ -103,8 +95,9 @@ public class EntryCategoryLogEventDAOTest
         entriesDAO.obliterateEntry(descriptor);
 
         // SELECT again
-        List<EntryCategoryLogEvent> logEvents2 = entryCategoryLogEventDAO.selectEntryCategoryLogEvent(entryIn);
-        log.debug("====> ********************************** logEvents2 = " + logEvents2);
+        List<EntryCategoryLogEvent> logEvents2 =
+                entryCategoryLogEventDAO.selectEntryCategoryLogEventBySchemeAndTerm(entryIn);
+        log.debug("====> logEvents2 = " + logEvents2);
         assertTrue(logEvents2.size() == 0);
 
         // COUNT
@@ -148,9 +141,11 @@ public class EntryCategoryLogEventDAOTest
         }
 
         // SELECT the EntryCategoryLogEvent
-        verifySelectLogEvent( entryIn[0], 2, sysId, propId, scheme, "batman" );
-        verifySelectLogEvent( entryIn[1], 2, sysId, propId, scheme, "robin" );
-        verifySelectLogEvent( entryIn[3], 1, sysId, propId, scheme, "alfred" );         
+        verifySelectLogEventBySchemeAndTerm( entryIn[0], 2, sysId, propId, scheme, "batman" );
+        verifySelectLogEventBySchemeAndTerm( entryIn[1], 2, sysId, propId, scheme, "robin" );
+        verifySelectLogEventBySchemeAndTerm( entryIn[3], 1, sysId, propId, scheme, "alfred" );
+
+        verifySelectLogEvent( entryIn[0], 5, sysId, propId, scheme );
 
         // DELETE
         for ( int ii=0; ii< numTags; ii++ ) {
@@ -160,16 +155,71 @@ public class EntryCategoryLogEventDAOTest
         entriesDAO.obliterateEntry(descriptor);
 
         // COUNT
-        Thread.sleep(500); // give the DB a chance to catch up
-        int finalCount = entryCategoriesDAO.getTotalCount(workspace);
+        Thread.sleep( DB_CATCHUP_SLEEP); // give the DB a chance to catch up
+        int finalCount = entryCategoryLogEventDAO.getTotalCount(workspace);
         log.debug("finalCount = " + finalCount);
         assertEquals(startCount, finalCount);
     }
 
-    void verifySelectLogEvent( EntryCategory tag, int size, String sysId, String propId, String scheme, String term ){
-        assertEquals( term, tag.getTerm() );
+    public void testBatch() throws Exception {
+        // COUNT
+        int startCount = entryCategoryLogEventDAO.getTotalCount(workspace);
+        log.debug("startCount = " + startCount);
 
-        List<EntryCategoryLogEvent> logEvents = entryCategoryLogEventDAO.selectEntryCategoryLogEvent(tag);
+        String sysId = "acme";
+        String propId = "30003";
+        String scheme = "urn:ha/widgets";
+        String term = "foobar";
+
+        // INSERT the Entry
+        EntryDescriptor descriptor  = new BaseEntryDescriptor(workspace, sysId, propId, null, 0);
+        entriesDAO.ensureCollectionExists(descriptor.getWorkspace(), descriptor.getCollection());
+        entriesDAO.insertEntry(descriptor);
+        EntryMetaData metaData = entriesDAO.selectEntry(descriptor);
+
+        // INSERT the Categories
+        int numTags = 5;
+        List<EntryCategory> ecList = new ArrayList();
+        for ( int ii=0; ii< numTags; ii++ ) {
+            EntryCategory entryIn = new EntryCategory();
+            entryIn.setEntryStoreId(metaData.getEntryStoreId());
+            entryIn.setScheme( scheme );
+            entryIn.setTerm( term + ii );
+
+            ecList.add( entryIn );
+        }
+        entryCategoriesDAO.insertEntryCategoryBatch( ecList );
+
+        // INSERT the LogEvents
+        entryCategoryLogEventDAO.insertEntryCategoryLogEventBatch( ecList );
+
+        int count = entryCategoryLogEventDAO.getTotalCount(workspace);
+        assertEquals((startCount + numTags), count);
+        
+        verifySelectLogEvent( ecList.get(0), 5, sysId, propId, scheme );
+        for ( int ii=0; ii< numTags; ii++ ) {
+           verifySelectLogEventBySchemeAndTerm( ecList.get(ii), 1, sysId, propId, scheme, term + ii );
+        }
+
+        // DELETE
+        for ( EntryCategory entryIn : ecList ) {
+            entryCategoryLogEventDAO.deleteEntryCategoryLogEvent(entryIn);
+            entryCategoriesDAO.deleteEntryCategory(entryIn);
+        }
+        entriesDAO.obliterateEntry(descriptor);
+
+        // COUNT
+        Thread.sleep( DB_CATCHUP_SLEEP); // give the DB a chance to catch up
+        int finalCount = entryCategoryLogEventDAO.getTotalCount(workspace);
+        log.debug("finalCount = " + finalCount);
+        assertEquals(startCount, finalCount);
+    }
+
+    void verifySelectLogEventBySchemeAndTerm( EntryCategory tag, int size, String sysId, String propId,
+                                              String scheme, String term ){
+        assertEquals( term, tag.getTerm() );
+        List<EntryCategoryLogEvent> logEvents =
+                entryCategoryLogEventDAO.selectEntryCategoryLogEventBySchemeAndTerm(tag);
         log.debug("====> logEvents = " + logEvents);
         assertNotNull(logEvents);
         assertTrue(logEvents.size() == size);
@@ -179,6 +229,19 @@ public class EntryCategoryLogEventDAOTest
             assertEquals(propId, logEvent.getEntryId());
             assertEquals(scheme, logEvent.getScheme());
             assertEquals(term, logEvent.getTerm());
+            assertNotNull(logEvent.getCreateDate());
+        }
+    }
+    void verifySelectLogEvent( EntryCategory tag, int size, String sysId, String propId, String scheme ){
+        List<EntryCategoryLogEvent> logEvents = entryCategoryLogEventDAO.selectEntryCategoryLogEvent(tag);
+        log.debug("====> logEvents = " + logEvents);
+        assertNotNull(logEvents);
+        assertTrue(logEvents.size() == size);
+
+        for (EntryCategoryLogEvent logEvent : logEvents) {
+            assertEquals(sysId, logEvent.getCollection());
+            assertEquals(propId, logEvent.getEntryId());
+            assertEquals(scheme, logEvent.getScheme());
             assertNotNull(logEvent.getCreateDate());
         }
     }
