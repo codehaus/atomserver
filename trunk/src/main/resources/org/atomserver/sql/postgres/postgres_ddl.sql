@@ -80,6 +80,22 @@ PRIMARY KEY (EntryStoreId),
 FOREIGN KEY (EntryStoreId) REFERENCES EntryStore(EntryStoreId)
 );
 
+
+/*==============================================================*/
+/* Table: EntryCategoryLogEvent                                 */
+/*==============================================================*/
+CREATE TABLE EntryCategoryLogEvent (
+EntryCategoryLogEventId  SERIAL,
+EntryStoreId             INT                     NOT NULL,
+Scheme                   VARCHAR(128)            NOT NULL,
+Term                     VARCHAR(32)             NOT NULL,
+Label                    VARCHAR(128)            NULL,
+CreateDate               TIMESTAMP               NOT NULL,
+PRIMARY KEY (EntryCategoryLogEventId),
+FOREIGN KEY (EntryStoreId) REFERENCES EntryStore(EntryStoreId)
+);
+
+
 /*==============================================================*/
 /* View: vw_AggregateEntries                                    */
 /* NOTE: in SQL Server, we get a significant performance boost  */

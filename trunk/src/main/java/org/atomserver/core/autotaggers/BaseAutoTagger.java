@@ -17,9 +17,12 @@
 
 package org.atomserver.core.autotaggers;
 
+import org.atomserver.CategoriesHandler;
 import org.atomserver.EntryAutoTagger;
 import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
 import org.atomserver.core.etc.AtomServerPerformanceLog;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * BaseAutoTagger - provides an abstract base class for EntryAutoTaggers that allows for a spring-
@@ -29,24 +32,16 @@ import org.atomserver.core.etc.AtomServerPerformanceLog;
  * @author Bryon Jacob (bryon at jacob.net)
  */
 public abstract class BaseAutoTagger implements EntryAutoTagger {
-    private EntryCategoriesDAO entryCategoriesDAO;
+    protected static final Log log = LogFactory.getLog(BaseAutoTagger.class);
 
-    /**
-     * Getter for property 'entryCategoriesDAO'.
-     *
-     * @return Value for property 'entryCategoriesDAO'.
-     */
-    public EntryCategoriesDAO getEntryCategoriesDAO() {
-        return entryCategoriesDAO;
+    private CategoriesHandler categoriesHandler;
+
+    public CategoriesHandler getCategoriesHandler() {
+        return categoriesHandler;
     }
 
-    /**
-     * Setter for property 'entryCategoriesDAO'.
-     *
-     * @param entryCategoriesDAO Value to set for property 'entryCategoriesDAO'.
-     */
-    public void setEntryCategoriesDAO(EntryCategoriesDAO entryCategoriesDAO) {
-        this.entryCategoriesDAO = entryCategoriesDAO;
+    public void setCategoriesHandler(CategoriesHandler categoriesHandler) {
+        this.categoriesHandler = categoriesHandler;
     }
 
     /**
@@ -58,4 +53,14 @@ public abstract class BaseAutoTagger implements EntryAutoTagger {
         this.perflog = perflog;
     }
 
+
+    //>>>>>>>>>>>>>>>>>>>>>>>>>>
+    // DEPRECATED OPTIONS -- remove in 2.0.5
+    /**
+     * @deprecated
+     */
+    public void setEntryCategoriesDAO(EntryCategoriesDAO entryCategoriesDAO) {
+        log.error("setEntryCategoriesDAO is DEPRECATED and does nothing. You MUST use setCategoriesHandler");
+    }
+    //<<<<<<<<<<<<<<<<<<<
 }

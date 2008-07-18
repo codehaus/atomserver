@@ -131,6 +131,9 @@ public class CollectionOptions {
         
     //>>>>>>>>>>>>>>>>>>>>>>>>>>
     // DEPRECATED OPTIONS -- remove in 2.0.5
+    /**
+     * @deprecated
+     */
     public void setCategoriesHandler( CategoriesHandler categoriesHandler ) {
         log.error("setAllowCategories() is deprecated, and does nothing");
     }

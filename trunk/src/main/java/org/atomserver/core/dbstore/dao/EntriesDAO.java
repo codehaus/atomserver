@@ -41,106 +41,91 @@ public interface EntriesDAO
     //======================================
     //          CRUD OPERATIONS
     //======================================
-    public Object insertEntry(EntryDescriptor entry);
+    Object insertEntry(EntryDescriptor entry);
 
-    public Object insertEntry(EntryDescriptor entry,
-                              boolean isSeedingDB);
+    Object insertEntry(EntryDescriptor entry, boolean isSeedingDB);
 
-    public Object insertEntry(EntryDescriptor entry,
-                              boolean isSeedingDB,
-                              Date published,
-                              Date lastModified);
+    Object insertEntry(EntryDescriptor entry,
+                       boolean isSeedingDB,
+                       Date published,
+                       Date lastModified);
 
-    public EntryMetaData selectEntry(EntryDescriptor entry);
+    EntryMetaData selectEntry(EntryDescriptor entry);
 
-    public List<EntryMetaData> selectEntries(EntryDescriptor entry);
+    List<EntryMetaData> selectEntries(EntryDescriptor entry);
 
-    public int updateEntry(EntryDescriptor entry,
-                           boolean deleted);
+    int updateEntry(EntryDescriptor entry, boolean deleted);
 
     // Note: rows are NOT really deleted, instead the row is marked "deleted=true"
-    public int deleteEntry(EntryDescriptor entryQuery);
+    int deleteEntry(EntryDescriptor entryQuery);
 
-    public int deleteEntry(EntryDescriptor entryQuery,
-                           boolean setDeletedFlag);
+    int deleteEntry(EntryDescriptor entryQuery, boolean setDeletedFlag);
 
     //======================================
     //          BATCH OPERATIONS
     //======================================
-    public List<EntryMetaData> selectEntryBatch(Collection<? extends EntryDescriptor> entries);
+    List<EntryMetaData> selectEntryBatch(Collection<? extends EntryDescriptor> entries);
 
-    public int insertEntryBatch(String workspace,
-                                Collection<? extends EntryDescriptor> entries);
+    int insertEntryBatch(String workspace, Collection<? extends EntryDescriptor> entries);
 
-    public int updateEntryBatch(String workspace,
-                                Collection<? extends EntryDescriptor> entries);
+    int updateEntryBatch(String workspace, Collection<? extends EntryDescriptor> entries);
 
-    public int deleteEntryBatch(String workspace,
-                                Collection<? extends EntryDescriptor> entries);
+    int deleteEntryBatch(String workspace, Collection<? extends EntryDescriptor> entries);
 
     //======================================
     //          LIST OPERATIONS
     //======================================
-    public List<EntryMetaData> selectEntriesByPagePerCategory(
-            FeedDescriptor feed,
-            Date lastModifiedDate,
-            int pageDelim,
-            int pageSize,
-            Collection<BooleanExpression<AtomCategory>> categoryQuery);
+    List<EntryMetaData> selectEntriesByPagePerCategory(FeedDescriptor feed,
+                                                       Date lastModifiedDate,
+                                                       int pageDelim,
+                                                       int pageSize,
+                                                       Collection<BooleanExpression<AtomCategory>> categoryQuery);
 
-    public List<EntryMetaData> selectEntriesByPageAndLocalePerCategory(
-            FeedDescriptor feed,
-            Date lastModifiedDate,
-            int pageDelim,
-            int pageSize,
-            String locale,
-            Collection<BooleanExpression<AtomCategory>> categoryQuery);
+    List<EntryMetaData> selectEntriesByPageAndLocalePerCategory(FeedDescriptor feed,
+                                                                Date lastModifiedDate,
+                                                                int pageDelim,
+                                                                int pageSize,
+                                                                String locale,
+                                                                Collection<BooleanExpression<AtomCategory>> categoryQuery);
 
-    public List<EntryMetaData> selectEntriesByPageAndLocale(
-            FeedDescriptor feed,
-            Date lastModifiedDate,
-            int pageDelim,
-            int pageSize,
-            String locale);
+    List<EntryMetaData> selectEntriesByPageAndLocale(FeedDescriptor feed,
+                                                     Date lastModifiedDate,
+                                                     int pageDelim,
+                                                     int pageSize,
+                                                     String locale);
 
-    public List<EntryMetaData> selectEntriesByPage(
-            FeedDescriptor feed,
-            Date lastModifiedDate,
-            int pageDelim,
-            int pageSize);
+    List<EntryMetaData> selectEntriesByPage(FeedDescriptor feed,
+                                            Date lastModifiedDate,
+                                            int pageDelim,
+                                            int pageSize);
 
-    public List<EntryMetaData> selectEntriesByLastModifiedSeqNum(
-            FeedDescriptor feed,
-            Date lastModifiedDate);
+    List<EntryMetaData> selectEntriesByLastModifiedSeqNum(FeedDescriptor feed,
+                                                          Date lastModifiedDate);
 
-    public List<EntryMetaData> updateLastModifiedSeqNumForAllEntries(
-            ServiceDescriptor service);
+    List<EntryMetaData> updateLastModifiedSeqNumForAllEntries(ServiceDescriptor service);
 
-    public void deleteAllEntries(ServiceDescriptor service);
+    void deleteAllEntries(ServiceDescriptor service);
 
-    public void deleteAllEntries(FeedDescriptor feed);
+    void deleteAllEntries(FeedDescriptor feed);
 
-    public void deleteAllRowsFromEntries();
+    void deleteAllRowsFromEntries();
 
     //======================================
     //          COUNT QUERIES
     //======================================
-    public int getTotalCount(ServiceDescriptor service);
+    int getTotalCount(ServiceDescriptor service);
 
-    public int getTotalCount(FeedDescriptor feed);
+    int getTotalCount(FeedDescriptor feed);
 
-    public int getCountByLastModified(ServiceDescriptor service,
-                                      Date lastModifiedDate);
+    int getCountByLastModified(ServiceDescriptor service, Date lastModifiedDate);
 
-    public int getCountByLastModified(FeedDescriptor feed,
-                                      Date lastModifiedDate);
+    int getCountByLastModified(FeedDescriptor feed, Date lastModifiedDate);
 
     void obliterateEntry(EntryDescriptor entryQuery);
 
     void ensureWorkspaceExists(String name);
 
-    void ensureCollectionExists(String workspace,
-                                String collection);
+    void ensureCollectionExists(String workspace, String collection);
 
     List<String> listWorkspaces();
 
@@ -152,20 +137,17 @@ public interface EntriesDAO
 
     void acquireLock();
 
-    List<AggregateEntryMetaData> selectAggregateEntriesByPage(
-            FeedDescriptor feed,
-            Date lastModifiedDate,
-            Locale locale, int pageDelim,
-            int pageSize,
-            Collection<BooleanExpression<AtomCategory>> categoriesQuery,
-            List<String> joinWorkspaces);
+    List<AggregateEntryMetaData> selectAggregateEntriesByPage(FeedDescriptor feed,
+                                                              Date lastModifiedDate,
+                                                              Locale locale, int pageDelim,
+                                                              int pageSize,
+                                                              Collection<BooleanExpression<AtomCategory>> categoriesQuery,
+                                                              List<String> joinWorkspaces);
 
-    AggregateEntryMetaData selectAggregateEntry(
-            EntryDescriptor entryDescriptor,
-            List<String> joinWorkspaces);
+    AggregateEntryMetaData selectAggregateEntry(EntryDescriptor entryDescriptor,
+                                                List<String> joinWorkspaces);
 
-    List<EntryMetaData> selectEntriesByLastModified(
-            String workspace,
-            String collection,
-            Date lastModifiedDate);
+    List<EntryMetaData> selectEntriesByLastModified(String workspace,
+                                                    String collection,
+                                                    Date lastModifiedDate);
 }

@@ -48,6 +48,7 @@ public class EntriesDAOiBatisImpl
 
     private ContentDAO contentDAO;
     private EntryCategoriesDAO entryCategoriesDAO;
+    private EntryCategoryLogEventDAO entryCategoryLogEventDAO;
 
     public void setContentDAO(ContentDAO contentDAO) {
         this.contentDAO = contentDAO;
@@ -55,6 +56,10 @@ public class EntriesDAOiBatisImpl
 
     public void setEntryCategoriesDAO(EntryCategoriesDAO entryCategoriesDAO) {
         this.entryCategoriesDAO = entryCategoriesDAO;
+    }
+
+    public void setEntryCategoryLogEventDAO(EntryCategoryLogEventDAO entryCategoryLogEventDAO) {
+        this.entryCategoryLogEventDAO = entryCategoryLogEventDAO;
     }
 
     //======================================
@@ -430,6 +435,9 @@ public class EntriesDAOiBatisImpl
 
         if (contentDAO != null || entryCategoriesDAO != null) {
             EntryMetaData metaData = selectEntry(entryQuery);
+            if (metaData != null && entryCategoryLogEventDAO != null) {
+                entryCategoryLogEventDAO.deleteEntryCategoryLogEvent(entryQuery);
+            }
             if (metaData != null && contentDAO != null) {
                 contentDAO.deleteContent(metaData);
             }
