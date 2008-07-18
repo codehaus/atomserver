@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package org.atomserver.core.dbstore;
 
 import org.apache.abdera.factory.Factory;
@@ -30,31 +29,32 @@ import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.WorkspaceOptions;
 import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
+import org.atomserver.core.dbstore.dao.EntryCategoryLogEventDAO;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.exceptions.BadRequestException;
 
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
-public class
-        EntryCategoriesHandler
+public class EntryCategoriesHandler
         implements CategoriesHandler, ContentStorage {
 
     static private final Log log = LogFactory.getLog(EntryCategoriesHandler.class);
     static public final String DEFAULT_CATEGORIES_WORKSPACE_PREFIX = "tags:";
 
     private AtomService atomService;
-    private EntryCategoriesDAO entryCategoriesDAO = null;
+    private EntryCategoriesDAO entryCategoriesDAO;
 
+    private boolean isLoggingAllCategoryEvents = false;
+    private EntryCategoryLogEventDAO entryCategoryLogEventDAO;
+
+    // -----------------------------------
     public String getCategoriesWorkspaceName(String entriesWorkspaceName) {
         return DEFAULT_CATEGORIES_WORKSPACE_PREFIX + entriesWorkspaceName;
     }
@@ -94,13 +94,27 @@ public class
     }
 
     /**
-     * Used by Spring
+     * Set by Spring
      */
     public void setEntryCategoriesDAO(EntryCategoriesDAO entryCategoriesDAO) {
         this.entryCategoriesDAO = entryCategoriesDAO;
     }
     public EntryCategoriesDAO getEntryCategoriesDAO() {
         return entryCategoriesDAO;
+    }
+
+    public boolean isLoggingAllCategoryEvents() {
+        return isLoggingAllCategoryEvents;
+    }
+    public void setLoggingAllCategoryEvents(boolean loggingAllCategoryEvents) {
+        isLoggingAllCategoryEvents = loggingAllCategoryEvents;
+    }
+
+    public EntryCategoryLogEventDAO getEntryCategoryLogEventDAO() {
+        return entryCategoryLogEventDAO;
+    }
+    public void setEntryCategoryLogEventDAO(EntryCategoryLogEventDAO entryCategoryLogEventDAO) {
+        this.entryCategoryLogEventDAO = entryCategoryLogEventDAO;
     }
 
     // -----------------------------------
@@ -138,6 +152,30 @@ public class
         }
         return categoryList;
     }
+
+    public void deleteEntryCategories(EntryDescriptor entryQuery){
+        entryCategoriesDAO.deleteEntryCategories(entryQuery);
+    }
+
+    public List<EntryCategory> selectEntryCategories(EntryDescriptor entryQuery){
+        return entryCategoriesDAO.selectEntryCategories(entryQuery);
+    }
+
+    public List<EntryCategory> selectEntriesCategories(String workspace, String collection, Set<String> entryIds){
+        return entryCategoriesDAO.selectEntriesCategories(workspace, collection, entryIds);
+    }
+
+    public void insertEntryCategoryBatch(List<EntryCategory> entryCatList) {
+        entryCategoriesDAO.insertEntryCategoryBatch(entryCatList);
+
+        if (isLoggingAllCategoryEvents) {
+            entryCategoryLogEventDAO.insertEntryCategoryLogEventBatch(entryCatList);
+        }
+    }
+
+    public void deleteEntryCategoryBatch(List<EntryCategory> entryCategoryList) {
+        entryCategoriesDAO.deleteEntryCategoryBatch(entryCategoryList);
+    }    
 
     // -----------------------------------
     //           ContentStorage
@@ -178,9 +216,6 @@ public class
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public void deleteContent(String deletedContentXml, EntryDescriptor descriptor) {
         // in the case of categories, obliteration and deletion are the same;
         obliterateContent(descriptor);
@@ -199,6 +234,8 @@ public class
 
     /**
      * {@inheritDoc}
+     * NOTE: putContent for EntryCategoriesHandler always first DELETEs all Categories, and then
+     * INSERTs any Categories in the contentXML
      */
     public void putContent(String contentXml, EntryDescriptor descriptor) {
         if (log.isTraceEnabled()) {
@@ -215,7 +252,6 @@ public class
 
         getAffliatedContentStorage(descriptorClone).revisionChangedWithoutContentChanging(descriptorClone);
     }
-
 
     public boolean canRead() {
         try {
@@ -388,7 +424,7 @@ public class
         List<EntryCategory> entryCatList = getEntryCategoryList(descriptor, categoryList);
 
         // BATCH INSERT
-        entryCategoriesDAO.insertEntryCategoryBatch(entryCatList);
+        insertEntryCategoryBatch(entryCatList);
     }
 
     /**
@@ -462,14 +498,23 @@ public class
 
     //>>>>>>>>>>>>>>>>>>>>>>>>>>
     // DEPRECATED OPTIONS -- remove in 2.0.5
+    /**
+     * @deprecated
+     */
     public void setServiceContext(ServiceContext serviceContext) {
         log.error("setServiceContext is DEPRECATED, and no longer used");
     }
 
+    /**
+     * @deprecated
+     */
     public void setRealContentStorage(ContentStorage realContentStorage) {
         log.error("setRealContentStorage is DEPRECATED, and no longer used");
     }
 
+    /**
+     * @deprecated
+     */
     public void setCategoriesToEntriesMap(java.util.Map<String, String> categoriesToEntriesMap) {
         log.error("setCategoriesToEntriesMap() is DEPRECATED, and no longer used");
     }

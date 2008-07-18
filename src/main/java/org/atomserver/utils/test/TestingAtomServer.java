@@ -178,8 +178,8 @@ public class TestingAtomServer {
                 MutablePropertyValues propertyValues = new MutablePropertyValues();
                 propertyValues.addPropertyValue("performanceLog",
                                                 new RuntimeBeanReference("org.atomserver-performanceLog"));
-                propertyValues.addPropertyValue("entryCategoriesDAO",
-                                                new RuntimeBeanReference("org.atomserver-entryCategoriesDAO"));
+                propertyValues.addPropertyValue("categoriesHandler",
+                                                new RuntimeBeanReference("org.atomserver-entryCategoriesHandler"));
                 propertyValues.addPropertyValue("script", rules);
                 autotagger.setPropertyValues(propertyValues);
                 workspace.getPropertyValues().addPropertyValue("defaultAutoTagger", autotagger);

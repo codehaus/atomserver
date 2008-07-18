@@ -32,7 +32,10 @@ import org.atomserver.exceptions.MovedPermanentlyException;
 import org.atomserver.uri.EntryTarget;
 import org.atomserver.uri.FeedTarget;
 
-
+/**
+ * @author Chris Berry  (chriswberry at gmail.com)
+ * @author Bryon Jacob (bryon at jacob.net)
+ */
 public class DBBasedVirtualAtomWorkspace extends DBBasedAtomWorkspace {
 
     private static final Log log = LogFactory.getLog(DBBasedVirtualAtomWorkspace.class);
