@@ -38,13 +38,37 @@ public interface CategoriesHandler extends VirtualWorkspaceHandler {
      */
     List<Category> listCategories( String workspace, String collection );
 
+    /**
+     * Delete all EntryCategories associated with this EntryDescriptor
+     * @param entryQuery  The EntryDescriptor to operate on
+     */
     void deleteEntryCategories(EntryDescriptor entryQuery);
 
+    /**
+     * Select all EntryCategories associated with this EntryDescriptor
+     * @param entryQuery The EntryDescriptor to operate on
+     * @return  The List of EntryCategories associated with this EntryDescriptor
+     */
     List<EntryCategory> selectEntryCategories(EntryDescriptor entryQuery);
 
+    /**
+     * Select the EntryCategories associated with this set of entryIds
+     * @param workspace    The workspace to operate on
+     * @param collection   The collection to operate on
+     * @param entryIds     The Set of Entry Ids to operate on
+     * @return  The List of EntryCategories associated with these parameters
+     */
     List<EntryCategory> selectEntriesCategories(String workspace, String collection, Set<String> entryIds);
 
+    /**
+     * Insert this List of EntryCategories as a Batch.
+     * @param entryCategoryList the List of EntryCategories to operate on.
+     */
     void insertEntryCategoryBatch(List<EntryCategory> entryCategoryList);
 
-    void deleteEntryCategoryBatch(List<EntryCategory> entryCategoryList);    
+    /**
+     * Delete this List of EntryCategories as a Batch.
+     * @param entryCategoryList the List of EntryCategories to operate on.
+     */
+    void deleteEntryCategoryBatch(List<EntryCategory> entryCategoryList);
 }

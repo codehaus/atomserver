@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package org.atomserver.core.dbstore;
 
 import org.apache.abdera.factory.Factory;
@@ -95,7 +94,7 @@ public class EntryCategoriesHandler
     }
 
     /**
-     * Used by Spring
+     * Set by Spring
      */
     public void setEntryCategoriesDAO(EntryCategoriesDAO entryCategoriesDAO) {
         this.entryCategoriesDAO = entryCategoriesDAO;
@@ -154,22 +153,44 @@ public class EntryCategoriesHandler
         return categoryList;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void deleteEntryCategories(EntryDescriptor entryQuery){
         entryCategoriesDAO.deleteEntryCategories(entryQuery);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public List<EntryCategory> selectEntryCategories(EntryDescriptor entryQuery){
         return entryCategoriesDAO.selectEntryCategories(entryQuery);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public List<EntryCategory> selectEntriesCategories(String workspace, String collection, Set<String> entryIds){
         return entryCategoriesDAO.selectEntriesCategories(workspace, collection, entryIds);
     }
 
-    public void insertEntryCategoryBatch(List<EntryCategory> entryCategoryList) {
-        entryCategoriesDAO.insertEntryCategoryBatch(entryCategoryList);
+    /**
+     * {@inheritDoc}
+     */
+    //public void insertEntryCategoryBatch(List<EntryCategory> entryCategoryList) {
+        //entryCategoriesDAO.insertEntryCategoryBatch(entryCategoryList);
+
+    public void insertEntryCategoryBatch(List<EntryCategory> entryCatList) {
+        entryCategoriesDAO.insertEntryCategoryBatch(entryCatList);
+
+        if (isLoggingAllCategoryEvents) {
+            entryCategoryLogEventDAO.insertEntryCategoryLogEventBatch(entryCatList);
+        }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void deleteEntryCategoryBatch(List<EntryCategory> entryCategoryList) {
         entryCategoriesDAO.deleteEntryCategoryBatch(entryCategoryList);
     }    
@@ -424,11 +445,14 @@ public class EntryCategoriesHandler
         List<EntryCategory> entryCatList = getEntryCategoryList(descriptor, categoryList);
 
         // BATCH INSERT
+        /*
         entryCategoriesDAO.insertEntryCategoryBatch(entryCatList);
 
         if (isLoggingAllCategoryEvents) {
             entryCategoryLogEventDAO.insertEntryCategoryLogEventBatch(entryCatList);
         }
+        */
+        insertEntryCategoryBatch(entryCatList);
     }
 
     /**

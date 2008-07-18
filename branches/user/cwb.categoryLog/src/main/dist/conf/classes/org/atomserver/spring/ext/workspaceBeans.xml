@@ -27,7 +27,6 @@
             <property name="defaultAutoTagger">
                 <bean class="org.atomserver.core.autotaggers.XPathAutoTagger">
                     <property name="performanceLog" ref="org.atomserver-performanceLog"/>
-                    <!-- <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO"/> -->
                     <property name="categoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
                     <property name="script">
                         <value>

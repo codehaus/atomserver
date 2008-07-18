@@ -70,13 +70,6 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
          return ((DBBasedAtomService)parentAtomWorkspace.getParentAtomService()).getEntriesDAO();
     }
 
-    /*
-    public EntryCategoriesDAO getEntryCategoriesDAO() {
-        return ((EntryCategoriesHandler)( parentAtomWorkspace.getParentAtomService().
-                getVirtualWorkspaceHandler(VirtualWorkspaceHandler.CATEGORIES)))
-                .getEntryCategoriesDAO();
-    }
-    */
     public CategoriesHandler getcategoriesHandler() {
         return (EntryCategoriesHandler)( parentAtomWorkspace.getParentAtomService().
                 getVirtualWorkspaceHandler(VirtualWorkspaceHandler.CATEGORIES));
@@ -96,7 +89,6 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             getTransactionTemplate().execute(new TransactionCallbackWithoutResult() {
                 protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                     getEntriesDAO().obliterateEntry(entryMetaData);
-                    //getEntryCategoriesDAO().deleteEntryCategories(entryMetaData);
                     getCategoriesHandler().deleteEntryCategories(entryMetaData);
                     getContentStorage().obliterateContent(entryMetaData);
                 }
@@ -632,7 +624,6 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
 
         List<EntryCategory> entryCategories =
                 getCategoriesHandler().selectEntriesCategories( workspace, collection, entriesByEntryId.keySet());
-        //getEntryCategoriesDAO().selectEntriesCategories( workspace, collection, entriesByEntryId.keySet());
 
         for (EntryCategory entryCategory : entryCategories) {
             EntryMetaData metaData = entriesByEntryId.get(entryCategory.getEntryId());

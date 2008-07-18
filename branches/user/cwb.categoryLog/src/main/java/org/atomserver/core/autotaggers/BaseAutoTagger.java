@@ -34,30 +34,6 @@ import org.apache.commons.logging.LogFactory;
 public abstract class BaseAutoTagger implements EntryAutoTagger {
     protected static final Log log = LogFactory.getLog(BaseAutoTagger.class);
 
-    //private EntryCategoriesDAO entryCategoriesDAO;
-
-    /**
-     * Getter for property 'entryCategoriesDAO'.
-     *
-     * @return Value for property 'entryCategoriesDAO'.
-     */
-    /*
-    public EntryCategoriesDAO getEntryCategoriesDAO() {
-        return entryCategoriesDAO;
-    }
-    */
-
-    /**
-     * Setter for property 'entryCategoriesDAO'.
-     *
-     * @param entryCategoriesDAO Value to set for property 'entryCategoriesDAO'.
-     */
-    /*
-    public void setEntryCategoriesDAO(EntryCategoriesDAO entryCategoriesDAO) {
-        this.entryCategoriesDAO = entryCategoriesDAO;
-    }
-    */
-
     private CategoriesHandler categoriesHandler;
 
     public CategoriesHandler getCategoriesHandler() {
@@ -81,8 +57,7 @@ public abstract class BaseAutoTagger implements EntryAutoTagger {
     //>>>>>>>>>>>>>>>>>>>>>>>>>>
     // DEPRECATED OPTIONS -- remove in 2.0.5
     public void setEntryCategoriesDAO(EntryCategoriesDAO entryCategoriesDAO) {
-        log.error("setEntryCategoriesDAO is DEPRECATED and does nothing");
+        log.error("setEntryCategoriesDAO is DEPRECATED and does nothing. You MUST use setCategoriesHandler");
     }
     //<<<<<<<<<<<<<<<<<<<
-
 }
