@@ -153,32 +153,17 @@ public class EntryCategoriesHandler
         return categoryList;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public void deleteEntryCategories(EntryDescriptor entryQuery){
         entryCategoriesDAO.deleteEntryCategories(entryQuery);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public List<EntryCategory> selectEntryCategories(EntryDescriptor entryQuery){
         return entryCategoriesDAO.selectEntryCategories(entryQuery);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public List<EntryCategory> selectEntriesCategories(String workspace, String collection, Set<String> entryIds){
         return entryCategoriesDAO.selectEntriesCategories(workspace, collection, entryIds);
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    //public void insertEntryCategoryBatch(List<EntryCategory> entryCategoryList) {
-        //entryCategoriesDAO.insertEntryCategoryBatch(entryCategoryList);
 
     public void insertEntryCategoryBatch(List<EntryCategory> entryCatList) {
         entryCategoriesDAO.insertEntryCategoryBatch(entryCatList);
@@ -188,9 +173,6 @@ public class EntryCategoriesHandler
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public void deleteEntryCategoryBatch(List<EntryCategory> entryCategoryList) {
         entryCategoriesDAO.deleteEntryCategoryBatch(entryCategoryList);
     }    
@@ -234,9 +216,6 @@ public class EntryCategoriesHandler
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public void deleteContent(String deletedContentXml, EntryDescriptor descriptor) {
         // in the case of categories, obliteration and deletion are the same;
         obliterateContent(descriptor);
@@ -445,13 +424,6 @@ public class EntryCategoriesHandler
         List<EntryCategory> entryCatList = getEntryCategoryList(descriptor, categoryList);
 
         // BATCH INSERT
-        /*
-        entryCategoriesDAO.insertEntryCategoryBatch(entryCatList);
-
-        if (isLoggingAllCategoryEvents) {
-            entryCategoryLogEventDAO.insertEntryCategoryLogEventBatch(entryCatList);
-        }
-        */
         insertEntryCategoryBatch(entryCatList);
     }
 
@@ -526,14 +498,23 @@ public class EntryCategoriesHandler
 
     //>>>>>>>>>>>>>>>>>>>>>>>>>>
     // DEPRECATED OPTIONS -- remove in 2.0.5
+    /**
+     * @deprecated
+     */
     public void setServiceContext(ServiceContext serviceContext) {
         log.error("setServiceContext is DEPRECATED, and no longer used");
     }
 
+    /**
+     * @deprecated
+     */
     public void setRealContentStorage(ContentStorage realContentStorage) {
         log.error("setRealContentStorage is DEPRECATED, and no longer used");
     }
 
+    /**
+     * @deprecated
+     */
     public void setCategoriesToEntriesMap(java.util.Map<String, String> categoriesToEntriesMap) {
         log.error("setCategoriesToEntriesMap() is DEPRECATED, and no longer used");
     }

@@ -56,6 +56,9 @@ public abstract class BaseAutoTagger implements EntryAutoTagger {
 
     //>>>>>>>>>>>>>>>>>>>>>>>>>>
     // DEPRECATED OPTIONS -- remove in 2.0.5
+    /**
+     * @deprecated
+     */
     public void setEntryCategoriesDAO(EntryCategoriesDAO entryCategoriesDAO) {
         log.error("setEntryCategoriesDAO is DEPRECATED and does nothing. You MUST use setCategoriesHandler");
     }

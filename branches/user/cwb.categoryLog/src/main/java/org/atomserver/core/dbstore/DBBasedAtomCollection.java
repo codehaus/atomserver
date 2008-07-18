@@ -70,11 +70,6 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
          return ((DBBasedAtomService)parentAtomWorkspace.getParentAtomService()).getEntriesDAO();
     }
 
-    public CategoriesHandler getcategoriesHandler() {
-        return (EntryCategoriesHandler)( parentAtomWorkspace.getParentAtomService().
-                getVirtualWorkspaceHandler(VirtualWorkspaceHandler.CATEGORIES));
-    }
-
      public TransactionTemplate getTransactionTemplate() {
          return ((DBBasedAtomService)parentAtomWorkspace.getParentAtomService()).getTransactionTemplate();
      }

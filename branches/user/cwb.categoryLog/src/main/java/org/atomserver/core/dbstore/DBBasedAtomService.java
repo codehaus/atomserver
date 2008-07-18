@@ -149,16 +149,25 @@ public class DBBasedAtomService extends AbstractAtomService {
 
     //>>>>>>>>>>>>>>>>>>>>>>>>>>
     // DEPRECATED OPTIONS -- remove in 2.0.5
+    /**
+     * @deprecated
+     */
     public void setEntryCategoriesDAO(EntryCategoriesDAO entryCategoriesDAO) {
         log.error("setEntryCategoriesDAO() is no longer valid on Atomservice. It is ignored");
     }
 
+    /**
+     * @deprecated
+     */
     public void setCategoriesContentStorage(ContentStorage categoriesContentStorage) {
         log.error("setEntryCategoriesDAO() is no longer valid on Atomservice. It is DEPRECATED");
         addVirtualWorkspaceHandler( VirtualWorkspaceHandler.CATEGORIES,
                                     (CategoriesHandler) categoriesContentStorage );
     }
 
+    /**
+     * @deprecated
+     */
     public void setCategoriesHandler(CategoriesHandler categoriesHandler) {
         log.error("setCategoriesHandler() is no longer valid on AtomService. It is ignored");
         addVirtualWorkspaceHandler( VirtualWorkspaceHandler.CATEGORIES,
