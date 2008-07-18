@@ -75,21 +75,31 @@
     </select>
 
     <!-- #################### delete  ############### -->
-    <delete id="deleteEntryCategoryLogEvents" parameterClass="entryCategory" >
-      DELETE FROM EntryCategoryLogEvent
-        <isNotNull property="entryStoreId">
-            WHERE EntryStoreId = #entryStoreId#
-        </isNotNull>
-        <isNull property="entryStoreId">
-            WHERE EntryStoreId = (SELECT EntryStoreId FROM EntryStore
-                                   WHERE Workspace=#workspace#
-                                     AND Collection=#collection#
-                                     AND EntryId=#entryId#
-                                     AND LanCode=#language#
-                                     AND CountryCode=#country#)
-        </isNull>
-      AND Scheme=#scheme#
-      AND Term=#term#
+    <delete id="deleteEntryCategoryLogEventsBySchemeTerm" parameterClass="entryCategory" >
+        DELETE FROM EntryCategoryLogEvent
+          <isNotNull property="entryStoreId">
+              WHERE EntryStoreId = #entryStoreId#
+          </isNotNull>
+          <isNull property="entryStoreId">
+              WHERE EntryStoreId = (SELECT EntryStoreId FROM EntryStore
+                                     WHERE Workspace=#workspace#
+                                       AND Collection=#collection#
+                                       AND EntryId=#entryId#
+                                       AND LanCode=#language#
+                                       AND CountryCode=#country#)
+          </isNull>
+        AND Scheme=#scheme#
+        AND Term=#term#
+    </delete>
+
+    <delete id="deleteEntryCategoryLogEvents" parameterClass="map" >
+        DELETE FROM EntryCategoryLogEvent
+              WHERE EntryStoreId = (SELECT EntryStoreId FROM EntryStore
+                                     WHERE Workspace=#workspace#
+                                       AND Collection=#collection#
+                                       AND LanCode=#language#
+                                       AND CountryCode=#country#
+                                       AND EntryId=#entryId#)
     </delete>
 
     <!-- #################### Count  ############### -->
@@ -103,6 +113,7 @@
     </select>
 
     <!-- #################### Delete All ############### -->
+    
     <delete id="deleteEntryCategoryLogEventsAll" parameterClass="map">
       DELETE FROM EntryCategoryLogEvent
        WHERE EntryStoreId IN (SELECT EntryStoreId FROM EntryStore

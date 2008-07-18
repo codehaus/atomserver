@@ -90,8 +90,6 @@ public class EntryCategoryLogEventDAOTest
         verifySelectLogEvent( entryIn, 1, sysId, propId, scheme );
 
         // DELETE
-        entryCategoryLogEventDAO.deleteEntryCategoryLogEvent(entryIn);
-        entryCategoriesDAO.deleteEntryCategory(entryIn);
         entriesDAO.obliterateEntry(descriptor);
 
         // SELECT again
@@ -148,10 +146,6 @@ public class EntryCategoryLogEventDAOTest
         verifySelectLogEvent( entryIn[0], 5, sysId, propId, scheme );
 
         // DELETE
-        for ( int ii=0; ii< numTags; ii++ ) {
-            entryCategoryLogEventDAO.deleteEntryCategoryLogEvent(entryIn[ii]);
-            entryCategoriesDAO.deleteEntryCategory(entryIn[ii]);
-        }
         entriesDAO.obliterateEntry(descriptor);
 
         // COUNT
@@ -202,10 +196,6 @@ public class EntryCategoryLogEventDAOTest
         }
 
         // DELETE
-        for ( EntryCategory entryIn : ecList ) {
-            entryCategoryLogEventDAO.deleteEntryCategoryLogEvent(entryIn);
-            entryCategoriesDAO.deleteEntryCategory(entryIn);
-        }
         entriesDAO.obliterateEntry(descriptor);
 
         // COUNT

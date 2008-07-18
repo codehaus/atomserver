@@ -61,6 +61,7 @@
         <property name="performanceLog" ref="org.atomserver-performanceLog"/>
         <property name="contentDAO" ref="org.atomserver-contentDAO"/>
         <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO" />
+        <property name="entryCategoryLogEventDAO" ref="org.atomserver-entryCategoryLogEventDAO" />
     </bean>
 
     <bean id="org.atomserver-contentDAO"

@@ -16,6 +16,7 @@
 
 package org.atomserver.core.dbstore.dao;
 
+import org.atomserver.EntryDescriptor;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryCategoryLogEvent;
 
@@ -38,7 +39,8 @@ public interface EntryCategoryLogEventDAO
     List<EntryCategoryLogEvent> selectEntryCategoryLogEvent(EntryCategory entryQuery);
     List<EntryCategoryLogEvent> selectEntryCategoryLogEventBySchemeAndTerm(EntryCategory entryQuery);
 
-    void deleteEntryCategoryLogEvent(EntryCategory entryQuery);
+    void deleteEntryCategoryLogEvent(EntryDescriptor entryQuery);
+    void deleteEntryCategoryLogEventBySchemeAndTerm(EntryCategory entryQuery);
 
     //======================================
     //          BATCH OPERATIONS

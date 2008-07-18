@@ -19,6 +19,7 @@ package org.atomserver.core.dbstore.dao;
 import com.ibatis.sqlmap.client.SqlMapExecutor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.atomserver.EntryDescriptor;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryCategoryLogEvent;
 import org.atomserver.utils.perf.AutomaticStopWatch;
@@ -27,6 +28,7 @@ import org.springframework.orm.ibatis.SqlMapClientCallback;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -108,13 +110,13 @@ public class EntryCategoryLogEventDAOiBatisImpl
      * Delete ALL EntryCategoryLogEvents for a given EntryCategory.
      * If an Entry has, say two LogEvents for (urn:foo)bar, both will be deleted
      */
-    public void deleteEntryCategoryLogEvent(EntryCategory entryQuery) {
+    public void deleteEntryCategoryLogEventBySchemeAndTerm(EntryCategory entryQuery) {
         StopWatch stopWatch = new AutomaticStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntryCategoryLogEventDAOiBatisImpl DELETE [ " + entryQuery + " ]");
         }
         try {
-            getSqlMapClientTemplate().delete("deleteEntryCategoryLogEvents", entryQuery);
+            getSqlMapClientTemplate().delete("deleteEntryCategoryLogEventsBySchemeTerm", entryQuery);
         }
         finally {
             if (perflog != null) {
@@ -122,6 +124,33 @@ public class EntryCategoryLogEventDAOiBatisImpl
             }
         }
     }
+
+    /**
+     * NOTE: This method is really only here for Unit Testing
+     * Delete ALL EntryCategoryLogEvents for a given EntryCategory.
+     * If an Entry has, say two LogEvents for (urn:foo)bar, both will be deleted
+     */
+    public void deleteEntryCategoryLogEvent(EntryDescriptor entryQuery) {
+        StopWatch stopWatch = new AutomaticStopWatch();
+        if (log.isDebugEnabled()) {
+            log.debug("EntryCategoryLogEventDAOiBatisImpl DELETE [ " + entryQuery + " ]");
+        }
+        try {
+            Map<String, Object> paramMap = paramMap()
+                    .param("workspace", entryQuery.getWorkspace())
+                    .param("collection", entryQuery.getCollection())
+                    .param("entryId", entryQuery.getEntryId())
+                    .addLocaleInfo(entryQuery.getLocale());
+
+            getSqlMapClientTemplate().delete("deleteEntryCategoryLogEvents", paramMap);
+        }
+        finally {
+            if (perflog != null) {
+                perflog.log("DB.deleteEntryCategoryLogEvents", "", stopWatch);
+            }
+        }
+    }
+
 
     //======================================
     //          BATCH OPERATIONS
