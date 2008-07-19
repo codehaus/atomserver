@@ -1,5 +1,6 @@
 
 DROP TABLE IF EXISTS EntryContent CASCADE;
+DROP TABLE IF EXISTS EntryCategoryLogEvent CASCADE;
 DROP TABLE IF EXISTS EntryCategory CASCADE;
 DROP TABLE IF EXISTS EntryStore CASCADE;
 DROP TABLE IF EXISTS AtomCollection CASCADE;
@@ -78,6 +79,21 @@ Content             VARCHAR                 NOT NULL,
 PRIMARY KEY (EntryStoreId),
 FOREIGN KEY (EntryStoreId) REFERENCES EntryStore(EntryStoreId)
 );
+
+/*==============================================================*/
+/* Table: EntryCategoryLogEvent                                 */
+/*==============================================================*/
+CREATE TABLE EntryCategoryLogEvent (
+EntryCategoryLogEventId  BIGINT                  IDENTITY,
+EntryStoreId             BIGINT                  NOT NULL,
+Scheme                   VARCHAR(128)            NOT NULL,
+Term                     VARCHAR(32)             NOT NULL,
+Label                    VARCHAR(128)            NULL,
+CreateDate               TIMESTAMP               NOT NULL,
+PRIMARY KEY (EntryCategoryLogEventId),
+FOREIGN KEY (EntryStoreId) REFERENCES EntryStore(EntryStoreId)
+);
+
 
 /*==============================================================*/
 /* View: vw_AggregateEntries                                    */
