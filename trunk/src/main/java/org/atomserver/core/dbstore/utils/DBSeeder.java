@@ -29,6 +29,7 @@ import org.atomserver.core.dbstore.DBBasedContentStorage;
 import org.atomserver.core.dbstore.dao.ContentDAO;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
 import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
+import org.atomserver.core.dbstore.dao.EntryCategoryLogEventDAO;
 import org.atomserver.core.filestore.FileBasedContentStorage;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.utils.io.JarUtils;
@@ -62,6 +63,7 @@ public class DBSeeder extends DBTool {
     static private ClassPathXmlApplicationContext springFactory = null;
 
     private EntriesDAO entriesDAO;
+    private EntryCategoryLogEventDAO entryCategoryLogEventDAO;
     private EntryCategoriesDAO entryCategoriesDAO;
     private ContentStorage contentStorage;
     private ContentDAO contentDAO;
@@ -102,6 +104,10 @@ public class DBSeeder extends DBTool {
         this.entryCategoriesDAO = entryCategoriesDAO;
     }
 
+    public void setEntryCategoryLogEventDAO(EntryCategoryLogEventDAO entryCategoryLogEventDAO) {
+        this.entryCategoryLogEventDAO = entryCategoryLogEventDAO;
+    }
+
     public void setContentStorage(ContentStorage physicalStorage) {
         this.contentStorage = physicalStorage;
     }
@@ -115,6 +121,11 @@ public class DBSeeder extends DBTool {
         log.info("==========> DELETING *ALL* ROWS in EntryContent !!!!!!!!!!!!!");
         log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         contentDAO.deleteAllContent();
+
+        log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+        log.info("==========> DELETING *ALL* ROWS in EntryCategoryLogEvent !!!!!!!!!!!!!");
+        log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+        entryCategoryLogEventDAO.deleteAllRowsFromEntryCategoryLogEvent();
 
         log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.info("==========> DELETING *ALL* ROWS in EntryCategory !!!!!!!!!!!!!");
