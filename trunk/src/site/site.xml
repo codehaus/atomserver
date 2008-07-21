@@ -57,12 +57,14 @@ pageTracker._trackPageview();
 
     </body>
 
-    <!--
     <poweredBy>
-        <logo name="SVNKit" href="http://svnkit.com/" img="http://svnkit.com/img/svnkit_logo.jpg"/>
-        <logo name="Subversion" href="http://subversion.tigris.org/"
-              img="http://subversion.tigris.org/images/subversion_logo_hor-468x64.png"/>
+       <logo name="Maven" href="http://maven.apache.org/"
+             img="http://maven.apache.org/images/logos/maven-feather.png"/>
+       <logo name="Homeaway" href="http://www.homeaway.com"
+             img="images/homeaway_logo.png" />
     </poweredBy>
+
+    <!--
     <skin>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-skin</artifactId>
