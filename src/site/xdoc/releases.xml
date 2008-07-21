@@ -7,6 +7,32 @@
     </properties>
 
     <body>
+        <section name="Release 2.1-SNAPSHOT (??/??/08)">
+            <ol>
+                <li>Better performance for aggregate feeds</li>
+                <li>Add tests for DB-based ContentStorage</li>
+                <li>Now build a Jar as well as a War. Cleaned up the DBSeeder to use resources(widgets) from the Jar.
+                    Added a documentation on deployment options for AtomServer</li>
+                <li>Add setenv script for Tomcat. Cleanup Jars that get included with the War.
+                    Create new /lib dir in the standalone version to house Jetty and Servlet API,
+                    which fixes Tomcat deploy issue</li>
+                <li>Cleaned up API to remove RequestContext from the abstract methods of AbstractAtomCollection</li>
+                <li>Added a very simple standalone AtomServer (TestingAtomServer) for Atom client unit testing.
+                    Made HsqlBootstrapper restartable, and made TestingAtomServer do so on each construction</li>
+                <li>Refactor to handle generic "virtual workspaces". Consolidate all DB-based Category handling
+                    into EntryCategoriesHandler, including all DAO access.
+                    Consolidate to an AtomService level CategoriesHandler.
+                    Add access to the Abdera ServiceContext to AtomService</li>
+                <li>Added an optional ability to "log" all changes to Categories. This ability is critical to
+                    applications that use Categories to manage a State Machine for a given Workspace,
+                    and want a log of all State changes for a given Entry.
+                    This is enabled by setting the "loggingAllCategoryEvents" to true in 
+                    the "org.atomserver-entryCategoriesHandler" Spring Bean</li>
+                <li>Fixed unneccessary failure for race condition on creation of new collections</li>
+            </ol>
+
+        </section>
+
         <section name="Release 2.0.1 (6/23/08)">
             <ol>
                 <li>Added a "throttled" AtomServer. This AtomServer throttles all PUTs, POSTs, and DELETEs
