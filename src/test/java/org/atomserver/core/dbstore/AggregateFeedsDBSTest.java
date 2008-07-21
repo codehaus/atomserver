@@ -39,11 +39,7 @@ public class AggregateFeedsDBSTest extends DBSTestCase {
 
     public void tearDown() throws Exception { super.tearDown(); }
 
-    public void testNothing() throws Exception {
-
-    }
-
-    public void XXXtestAggregateFeeds() throws Exception {
+    public void testAggregateFeeds() throws Exception {
         for (int i = 0; i < NUM_ENTRIES; i++) {
             String widgetId = "" + (BASE_WIDGET_ID + i);
             Locale locale = i == 5 ? Locale.UK : Locale.US;

@@ -42,11 +42,7 @@ public class AggregateFeedsTest extends DBSTestCase {
         TestConfUtil.postTearDown();
     }
 
-    public void testNothing() throws Exception {
-
-    }
-
-    public void XXXtestAggregateFeeds() throws Exception {
+    public void testAggregateFeeds() throws Exception {
         Feed feed;
         String endIndex;
 
