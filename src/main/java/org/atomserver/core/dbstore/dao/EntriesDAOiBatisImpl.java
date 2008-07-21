@@ -31,6 +31,7 @@ import org.atomserver.utils.logic.BooleanExpression;
 import org.atomserver.utils.perf.AutomaticStopWatch;
 import org.atomserver.utils.perf.StopWatch;
 import org.springframework.orm.ibatis.SqlMapClientCallback;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -754,9 +755,13 @@ public class EntriesDAOiBatisImpl
                 (Integer) getSqlMapClientTemplate().queryForObject("collectionExists",
                                                                    paramMap);
         if (count == 0) {
-            getSqlMapClientTemplate().insert("createCollection", paramMap);
+            try {
+                getSqlMapClientTemplate().insert("createCollection", paramMap);
+            } catch (DataIntegrityViolationException e) {
+                log.warn("race condition while guaranteeing existence of collection " +
+                         workspace + "/" + collection + " - this is probably okay.");
+            }
         }
-
     }
 
     public void ensureWorkspaceExists(String workspace) {
