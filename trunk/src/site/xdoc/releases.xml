@@ -8,27 +8,35 @@
 
     <body>
         <section name="Release 2.1-SNAPSHOT (??/??/08)">
+            This release is tagged 2.1 because it is <b>not</b> entirely transparent. The Spring configuration
+            changes somewhat. The only actual non-backwards compatible change is in the wiring of XPathAutoTaggers
+            for a workspace, where the entryCategoriesDAO property should be replaced with a
+            categoriesHandler property. This change plugs a leaky abstraction, and allows all Category operations
+            to happen through the CategoriesHander.
             <ol>
                 <li>Better performance for aggregate feeds</li>
-                <li>Add tests for DB-based ContentStorage</li>
-                <li>Now build a Jar as well as a War. Cleaned up the DBSeeder to use resources(widgets) from the Jar.
-                    Added a documentation on deployment options for AtomServer</li>
-                <li>Add setenv script for Tomcat. Cleanup Jars that get included with the War.
-                    Create new /lib dir in the standalone version to house Jetty and Servlet API,
-                    which fixes Tomcat deploy issue</li>
-                <li>Cleaned up API to remove RequestContext from the abstract methods of AbstractAtomCollection</li>
+                <li>Added tests for DB-based ContentStorage</li>
+                <li>AtomServer now produces a Jar artifact as well as a War, and includes this Jar within the War.
+                    Cleaned up the code to consistently use resources from the Jar.
+                    Added documentation on deployment options for AtomServer</li>
+                <li>Added a setenv.sh script for Tomcat, which may be called from catalina.sh.
+                    Cleaned up the Jars that get included in the War's WEB-INF/lib.
+                    Created new top-level /lib dir in the standalone version to house Jetty and Servlet API Jars,
+                    which fixes Tomcat deploy issues</li>
+                <li>Cleaned up the API to remove RequestContext from the abstract methods of AbstractAtomCollection</li>
                 <li>Added a very simple standalone AtomServer (TestingAtomServer) for Atom client unit testing.
                     Made HsqlBootstrapper restartable, and made TestingAtomServer do so on each construction</li>
-                <li>Refactor to handle generic "virtual workspaces". Consolidate all DB-based Category handling
-                    into EntryCategoriesHandler, including all DAO access.
-                    Consolidate to an AtomService level CategoriesHandler.
-                    Add access to the Abdera ServiceContext to AtomService</li>
-                <li>Added an optional ability to "log" all changes to Categories. This ability is critical to
-                    applications that use Categories to manage a State Machine for a given Workspace,
-                    and want a log of all State changes for a given Entry.
+                <li>Refactored the code to handle generic "virtual workspaces".
+                    Consolidated all DB-based Category handling into EntryCategoriesHandler,
+                    including all DAO access. Consolidated to an AtomService level CategoriesHandler, referenced
+                    through a VirtualWorkspaceHandler Map. Added access to the Abdera ServiceContext
+                    from AtomService</li>
+                <li>Added an optional ability to "log" (to the metadata DB) all changes to Categories.
+                    This ability is critical to applications that use Categories to manage a State Machine
+                    for a given Workspace, and want a log of all State changes for a given Entry.
                     This is enabled by setting the "loggingAllCategoryEvents" to true in 
                     the "org.atomserver-entryCategoriesHandler" Spring Bean</li>
-                <li>Fixed unneccessary failure for race condition on creation of new collections</li>
+                <li>Fixed unneccessary failure for a possible race condition on the creation of new collections</li>
             </ol>
 
         </section>
