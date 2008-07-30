@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<!--
+ Copyright (c) 2007 HomeAway, Inc.
+  All rights reserved.  http://www.atomserver.org
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<sqlMap>
+
+    <sql id="aggregateEntries">
+        <isNotNull property="language">
+        SELECT L.Collection,
+               L.EntryId,
+               L.LanCode,
+               L.CountryCode,
+               MAX(N.UpdateTimestamp) AS UpdateTimestamp,
+               MAX(N.UpdateDate) AS UpdateDate,
+               MIN(N.CreateDate) AS CreateDate
+          FROM VW_AggregateEntry L
+               <isEqual property="dbType" compareValue="sqlserver" >WITH (NOEXPAND)</isEqual>
+          JOIN VW_AggregateEntry N
+               <isEqual property="dbType" compareValue="sqlserver" >WITH (NOEXPAND)</isEqual>
+            ON L.Collection = N.Collection
+           AND L.EntryId = N.EntryId
+           AND L.LanCode = #language#
+            <isNotNull property="country">
+                <isEqual property="country" compareValue="">
+           AND L.CountryCode = '**'
+                </isEqual>
+                <isNotEqual property="country" compareValue="">
+           AND L.CountryCode = #country#
+                </isNotEqual>
+            </isNotNull>
+            <isNull property="country">
+           AND L.CountryCode = '**'
+            </isNull>
+            AND (N.LanCode = L.LanCode OR N.LanCode = '**')
+            AND (N.CountryCode = L.CountryCode OR N.CountryCode = '**')
+         WHERE L.Collection = #collection#
+           AND N.UpdateTimestamp > #lastModifiedSeqNum#
+        GROUP BY L.Collection, L.EntryId, L.LanCode, L.CountryCode
+        </isNotNull>
+
+        <isNull property="language">
+        SELECT A.Collection,
+               A.EntryId,
+               '**' AS LanCode,
+               '**' AS CountryCode,
+               MAX(A.UpdateTimestamp) AS UpdateTimestamp,
+               MAX(A.UpdateDate) AS UpdateDate,
+               MIN(A.CreateDate) AS CreateDate
+        FROM VW_AggregateEntry A
+             <isEqual property="dbType" compareValue="sqlserver" >WITH (NOEXPAND)</isEqual>
+        WHERE A.Collection = #collection#
+          AND A.UpdateTimestamp > #lastModifiedSeqNum#
+        GROUP BY A.Collection, A.EntryId
+        </isNull>
+    </sql>
+
+    <sql id="SELECT_modifiedAggregateEntryIds">
+        SELECT
+        <include refid="paginationPrefix"/>
+               AggregateEntry.EntryId AS EntryId
+          FROM (
+                <include refid="aggregateEntries"/>
+               ) AggregateEntry
+        <isNotNull property="categoryQuerySql">
+         INNER JOIN ( $categoryQuerySql$ ) matchedEntry
+            ON AggregateEntry.EntryId = matchedEntry.EntryId
+        </isNotNull>
+        <include refid="paginationSuffix"/>
+    </sql>
+
+    <select id="countModifiedAggregateEntries" parameterClass="map" resultClass="int">
+        SELECT COUNT(EntryId) AS entryCount
+          FROM (<include refid="SELECT_modifiedAggregateEntryIds"/>)
+    </select>
+
+    <select id="selectAggregateEntriesByPage" parameterClass="map" resultMap="entryResult">
+        SELECT DISTINCT
+               entry.EntryStoreId AS EntryStoreId,
+               entry.Workspace AS Workspace,
+               entry.Collection AS Collection,
+               entry.LanCode AS LanCode,
+               entry.CountryCode AS CountryCode,
+               entry.EntryId AS EntryId,
+               entry.UpdateDate AS UpdateDate,
+               entry.CreateDate AS CreateDate,
+               <include refid="timestampColumn" />,
+               entry.DeleteFlag AS DeleteFlag,
+               entry.RevisionNum AS RevisionNum,
+               cat.Scheme AS Scheme,
+               cat.Term AS Term,
+               cat.Label AS Label
+          FROM ( <include refid="SELECT_modifiedAggregateEntryIds"/> ) agg
+          JOIN EntryCategory joincat ON joincat.Scheme = #collection# AND agg.EntryId = joincat.Term
+          JOIN EntryStore entry ON joincat.EntryStoreId = entry.EntryStoreId
+          JOIN EntryCategory cat ON entry.EntryStoreId = cat.EntryStoreId
+           AND (
+        <!-- we only want to include categories that are either (a) outside of the join scheme, or
+             (b) are matches to the SELECT_modifiedAggregateEntryIds query.  We are already joining
+             in that query as joincat, so we can just include the rows where joincat and cat are
+             referring to the same EntryCategory -->
+                cat.scheme != #collection# OR
+                cat.term = joincat.term
+               )
+        <isNotNull property="language">
+           AND (entry.LanCode = #language# OR entry.LanCode = '**')
+            <isNotNull property="country">
+                <isNotEqual property="country" compareValue="">
+           AND (entry.CountryCode = #country# OR entry.CountryCode = '**')
+                </isNotEqual>
+                <isEqual property="country" compareValue="">
+           AND (entry.CountryCode = '**')
+                </isEqual>
+            </isNotNull>
+            <isNull property="country">
+           AND (entry.CountryCode = '**')
+            </isNull>
+        </isNotNull>
+        <isNotNull property="joinWorkspaces">
+           AND entry.Workspace IN
+            <iterate property="joinWorkspaces" open="(" close=")" conjunction=",">#joinWorkspaces[]#</iterate>
+        </isNotNull>
+         ORDER BY UpdateTimestamp, Scheme, Term
+    </select>
+
+    <select id="selectAggregateEntry" parameterClass="map" resultMap="entryResult">
+        <include refid="SELECT_EntryStore_JOIN_EntryCategory"/>
+        INNER JOIN EntryCategory joincat
+           ON entry.EntryStoreId = joincat.EntryStoreId
+          AND joincat.scheme = #collection#
+          AND joincat.term = #entryId#
+       <!-- if this is a localized entry, we want to pull in things that are in the proper locale,
+            as well as things that are not localized at all -->
+       <isNotNull property="language">
+          AND (entry.LanCode = #language# OR entry.LanCode = '**')
+           <isNotNull property="country">
+               <isNotEqual property="country" compareValue="">
+          AND (entry.CountryCode = #country# OR entry.CountryCode = '**')
+               </isNotEqual>
+               <isEqual property="country" compareValue="">
+          AND (entry.CountryCode = '**')
+               </isEqual>
+           </isNotNull>
+           <isNull property="country">
+          AND (entry.CountryCode = '**')
+           </isNull>
+       </isNotNull>
+       <!-- but, in the case of a localized entry, we only want to return an entry if there is at
+            least one localized component in the proper locale - this clause executes that filter
+            and causes an empty result set in that case -->
+       <isNotNull property="language">
+          AND joincat.term IN (SELECT c.term
+                                 FROM EntryCategory c JOIN EntryStore e
+                                   ON c.EntryStoreId = e.EntryStoreId
+                                WHERE c.scheme = #collection#
+                                  AND c.term = #entryId#
+                                  AND e.LanCode = #language#
+           <isNotNull property="country">
+               <isNotEqual property="country" compareValue="">
+                                  AND e.CountryCode = #country#
+               </isNotEqual>
+               <isEqual property="country" compareValue="">
+                                  AND e.CountryCode = '**'
+               </isEqual>
+           </isNotNull>
+           <isNull property="country">
+                                  AND e.CountryCode = '**'
+           </isNull>
+                                GROUP BY c.term
+           )
+       </isNotNull>
+        <isNotNull property="joinWorkspaces">
+            AND entry.Workspace IN
+            <iterate property="joinWorkspaces" open="(" close=")" conjunction=",">#joinWorkspaces[]#</iterate>
+        </isNotNull>        
+    </select>
+
+</sqlMap>
+
