@@ -239,14 +239,16 @@ NOTE: requires a SELECT to start (omitted for SELECT TOP...) -->
         </isEqual>
     </sql>
 
+    <!-- WITH(NOEXPAND) is a SQL Server hint that we use to indicate that when accessing a view
+         that has an index, the index should be used. -->
     <sql id="WITH_NOEXPAND">
         <isEqual property="dbType" compareValue="sqlserver">WITH (NOEXPAND)</isEqual>
     </sql>
 
+    <!-- SQL Server supports an INNER LOOP JOIN with different performance characteristics from a
+         normal INNER JOIN - on other DBs, we use an INNER JOIN which has the same semantics. -->
     <sql id="INNER_LOOP_JOIN">
-        INNER
-        <isEqual property="dbType" compareValue="sqlserver">LOOP</isEqual>
-        JOIN
+        INNER <isEqual property="dbType" compareValue="sqlserver">LOOP</isEqual> JOIN
     </sql>
 
 </sqlMap>
