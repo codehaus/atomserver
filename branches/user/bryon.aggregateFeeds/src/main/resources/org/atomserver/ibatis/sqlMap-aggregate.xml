@@ -96,7 +96,12 @@
                matchingSiblingEntriesAgainData.EntryId AS EntryId,
                matchingSiblingEntriesAgainData.UpdateDate AS UpdateDate,
                matchingSiblingEntriesAgainData.CreateDate AS CreateDate,
+             <isEqual property="dbType" compareValue="sqlserver">
+               CONVERT(BIGINT, matchingSiblingEntriesAgainData.UpdateTimestamp) AS UpdateTimestamp,
+             </isEqual>
+             <isNotEqual property="dbType" compareValue="sqlserver">
                matchingSiblingEntriesAgainData.UpdateTimestamp AS UpdateTimestamp,
+             </isNotEqual>
                matchingSiblingEntriesAgainData.DeleteFlag AS DeleteFlag,
                matchingSiblingEntriesAgainData.RevisionNum AS RevisionNum,
                infoCategoriesAgain.Scheme AS Scheme,
