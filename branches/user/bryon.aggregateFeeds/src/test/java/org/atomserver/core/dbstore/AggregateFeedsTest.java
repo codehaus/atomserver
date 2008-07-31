@@ -252,8 +252,13 @@ public class AggregateFeedsTest extends DBSTestCase {
         assertEquals(1, feed.getEntries().size());
         feed = getPage("$join/urn:link/-/(urn:group)odd/(urn:group)red?locale=en_US&start-index=" + endIndex);
         assertEquals(1, feed.getEntries().size());
+        feed = getPage("$join/urn:link/-/OR" +
+                       "/AND/(urn:group)even/(urn:group)blue" +
+                       "/AND/(urn:group)odd/(urn:group)red" +
+                       "?locale=en_US&start-index=" + endIndex);
+        assertEquals(2, feed.getEntries().size());
 
-
+        // Test that we can limit the set of workspaces included in the join.
         feed = getPage("$join(lalas,cuckoos)/urn:link");
         assertEquals(12, feed.getEntries().size());
         for (Entry entry : feed.getEntries()) {
