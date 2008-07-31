@@ -198,21 +198,25 @@ NOTE: requires a SELECT to start (omitted for SELECT TOP...) -->
 
     <sql id="paginationPrefix">
         <dynamic>
-            <isEqual property="dbType" compareValue="sqlserver">
+            <isNotNull property="pageSize">
                 <isNotEqual property="pageSize" compareValue="0">
-                    TOP $pageSize$
+                    <isEqual property="dbType" compareValue="sqlserver">
+                        TOP $pageSize$
+                    </isEqual>
                 </isNotEqual>
-            </isEqual>
+            </isNotNull>
         </dynamic>
     </sql>
 
     <sql id="paginationSuffix">
         <dynamic>
-            <isNotEqual property="dbType" compareValue="sqlserver">
+            <isNotNull property="pageSize">
                 <isNotEqual property="pageSize" compareValue="0">
-                    LIMIT #pageSize#
+                    <isNotEqual property="dbType" compareValue="sqlserver">
+                        LIMIT #pageSize#
+                    </isNotEqual>
                 </isNotEqual>
-            </isNotEqual>
+            </isNotNull>
         </dynamic>
     </sql>
 
@@ -236,11 +240,13 @@ NOTE: requires a SELECT to start (omitted for SELECT TOP...) -->
     </sql>
 
     <sql id="WITH_NOEXPAND">
-        <isEqual property="dbType" compareValue="sqlserver" >WITH (NOEXPAND)</isEqual>
+        <isEqual property="dbType" compareValue="sqlserver">WITH (NOEXPAND)</isEqual>
     </sql>
 
     <sql id="INNER_LOOP_JOIN">
-        INNER <isEqual property="dbType" compareValue="sqlserver" >LOOP</isEqual> JOIN
+        INNER
+        <isEqual property="dbType" compareValue="sqlserver">LOOP</isEqual>
+        JOIN
     </sql>
 
 </sqlMap>

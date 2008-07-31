@@ -152,8 +152,8 @@ public class CategoryQueryGenerator {
 
     private String generateAggregateAtom(BooleanTerm<AtomCategory> expr) {
         return MessageFormat.format(
-                "(SUM(CASE WHEN infoCategories.Scheme = ''{0}''\n" +
-                "           AND infoCategories.Term = ''{1}'' THEN 1 ELSE 0 END) > 0)",
+                "(SUM(CASE WHEN searchCategories.Scheme = ''{0}''\n" +
+                "           AND searchCategories.Term = ''{1}'' THEN 1 ELSE 0 END) > 0)",
                 expr.getValue().getScheme(),
                 expr.getValue().getTerm()
         );

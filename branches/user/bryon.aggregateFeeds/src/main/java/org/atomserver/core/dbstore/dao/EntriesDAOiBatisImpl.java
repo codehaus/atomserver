@@ -520,12 +520,13 @@ public class EntriesDAOiBatisImpl
             paramMap.param("joinWorkspaces", joinWorkspaces);
         }
 
+        System.out.println("::BRYON::");
         Map<String, AggregateEntryMetaData> map =
                 AggregateEntryMetaData.aggregate(
                         entryDescriptor.getWorkspace(),
                         entryDescriptor.getCollection(),
                         entryDescriptor.getLocale(),
-                        getSqlMapClientTemplate().queryForList("selectAggregateEntry", paramMap));
+                        getSqlMapClientTemplate().queryForList("selectAggregateEntries", paramMap));
 
         return map.get(entryDescriptor.getEntryId());
     }
@@ -552,7 +553,7 @@ public class EntriesDAOiBatisImpl
                                    categoriesQuery));
         }
 
-        List entries = getSqlMapClientTemplate().queryForList("selectAggregateEntriesByPage", paramMap);
+        List entries = getSqlMapClientTemplate().queryForList("selectAggregateEntries", paramMap);
         Map<String, AggregateEntryMetaData> map =
                 AggregateEntryMetaData.aggregate(feed.getWorkspace(), feed.getCollection(), locale, entries);
         return new ArrayList(map.values());
