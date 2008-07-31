@@ -235,5 +235,13 @@ NOTE: requires a SELECT to start (omitted for SELECT TOP...) -->
         </isEqual>
     </sql>
 
+    <sql id="WITH_NOEXPAND">
+        <isEqual property="dbType" compareValue="sqlserver" >WITH (NOEXPAND)</isEqual>
+    </sql>
+
+    <sql id="INNER_LOOP_JOIN">
+        INNER <isEqual property="dbType" compareValue="sqlserver" >LOOP</isEqual> JOIN
+    </sql>
+
 </sqlMap>
 

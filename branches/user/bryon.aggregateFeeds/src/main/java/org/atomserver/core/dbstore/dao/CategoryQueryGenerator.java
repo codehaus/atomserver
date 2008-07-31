@@ -23,8 +23,8 @@ import org.atomserver.utils.logic.Conjunction;
 import org.atomserver.utils.logic.Disjunction;
 
 import java.text.MessageFormat;
-import java.util.Collection;
 import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * @author Chris Berry  (chriswberry at gmail.com)
@@ -38,8 +38,8 @@ public class CategoryQueryGenerator {
         return new CategoryQueryGenerator(exprs).generateSQL();
     }
 
-    public static String generateAggregate(Collection<BooleanExpression<AtomCategory>> exprs, String join) {
-        return new CategoryQueryGenerator(exprs).generateAggregateSQL(join);
+    public static String generateAggregate(Collection<BooleanExpression<AtomCategory>> exprs) {
+        return new CategoryQueryGenerator(exprs).generateAggregateSQL();
     }
 
     CategoryQueryGenerator(Collection<BooleanExpression<AtomCategory>> exprs) {
@@ -82,45 +82,12 @@ public class CategoryQueryGenerator {
         return builder == null ? "" : builder.toString();
     }
 
-    String generateAggregateSQL(String join) {
-        int firstTopLevelTerm = 0;
-        StringBuilder builder = null;
-        for (BooleanExpression<AtomCategory> expr : exprs) {
-            if (builder == null) {
-                String termSql = generateAggregate(expr, join);
-                firstTopLevelTerm = term++;
-                builder = new StringBuilder(
-                        MessageFormat.format(
-                                "SELECT term{0}.EntryId AS EntryId FROM\n", firstTopLevelTerm));
-                builder.append("(").append(termSql).append(") term").append(firstTopLevelTerm).append("\n");
-            } else {
-                builder.append("INNER JOIN (\n")
-                        .append(generateAggregate(expr, join))
-                        .append(") term").append(term)
-                        .append("\n")
-                        .append("ON term").append(firstTopLevelTerm)
-                        .append(".EntryId = term").append(term++)
-                        .append(".EntryId\n");
-            }
-        }
-
-        return builder == null ? "" : builder.toString();
-    }
-
     private String generate(BooleanExpression<AtomCategory> expr) {
         return (expr instanceof BooleanTerm) ?
                generateAtom((BooleanTerm<AtomCategory>) expr)
                : (expr instanceof Conjunction) ?
                  generateAnd((Conjunction<AtomCategory>) expr)
                  : generateOr((Disjunction<AtomCategory>) expr);
-    }
-
-    private String generateAggregate(BooleanExpression<AtomCategory> expr, String join) {
-        return (expr instanceof BooleanTerm) ?
-               generateAggregateAtom((BooleanTerm<AtomCategory>) expr, join)
-               : (expr instanceof Conjunction) ?
-                 generateAggregateAnd((Conjunction<AtomCategory>) expr, join)
-                 : generateAggregateOr((Disjunction<AtomCategory>) expr, join);
     }
 
     private String generateAnd(Conjunction<AtomCategory> expr) {
@@ -137,33 +104,11 @@ public class CategoryQueryGenerator {
         );
     }
 
-    private String generateAggregateAnd(Conjunction<AtomCategory> expr, String join) {
-        return MessageFormat.format(
-                "(SELECT term{2}.EntryId FROM\n" +
-                "({0}) term{2}\n" +
-                "INNER JOIN\n" +
-                "({1}) term{3}\n" +
-                "ON term{2}.EntryId = term{3}.EntryId)",
-                generateAggregate(expr.getLhs(), join),
-                generateAggregate(expr.getRhs(), join),
-                term++,
-                term++
-        );
-    }
-
     private String generateOr(Disjunction<AtomCategory> expr) {
         return MessageFormat.format(
                 "( {0} UNION {1} )",
                 generate(expr.getLhs()),
                 generate(expr.getRhs())
-        );
-    }
-
-    private String generateAggregateOr(Disjunction<AtomCategory> expr, String join) {
-        return MessageFormat.format(
-                "( {0} UNION {1} )",
-                generateAggregate(expr.getLhs(), join),
-                generateAggregate(expr.getRhs(), join)
         );
     }
 
@@ -175,15 +120,40 @@ public class CategoryQueryGenerator {
         );
     }
 
-    private String generateAggregateAtom(BooleanTerm<AtomCategory> expr, String join) {
+    String generateAggregateSQL() {
+        StringBuilder builder = new StringBuilder();
+        for (BooleanExpression<AtomCategory> expr : exprs) {
+            builder.append("\nAND\n").append(generateAggregate(expr));
+        }
+        return builder.toString();
+    }
+
+    private String generateAggregate(BooleanExpression<AtomCategory> expr) {
+        return (expr instanceof BooleanTerm) ?
+               generateAggregateAtom((BooleanTerm<AtomCategory>) expr)
+               : (expr instanceof Conjunction) ?
+                 generateAggregateAnd((Conjunction<AtomCategory>) expr)
+                 : generateAggregateOr((Disjunction<AtomCategory>) expr);
+    }
+
+    private String generateAggregateAnd(Conjunction<AtomCategory> expr) {
+        return MessageFormat.format("{0}\nAND\n{1}",
+                                    generateAggregate(expr.getLhs()),
+                                    generateAggregate(expr.getRhs())
+        );
+    }
+
+    private String generateAggregateOr(Disjunction<AtomCategory> expr) {
+        return MessageFormat.format("(\n{0}\nOR\n{1}\n)",
+                                    generateAggregate(expr.getLhs()),
+                                    generateAggregate(expr.getRhs())
+        );
+    }
+
+    private String generateAggregateAtom(BooleanTerm<AtomCategory> expr) {
         return MessageFormat.format(
-                "SELECT DISTINCT j.Term AS EntryId" +
-                "  FROM EntryCategory j JOIN EntryCategory c" +
-                "    ON j.Scheme = ''{0}''" +
-                "   AND c.Scheme = ''{1}''" +
-                "   AND c.Term = ''{2}''" +
-                "   AND j.EntryStoreId = c.EntryStoreId",
-                join,
+                "(SUM(CASE WHEN infoCategories.Scheme = ''{0}''\n" +
+                "           AND infoCategories.Term = ''{1}'' THEN 1 ELSE 0 END) > 0)",
                 expr.getValue().getScheme(),
                 expr.getValue().getTerm()
         );

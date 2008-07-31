@@ -6,6 +6,7 @@ DROP TABLE IF EXISTS EntryStore CASCADE;
 DROP TABLE IF EXISTS AtomCollection CASCADE;
 DROP TABLE IF EXISTS AtomWorkspace CASCADE;
 DROP VIEW IF EXISTS vw_AggregateEntry;
+DROP VIEW IF EXISTS vw_EntryWithCategory;
 
 /*==============================================================*/
 /* Table: AtomWorkspace                                         */
@@ -116,4 +117,15 @@ CREATE VIEW vw_AggregateEntry AS
            entries.CreateDate AS CreateDate
       FROM EntryCategory joincat
       JOIN EntryStore entries
-        ON joincat.EntryStoreId = entries.EntryStoreId;        
+        ON joincat.EntryStoreId = entries.EntryStoreId;
+
+CREATE VIEW vw_EntryWithCategory AS
+    SELECT entries.EntryStoreId,
+           entries.UpdateTimestamp,
+           entries.LanCode,
+           entries.CountryCode,
+           categories.Scheme,
+           categories.Term
+      FROM EntryStore entries
+      JOIN EntryCategory categories
+        ON entries.EntryStoreId = categories.EntryStoreId

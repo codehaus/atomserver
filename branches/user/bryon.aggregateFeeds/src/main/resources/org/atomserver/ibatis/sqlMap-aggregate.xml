@@ -88,52 +88,102 @@
     </select>
 
     <select id="selectAggregateEntriesByPage" parameterClass="map" resultMap="entryResult">
-        SELECT DISTINCT
-               entry.EntryStoreId AS EntryStoreId,
-               entry.Workspace AS Workspace,
-               entry.Collection AS Collection,
-               entry.LanCode AS LanCode,
-               entry.CountryCode AS CountryCode,
-               entry.EntryId AS EntryId,
-               entry.UpdateDate AS UpdateDate,
-               entry.CreateDate AS CreateDate,
-               <include refid="timestampColumn" />,
-               entry.DeleteFlag AS DeleteFlag,
-               entry.RevisionNum AS RevisionNum,
-               cat.Scheme AS Scheme,
-               cat.Term AS Term,
-               cat.Label AS Label
-          FROM ( <include refid="SELECT_modifiedAggregateEntryIds"/> ) agg
-          JOIN EntryCategory joincat ON joincat.Scheme = #collection# AND agg.EntryId = joincat.Term
-          JOIN EntryStore entry ON joincat.EntryStoreId = entry.EntryStoreId
-          JOIN EntryCategory cat ON entry.EntryStoreId = cat.EntryStoreId
-           AND (
-        <!-- we only want to include categories that are either (a) outside of the join scheme, or
-             (b) are matches to the SELECT_modifiedAggregateEntryIds query.  We are already joining
-             in that query as joincat, so we can just include the rows where joincat and cat are
-             referring to the same EntryCategory -->
-                cat.scheme != #collection# OR
-                cat.term = joincat.term
-               )
+        SELECT matchingSiblingEntriesAgainData.EntryStoreId AS EntryStoreId,
+               matchingSiblingEntriesAgainData.Workspace AS Workspace,
+               matchingSiblingEntriesAgainData.Collection AS Collection,
+               matchingSiblingEntriesAgainData.LanCode AS LanCode,
+               matchingSiblingEntriesAgainData.CountryCode AS CountryCode,
+               matchingSiblingEntriesAgainData.EntryId AS EntryId,
+               matchingSiblingEntriesAgainData.UpdateDate AS UpdateDate,
+               matchingSiblingEntriesAgainData.CreateDate AS CreateDate,
+               matchingSiblingEntriesAgainData.UpdateTimestamp AS UpdateTimestamp,
+               matchingSiblingEntriesAgainData.DeleteFlag AS DeleteFlag,
+               matchingSiblingEntriesAgainData.RevisionNum AS RevisionNum,
+               infoCategoriesAgain.Scheme AS Scheme,
+               infoCategoriesAgain.Term AS Term,
+               infoCategoriesAgain.Term AS Label
+          FROM
+        (
+        SELECT <include refid="paginationPrefix"/>
+               recentlyChangedEntries.Term AS AggregateEntryId,
+               recentlyChangedEntries.UpdateTimestamp
+               <!-- 1. This first join here gets all the Entries that have been modified since the minTimestamp, and by joining-->
+               <!--    on EntryCategory we only get Entries that can participate in the aggregate. Since there is an index-->
+               <!--    on EntryStore.UpdateTimestamp, Sql Server will scan the index forward from the minTimestamp.-->
+          FROM vw_EntryWithCategory recentlyChangedEntries
+         <include refid="INNER_LOOP_JOIN"/> vw_EntryWithCategory matchingSiblingEntries <include refid="WITH_NOEXPAND"/>
+               <!-- 1. This first set of constraints gets all entries that have been modified since the minTimestamp that also-->
+               <!--    match the join scheme. Since VW_EntryWithCategory has an index of Scheme, UpdateTimestamp and Term it will-->
+               <!--    scan the index forward from the minTimestamp.-->
+            ON recentlyChangedEntries.Scheme = #collection#
+           AND recentlyChangedEntries.UpdateTimestamp > #lastModifiedSeqNum#
+               <!-- 2. We join in the matching sibling entries by joining on the scheme and term. We also filter the -->
+               <!--    matchingSiblingEntries to only get entries that either match the locale or have no locale. -->
+               <!--    The reason for this is that the semantics of aggregate feeds state that an aggregate contains -->
+               <!--    all entries that either match the locale or have no locale AS LONG AS at least one sub-entry matches the -->
+               <!--    locale. The 'as long as' piece is handled in the GROUP BY below.-->
+           AND matchingSiblingEntries.Scheme = #collection#
+           AND matchingSiblingEntries.Term = recentlyChangedEntries.Term
         <isNotNull property="language">
-           AND (entry.LanCode = #language# OR entry.LanCode = '**')
-            <isNotNull property="country">
-                <isNotEqual property="country" compareValue="">
-           AND (entry.CountryCode = #country# OR entry.CountryCode = '**')
-                </isNotEqual>
-                <isEqual property="country" compareValue="">
-           AND (entry.CountryCode = '**')
-                </isEqual>
-            </isNotNull>
-            <isNull property="country">
-           AND (entry.CountryCode = '**')
-            </isNull>
+           AND ((matchingSiblingEntries.LanCode = #language# AND matchingSiblingEntries.CountryCode = #country#)
+                OR (matchingSiblingEntries.LanCode = '**' AND matchingSiblingEntries.CountryCode = '**'))
         </isNotNull>
         <isNotNull property="joinWorkspaces">
-           AND entry.Workspace IN
+         INNER JOIN EntryStore w ON w.EntryStoreId = matchingSiblingEntries.EntryStoreId AND
+               w.Workspace IN
             <iterate property="joinWorkspaces" open="(" close=")" conjunction=",">#joinWorkspaces[]#</iterate>
         </isNotNull>
-         ORDER BY UpdateTimestamp, Scheme, Term
+               <!-- 3. This final join gets all of the categories for all of the siblings, as we return those in each sub-entry-->
+               <!--    of an aggregate feed. Note that at this point we are done EXCEPT for the following cases:-->
+               <!--    3.1. As stated in #2 above, we need to get rid of cases where all the sub-entries in an aggregate are-->
+               <!--         non localized (i.e. they all have '**' lanCode and countryCode).-->
+               <!--    3.2. We need to run the category filter to only get aggregates that match the category-->
+               <!--    3.3. In cases where 2 sub-entries belonging to the same aggregate have both been modified since -->
+               <!--         minTimestamp, right now we'll get 2 aggregate entry results even though both of these aggregates -->
+               <!--         contain the same sub-entries. The semantics of aggregate feeds dictate that we only want to get a -->
+               <!--         single aggregate whose ordered position in the feed is dictated by the most recent change to any of-->
+               <!--         the sub-entries.-->
+         INNER JOIN EntryCategory infoCategories
+            ON infoCategories.EntryStoreId = matchingSiblingEntries.EntryStoreId
+               <!-- each set of rows belonging to the same aggregate entry will have the same scheme and term, and the-->
+               <!-- UpdateTimestamp is the timestamp of the "triggering" subentry in the aggregate that was modified.-->
+         GROUP BY recentlyChangedEntries.Scheme, recentlyChangedEntries.UpdateTimestamp, recentlyChangedEntries.Term
+               <!-- 4. This having clause is where we filter out the items described in #3 above.-->
+               <!--    4.1 If all of the sibling entries in a single aggregate have a lanCode of '**', then this first-->
+               <!--        constraint gets rid of them.-->
+        HAVING recentlyChangedEntries.UpdateTimestamp = MAX(matchingSiblingEntries.UpdateTimestamp)
+        <isNotNull property="language">
+        AND #language# = MAX(matchingSiblingEntries.LanCode)
+        </isNotNull>
+               <!--    4.2 This next constraint is how category constraints are implemented. Basically it ensures that-->
+               <!--        at least one category row in each aggregate matches the constraint. This can be extended to-->
+               <!--        support any AND/OR boolean logic by grouping successive SUM(...) > 0 clauses. Note, though,-->
+               <!--        that this implementation causes an important change in the semantics of category constraints.-->
+               <!--        See the notes below in the general comments.-->
+        <isNotNull property="categoryQuerySql">$categoryQuerySql$</isNotNull>
+               <!--    4.3 This final constraint deals with the situation described in 3.3 above-->
+        <include refid="paginationSuffix"/>
+        ) aggregateEntryIds
+               <!-- 5. At this point we've determined the aggregate entries to pull - now we need to re-pull all of the-->
+               <!--    sibling entries and info categories that we just filtered out in the GROUP BY above to get the full-->
+               <!--    data set we need to return-->
+         INNER JOIN vw_EntryWithCategory matchingSiblingEntriesAgain <include refid="WITH_NOEXPAND"/>
+            ON matchingSiblingEntriesAgain.Scheme = #collection#
+           AND matchingSiblingEntriesAgain.Term = aggregateEntryIds.AggregateEntryId
+        <isNotNull property="language">
+           AND ((matchingSiblingEntriesAgain.LanCode = #language# AND matchingSiblingEntriesAgain.CountryCode = #country#)
+                OR (matchingSiblingEntriesAgain.LanCode = '**' AND matchingSiblingEntriesAgain.CountryCode = '**'))
+        </isNotNull>
+         INNER JOIN EntryStore matchingSiblingEntriesAgainData
+            ON matchingSiblingEntriesAgainData.EntryStoreId = matchingSiblingEntriesAgain.EntryStoreId
+        <isNotNull property="joinWorkspaces">
+           AND matchingSiblingEntriesAgainData.Workspace IN
+            <iterate property="joinWorkspaces" open="(" close=")" conjunction=",">#joinWorkspaces[]#</iterate>
+        </isNotNull>
+         INNER JOIN EntryCategory infoCategoriesAgain
+            ON infoCategoriesAgain.EntryStoreId = matchingSiblingEntriesAgain.EntryStoreId
+           AND (infoCategoriesAgain.Scheme != #collection# OR infoCategoriesAgain.Term = aggregateEntryIds.AggregateEntryId)
+         ORDER BY aggregateEntryIds.UpdateTimestamp
     </select>
 
     <select id="selectAggregateEntry" parameterClass="map" resultMap="entryResult">

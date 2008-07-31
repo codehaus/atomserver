@@ -549,7 +549,7 @@ public class EntriesDAOiBatisImpl
         if (categoriesQuery != null) {
             paramMap.param("categoryQuerySql",
                            CategoryQueryGenerator.generateAggregate(
-                                   categoriesQuery, feed.getCollection()));
+                                   categoriesQuery));
         }
 
         List entries = getSqlMapClientTemplate().queryForList("selectAggregateEntriesByPage", paramMap);
