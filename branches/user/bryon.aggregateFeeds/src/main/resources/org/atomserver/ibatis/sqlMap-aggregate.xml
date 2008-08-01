@@ -92,6 +92,12 @@
         </isNotNull>
            <!-- Finally, we filter out anything that doesn't match the feed URLs category query -->
         <isNotNull property="categoryQuerySql">$categoryQuerySql$</isNotNull>
+           <!-- In SQL Server, we don't want to do this ORDER BY (in fact, it's not even valid)
+                because we guarantee the order of the query by the way we index the view.  In other
+                DB engines, we NEED this order by in order to make things correct. -->
+        <isNotEqual property="dbType" compareValue="sqlserver">
+         ORDER BY recentlyChangedEntries.UpdateTimestamp ASC
+        </isNotEqual>
         <include refid="paginationSuffix"/>
     </sql>
 

@@ -520,7 +520,6 @@ public class EntriesDAOiBatisImpl
             paramMap.param("joinWorkspaces", joinWorkspaces);
         }
 
-        System.out.println("::BRYON::");
         Map<String, AggregateEntryMetaData> map =
                 AggregateEntryMetaData.aggregate(
                         entryDescriptor.getWorkspace(),

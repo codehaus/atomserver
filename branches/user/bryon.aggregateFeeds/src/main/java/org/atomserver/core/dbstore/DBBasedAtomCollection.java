@@ -195,7 +195,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         // Add elements to the Feed document
         return createFeedElements(feed, abdera, iri, feedTarget, entryType,
                                   sortedList, workspace, collection, locale,
-                                  numEntries, pageSizePlus1, pageSize,
+                                  numEntries, numEntries != pageSizePlus1, pageSize,
                                   startingPageDelim, totalEntries);
     }
 
@@ -633,14 +633,12 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                                      FeedTarget feedTarget, EntryType entryType,
                                      List<? extends EntryMetaData> sortedList,
                                      String workspace, String collection, Locale locale,
-                                     int numEntries, int pageSizePlus1, int pageSize,  
+                                     int numEntries, boolean resultsFitOnOnePage, int pageSize,
                                      int startingPageDelim, int totalEntries ) {
 
-        boolean resultsFitOnOnePage = numEntries != pageSizePlus1;
-        
         // Pick out the last item in the list and pull lastModified from it
         //  Note: we asked for one more than we really needed so subtract 2...
-        int subtract = ( resultsFitOnOnePage ) ? 1 : 2;  
+        int subtract = ( resultsFitOnOnePage ) ? 1 : 2;
 
         int lastIndex = ( (sortedList.size() - subtract) >= 0) ? (sortedList.size() - subtract) : 0;
           
@@ -653,7 +651,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                       + " numEntries= " + numEntries + " totalEntries= " + totalEntries);
         }
 
-        boolean isLastPage = ((startingPageDelim != 0) && (numEntries > 0) && (numEntries <= pageSize));
+        boolean isLastPage = ((startingPageDelim != 0) && resultsFitOnOnePage);
 
         StopWatch stopWatch = new AutomaticStopWatch();
         try { 
