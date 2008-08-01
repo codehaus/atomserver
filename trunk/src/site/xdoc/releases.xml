@@ -9,10 +9,11 @@
     <body>
         <section name="Release 2.1-SNAPSHOT (??/??/08)">
             This release is tagged 2.1 because it is <b>not</b> entirely transparent. The Spring configuration
-            changes somewhat. The only actual non-backwards compatible change is in the wiring of XPathAutoTaggers
-            for a workspace, where the entryCategoriesDAO property should be replaced with a
+            changes somewhat. The only actual non-backwards-compatible change is in the wiring of XPathAutoTaggers
+            for a workspace; the entryCategoriesDAO property should be replaced with a
             categoriesHandler property. This change plugs a leaky abstraction, and allows all Category operations
-            to happen through the CategoriesHander.
+            to happen through the CategoriesHander. <br/>
+            Changes in 2.1 include:
             <ol>
                 <li>Better performance for aggregate feeds</li>
                 <li>Added tests for DB-based ContentStorage</li>
