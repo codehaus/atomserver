@@ -356,62 +356,47 @@ go
 
 if exists (select 1
             from  sysindexes
-           where  id    = object_id('VW_AggregateEntry')
-            and   name  = 'IX2_VW_AggregateEntry'
+           where  id    = object_id('VW_EntryWithCategory')
+            and   name  = 'IX2_VW_EntryWithCategory'
             and   indid > 0
             and   indid < 255)
-   drop index VW_AggregateEntry.IX2_VW_AggregateEntry
+   drop index VW_EntryWithCategory.IX2_VW_EntryWithCategory
 go
 
 if exists (select 1
             from  sysindexes
-           where  id    = object_id('VW_AggregateEntry')
-            and   name  = 'IX1_VW_AggregateEntry'
+           where  id    = object_id('VW_EntryWithCategory')
+            and   name  = 'IX1_VW_EntryWithCategory'
             and   indid > 0
             and   indid < 255)
-   drop index VW_AggregateEntry.IX1_VW_AggregateEntry
+   drop index VW_EntryWithCategory.IX1_VW_EntryWithCategory
 go
 
 if exists (select 1
             from  sysobjects
-           where  id = object_id('VW_AggregateEntry')
+           where  id = object_id('VW_EntryWithCategory')
             and   type = 'V')
-   drop view VW_AggregateEntry
+   drop view VW_EntryWithCategory
 go
 
-/*==============================================================*/
-/* View: VW_AggregateEntry                                      */
-/*==============================================================*/
-create view VW_AggregateEntry with SchemaBinding as
-SELECT
-       joincat.Scheme AS Collection,
-       joincat.Term AS EntryId,
-		entries.[LanCode],
-		entries.[CountryCode],
-       (entries.UpdateTimestamp) AS UpdateTimestamp,
-       (entries.UpdateDate) AS UpdateDate,
-       (entries.CreateDate) AS CreateDate
-  FROM dbo.EntryCategory joincat
-  JOIN dbo.EntryStore entries
-    ON joincat.EntryStoreId = entries.EntryStoreId
-go
+CREATE VIEW VW_EntryWithCategory WITH SCHEMABINDING AS
+SELECT entries.EntryStoreId,
+       entries.UpdateTimestamp,
+       entries.LanCode,
+       entries.CountryCode,
+       categories.Scheme,
+       categories.Term
+  FROM dbo.EntryStore entries
+  JOIN dbo.EntryCategory categories ON entries.EntryStoreId = categories.EntryStoreId
+GO
 
-/*==============================================================*/
-/* Index: IX1_VW_AggregateEntry                                 */
-/*==============================================================*/
-create unique clustered index IX1_VW_AggregateEntry on VW_AggregateEntry (
-Collection ASC,
-UpdateTimestamp DESC,
-EntryId ASC
-)
-go
+CREATE UNIQUE CLUSTERED INDEX IX1_VW_EntryWithCategory ON VW_EntryWithCategory
+(Scheme ASC, UpdateTimestamp ASC, Term ASC)
+GO
 
-create index IX2_VW_AggregateEntry on VW_AggregateEntry (
-LanCode ASC,
-CountryCode ASC,
-Collection ASC,
-EntryId ASC
-)
-go
+CREATE NONCLUSTERED INDEX IX2_VW_EntryWithCategory ON VW_EntryWithCategory
+(Scheme ASC, Term ASC, LanCode ASC, CountryCode ASC)
+INCLUDE (UpdateTimestamp, EntryStoreId)
+GO
 
-grant select on VW_AggregateEntry to HA_Data
+grant select on VW_EntryWithCategory to HAData
