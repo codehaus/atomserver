@@ -75,29 +75,13 @@ public interface EntriesDAO
     //======================================
     //          LIST OPERATIONS
     //======================================
-    List<EntryMetaData> selectEntriesByPagePerCategory(FeedDescriptor feed,
-                                                       Date lastModifiedDate,
-                                                       int pageDelim,
-                                                       int pageSize,
-                                                       Collection<BooleanExpression<AtomCategory>> categoryQuery);
-
-    List<EntryMetaData> selectEntriesByPageAndLocalePerCategory(FeedDescriptor feed,
-                                                                Date lastModifiedDate,
-                                                                int pageDelim,
-                                                                int pageSize,
-                                                                String locale,
-                                                                Collection<BooleanExpression<AtomCategory>> categoryQuery);
-
-    List<EntryMetaData> selectEntriesByPageAndLocale(FeedDescriptor feed,
-                                                     Date lastModifiedDate,
-                                                     int pageDelim,
-                                                     int pageSize,
-                                                     String locale);
-
-    List<EntryMetaData> selectEntriesByPage(FeedDescriptor feed,
-                                            Date lastModifiedDate,
-                                            int pageDelim,
-                                            int pageSize);
+    List<EntryMetaData> selectFeedPage(
+            Date lastModifiedDate,
+            int pageDelim,
+            int pageSize,
+            String locale,
+            FeedDescriptor feed,
+            Collection<BooleanExpression<AtomCategory>> categoryQuery);
 
     List<EntryMetaData> selectEntriesByLastModifiedSeqNum(FeedDescriptor feed,
                                                           Date lastModifiedDate);

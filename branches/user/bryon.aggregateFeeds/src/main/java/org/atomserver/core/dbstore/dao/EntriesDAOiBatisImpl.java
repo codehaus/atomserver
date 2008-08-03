@@ -456,47 +456,6 @@ public class EntriesDAOiBatisImpl
                         .addLocaleInfo(entryQuery.getLocale()));
     }
 
-    //======================================
-    //          LIST OPERATIONS
-    //======================================
-    /**
-     */
-    public List<EntryMetaData> selectEntriesByPagePerCategory(
-            FeedDescriptor feed,
-            Date lastModifiedDate,
-            int pageDelim,
-            int pageSize,
-            Collection<BooleanExpression<AtomCategory>> categoryQuery) {
-        return internalSelectEntries(lastModifiedDate, pageDelim, pageSize,
-                                     null, "selectEntriesByPagePerCategory",
-                                     feed, categoryQuery);
-    }
-
-    /**
-     */
-    public List<EntryMetaData> selectEntriesByPageAndLocalePerCategory(
-            FeedDescriptor feed,
-            Date lastModifiedDate,
-            int pageDelim,
-            int pageSize,
-            String locale,
-            Collection<BooleanExpression<AtomCategory>> categoryQuery) {
-        return internalSelectEntries(lastModifiedDate, pageDelim, pageSize,
-                                     locale, "selectEntriesByPageAndLocalePerCategory",
-                                     feed, categoryQuery);
-    }
-
-    /**
-     */
-    public List<EntryMetaData> selectEntriesByPage(
-            FeedDescriptor feed,
-            Date lastModifiedDate,
-            int pageDelim,
-            int pageSize) {
-        return internalSelectEntries(lastModifiedDate, pageDelim, pageSize,
-                                     null, "selectEntriesByPage", feed, null);
-    }
-
 
     public List<EntryMetaData> selectEntriesByPageAndLocale(
             FeedDescriptor feed,
@@ -504,8 +463,8 @@ public class EntriesDAOiBatisImpl
             int pageDelim,
             int pageSize,
             String locale) {
-        return internalSelectEntries(lastModifiedDate, pageDelim, pageSize,
-                                     locale, "selectEntriesByPageAndLocale", feed, null);
+        return selectFeedPage(lastModifiedDate, pageDelim, pageSize,
+                                     locale, feed, null);
     }
 
     public AggregateEntryMetaData selectAggregateEntry(EntryDescriptor entryDescriptor, List<String> joinWorkspaces) {
@@ -558,12 +517,11 @@ public class EntriesDAOiBatisImpl
         return new ArrayList(map.values());
     }
 
-    private List<EntryMetaData> internalSelectEntries(
+    public List<EntryMetaData> selectFeedPage(
             Date lastModifiedDate,
             int pageDelim,
             int pageSize,
             String locale,
-            String ibatisMethod,
             FeedDescriptor feed,
             Collection<BooleanExpression<AtomCategory>> categoryQuery) {
         StopWatch stopWatch = new AutomaticStopWatch();
@@ -577,15 +535,11 @@ public class EntriesDAOiBatisImpl
                                CategoryQueryGenerator.generate(categoryQuery));
             }
 
-            if (log.isDebugEnabled()) {
-                log.debug("ibatisMethod= " + ibatisMethod);
-            }
-
-            return getSqlMapClientTemplate().queryForList(ibatisMethod, paramMap);
+            return getSqlMapClientTemplate().queryForList("selectFeedPage", paramMap);
         }
         finally {
             if (perflog != null) {
-                perflog.log("DB." + ibatisMethod, perflog.getPerfLogFeedString(locale, feed.getWorkspace(), feed.getCollection()), stopWatch);
+                perflog.log("DB.selectFeedPage", perflog.getPerfLogFeedString(locale, feed.getWorkspace(), feed.getCollection()), stopWatch);
             }
         }
     }
