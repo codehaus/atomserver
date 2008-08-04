@@ -32,14 +32,18 @@
                entry.EntryId AS EntryId,
                entry.UpdateDate AS UpdateDate,
                entry.CreateDate AS CreateDate,
-               <include refid="timestampColumn" />,
+           <isEqual property="dbType" compareValue="sqlserver">
+               CONVERT(BIGINT, UpdateTimestamp) AS UpdateTimestamp,
+           </isEqual>
+           <isNotEqual property="dbType" compareValue="sqlserver">
+               entry.UpdateTimestamp AS UpdateTimestamp,
+           </isNotEqual>
                entry.DeleteFlag AS DeleteFlag,
                entry.RevisionNum AS RevisionNum
           FROM EntryStore entry
         <isNotNull property="categoryQuerySql">
-         INNER JOIN
-               ( $categoryQuerySql$ ) AS catMatches
-            ON entry.EntryStoreId = catMatches.EntryStoreId
+         INNER JOIN EntryCategory searchCategories
+            ON searchCategories.EntryStoreId = entry.EntryStoreId
         </isNotNull>
          WHERE UpdateDate >= #lastModifiedDate#
            AND UpdateTimestamp > #lastModifiedSeqNum#
@@ -53,7 +57,19 @@
            AND CountryCode = #country#
             </isNotNull>
         </isNotNull>
-        ORDER BY UpdateTimestamp
+        GROUP BY entry.EntryStoreId,
+                 entry.Workspace,
+                 entry.Collection,
+                 entry.LanCode,
+                 entry.CountryCode,
+                 entry.EntryId,
+                 entry.UpdateDate,
+                 entry.CreateDate,
+                 entry.UpdateTimestamp,
+                 entry.DeleteFlag,
+                 entry.RevisionNum
+        <isNotNull property="categoryQuerySql">HAVING $categoryQuerySql$</isNotNull>
+        ORDER BY entry.UpdateTimestamp
         <include refid="paginationSuffix"/>
     </select>
 

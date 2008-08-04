@@ -31,15 +31,10 @@ import java.util.Collection;
  * @author Bryon Jacob (bryon at jacob.net)
  */
 public class CategoryQueryGenerator {
-    private int term = 0;
     private final Collection<BooleanExpression<AtomCategory>> exprs;
 
     public static String generate(Collection<BooleanExpression<AtomCategory>> exprs) {
         return new CategoryQueryGenerator(exprs).generateSQL();
-    }
-
-    public static String generateAggregate(Collection<BooleanExpression<AtomCategory>> exprs) {
-        return new CategoryQueryGenerator(exprs).generateAggregateSQL();
     }
 
     CategoryQueryGenerator(Collection<BooleanExpression<AtomCategory>> exprs) {
@@ -58,27 +53,15 @@ public class CategoryQueryGenerator {
     }
 
     String generateSQL() {
-        int firstTopLevelTerm = 0;
         StringBuilder builder = null;
         for (BooleanExpression<AtomCategory> expr : exprs) {
             if (builder == null) {
-                String termSql = generate(expr);
-                firstTopLevelTerm = term++;
-                builder = new StringBuilder(
-                        MessageFormat.format(
-                                "SELECT term{0}.EntryStoreId AS EntryStoreId FROM\n", firstTopLevelTerm));
-                builder.append(termSql).append(" term").append(firstTopLevelTerm).append("\n");
+                builder = new StringBuilder();
             } else {
-                builder.append("INNER JOIN\n")
-                        .append(generate(expr))
-                        .append(" term").append(term)
-                        .append("\n")
-                        .append("ON term").append(firstTopLevelTerm)
-                        .append(".EntryStoreId = term").append(term++)
-                        .append(".EntryStoreId\n");
+                builder.append("\nAND\n");
             }
+            builder.append(generate(expr));
         }
-
         return builder == null ? "" : builder.toString();
     }
 
@@ -91,66 +74,20 @@ public class CategoryQueryGenerator {
     }
 
     private String generateAnd(Conjunction<AtomCategory> expr) {
-        return MessageFormat.format(
-                "(SELECT term{2}.EntryStoreId FROM\n" +
-                "{0} term{2}\n" +
-                "INNER JOIN\n" +
-                "{1} term{3}\n" +
-                "ON term{2}.EntryStoreId = term{3}.EntryStoreId)",
-                generate(expr.getLhs()),
-                generate(expr.getRhs()),
-                term++,
-                term++
+        return MessageFormat.format("{0}\nAND\n{1}",
+                                    generate(expr.getLhs()),
+                                    generate(expr.getRhs())
         );
     }
 
     private String generateOr(Disjunction<AtomCategory> expr) {
-        return MessageFormat.format(
-                "( {0} UNION {1} )",
-                generate(expr.getLhs()),
-                generate(expr.getRhs())
+        return MessageFormat.format("(\n{0}\nOR\n{1}\n)",
+                                    generate(expr.getLhs()),
+                                    generate(expr.getRhs())
         );
     }
 
     private String generateAtom(BooleanTerm<AtomCategory> expr) {
-        return MessageFormat.format(
-                "( SELECT EntryStoreId FROM EntryCategory WHERE Scheme = ''{0}'' and Term = ''{1}'' )",
-                expr.getValue().getScheme(),
-                expr.getValue().getTerm()
-        );
-    }
-
-    String generateAggregateSQL() {
-        StringBuilder builder = new StringBuilder();
-        for (BooleanExpression<AtomCategory> expr : exprs) {
-            builder.append("\nAND\n").append(generateAggregate(expr));
-        }
-        return builder.toString();
-    }
-
-    private String generateAggregate(BooleanExpression<AtomCategory> expr) {
-        return (expr instanceof BooleanTerm) ?
-               generateAggregateAtom((BooleanTerm<AtomCategory>) expr)
-               : (expr instanceof Conjunction) ?
-                 generateAggregateAnd((Conjunction<AtomCategory>) expr)
-                 : generateAggregateOr((Disjunction<AtomCategory>) expr);
-    }
-
-    private String generateAggregateAnd(Conjunction<AtomCategory> expr) {
-        return MessageFormat.format("{0}\nAND\n{1}",
-                                    generateAggregate(expr.getLhs()),
-                                    generateAggregate(expr.getRhs())
-        );
-    }
-
-    private String generateAggregateOr(Disjunction<AtomCategory> expr) {
-        return MessageFormat.format("(\n{0}\nOR\n{1}\n)",
-                                    generateAggregate(expr.getLhs()),
-                                    generateAggregate(expr.getRhs())
-        );
-    }
-
-    private String generateAggregateAtom(BooleanTerm<AtomCategory> expr) {
         return MessageFormat.format(
                 "(SUM(CASE WHEN searchCategories.Scheme = ''{0}''\n" +
                 "           AND searchCategories.Term = ''{1}'' THEN 1 ELSE 0 END) > 0)",

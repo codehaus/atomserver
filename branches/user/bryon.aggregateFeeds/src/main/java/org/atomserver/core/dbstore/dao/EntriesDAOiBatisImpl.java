@@ -507,8 +507,7 @@ public class EntriesDAOiBatisImpl
 
         if (categoriesQuery != null) {
             paramMap.param("categoryQuerySql",
-                           CategoryQueryGenerator.generateAggregate(
-                                   categoriesQuery));
+                           CategoryQueryGenerator.generate(categoriesQuery));
         }
 
         List entries = getSqlMapClientTemplate().queryForList("selectAggregateEntries", paramMap);

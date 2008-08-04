@@ -91,7 +91,7 @@
            AND #language# = MAX(matchingSiblingEntries.LanCode)
         </isNotNull>
            <!-- Finally, we filter out anything that doesn't match the feed URLs category query -->
-        <isNotNull property="categoryQuerySql">$categoryQuerySql$</isNotNull>
+        <isNotNull property="categoryQuerySql">AND $categoryQuerySql$</isNotNull>
            <!-- In SQL Server, we don't want to do this ORDER BY (in fact, it's not even valid)
                 because we guarantee the order of the query by the way we index the view.  In other
                 DB engines, we NEED this order by in order to make things correct. -->

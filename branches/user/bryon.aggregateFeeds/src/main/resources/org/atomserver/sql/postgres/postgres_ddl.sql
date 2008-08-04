@@ -99,7 +99,7 @@ FOREIGN KEY (EntryStoreId) REFERENCES EntryStore(EntryStoreId)
 
 
 /*==============================================================*/
-/* View: vw_EntryWithCategory                                    */
+/* View: vw_EntryWithCategory                                   */
 /* NOTE: in SQL Server, we get a significant performance boost  */
 /*       by indexing this view -- since PostgreSQL does not     */
 /*       support indexed or materialized views, this view does  */
