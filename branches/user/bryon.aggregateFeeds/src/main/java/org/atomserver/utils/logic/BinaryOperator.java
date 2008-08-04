@@ -17,7 +17,6 @@
 
 package org.atomserver.utils.logic;
 
-import java.text.MessageFormat;
 import java.util.Set;
 
 /**
@@ -81,7 +80,7 @@ public class BinaryOperator<T> implements BooleanExpression<T> {
         }
     }
 
-    public void buildTermSet(Set<BooleanTerm> terms) {
+    public void buildTermSet(Set<BooleanTerm<? extends T>> terms) {
         lhs.buildTermSet(terms);
         rhs.buildTermSet(terms);
     }

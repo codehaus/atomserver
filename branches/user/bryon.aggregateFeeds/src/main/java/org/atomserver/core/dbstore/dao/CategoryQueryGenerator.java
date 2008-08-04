@@ -60,11 +60,11 @@ public class CategoryQueryGenerator {
 
     String generateCategoryFilterSQL() {
         StringBuilder builder = null;
-        Set<BooleanTerm<AtomCategory>> terms = new HashSet<BooleanTerm<AtomCategory>>();
+        Set<BooleanTerm<? extends AtomCategory>> terms = new HashSet<BooleanTerm<? extends AtomCategory>>();
         for (BooleanExpression<AtomCategory> expr : exprs) {
             expr.buildTermSet(terms);
         }
-        for (BooleanTerm<AtomCategory> term : terms) {
+        for (BooleanTerm<? extends AtomCategory> term : terms) {
             if (builder == null) {
                 builder = new StringBuilder();
             } else {

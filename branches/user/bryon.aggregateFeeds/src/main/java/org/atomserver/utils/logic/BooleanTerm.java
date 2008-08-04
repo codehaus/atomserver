@@ -17,7 +17,6 @@
 
 package org.atomserver.utils.logic;
 
-import java.text.MessageFormat;
 import java.util.Set;
 
 /**
@@ -45,7 +44,7 @@ public class BooleanTerm<T> implements BooleanExpression<T> {
         return ExpressionType.TERM;
     }
 
-    public void buildTermSet(Set<BooleanTerm> terms) {
+    public void buildTermSet(Set<BooleanTerm<? extends T>> terms) {
         terms.add(this);
     }
 }
