@@ -76,8 +76,9 @@
                      aggregate whose ordered position in the feed is dictated by the most recent
                      change to any of the sub-entries. -->
         <isNotNull property="categoryQuerySql">
-         INNER JOIN EntryCategory searchCategories
+          LEFT OUTER JOIN EntryCategory searchCategories
             ON searchCategories.EntryStoreId = matchingSiblingEntries.EntryStoreId
+        <isNotNull property="categoryFilterSql">AND ($categoryFilterSql$)</isNotNull>
         </isNotNull>
            <!-- each set of rows belonging to the same aggregate entry will have the same scheme
                 and term, and the UpdateTimestamp is the timestamp of the "triggering" subentry

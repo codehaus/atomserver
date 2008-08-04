@@ -506,8 +506,10 @@ public class EntriesDAOiBatisImpl
         }
 
         if (categoriesQuery != null) {
+            paramMap.param("categoryFilterSql",
+                           CategoryQueryGenerator.generateCategoryFilter(categoriesQuery));
             paramMap.param("categoryQuerySql",
-                           CategoryQueryGenerator.generate(categoriesQuery));
+                           CategoryQueryGenerator.generateCategorySearch(categoriesQuery));
         }
 
         List entries = getSqlMapClientTemplate().queryForList("selectAggregateEntries", paramMap);
@@ -530,8 +532,10 @@ public class EntriesDAOiBatisImpl
                             lastModifiedDate, pageDelim, pageSize, locale, feed);
 
             if (categoryQuery != null && !categoryQuery.isEmpty()) {
+                paramMap.param("categoryFilterSql",
+                               CategoryQueryGenerator.generateCategoryFilter(categoryQuery));
                 paramMap.param("categoryQuerySql",
-                               CategoryQueryGenerator.generate(categoryQuery));
+                               CategoryQueryGenerator.generateCategorySearch(categoryQuery));
             }
 
             return getSqlMapClientTemplate().queryForList("selectFeedPage", paramMap);

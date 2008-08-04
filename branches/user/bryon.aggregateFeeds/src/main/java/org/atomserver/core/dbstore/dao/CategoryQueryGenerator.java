@@ -25,6 +25,8 @@ import org.atomserver.utils.logic.Disjunction;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Chris Berry  (chriswberry at gmail.com)
@@ -33,8 +35,12 @@ import java.util.Collection;
 public class CategoryQueryGenerator {
     private final Collection<BooleanExpression<AtomCategory>> exprs;
 
-    public static String generate(Collection<BooleanExpression<AtomCategory>> exprs) {
-        return new CategoryQueryGenerator(exprs).generateSQL();
+    public static String generateCategorySearch(Collection<BooleanExpression<AtomCategory>> exprs) {
+        return new CategoryQueryGenerator(exprs).generateCategorySearchSQL();
+    }
+
+    public static String generateCategoryFilter(Collection<BooleanExpression<AtomCategory>> exprs) {
+        return new CategoryQueryGenerator(exprs).generateCategoryFilterSQL();
     }
 
     CategoryQueryGenerator(Collection<BooleanExpression<AtomCategory>> exprs) {
@@ -52,7 +58,27 @@ public class CategoryQueryGenerator {
         this.exprs = exprs;
     }
 
-    String generateSQL() {
+    String generateCategoryFilterSQL() {
+        StringBuilder builder = null;
+        Set<BooleanTerm<AtomCategory>> terms = new HashSet<BooleanTerm<AtomCategory>>();
+        for (BooleanExpression<AtomCategory> expr : exprs) {
+            expr.buildTermSet(terms);
+        }
+        for (BooleanTerm<AtomCategory> term : terms) {
+            if (builder == null) {
+                builder = new StringBuilder();
+            } else {
+                builder.append("\nOR\n");
+            }
+            builder.append(MessageFormat.format(
+                "(searchCategories.Scheme = ''{0}'' AND searchCategories.Term = ''{1}'')",
+                term.getValue().getScheme(),
+                term.getValue().getTerm()));
+        }
+        return builder == null ? "" : builder.toString();
+    }
+
+    String generateCategorySearchSQL() {
         StringBuilder builder = null;
         for (BooleanExpression<AtomCategory> expr : exprs) {
             if (builder == null) {

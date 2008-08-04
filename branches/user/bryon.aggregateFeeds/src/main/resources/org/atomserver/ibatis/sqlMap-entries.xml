@@ -44,6 +44,7 @@
         <isNotNull property="categoryQuerySql">
          INNER JOIN EntryCategory searchCategories
             ON searchCategories.EntryStoreId = entry.EntryStoreId
+        <isNotNull property="categoryFilterSql">AND ($categoryFilterSql$)</isNotNull>
         </isNotNull>
          WHERE UpdateDate >= #lastModifiedDate#
            AND UpdateTimestamp > #lastModifiedSeqNum#
