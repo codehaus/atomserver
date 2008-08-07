@@ -187,6 +187,9 @@ public class ThrottledAtomServer extends AtomServer {
                 // NOTE; task.cancel() is harmless if the task has already completed
                 // Interrupt if running...
                 futureTask.cancel(true);
+
+                // Help out the garbage collector
+                futureTask = null;
             }
 
         } finally {

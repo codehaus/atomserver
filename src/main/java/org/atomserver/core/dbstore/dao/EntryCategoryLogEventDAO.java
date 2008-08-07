@@ -37,6 +37,7 @@ public interface EntryCategoryLogEventDAO
     int insertEntryCategoryLogEvent(EntryCategory entry);
 
     List<EntryCategoryLogEvent> selectEntryCategoryLogEvent(EntryCategory entryQuery);
+    List<EntryCategoryLogEvent> selectEntryCategoryLogEventByScheme(EntryCategory entryQuery);
     List<EntryCategoryLogEvent> selectEntryCategoryLogEventBySchemeAndTerm(EntryCategory entryQuery);
 
     void deleteEntryCategoryLogEvent(EntryDescriptor entryQuery);

@@ -86,6 +86,27 @@ public class EntryCategoryLogEventDAOiBatisImpl
     }
 
     /**
+     * Select ALL EntryCategoryLogEvents for a given EntryCategory.
+     * I.e. Return EntryCategoryLogEvents that match both Entry and Scheme/Term.
+     */
+    public List<EntryCategoryLogEvent> selectEntryCategoryLogEventByScheme(EntryCategory entryQuery) {
+        StopWatch stopWatch = new AutomaticStopWatch();
+        if (log.isDebugEnabled()) {
+            log.debug("EntryCategoryLogEventDAOiBatisImpl SELECT ==> " + entryQuery);
+        }
+        try {
+            return (List<EntryCategoryLogEvent>)
+                    (getSqlMapClientTemplate().queryForList("selectEntryCategoryLogEventsByScheme",entryQuery));
+        }
+        finally {
+            if (perflog != null) {
+                perflog.log("DB.selectEntryCategoryLogEventsByScheme",
+                            perflog.getPerfLogEntryCategoryString(entryQuery), stopWatch);
+            }
+        }
+    }
+
+    /**
      * Select ALL EntryCategoryLogEvents for a given Entry
      */
     public List<EntryCategoryLogEvent> selectEntryCategoryLogEvent(EntryCategory entryQuery) {
