@@ -477,14 +477,16 @@
                             <goal>war</goal>
                         </goals>
                         <configuration>
-                            <archiveClasses>true</archiveClasses> 
-                            <attachClasses>true</attachClasses>
+                            <archiveClasses>true</archiveClasses>
+                            <!-- when this is available, in 2.1-alpha-2
+                                 we can get rid of teh extra assembly execution below -->
+                            <!-- <attachClasses>true</attachClasses> --> 
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
 
-
+            <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
             <plugin>
                <groupId>org.apache.maven.plugins</groupId>
                <artifactId>maven-dependency-plugin</artifactId>
@@ -582,20 +584,36 @@
                 <version>2.1</version>
                 <executions>
                     <execution>
+                        <id>generate-tar-gz</id>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>
+                                    src/main/assembly/install.xml
+                                </descriptor>
+                            </descriptors>
+                            <outputDirectory>${project.build.directory}/install</outputDirectory>
+                        </configuration>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attached</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>generate-jar</id>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>
+                                    src/main/assembly/jar.xml
+                                </descriptor>
+                            </descriptors>
+                            <outputDirectory>${project.build.directory}/install</outputDirectory>
+                        </configuration>
                         <phase>package</phase>
                         <goals>
                             <goal>attached</goal>
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <descriptors>
-                        <descriptor>
-                            src/main/assembly/install.xml
-                        </descriptor>
-                    </descriptors>
-                    <outputDirectory>${project.build.directory}/install</outputDirectory>
-                </configuration>
             </plugin>
 
             <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
