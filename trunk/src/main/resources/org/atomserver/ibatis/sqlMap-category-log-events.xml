@@ -70,6 +70,12 @@
         AND Term=#term#
     </select>
 
+    <select id="selectEntryCategoryLogEventsByScheme"
+            parameterClass="entryCategory" resultMap="entryCategoryLogEventResult" >
+        <include refid="selectEntryCategoryLogEventsFragment" />
+        AND Scheme=#scheme#
+    </select>
+
     <select id="selectEntryCategoryLogEvents" parameterClass="entryCategory" resultMap="entryCategoryLogEventResult" >
         <include refid="selectEntryCategoryLogEventsFragment" />
     </select>

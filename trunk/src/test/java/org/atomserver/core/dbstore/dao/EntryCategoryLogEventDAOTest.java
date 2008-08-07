@@ -87,6 +87,7 @@ public class EntryCategoryLogEventDAOTest
 
         // SELECT
         verifySelectLogEventBySchemeAndTerm( entryIn, 1, sysId, propId, scheme, term );
+        verifySelectLogEventByScheme( entryIn, 1, sysId, propId, scheme );
         verifySelectLogEvent( entryIn, 1, sysId, propId, scheme );
 
         // DELETE
@@ -143,6 +144,9 @@ public class EntryCategoryLogEventDAOTest
         verifySelectLogEventBySchemeAndTerm( entryIn[1], 2, sysId, propId, scheme, "robin" );
         verifySelectLogEventBySchemeAndTerm( entryIn[3], 1, sysId, propId, scheme, "alfred" );
 
+        // SELECT the others
+        verifySelectLogEventByScheme( entryIn[0], 5, sysId, propId, scheme);
+
         verifySelectLogEvent( entryIn[0], 5, sysId, propId, scheme );
 
         // DELETE
@@ -194,6 +198,7 @@ public class EntryCategoryLogEventDAOTest
         for ( int ii=0; ii< numTags; ii++ ) {
            verifySelectLogEventBySchemeAndTerm( ecList.get(ii), 1, sysId, propId, scheme, term + ii );
         }
+        verifySelectLogEventByScheme( ecList.get(0), 5, sysId, propId, scheme );
 
         // DELETE
         entriesDAO.obliterateEntry(descriptor);
@@ -222,6 +227,22 @@ public class EntryCategoryLogEventDAOTest
             assertNotNull(logEvent.getCreateDate());
         }
     }
+
+    void verifySelectLogEventByScheme( EntryCategory tag, int size, String sysId, String propId, String scheme){
+        assertEquals( scheme, tag.getScheme() );
+        List<EntryCategoryLogEvent> logEvents = entryCategoryLogEventDAO.selectEntryCategoryLogEventByScheme(tag);
+        log.debug("====> logEvents = " + logEvents);
+        assertNotNull(logEvents);
+        assertTrue(logEvents.size() == size);
+
+        for (EntryCategoryLogEvent logEvent : logEvents) {
+            assertEquals(sysId, logEvent.getCollection());
+            assertEquals(propId, logEvent.getEntryId());
+            assertEquals(scheme, logEvent.getScheme());
+            assertNotNull(logEvent.getCreateDate());
+        }
+    }
+
     void verifySelectLogEvent( EntryCategory tag, int size, String sysId, String propId, String scheme ){
         List<EntryCategoryLogEvent> logEvents = entryCategoryLogEventDAO.selectEntryCategoryLogEvent(tag);
         log.debug("====> logEvents = " + logEvents);
