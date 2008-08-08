@@ -41,8 +41,9 @@
                entry.DeleteFlag AS DeleteFlag,
                entry.RevisionNum AS RevisionNum
           FROM EntryStore entry
+        <isEqual property="dbType" compareValue="sqlserver">WITH(INDEX(IX6_EntryStore))</isEqual>
         <isNotNull property="categoryQuerySql">
-         INNER JOIN EntryCategory searchCategories
+        <include refid="INNER_LOOP_JOIN"/> EntryCategory searchCategories
             ON searchCategories.EntryStoreId = entry.EntryStoreId
         <isNotNull property="categoryFilterSql">AND ($categoryFilterSql$)</isNotNull>
         </isNotNull>

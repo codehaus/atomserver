@@ -109,6 +109,7 @@ CREATE VIEW vw_EntryWithCategory AS
            entries.UpdateTimestamp,
            entries.LanCode,
            entries.CountryCode,
+           entries.Workspace,
            categories.Scheme,
            categories.Term
       FROM EntryStore entries
