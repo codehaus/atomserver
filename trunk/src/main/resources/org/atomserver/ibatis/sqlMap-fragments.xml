@@ -79,140 +79,27 @@
         <result property="createDate" column="CreateDate"/>
     </resultMap>
 
-    <sql id="selectEntryStoreIdByPage_fragment">
-        EntryStoreId, UpdateTimestamp
-        FROM EntryStore
-        WHERE UpdateDate >= #lastModifiedDate#
-        AND UpdateTimestamp > #lastModifiedSeqNum#
-        AND Workspace = #workspace#
-        <isNotNull property="collection">
-            AND Collection=#collection#
-        </isNotNull>
-    </sql>
-
-    <sql id="selectEntryStoreIdByPageAndLocale_fragment">
-        <include refid="selectEntryStoreIdByPage_fragment"/>
-        AND LanCode = #language#
-        AND CountryCode = #country#
-    </sql>
-
-
-    <!-- #################### reusable SQL fragments ############### -->
-    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
-    <!-- NOTE: parameterClass="map" resultMap="entryResult"
-NOTE: requires a SELECT to start (omitted for SELECT TOP...) -->
-    <sql id="selectEntriesByPageAndLocaleSansCategories_fragment">
-        EntryStoreId, Workspace, Collection, LanCode, CountryCode, EntryId, UpdateDate, CreateDate,
-        <include refid="timestampColumn"/>,
-        DeleteFlag, RevisionNum
-        FROM EntryStore
-        WHERE UpdateDate >= #lastModifiedDate#
-        AND UpdateTimestamp > #lastModifiedSeqNum#
-        AND Workspace = #workspace#
-        <isNotNull property="collection">
-            AND Collection=#collection#
-        </isNotNull>
-        AND LanCode = #language#
-        AND CountryCode = #country#
-    </sql>
-
-    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
-    <!-- NOTE: parameterClass="map" resultMap="entryResult"
-NOTE: requires a SELECT to start (omitted for SELECT TOP...) -->
-    <sql id="selectEntriesByPageSansCategories_fragment">
-        EntryStoreId, Workspace, Collection, LanCode, CountryCode, EntryId, UpdateDate, CreateDate,
-        <include refid="timestampColumn"/>,
-        DeleteFlag, RevisionNum
-        FROM EntryStore
-        WHERE UpdateDate >= #lastModifiedDate#
-        AND UpdateTimestamp > #lastModifiedSeqNum#
-        AND Workspace = #workspace#
-        <isNotNull property="collection">
-            AND Collection=#collection#
-        </isNotNull>
-    </sql>
-
-    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
-    <!-- NOTE: parameterClass="map" resultMap="entryResult"
-NOTE: requires a SELECT to start (omitted for SELECT TOP...) -->
-    <sql id="selectEntriesByPageAndLocale_fragment">
-        entry.EntryStoreId AS EntryStoreId,
-        entry.Workspace AS Workspace,
-        entry.Collection AS Collection,
-        entry.LanCode AS LanCode,
-        entry.CountryCode AS CountryCode,
-        entry.EntryId AS EntryId,
-        entry.UpdateDate AS UpdateDate,
-        entry.CreateDate AS CreateDate,
-        <include refid="timestampColumn"/>,
-        entry.DeleteFlag AS DeleteFlag,
-        entry.RevisionNum AS RevisionNum,
-        cat.Scheme AS Scheme,
-        cat.Term AS Term,
-        cat.Label AS Label
-        FROM EntryStore entry
-        LEFT OUTER JOIN EntryCategory cat
-        ON ( cat.Workspace = entry.Workspace
-        AND cat.Collection = entry.Collection
-        AND cat.EntryId = entry.EntryId)
-        WHERE UpdateDate >= #lastModifiedDate#
-        AND UpdateTimestamp > #lastModifiedSeqNum#
-        AND entry.Workspace = #workspace#
-        <isNotNull property="collection">
-            AND entry.Collection=#collection#
-        </isNotNull>
-        AND LanCode = #language#
-        AND CountryCode = #country#
-    </sql>
-
-    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
-    <!-- NOTE: parameterClass="map" resultMap="entryResult"
-NOTE: requires a SELECT to start (omitted for SELECT TOP...) -->
-    <sql id="selectEntriesByPage_fragment">
-        entry.EntryStoreId AS EntryStoreId,
-        entry.Workspace AS Workspace,
-        entry.Collection AS Collection,
-        entry.LanCode AS LanCode,
-        entry.CountryCode AS CountryCode,
-        entry.EntryId AS EntryId,
-        entry.UpdateDate AS UpdateDate,
-        entry.CreateDate AS CreateDate,
-        <include refid="timestampColumn"/>,
-        entry.DeleteFlag AS DeleteFlag,
-        entry.RevisionNum AS RevisionNum,
-        cat.Scheme AS Scheme,
-        cat.Term AS Term,
-        cat.Label AS Label
-        FROM EntryStore entry
-        LEFT OUTER JOIN EntryCategory cat
-        ON ( cat.Workspace = entry.Workspace
-        AND cat.Collection = entry.Collection
-        AND cat.EntryId = entry.EntryId)
-        WHERE UpdateDate >= #lastModifiedDate#
-        AND UpdateTimestamp > #lastModifiedSeqNum#
-        AND entry.Workspace = #workspace#
-        <isNotNull property="collection">
-            AND entry.Collection=#collection#
-        </isNotNull>
-    </sql>
-
     <sql id="paginationPrefix">
         <dynamic>
-            <isEqual property="dbType" compareValue="sqlserver">
+            <isNotNull property="pageSize">
                 <isNotEqual property="pageSize" compareValue="0">
-                    TOP $pageSize$
+                    <isEqual property="dbType" compareValue="sqlserver">
+                        TOP $pageSize$
+                    </isEqual>
                 </isNotEqual>
-            </isEqual>
+            </isNotNull>
         </dynamic>
     </sql>
 
     <sql id="paginationSuffix">
         <dynamic>
-            <isNotEqual property="dbType" compareValue="sqlserver">
+            <isNotNull property="pageSize">
                 <isNotEqual property="pageSize" compareValue="0">
-                    LIMIT #pageSize#
+                    <isNotEqual property="dbType" compareValue="sqlserver">
+                        LIMIT #pageSize#
+                    </isNotEqual>
                 </isNotEqual>
-            </isNotEqual>
+            </isNotNull>
         </dynamic>
     </sql>
 
@@ -235,5 +122,28 @@ NOTE: requires a SELECT to start (omitted for SELECT TOP...) -->
         </isEqual>
     </sql>
 
+    <!-- WITH(NOEXPAND) is a SQL Server hint that we use to indicate that when accessing a view
+         that has an index, the index should be used. -->
+    <sql id="WITH_NOEXPAND">
+        <isEqual property="dbType" compareValue="sqlserver">WITH (NOEXPAND)</isEqual>
+    </sql>
+
+    <!-- SQL Server supports an INNER LOOP JOIN with different performance characteristics from a
+         normal INNER JOIN - on other DBs, we use an INNER JOIN which has the same semantics. -->
+    <sql id="INNER_LOOP_JOIN">
+        INNER <isEqual property="dbType" compareValue="sqlserver">LOOP</isEqual> JOIN
+    </sql>
+
+    <select id="selectSysDate" resultClass="date">
+        <dynamic>
+            <isNotEqual property="dbType" compareValue="hsql">
+                SELECT ${db.getdate.func} AS ServerDateTime
+            </isNotEqual>
+            <isEqual property="dbType" compareValue="hsql">
+                CALL ${db.getdate.func}
+            </isEqual>
+        </dynamic>
+    </select>
+    
 </sqlMap>
 
