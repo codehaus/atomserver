@@ -42,6 +42,13 @@
 
         </section>
 
+        <section name="Release 2.0.2 (8/7/08)">
+            <ol>
+                <li>Added TestingAtomServer - spin up a complete atomserver, running in Jetty, all through a java API.
+                    Makes writing unit tests for Atom clients MUCH simpler.</li>
+            </ol>
+        </section>
+
         <section name="Release 2.0.1 (6/23/08)">
             <ol>
                 <li>Added a "throttled" AtomServer. This AtomServer throttles all PUTs, POSTs, and DELETEs

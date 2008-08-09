@@ -18,22 +18,14 @@ package org.atomserver.core.dbstore;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.apache.abdera.protocol.client.ClientResponse;
 import org.apache.abdera.model.Categories;
 import org.apache.abdera.model.Category;
-import org.apache.abdera.model.Entry;
-import org.apache.abdera.model.Document;
-import org.apache.abdera.i18n.iri.IRI;
-import org.apache.commons.lang.LocaleUtils;
-import org.atomserver.uri.EntryTarget;
-import org.atomserver.testutils.client.MockRequestContext;
 import org.atomserver.testutils.conf.TestConfUtil;
-import org.atomserver.core.EntryMetaData;
-import org.atomserver.core.BaseServiceDescriptor;
+import org.atomserver.core.EntryCategoryLogEvent;
+import org.atomserver.core.EntryCategory;
 
 import java.io.StringWriter;
 import java.util.List;
-import java.util.Locale;
 
 public class TagsLogEventDBSTest extends CRUDDBSTestCase {
 
@@ -134,6 +126,28 @@ public class TagsLogEventDBSTest extends CRUDDBSTestCase {
         assertEquals((startCount + numCats), count);
         count = entryCategoryLogEventDAO.getTotalCount("widgets");
         assertEquals((startCount + numCats), count);
+
+        EntryCategory entryIn = new EntryCategory();
+        entryIn.setWorkspace("widgets");
+        entryIn.setCollection("acme");
+        entryIn.setEntryId("4");
+        entryIn.setLanguage("en");
+        List<EntryCategoryLogEvent> logEvents = entryCategoryLogEventDAO.selectEntryCategoryLogEvent(entryIn);
+        log.debug("====> logEvents = " + logEvents);
+        assertNotNull(logEvents);
+        assertTrue(logEvents.size() == numCats);
+
+        entryIn.setScheme( "urn:widgets/foo" );
+        logEvents = entryCategoryLogEventDAO.selectEntryCategoryLogEventByScheme(entryIn);
+        log.debug("====> logEvents = " + logEvents);
+        assertNotNull(logEvents);
+        assertTrue(logEvents.size() == numCats);
+
+        entryIn.setTerm( "testutils:1" );
+        logEvents = entryCategoryLogEventDAO.selectEntryCategoryLogEventBySchemeAndTerm(entryIn);
+        log.debug("====> logEvents = " + logEvents);
+        assertNotNull(logEvents);
+        assertTrue(logEvents.size() == 1);
 
         //INSERT to tags:widgets
         editURI = update(id, fullURL, categoriesXML);
