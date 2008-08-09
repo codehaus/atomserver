@@ -79,16 +79,29 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
                                       long ifModifiedSinceLong,
                                       Feed feed) throws AtomServerException {
 
-                EntryType entryType = (feedTarget.getEntryTypeParam() != null) ? feedTarget.getEntryTypeParam() : EntryType.link;
-                int pageSize = calculatePageSize(feedTarget, entryType);
-                List<AggregateEntryMetaData> list =
-                        getEntriesDAO().selectAggregateEntriesByPage(feedTarget,
-                                                                     new Date(ifModifiedSinceLong),
-                                                                     feedTarget.getLocaleParam(),
-                                                                     feedTarget.getPageDelimParam(),
-                                                                     pageSize + 1,
-                                                                     feedTarget.getCategoriesQuery(),
-                                                                     joinWorkspaces);
+                EntryType entryType = (feedTarget.getEntryTypeParam() != null) ?
+                                      feedTarget.getEntryTypeParam() :
+                                      EntryType.link;
+                return internalGetEntries(abdera, iri, feedTarget,
+                                          ifModifiedSinceLong, feed, entryType,
+                                          calculatePageSize(feedTarget, entryType));
+            }
+
+            private long internalGetEntries(Abdera abdera, IRI iri, FeedTarget feedTarget,
+                                            long ifModifiedSinceLong, Feed feed,
+                                            EntryType entryType, int pageSize) {
+                List<AggregateEntryMetaData> list;
+                list = getEntriesDAO().selectAggregateEntriesByPage(feedTarget,
+                                                                    new Date(ifModifiedSinceLong),
+                                                                    feedTarget.getLocaleParam(),
+                                                                    feedTarget.getPageDelimParam(),
+                                                                    pageSize + 1,
+                                                                    feedTarget.getCategoriesQuery(),
+                                                                    joinWorkspaces);
+
+                if (list.isEmpty()) {
+                    return 0L;
+                }
 
                 Collections.sort(list, new Comparator<AggregateEntryMetaData>() {
                     public int compare(AggregateEntryMetaData a, AggregateEntryMetaData b) {
@@ -98,14 +111,29 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
                     }
                 });
 
-                if (list.size() == 0) {
-                    return 0L;
+                boolean resultsFitOnOnePage = list.size() <= pageSize;
+
+                // if there are more than should fit on one page, and the last two are the same
+                // seqnum, then we have to specially handle things.
+                long lastSeqnumOnPage = list.get(list.size() - 1).getLastModifiedSeqNum();
+
+                if (!resultsFitOnOnePage && lastSeqnumOnPage == list.get(list.size() - 2).getLastModifiedSeqNum()) {
+                    long firstSeqnumOnPage = list.get(0).getLastModifiedSeqNum();
+
+                    if (lastSeqnumOnPage != firstSeqnumOnPage) {
+                        while (list.get(list.size() - 1).getLastModifiedSeqNum() == lastSeqnumOnPage) {
+                            list.remove(list.size() - 1);
+                        }
+                    } else {
+                        return internalGetEntries(abdera, iri, feedTarget, ifModifiedSinceLong, feed, entryType,
+                                                  pageSize * 2);
+                    }
                 }
 
                 return createFeedElements(feed, abdera, iri, feedTarget, entryType,
                                           list, feedTarget.getWorkspace(), feedTarget.getCollection(),
                                           feedTarget.getLocaleParam(),
-                                          list.size(), pageSize + 1, pageSize,
+                                          list.size(), resultsFitOnOnePage, pageSize,
                                           feedTarget.getPageDelimParam(), 0 /*total entries*/);
             }
 

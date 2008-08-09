@@ -40,7 +40,7 @@ public class DAOTestCase extends TestCase {
 
     protected ClassPathXmlApplicationContext springFactory = null;
 
-    protected EntriesDAO entriesDAO = null;
+    protected EntriesDAOiBatisImpl entriesDAO = null;
     protected EntryCategoriesDAO entryCategoriesDAO = null;
     protected ContentDAO contentDAO = null;
     protected EntryCategoryLogEventDAO entryCategoryLogEventDAO = null;
@@ -65,7 +65,7 @@ public class DAOTestCase extends TestCase {
 
         entryURIHelper = ((AtomService) springFactory.getBean("org.atomserver-atomService")).getURIHandler();
 
-        entriesDAO = (EntriesDAO) springFactory.getBean("org.atomserver-entriesDAO");
+        entriesDAO = (EntriesDAOiBatisImpl) springFactory.getBean("org.atomserver-entriesDAO");
         entryCategoriesDAO = (EntryCategoriesDAO) springFactory.getBean("org.atomserver-entryCategoriesDAO");
         contentDAO = (ContentDAO) springFactory.getBean("org.atomserver-contentDAO");
         entryCategoryLogEventDAO = (EntryCategoryLogEventDAO) springFactory.getBean("org.atomserver-entryCategoryLogEventDAO");

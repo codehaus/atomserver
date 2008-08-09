@@ -174,7 +174,9 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         AtomCategory atomCategory = new AtomCategory( scheme, "foobar0" );
         categoryList.add(new BooleanTerm<AtomCategory>("term0", atomCategory));
 
-        List sortedList = entriesDAO.selectEntriesByPagePerCategory(new BaseFeedDescriptor(workspace, sysId), lastMod[1], 0, 2, categoryList );
+        List sortedList = entriesDAO.selectFeedPage(lastMod[1], 0, 2,
+                                                    null,
+                                                    new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
         assertEquals( 2, sortedList.size() );
 
@@ -189,7 +191,9 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         // get second page
         int pageDelim = getPageDelim(sortedList);
 
-        sortedList = entriesDAO.selectEntriesByPagePerCategory( new BaseFeedDescriptor(workspace, sysId), lastMod[1], pageDelim, 2, categoryList );
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], pageDelim, 2,
+                                               null,
+                                               new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
         assertEquals( 2, sortedList.size() );
 
@@ -210,7 +214,9 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
 
         categoryList.add(new BooleanTerm<AtomCategory>("term1", atomCategory));
 
-        sortedList = entriesDAO.selectEntriesByPagePerCategory(new BaseFeedDescriptor(workspace, sysId),  lastMod[1], 0, 2, categoryList );
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], 0, 2,
+                                               null,
+                                               new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
         assertEquals( 2, sortedList.size() );
 
@@ -224,7 +230,9 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
 
         // get second page
         pageDelim = getPageDelim(sortedList);
-        sortedList = entriesDAO.selectEntriesByPagePerCategory( new BaseFeedDescriptor(workspace, sysId), lastMod[1], pageDelim, 2,  categoryList );
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], pageDelim, 2,
+                                               null,
+                                               new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
         assertEquals( 2, sortedList.size() );
 
@@ -248,7 +256,9 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
 
         categoryList.add(new BooleanTerm<AtomCategory>("term1", atomCategory));
 
-        sortedList = entriesDAO.selectEntriesByPagePerCategory(new BaseFeedDescriptor(workspace, sysId),  lastMod[1], 0, 3, categoryList );
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], 0, 3,
+                                               null,
+                                               new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
         assertEquals( 0, sortedList.size() );
 
@@ -262,7 +272,9 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
 
         categoryList.add(new BooleanTerm<AtomCategory>("term1", atomCategory));
 
-        sortedList = entriesDAO.selectEntriesByPagePerCategory( new BaseFeedDescriptor(workspace, sysId), lastMod[1], 0, 2, categoryList );
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], 0, 2,
+                                               null,
+                                               new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
         assertEquals( 2, sortedList.size() );
 
@@ -276,7 +288,9 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
 
         // get second page
         pageDelim = getPageDelim(sortedList);
-        sortedList = entriesDAO.selectEntriesByPagePerCategory( new BaseFeedDescriptor(workspace, sysId), lastMod[1], pageDelim, 2,  categoryList );
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], pageDelim, 2,
+                                               null,
+                                               new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
         assertEquals( 2, sortedList.size() );
 
@@ -311,11 +325,15 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         atomCategory = new AtomCategory( scheme, "foobar0" );
 
         categoryList.add(new BooleanTerm<AtomCategory>("term0", atomCategory));
-        sortedList = entriesDAO.selectEntriesByPageAndLocalePerCategory( new BaseFeedDescriptor(workspace, sysId), ZERO_DATE, 0, 100, "zh", categoryList );
+        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, 0, 100,
+                                               "zh",
+                                               new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
         assertEquals( 2, sortedList.size() );
 
-        sortedList = entriesDAO.selectEntriesByPageAndLocalePerCategory( new BaseFeedDescriptor(workspace, sysId), ZERO_DATE, 0, 100, "fr", categoryList );
+        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, 0, 100,
+                                               "fr",
+                                               new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
         assertEquals( 0, sortedList.size() );
  
@@ -324,7 +342,9 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         atomCategory = new AtomCategory( scheme, "foobar3" );
 
         categoryList.add(new BooleanTerm<AtomCategory>("term0", atomCategory));
-        sortedList = entriesDAO.selectEntriesByPageAndLocalePerCategory( new BaseFeedDescriptor(workspace, sysId), ZERO_DATE, 0, 100, "fr", categoryList );
+        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, 0, 100,
+                                               "fr",
+                                               new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
         assertEquals( 2, sortedList.size() );
 
@@ -335,7 +355,9 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         atomCategory = new AtomCategory( scheme, "foobar0" );
 
         categoryList.add(new BooleanTerm<AtomCategory>("term0", atomCategory));
-        sortedList = entriesDAO.selectEntriesByPageAndLocalePerCategory( new BaseFeedDescriptor(workspace, sysId), lastMod[1], 0, 2, "zh", categoryList );
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], 0, 2,
+                                               "zh",
+                                               new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
         assertEquals( 2, sortedList.size() );
 
@@ -345,7 +367,9 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         atomCategory = new AtomCategory( scheme, "foobar2" );
 
         categoryList.add(new BooleanTerm<AtomCategory>("term0", atomCategory));
-        sortedList = entriesDAO.selectEntriesByPageAndLocalePerCategory( new BaseFeedDescriptor(workspace, sysId), lastMod[1], 0, 2, "zh", categoryList );
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], 0, 2,
+                                               "zh",
+                                               new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
         assertEquals( 2, sortedList.size() );
 
@@ -361,7 +385,9 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         atomCategory = new AtomCategory( scheme, "foobar2" );
 
         categoryList.add(new BooleanTerm<AtomCategory>("term1", atomCategory));
-        sortedList = entriesDAO.selectEntriesByPageAndLocalePerCategory( new BaseFeedDescriptor(workspace, sysId), lastMod[1], 0, 3, "ar", categoryList );
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], 0, 3,
+                                               "ar",
+                                               new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
         assertEquals( 0, sortedList.size() );
 
@@ -372,7 +398,9 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         atomCategory = new AtomCategory( scheme, "noogie0" );
 
         categoryList.add(new BooleanTerm<AtomCategory>("term1", atomCategory));
-        sortedList = entriesDAO.selectEntriesByPageAndLocalePerCategory( new BaseFeedDescriptor(workspace, sysId), lastMod[1], 0, 3, "zh", categoryList );
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], 0, 3,
+                                               "zh",
+                                               new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
         assertEquals( 2, sortedList.size() );
  
@@ -434,7 +462,9 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         AtomCategory atomCategory = new AtomCategory( scheme, term );
         categoryList.add(new BooleanTerm<AtomCategory>("term0", atomCategory));
 
-        List sortedList = entriesDAO.selectEntriesByPagePerCategory(new BaseFeedDescriptor(workspace, sysId),  ZERO_DATE, 0, 100, categoryList );
+        List sortedList = entriesDAO.selectFeedPage(ZERO_DATE, 0, 100,
+                                                    null,
+                                                    new BaseFeedDescriptor(workspace, sysId), categoryList);
 
         log.debug("List= " + sortedList);
         assertEquals( 5, sortedList.size() );
