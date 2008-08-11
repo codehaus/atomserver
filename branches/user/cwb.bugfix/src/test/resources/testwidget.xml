@@ -1,0 +1,13 @@
+<property xmlns="http://schemas.atomserver.org/widgets/v1/rev0" systemId="acme" id="167370" inNetwork="false">
+    <colors>
+        <color>green</color>
+        <color>yellow</color>
+        <color>purple</color>
+        <color isDefault="true">blue</color>
+    </colors>
+    <contact>
+        <contactId>7836</contactId>
+        <displayName>Chris Berry</displayName>
+        <hasEmail>true</hasEmail>
+    </contact>
+</property>
