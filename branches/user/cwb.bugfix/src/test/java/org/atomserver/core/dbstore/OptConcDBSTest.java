@@ -74,24 +74,59 @@ public class OptConcDBSTest extends CRUDDBSTestCase {
     //       tests
     //---------------------
 
-    public void testBadReq() throws Exception {
-        log.debug( "########################################## testBadReq " );
+    public void testInsertNonZeroRev() throws Exception {
+        log.debug( "########################################## testInsertNonZeroRev " );
+        // Insert with as widgets/acme/33445566.en.xml/100
+        //  This one should fail.
+        insertRev( "/100", false );
+    }
+
+    public void testInsertZeroRev() throws Exception {
+        log.debug( "########################################## testInsertZeroRev " );
+        insertRev( "/0", true );
+
+        // make sure that we can't insert it again at /0
+        insertRev( "/0", false, true );        
+    }
+
+    public void testInsertNoRev() throws Exception {
+        log.debug( "########################################## testInsertNoRev " );
+        insertRev( "", true );
+    }
+
+    public void testInsertAnyRev() throws Exception {
+        log.debug( "########################################## testInsertAnyRev " );
+        insertRev( "/*", true );
+    }
+    
+    private void insertRev( String rev, boolean expects201 ) throws Exception {
+        boolean fileShouldExist = (expects201) ? true : false;
+        insertRev( rev, expects201, fileShouldExist);
+    }
+
+    private void insertRev( String rev, boolean expects201, boolean fileShouldExist ) throws Exception {
         String urlPath = getURLPath();
         String fullURL = getServerURL() + urlPath;
         String id = urlPath;
 
-        // Insert with as widgets/acme/33445566.en.xml/100
-        String insertURL = fullURL + "/100" ;
-        boolean allowAny = false;
-        boolean expects201 = false;
-        String editURI = insert(id, insertURL, getFileXMLInsert(), allowAny, 409, expects201 );
+        // Insert with as widgets/acme/33445566.en.xml/*
+        //  This one should pass.
+        String insertURL = fullURL + rev;
+        int expectedStatus = (expects201) ? 201 : 409;
+        String editURI = insert(id, insertURL, getFileXMLInsert(), false, expectedStatus, expects201 );
 
         log.debug( "########################################## editURI = " + editURI );
         File propFile = getEntryFile(0);
         log.debug("propFile " + propFile);
-        assertFalse(propFile.exists());
+        if ( fileShouldExist )
+            assertTrue(propFile.exists());
+        else
+            assertFalse(propFile.exists());
 
-        int rev = extractRevisionFromURI(editURI);
-        assertEquals( 0, rev );
+        /* FIXME
+        int irev = extractRevisionFromURI(editURI);
+        log.debug( "irev= " + irev );
+        assertEquals( 0, irev );
+        */
     }
 }
