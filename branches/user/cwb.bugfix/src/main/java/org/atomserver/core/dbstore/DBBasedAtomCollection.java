@@ -407,6 +407,16 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                 log.error(msg);
                 throw new BadRequestException(msg);
             }
+
+            if ( revision != 0 && revision != URIHandler.REVISION_OVERRIDE ) {
+                String msg = "Entry [" + workspace + ", " + collection + ", " + entryId + ", " + locale
+                             + "] does NOT exist, but you requested it to be created at revision= " + revision +
+                             "\nNOTE: only /0, /*, or nothing is acceptable for initial creation";
+                log.error(msg);
+                String editURI = getURIHandler().constructURIString(workspace, collection, entryId, locale, 0);
+                throw new OptimisticConcurrencyException(msg, null, editURI);
+            }
+
             try {
                 internalId = getEntriesDAO().insertEntry(entryTarget );
                 if (log.isDebugEnabled())

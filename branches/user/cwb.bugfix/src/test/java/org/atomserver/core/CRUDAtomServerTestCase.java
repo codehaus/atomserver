@@ -321,23 +321,22 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         boolean statusIs200or201 = ((status == 200) || (status == 201 ));
         if ( !statusIs200or201 && ( allowAny || expectedResponse > 201 )) {
             log.warn( "WARN::::::::: status = " + status + " for " + fullURL + " expected = " + expectedResponse );
-            return null;
+            if ( !allowAny )
+                assertEquals( expectedResponse, status );
+
+            String editLinkStr = null;
+            if ( expectedResponse == 409 ) {
+                editLinkStr = get409EditLink( response );
+            }
+            response.release();
+            return editLinkStr;
         }
         if ( expects201 ) {
             assertEquals(201, status);
         }  else {
 
             if ( status == 409 ) {
-                Document<ExtensibleElement> doc = response.getDocument();
-                ExtensibleElement error = doc.getRoot();
-                log.debug( "&&&&&&&&&&&&&& error = " + error );
-
-                Link link = error.getExtension( LINK );
-                IRI editLink = link.getResolvedHref();
-                String editLinkStr = null;
-                if ( editLink != null )
-                    editLink.toString();
-
+                String editLinkStr = get409EditLink( response );
                 response.release();
                 return editLinkStr;
             }
@@ -361,6 +360,21 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         String editLinkStr = editLink.toString();
 
         response.release();
+        return editLinkStr;
+    }
+
+    private String get409EditLink( ClientResponse response ) {
+        assertEquals( 409, response.getStatus() );
+        Document<ExtensibleElement> doc = response.getDocument();
+        ExtensibleElement error = doc.getRoot();
+        log.debug( "&&&&&&&&&&&&&& error = " + error );
+
+        Link link = error.getExtension( LINK );
+        IRI editLink = link.getResolvedHref();
+        String editLinkStr = null;
+        if ( editLink != null )
+            editLinkStr = editLink.toString();
+
         return editLinkStr;
     }
 
