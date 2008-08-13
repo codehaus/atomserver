@@ -47,7 +47,7 @@ import java.util.zip.GZIPOutputStream;
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
-@ManagedResource(description = "Content Storage")
+@ManagedResource(description = "File-Based Content Storage")
 public class FileBasedContentStorage implements ContentStorage {
 
     static private Log log = LogFactory.getLog(FileBasedContentStorage.class);

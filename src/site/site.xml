@@ -18,17 +18,18 @@
     <body>
 
         <head>
-          <script type="text/javascript">
-var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-var gaS = "%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E";
-document.write(unescape(gaS));
-          </script>
-          <script type="text/javascript">
-var pageTracker = _gat._getTracker("UA-4603527-2");
-pageTracker._initData();
-pageTracker._trackPageview();
-          </script>
-          <meta name="verify-v1" content="sRQSq4VA5FRMhwzFB4U3I9AtgLMtIWTdpVVO6jg1az4=" />
+        <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js'
+            type='text/javascript'%3E%3C/script%3E"));
+        </script>
+        <script type="text/javascript">
+            var pageTracker = _gat._getTracker("UA-4603527-2");
+            pageTracker._initData();
+            pageTracker._trackPageview();
+        </script>
+
+        <meta name="verify-v1" content="sRQSq4VA5FRMhwzFB4U3I9AtgLMtIWTdpVVO6jg1az4=" />
         </head>
 
         <links>
@@ -57,14 +58,12 @@ pageTracker._trackPageview();
 
     </body>
 
-    <poweredBy>
-       <logo name="Maven" href="http://maven.apache.org/"
-             img="http://maven.apache.org/images/logos/maven-feather.png"/>
-       <logo name="Homeaway" href="http://www.homeaway.com"
-             img="images/homeaway_logo.png" />
-    </poweredBy>
-
     <!--
+    <poweredBy>
+        <logo name="SVNKit" href="http://svnkit.com/" img="http://svnkit.com/img/svnkit_logo.jpg"/>
+        <logo name="Subversion" href="http://subversion.tigris.org/"
+              img="http://subversion.tigris.org/images/subversion_logo_hor-468x64.png"/>
+    </poweredBy>
     <skin>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-skin</artifactId>

@@ -1,11 +1,9 @@
 
 DROP TABLE IF EXISTS EntryContent CASCADE;
-DROP TABLE IF EXISTS EntryCategoryLogEvent CASCADE;
 DROP TABLE IF EXISTS EntryCategory CASCADE;
 DROP TABLE IF EXISTS EntryStore CASCADE;
 DROP TABLE IF EXISTS AtomCollection CASCADE;
 DROP TABLE IF EXISTS AtomWorkspace CASCADE;
-DROP VIEW IF EXISTS vw_AggregateEntry;
 DROP SEQUENCE entrystore_updatetimestamp_seq IF EXISTS; 
 
 /*==============================================================*/
@@ -80,38 +78,3 @@ PRIMARY KEY (EntryStoreId),
 FOREIGN KEY (EntryStoreId) REFERENCES EntryStore(EntryStoreId)
 );
 
-/*==============================================================*/
-/* Table: EntryCategoryLogEvent                                 */
-/*==============================================================*/
-CREATE TABLE EntryCategoryLogEvent (
-EntryCategoryLogEventId  BIGINT                  IDENTITY,
-EntryStoreId             BIGINT                  NOT NULL,
-Scheme                   VARCHAR(128)            NOT NULL,
-Term                     VARCHAR(32)             NOT NULL,
-Label                    VARCHAR(128)            NULL,
-CreateDate               TIMESTAMP               NOT NULL,
-PRIMARY KEY (EntryCategoryLogEventId),
-FOREIGN KEY (EntryStoreId) REFERENCES EntryStore(EntryStoreId)
-);
-
-
-/*==============================================================*/
-/* View: vw_EntryWithCategory                                   */
-/* NOTE: in SQL Server, we get a significant performance boost  */
-/*       by indexing this view -- since HSQLDB does not         */
-/*       support indexed or materialized views, this view does  */
-/*       not provide any real performance boost, but it is      */
-/*       created to keep the queries for aggregate feeds as     */
-/*       similar as possible.                                   */
-/*==============================================================*/
-CREATE VIEW vw_EntryWithCategory AS
-    SELECT entries.EntryStoreId,
-           entries.UpdateTimestamp,
-           entries.LanCode,
-           entries.CountryCode,
-           entries.Workspace,
-           categories.Scheme,
-           categories.Term
-      FROM EntryStore entries
-      JOIN EntryCategory categories
-        ON entries.EntryStoreId = categories.EntryStoreId

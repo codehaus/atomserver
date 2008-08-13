@@ -140,8 +140,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
         log.debug("pageDelim= " + pageDelim);
 
         // get page
-        List sortedList = entriesDAO.selectFeedPage(lastMod[1], pageDelim, 3,
-                                                    null, new BaseFeedDescriptor(workspace, null), null);
+        List sortedList = entriesDAO.selectEntriesByPage(new BaseFeedDescriptor(workspace, null), lastMod[1], pageDelim, 3);
         log.debug("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.debug("List= " + sortedList);
 
@@ -153,8 +152,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
 
         // get page
         pageDelim = getPageDelim(sortedList);
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], pageDelim, 3,
-                                               null, new BaseFeedDescriptor(workspace, null), null);
+        sortedList = entriesDAO.selectEntriesByPage(new BaseFeedDescriptor(workspace, null), lastMod[1], pageDelim, 3);
         log.debug("List= " + sortedList);
 
         log.debug("######################## 0 :: " + (EntryMetaData) (sortedList.get(0)));
@@ -168,8 +166,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
 
         // get page
         pageDelim = getPageDelim(sortedList);
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], pageDelim, 3,
-                                               null, new BaseFeedDescriptor(workspace, null), null);
+        sortedList = entriesDAO.selectEntriesByPage(new BaseFeedDescriptor(workspace, null), lastMod[1], pageDelim, 3);
         log.debug("List= " + sortedList);
 
         // this set should all be 2 at lastMod[0] and the 1 at lastMod[0]
@@ -203,8 +200,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
         log.debug("pageDelim= " + pageDelim);
 
         // get page
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], pageDelim, 3,
-                                               null, new BaseFeedDescriptor(workspace, null), null);
+        sortedList = entriesDAO.selectEntriesByPage(new BaseFeedDescriptor(workspace, null), lastMod[1], pageDelim, 3);
         log.debug("List= " + sortedList);
 
         // this first set should all be at lastMod[1]
@@ -215,8 +211,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
 
         // get page
         pageDelim = getPageDelim(sortedList);
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], pageDelim, 3,
-                                               null, new BaseFeedDescriptor(workspace, null), null);
+        sortedList = entriesDAO.selectEntriesByPage(new BaseFeedDescriptor(workspace, null), lastMod[1], pageDelim, 3);
         log.debug("List= " + sortedList);
 
         // the second set should have 1 at lastMod[1] and the last 2 at lastMod[0]
@@ -301,8 +296,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
         */
 
         // simulate a first page (delim=0) 
-        List sortedList = entriesDAO.selectFeedPage(lastMod[1], 0, 3,
-                                                    null, new BaseFeedDescriptor(workspace, null), null);
+        List sortedList = entriesDAO.selectEntriesByPage(new BaseFeedDescriptor(workspace, null), lastMod[1], 0, 3);
         log.debug("List= " + sortedList);
 
         // this first set should all be at lastMod[1]
@@ -313,8 +307,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
 
         // get second page
         int pageDelim = getPageDelim(sortedList);
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], pageDelim, 3,
-                                               null, new BaseFeedDescriptor(workspace, null), null);
+        sortedList = entriesDAO.selectEntriesByPage(new BaseFeedDescriptor(workspace, null), lastMod[1], pageDelim, 3);
         log.debug("List= " + sortedList);
 
         // this second set should also all be at lastMod[1]
@@ -350,8 +343,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
         // OR it is possible that we just deleted the remaining one at lastMod[1], 
         // so we have 3 at lastMod[0]  (it arbitrarilly depends on the sort)
         pageDelim = getPageDelim(sortedList);
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], pageDelim, 3,
-                                               null, new BaseFeedDescriptor(workspace, null), null);
+        sortedList = entriesDAO.selectEntriesByPage(new BaseFeedDescriptor(workspace, null), lastMod[1], pageDelim, 3);
         log.debug("List= " + sortedList);
 
         int foundL1 = 0;
@@ -369,8 +361,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
 
         // get page -- there should just be one left at lastMod[0]
         pageDelim = getPageDelim(sortedList);
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], pageDelim, 3,
-                                               null, new BaseFeedDescriptor(workspace, null), null);
+        sortedList = entriesDAO.selectEntriesByPage(new BaseFeedDescriptor(workspace, null), lastMod[1], pageDelim, 3);
         log.debug("List= " + sortedList);
 
         // should have 1 at lastMod[0] and the last "deleted", or all deleted

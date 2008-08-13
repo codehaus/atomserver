@@ -22,7 +22,6 @@ import org.apache.commons.io.FileUtils;
 import org.atomserver.core.CRUDAtomServerTestCase;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
 import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
-import org.atomserver.core.dbstore.dao.EntryCategoryLogEventDAO;
 import org.atomserver.core.dbstore.utils.DBSeeder;
 import org.atomserver.testutils.client.MockRequestContext;
 import org.atomserver.uri.EntryTarget;
@@ -37,7 +36,6 @@ abstract public class BaseCRUDDBSTestCase extends CRUDAtomServerTestCase {
 
     protected EntriesDAO entriesDAO = null;
     protected EntryCategoriesDAO entryCategoriesDAO = null;
-    protected EntryCategoryLogEventDAO entryCategoryLogEventDAO = null;
 
     public void setUp() throws Exception {
         super.setUp();
@@ -45,7 +43,6 @@ abstract public class BaseCRUDDBSTestCase extends CRUDAtomServerTestCase {
         ApplicationContext springContext = getSpringFactory();
         entriesDAO = (EntriesDAO) springContext.getBean("org.atomserver-entriesDAO");
         entryCategoriesDAO = (EntryCategoriesDAO) springContext.getBean("org.atomserver-entryCategoriesDAO");
-        entryCategoryLogEventDAO = (EntryCategoryLogEventDAO) springContext.getBean("org.atomserver-entryCategoryLogEventDAO");
 
         // we need something in the DB to run these tests
         if ( requiresDBSeeding()  ) {

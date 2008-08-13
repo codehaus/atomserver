@@ -31,7 +31,6 @@ import org.atomserver.utils.logic.BooleanExpression;
 import org.atomserver.utils.perf.AutomaticStopWatch;
 import org.atomserver.utils.perf.StopWatch;
 import org.springframework.orm.ibatis.SqlMapClientCallback;
-import org.springframework.dao.DataIntegrityViolationException;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -49,7 +48,6 @@ public class EntriesDAOiBatisImpl
 
     private ContentDAO contentDAO;
     private EntryCategoriesDAO entryCategoriesDAO;
-    private EntryCategoryLogEventDAO entryCategoryLogEventDAO;
 
     public void setContentDAO(ContentDAO contentDAO) {
         this.contentDAO = contentDAO;
@@ -57,10 +55,6 @@ public class EntriesDAOiBatisImpl
 
     public void setEntryCategoriesDAO(EntryCategoriesDAO entryCategoriesDAO) {
         this.entryCategoriesDAO = entryCategoriesDAO;
-    }
-
-    public void setEntryCategoryLogEventDAO(EntryCategoryLogEventDAO entryCategoryLogEventDAO) {
-        this.entryCategoryLogEventDAO = entryCategoryLogEventDAO;
     }
 
     //======================================
@@ -436,9 +430,6 @@ public class EntriesDAOiBatisImpl
 
         if (contentDAO != null || entryCategoriesDAO != null) {
             EntryMetaData metaData = selectEntry(entryQuery);
-            if (metaData != null && entryCategoryLogEventDAO != null) {
-                entryCategoryLogEventDAO.deleteEntryCategoryLogEvent(entryQuery);
-            }
             if (metaData != null && contentDAO != null) {
                 contentDAO.deleteContent(metaData);
             }
@@ -456,6 +447,47 @@ public class EntriesDAOiBatisImpl
                         .addLocaleInfo(entryQuery.getLocale()));
     }
 
+    //======================================
+    //          LIST OPERATIONS
+    //======================================
+    /**
+     */
+    public List<EntryMetaData> selectEntriesByPagePerCategory(
+            FeedDescriptor feed,
+            Date lastModifiedDate,
+            int pageDelim,
+            int pageSize,
+            Collection<BooleanExpression<AtomCategory>> categoryQuery) {
+        return internalSelectEntries(lastModifiedDate, pageDelim, pageSize,
+                                     null, "selectEntriesByPagePerCategory",
+                                     feed, categoryQuery);
+    }
+
+    /**
+     */
+    public List<EntryMetaData> selectEntriesByPageAndLocalePerCategory(
+            FeedDescriptor feed,
+            Date lastModifiedDate,
+            int pageDelim,
+            int pageSize,
+            String locale,
+            Collection<BooleanExpression<AtomCategory>> categoryQuery) {
+        return internalSelectEntries(lastModifiedDate, pageDelim, pageSize,
+                                     locale, "selectEntriesByPageAndLocalePerCategory",
+                                     feed, categoryQuery);
+    }
+
+    /**
+     */
+    public List<EntryMetaData> selectEntriesByPage(
+            FeedDescriptor feed,
+            Date lastModifiedDate,
+            int pageDelim,
+            int pageSize) {
+        return internalSelectEntries(lastModifiedDate, pageDelim, pageSize,
+                                     null, "selectEntriesByPage", feed, null);
+    }
+
 
     public List<EntryMetaData> selectEntriesByPageAndLocale(
             FeedDescriptor feed,
@@ -463,8 +495,8 @@ public class EntriesDAOiBatisImpl
             int pageDelim,
             int pageSize,
             String locale) {
-        return selectFeedPage(lastModifiedDate, pageDelim, pageSize,
-                                     locale, feed, null);
+        return internalSelectEntries(lastModifiedDate, pageDelim, pageSize,
+                                     locale, "selectEntriesByPageAndLocale", feed, null);
     }
 
     public AggregateEntryMetaData selectAggregateEntry(EntryDescriptor entryDescriptor, List<String> joinWorkspaces) {
@@ -484,7 +516,7 @@ public class EntriesDAOiBatisImpl
                         entryDescriptor.getWorkspace(),
                         entryDescriptor.getCollection(),
                         entryDescriptor.getLocale(),
-                        getSqlMapClientTemplate().queryForList("selectAggregateEntries", paramMap));
+                        getSqlMapClientTemplate().queryForList("selectAggregateEntry", paramMap));
 
         return map.get(entryDescriptor.getEntryId());
     }
@@ -506,23 +538,23 @@ public class EntriesDAOiBatisImpl
         }
 
         if (categoriesQuery != null) {
-            paramMap.param("categoryFilterSql",
-                           CategoryQueryGenerator.generateCategoryFilter(categoriesQuery));
             paramMap.param("categoryQuerySql",
-                           CategoryQueryGenerator.generateCategorySearch(categoriesQuery));
+                           CategoryQueryGenerator.generateAggregate(
+                                   categoriesQuery, feed.getCollection()));
         }
 
-        List entries = getSqlMapClientTemplate().queryForList("selectAggregateEntries", paramMap);
+        List entries = getSqlMapClientTemplate().queryForList("selectAggregateEntriesByPage", paramMap);
         Map<String, AggregateEntryMetaData> map =
                 AggregateEntryMetaData.aggregate(feed.getWorkspace(), feed.getCollection(), locale, entries);
         return new ArrayList(map.values());
     }
 
-    public List<EntryMetaData> selectFeedPage(
+    private List<EntryMetaData> internalSelectEntries(
             Date lastModifiedDate,
             int pageDelim,
             int pageSize,
             String locale,
+            String ibatisMethod,
             FeedDescriptor feed,
             Collection<BooleanExpression<AtomCategory>> categoryQuery) {
         StopWatch stopWatch = new AutomaticStopWatch();
@@ -532,17 +564,19 @@ public class EntriesDAOiBatisImpl
                             lastModifiedDate, pageDelim, pageSize, locale, feed);
 
             if (categoryQuery != null && !categoryQuery.isEmpty()) {
-                paramMap.param("categoryFilterSql",
-                               CategoryQueryGenerator.generateCategoryFilter(categoryQuery));
                 paramMap.param("categoryQuerySql",
-                               CategoryQueryGenerator.generateCategorySearch(categoryQuery));
+                               CategoryQueryGenerator.generate(categoryQuery));
             }
 
-            return getSqlMapClientTemplate().queryForList("selectFeedPage", paramMap);
+            if (log.isDebugEnabled()) {
+                log.debug("ibatisMethod= " + ibatisMethod);
+            }
+
+            return getSqlMapClientTemplate().queryForList(ibatisMethod, paramMap);
         }
         finally {
             if (perflog != null) {
-                perflog.log("DB.selectFeedPage", perflog.getPerfLogFeedString(locale, feed.getWorkspace(), feed.getCollection()), stopWatch);
+                perflog.log("DB." + ibatisMethod, perflog.getPerfLogFeedString(locale, feed.getWorkspace(), feed.getCollection()), stopWatch);
             }
         }
     }
@@ -712,13 +746,9 @@ public class EntriesDAOiBatisImpl
                 (Integer) getSqlMapClientTemplate().queryForObject("collectionExists",
                                                                    paramMap);
         if (count == 0) {
-            try {
-                getSqlMapClientTemplate().insert("createCollection", paramMap);
-            } catch (DataIntegrityViolationException e) {
-                log.warn("race condition while guaranteeing existence of collection " +
-                         workspace + "/" + collection + " - this is probably okay.");
-            }
+            getSqlMapClientTemplate().insert("createCollection", paramMap);
         }
+
     }
 
     public void ensureWorkspaceExists(String workspace) {

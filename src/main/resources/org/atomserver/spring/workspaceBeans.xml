@@ -52,6 +52,7 @@
             <property name="defaultLocalized" value="true"/>
             <property name="defaultContentStorage" ref="org.atomserver-contentStorage"/>
             <property name="defaultContentValidator" ref="org.atomserver-simpleXMLContentValidator"/>
+            <property name="defaultCategoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
             <property name="defaultProducingEntryCategoriesFeedElement" value="true"/>
             <property name="defaultEntryIdGenerator" ref="org.atomserver-entryIdGenerator"/>
         </bean>
@@ -69,11 +70,11 @@
                 </bean>
             </property>
             <property name="defaultEntryIdGenerator" ref="org.atomserver-entryIdGenerator"/>
+            <property name="defaultCategoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
             <property name="defaultAutoTagger">
                 <bean class="org.atomserver.core.autotaggers.XPathAutoTagger">
                     <property name="performanceLog" ref="org.atomserver-performanceLog"/>
-                    <!-- <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO"/> -->
-                    <property name="categoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
+                    <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO"/>
                     <property name="script">
                         <value>
                             <![CDATA[

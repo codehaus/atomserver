@@ -22,27 +22,37 @@
 <!-- iBatis SQL Map CONFIG -->
 <sqlMapConfig>
 
-    <!-- TODO: postgres doesn't implement timeout
-    <settings defaultStatementTimeout="${db.timeout.sql.stmts}"
-              classInfoCacheEnabled="true"
-              statementCachingEnabled="true"/>
-              -->
+    <!-- FIXME postgres doesn't implement timeout
+    <settings
+             defaultStatementTimeout="${db.timeout.sql.stmts}"
+             classInfoCacheEnabled="true"
+             statementCachingEnabled="true"/>
+             -->
+    <settings
+             classInfoCacheEnabled="true"
+             statementCachingEnabled="true"/>
 
-    <settings classInfoCacheEnabled="true"
-              statementCachingEnabled="true"/>
-
-    <!-- reusable SQL fragments and type definitions shared by the sqlMaps below
-         NOTE: this MUST be first to load !! -->
+    <!--reusable SQL fragments and type definitions shared by the sqlMaps below
+        NOTE: this MUST be first to load !! -->
     <sqlMap resource="org/atomserver/ibatis/sqlMap-fragments.xml"/>
 
-    <!-- SQL statements for the various AtomServer components - broken up for manageability -->
+    <!--the ibatis SQL map that defines the sysDate function for the current DB-->
+    <sqlMap resource="org/atomserver/ibatis/sqlMap-sysDate.xml"/>
+
+    <!--the ibatis SQL map that defines the SQL for EntryStore -->
     <sqlMap resource="org/atomserver/ibatis/sqlMap-entries.xml"/>
-    <sqlMap resource="org/atomserver/ibatis/sqlMap-entriesWriteOperations.xml"/>
-    <sqlMap resource="org/atomserver/ibatis/sqlMap-workspacesAndCollections.xml"/>
-    <sqlMap resource="org/atomserver/ibatis/sqlMap-categories.xml"/>
+
+    <!--the ibatis SQL map that defines the SQL for DB Content Storage -->
     <sqlMap resource="org/atomserver/ibatis/sqlMap-content.xml"/>
+
+    <!--the ibatis SQL map that defines the SQL EntryCategory -->
+    <sqlMap resource="org/atomserver/ibatis/sqlMap-categories.xml"/>
+
+    <!--the ibatis SQL map that defines the SQL Category queries on EntryStore -->
+    <sqlMap resource="org/atomserver/ibatis/sqlMap-category-queries.xml"/>
+
+    <!--the ibatis SQL map that defines the SQL for Aggregate feeds -->
     <sqlMap resource="org/atomserver/ibatis/sqlMap-aggregate.xml"/>
-    <sqlMap resource="org/atomserver/ibatis/sqlMap-category-log-events.xml"/>
 
 </sqlMapConfig>
 

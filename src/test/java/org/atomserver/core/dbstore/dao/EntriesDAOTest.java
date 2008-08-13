@@ -541,62 +541,53 @@ public class EntriesDAOTest extends DAOTestCase {
             entriesDAO.ensureCollectionExists(entryIn.getWorkspace(), entryIn.getCollection());
             entriesDAO.insertEntry(entryIn);
         }
-
-        List sortedList = entriesDAO.selectFeedPage(ZERO_DATE, 0, 0,
-                                                    null, new BaseFeedDescriptor("reptiles", null), null);
+        
+        List sortedList = entriesDAO.selectEntriesByPage( new BaseFeedDescriptor("reptiles", null), ZERO_DATE, 0, 0);
+        log.debug("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+        log.debug("List= " + sortedList);
+        assertEquals( 6, sortedList.size() );
+        
+        sortedList = entriesDAO.selectEntriesByPage( new BaseFeedDescriptor("amphibeans", null), ZERO_DATE, 0, 0);
         log.debug("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.debug("List= " + sortedList);
         assertEquals( 6, sortedList.size() );
 
-        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, 0, 0,
-                                               null, new BaseFeedDescriptor("amphibeans", null), null);
-        log.debug("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-        log.debug("List= " + sortedList);
-        assertEquals( 6, sortedList.size() );
-
-        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, 0, 0,
-                                               null, new BaseFeedDescriptor("amphibeans", "lizards"), null);
+        sortedList = entriesDAO.selectEntriesByPage( new BaseFeedDescriptor("amphibeans", "lizards"), ZERO_DATE, 0, 0 );
         log.debug("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.debug("List= " + sortedList);
         assertEquals( 3, sortedList.size() );
 
-        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, 0, 0,
-                                               null, new BaseFeedDescriptor("amphibeans", "toads"), null);
+        sortedList = entriesDAO.selectEntriesByPage( new BaseFeedDescriptor("amphibeans", "toads"), ZERO_DATE, 0, 0);
         log.debug("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.debug("List= " + sortedList);
         assertEquals( 3, sortedList.size() );
 
         
         entriesDAO.deleteAllEntries(new BaseFeedDescriptor("reptiles", null));
-
-        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, 0, 0,
-                                               null, new BaseFeedDescriptor("reptiles", null), null);
+        
+        sortedList = entriesDAO.selectEntriesByPage(new BaseFeedDescriptor("reptiles", null),  ZERO_DATE, 0, 0);
         log.debug("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.debug("List= " + sortedList);
         assertEquals( 0, sortedList.size() );
         
         entriesDAO.deleteAllEntries(new BaseFeedDescriptor("amphibeans", "lizards"));
-
-        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, 0, 0,
-                                               null, new BaseFeedDescriptor("amphibeans", "lizards"), null);
+        
+        sortedList = entriesDAO.selectEntriesByPage( new BaseFeedDescriptor("amphibeans", "lizards"), ZERO_DATE, 0, 0);
         log.debug("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.debug("List= " + sortedList);
         assertEquals( 0, sortedList.size() );
-        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, 0, 0,
-                                               null, new BaseFeedDescriptor("amphibeans", null), null);
+        sortedList = entriesDAO.selectEntriesByPage(new BaseFeedDescriptor("amphibeans", null), ZERO_DATE, 0, 0);
         log.debug("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.debug("List= " + sortedList);
         assertEquals( 3, sortedList.size() );
         
         entriesDAO.deleteAllEntries(new BaseFeedDescriptor("amphibeans", "toads"));
-
-        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, 0, 0,
-                                               null, new BaseFeedDescriptor("amphibeans", "toads"), null);
+        
+        sortedList = entriesDAO.selectEntriesByPage( new BaseFeedDescriptor("amphibeans", "toads"),  ZERO_DATE, 0, 0);
         log.debug("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.debug("List= " + sortedList);
         assertEquals( 0, sortedList.size() );
-        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, 0, 0,
-                                               null, new BaseFeedDescriptor("amphibeans", "toads"), null);
+        sortedList = entriesDAO.selectEntriesByPage(new BaseFeedDescriptor("amphibeans", "toads"), ZERO_DATE, 0, 0);
         log.debug("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.debug("List= " + sortedList);
         assertEquals( 0, sortedList.size() );

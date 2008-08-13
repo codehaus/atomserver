@@ -18,7 +18,6 @@
 package org.atomserver.core.dbstore.utils;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.ContentStorage;
@@ -26,20 +25,15 @@ import org.atomserver.core.BaseEntryDescriptor;
 import org.atomserver.core.BaseServiceDescriptor;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.dbstore.DBBasedContentStorage;
-import org.atomserver.core.dbstore.dao.ContentDAO;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
 import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
-import org.atomserver.core.dbstore.dao.EntryCategoryLogEventDAO;
 import org.atomserver.core.filestore.FileBasedContentStorage;
 import org.atomserver.exceptions.AtomServerException;
-import org.atomserver.utils.io.JarUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Locale;
 
@@ -56,17 +50,13 @@ import java.util.Locale;
 public class DBSeeder extends DBTool {
 
     static private final Log log = LogFactory.getLog(DBSeeder.class);
-    static private final int SLEEP_TIME = 2500;
-
-    static private final String SAMPLE_WIDGETS_DIR = "widgets";
+    static private final int SLEEP_TIME = 2000;
 
     static private ClassPathXmlApplicationContext springFactory = null;
 
     private EntriesDAO entriesDAO;
-    private EntryCategoryLogEventDAO entryCategoryLogEventDAO;
     private EntryCategoriesDAO entryCategoriesDAO;
-    private ContentStorage contentStorage;
-    private ContentDAO contentDAO;
+    private ContentStorage contentStorage = null;
 
     //--------------------------------
     //      static methods
@@ -96,16 +86,8 @@ public class DBSeeder extends DBTool {
         this.entriesDAO = entriesDAO;
     }
 
-    public void setContentDAO(ContentDAO contentDAO) {
-        this.contentDAO = contentDAO;
-    }
-
     public void setEntryCategoriesDAO(EntryCategoriesDAO entryCategoriesDAO) {
         this.entryCategoriesDAO = entryCategoriesDAO;
-    }
-
-    public void setEntryCategoryLogEventDAO(EntryCategoryLogEventDAO entryCategoryLogEventDAO) {
-        this.entryCategoryLogEventDAO = entryCategoryLogEventDAO;
     }
 
     public void setContentStorage(ContentStorage physicalStorage) {
@@ -117,16 +99,6 @@ public class DBSeeder extends DBTool {
     }
 
     public void clearDB() throws AtomServerException {
-        log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-        log.info("==========> DELETING *ALL* ROWS in EntryContent !!!!!!!!!!!!!");
-        log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-        contentDAO.deleteAllContent();
-
-        log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-        log.info("==========> DELETING *ALL* ROWS in EntryCategoryLogEvent !!!!!!!!!!!!!");
-        log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-        entryCategoryLogEventDAO.deleteAllRowsFromEntryCategoryLogEvent();
-
         log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.info("==========> DELETING *ALL* ROWS in EntryCategory !!!!!!!!!!!!!");
         log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
@@ -143,7 +115,6 @@ public class DBSeeder extends DBTool {
             if (contentStorage instanceof FileBasedContentStorage) {
                 FileBasedContentStorage fileStorage = (FileBasedContentStorage) contentStorage;
                 File rootDir = fileStorage.getRootDir();
-                log.debug( "ROOT DIR = " + rootDir );
 
                 File widgetsDir = new File(rootDir, "widgets");
 
@@ -161,23 +132,17 @@ public class DBSeeder extends DBTool {
             if (contentStorage instanceof FileBasedContentStorage) {
                 FileBasedContentStorage fileStorage = (FileBasedContentStorage) contentStorage;
                 File rootDir = fileStorage.getRootDir();
-                log.debug( "ROOT DIR = " + rootDir );
 
-                // root dir is the actual data dir. In tests this is "target/var"
                 File widgetsDir = new File(rootDir, "widgets");
+                File widgetsOrigDir = new File(rootDir, "widgets-ORIG");
 
-                FileUtils.deleteDirectory(widgetsDir);
-
-                URL widgetsORIGURL = getClass().getClassLoader().getResource( SAMPLE_WIDGETS_DIR );
-                if ( JarUtils.isJarURL(widgetsORIGURL) ) {
-                    URL widgetsORIGJarURL = JarUtils.getJarFromJarURL( widgetsORIGURL );
-                    File jarFile = new File(widgetsORIGJarURL.toURI());
-                    JarUtils.copyJarFolder(jarFile, SAMPLE_WIDGETS_DIR, rootDir );
-                } else {
-                    File widgetsOrigDir = new File(widgetsORIGURL.toURI());
-                    FileUtils.copyDirectory( widgetsOrigDir, widgetsDir);
+                // when used by the dbseed.sh to add a few test widgets to a Server for smoke testing
+                //  the widgets-ORIG is not there. It has already been copied to widgets,
+                //  so we just skip this step
+                if (widgetsOrigDir.exists()) {
+                    FileUtils.deleteDirectory(widgetsDir);
+                    FileUtils.copyDirectory(widgetsOrigDir, widgetsDir);
                 }
-
             }
 
             entriesDAO.deleteAllEntries(new BaseServiceDescriptor("widgets"));
@@ -199,21 +164,18 @@ public class DBSeeder extends DBTool {
         }
     }
 
-    public void insertWidget(BaseEntryDescriptor entryDescriptor) throws Exception {
+    public void insertWidget(BaseEntryDescriptor entryDescriptor) throws IOException {
         entriesDAO.insertEntry(entryDescriptor);
         if (contentStorage instanceof DBBasedContentStorage) {
             String entryId = entryDescriptor.getEntryId();
-
-            String filename = MessageFormat.format(SAMPLE_WIDGETS_DIR + "/{0}/{1}/{2}/{3}/{2}.xml.r0",
+            File f = new File(MessageFormat.format("var/{0}/{1}/{2}/{3}/{4}/{3}.xml",
+                                                   entryDescriptor.getWorkspace(),
                                                    entryDescriptor.getCollection(),
                                                    entryId.length() <= 2 ? entryId : entryId.substring(0, 2),
                                                    entryId,
-                                                   entryDescriptor.getLocale().toString());
-            log.debug( "LOOKING FOR " + filename );
+                                                   entryDescriptor.getLocale().toString()));
 
-            InputStream is = getClass().getClassLoader().getResource( filename ).openStream();
-
-            String content = IOUtils.toString( is );
+            String content = FileUtils.readFileToString(f);
             contentStorage.putContent(content, entryDescriptor);
         }
     }

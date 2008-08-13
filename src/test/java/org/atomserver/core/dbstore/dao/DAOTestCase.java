@@ -22,8 +22,9 @@ import org.apache.abdera.protocol.server.ServiceContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.AtomService;
-import org.atomserver.uri.URIHandler;
 import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
+import org.atomserver.uri.URIHandler;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.Date;
@@ -40,10 +41,9 @@ public class DAOTestCase extends TestCase {
 
     protected ClassPathXmlApplicationContext springFactory = null;
 
-    protected EntriesDAOiBatisImpl entriesDAO = null;
+    protected EntriesDAO entriesDAO = null;
     protected EntryCategoriesDAO entryCategoriesDAO = null;
     protected ContentDAO contentDAO = null;
-    protected EntryCategoryLogEventDAO entryCategoryLogEventDAO = null;
 
     protected URIHandler entryURIHelper;
 
@@ -65,10 +65,9 @@ public class DAOTestCase extends TestCase {
 
         entryURIHelper = ((AtomService) springFactory.getBean("org.atomserver-atomService")).getURIHandler();
 
-        entriesDAO = (EntriesDAOiBatisImpl) springFactory.getBean("org.atomserver-entriesDAO");
+        entriesDAO = (EntriesDAO) springFactory.getBean("org.atomserver-entriesDAO");
         entryCategoriesDAO = (EntryCategoriesDAO) springFactory.getBean("org.atomserver-entryCategoriesDAO");
         contentDAO = (ContentDAO) springFactory.getBean("org.atomserver-contentDAO");
-        entryCategoryLogEventDAO = (EntryCategoryLogEventDAO) springFactory.getBean("org.atomserver-entryCategoryLogEventDAO");
 
         serviceContext = (ServiceContext) springFactory.getBean(CONTEXT_NAME);
         if (serviceContext.getAbdera() == null) {

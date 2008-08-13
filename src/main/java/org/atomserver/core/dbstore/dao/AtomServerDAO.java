@@ -20,7 +20,6 @@ import java.util.Date;
 
 /**
  * The base DAO API for AtomServer
- *
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
@@ -48,18 +47,17 @@ public interface AtomServerDAO {
      * valid values are "hsql", "mysql" and "sqlserver"
      * Set from Spring using the ${db.type} variable
      */
-    String getDatabaseType();
+    public String getDatabaseType();
+    public void setDatabaseType(String databaseType);
 
-    void setDatabaseType(String databaseType);
+    public Date selectSysDate();
 
-    Date selectSysDate();
-
-    /**
+   /**
      * Test the availabilty of the DAOs. This method is used by the IsAliveHandler
      * to determine if the Database is up and running. Mostly this is meant to check the
      * the DB Connection in some lightweight way
      * Note that the method does not bother returning a boolean. Instead, it is assumed
      * that a RuntimeException will be thrown
      */
-    void testAvailability();
+    public void testAvailability();
 }

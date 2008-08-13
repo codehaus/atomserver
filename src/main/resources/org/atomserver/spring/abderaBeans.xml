@@ -18,12 +18,9 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:a="http://abdera.apache.org"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:util="http://www.springframework.org/schema/util"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       xsi:schemaLocation="http://www.springframework.org/schema/beans 
                            http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
-                           http://www.springframework.org/schema/util
-                           http://www.springframework.org/schema/util/spring-util-2.0.xsd
-                           http://abdera.apache.org
+                           http://abdera.apache.org 
                            http://abdera.apache.org/schemas/abdera-spring.xsd">
 
     <bean id="org.atomserver-uriHandler" class="org.atomserver.uri.URIHandler">
@@ -110,15 +107,10 @@
           depends-on="org.atomserver-propertyConfigurer" >
 
         <property name="entriesDAO" ref="org.atomserver-entriesDAO"/>
+        <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO"/>
 
-        <property name="virtualWorkspaceHandlers">
-            <util:map id="org.atomserver-virtualWorkspaceHandlers">
-                 <entry key="CATEGORIES" value-ref="org.atomserver-entryCategoriesHandler" />
-            </util:map>
-        </property>
+        <property name="categoriesContentStorage" ref="org.atomserver-entryCategoriesContentStorage"/>
 
-        <property name="serviceContext" ref="org.apache.abdera.protocol.server.ServiceContext"/>
-        
         <property name="transactionTemplate">
             <bean class="org.springframework.transaction.support.TransactionTemplate">
               <property name="timeout" value="${db.timeout.txn.put}"/>

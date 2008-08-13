@@ -15,15 +15,14 @@
  */
 package org.atomserver.utils.hsql;
 
-import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
 
 import java.io.File;
-import java.io.InputStream;
-import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.Connection;
 
 /**
  * @author Chris Berry  (chriswberry at gmail.com)
@@ -37,10 +36,6 @@ public class HsqlBootstrapper
     private static final String HSQL_DDL = "org/atomserver/sql/hsql/hsql_ddl.sql";
 
     private static boolean hasBootstrapped = false;
-
-    public static void setHasBootstrapped(boolean hasBootstrapped) {
-        HsqlBootstrapper.hasBootstrapped = hasBootstrapped;
-    }
 
     public void run() {
         try {
@@ -61,9 +56,8 @@ public class HsqlBootstrapper
                 Connection c = DriverManager.getConnection(dbUrl, "sa", "");
 
                 // open the DDL file, and execute all the statements (delimited by semicolons)
-                InputStream is = getClass().getClassLoader().getResource( HSQL_DDL ).openStream();
-                String ddlString = IOUtils.toString( is );                
-
+                String ddlString = FileUtils.readFileToString(
+                        new File(getClass().getClassLoader().getResource(HSQL_DDL).toURI()));
                 String[] statements = ddlString.replaceAll("\\s+", " ").split(";");
                 for (String statement : statements) {
                     c.createStatement().execute(statement);

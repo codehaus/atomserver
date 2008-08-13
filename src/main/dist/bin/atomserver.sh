@@ -354,33 +354,19 @@ else
    fi
 fi
 
-WEBINF=$ATOMSERVER_WEBAPP/WEB-INF
-WEBINF_LIBDIR=$ATOMSERVER_WEBAPP/WEB-INF/lib
-WEBINF_CLASSES=$ATOMSERVER_WEBAPP/WEB-INF/classes
+LIBDIR=$ATOMSERVER_WEBAPP/WEB-INF/lib
+CLASSES=$ATOMSERVER_WEBAPP/WEB-INF/classes
 
-LIBDIR=$ATOMSERVER_HOME/lib
-
-log "WEBINF_LIBDIR= $WEBINF_LIBDIR"
-
-unset LOCALCLASSPATH
-LOCALCLASSPATH=.
-
-log "---------------------------------"
-log "Including all JAR files from $WEBINF_LIBDIR onto the Classpath"
-log "---------------------------------"
-DIRLIBS=${WEBINF_LIBDIR}/*.jar
-for i in ${DIRLIBS}
-do
-    # if the directory is empty, then it will return the input string
-    # this is stupid, so case for it
-    if [ "$i" != "${DIRLIBS}" ] ; then
-        LOCALCLASSPATH=$LOCALCLASSPATH:"$i"
-    fi
-done
+log " LIBDIR= $LIBDIR"
 
 log "---------------------------------"
 log "Including all JAR files from $LIBDIR onto the Classpath"
 log "---------------------------------"
+
+# add in the JAR files 
+unset LOCALCLASSPATH
+LOCALCLASSPATH=.
+
 DIRLIBS=${LIBDIR}/*.jar
 for i in ${DIRLIBS}
 do
@@ -391,7 +377,7 @@ do
     fi
 done
 
-export CLASSPATH=:$LOCALCLASSPATH:$WEBINF_CLASSES
+export CLASSPATH=:$LOCALCLASSPATH:$CLASSES
 
 log "---------------------------------"
 log "Classpath"
@@ -403,8 +389,7 @@ log "---------------------------------"
 #
 # ----- atomserver specific arguments
 #
-ATOMSERVER_ARGS=""
-ATOMSERVER_ARGS="-Datomserver.home=$ATOMSERVER_HOME $ATOMSERVER_ARGS"
+ATOMSERVER_ARGS="-Datomserver.home=$ATOMSERVER_HOME  "
 ATOMSERVER_ARGS="-Datomserver.data.dir=$ATOMSERVER_DATA_DIR $ATOMSERVER_ARGS"
 ATOMSERVER_ARGS="-Datomserver.conf.dir=$ATOMSERVER_CONF_DIR $ATOMSERVER_ARGS"
 ATOMSERVER_ARGS="-Datomserver.ops.conf.dir=$ATOMSERVER_OPSCONF_DIR $ATOMSERVER_ARGS"
@@ -424,11 +409,8 @@ ATOMSERVER_ARGS="-Dseed.database.with.pets=$SEED_DATABASE_WITH_PETS $ATOMSERVER_
 # ----- log4j specific arguments
 #  NOTE: log4j ONLY takes System vars for substitution in log4j.properties
 #
-LOG4J_ARGS=""
-LOG4J_ARGS="-Droot.loglevel=$ROOT_LOG_LEVEL $LOG4J_ARGS"
-LOG4J_ARGS="-Droot.appender=$ROOT_APPENDER  $LOG4J_ARGS"
-LOG4J_ARGS="-Datomserver.loglevel=$ATOMSERVER_LOG_LEVEL $LOG4J_ARGS"
-LOG4J_ARGS="-Datomserver.logdir=$ATOMSERVER_LOG_DIR $LOG4J_ARGS"
+LOG4J_ARGS="-Droot.loglevel=$ROOT_LOG_LEVEL -Droot.appender=$ROOT_APPENDER "
+LOG4J_ARGS="-Datomserver.loglevel=$ATOMSERVER_LOG_LEVEL -Datomserver.logdir=$ATOMSERVER_LOG_DIR $LOG4J_ARGS"
 LOG4J_ARGS="-Datomserver.logfilename=$ATOMSERVER_LOG_FILENAME $LOG4J_ARGS"
 
 #------  java settings

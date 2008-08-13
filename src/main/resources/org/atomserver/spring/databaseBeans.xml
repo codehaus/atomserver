@@ -61,7 +61,6 @@
         <property name="performanceLog" ref="org.atomserver-performanceLog"/>
         <property name="contentDAO" ref="org.atomserver-contentDAO"/>
         <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO" />
-        <property name="entryCategoryLogEventDAO" ref="org.atomserver-entryCategoryLogEventDAO" />
     </bean>
 
     <bean id="org.atomserver-contentDAO"
@@ -75,15 +74,6 @@
 
     <bean id="org.atomserver-entryCategoriesDAO"
           class="org.atomserver.core.dbstore.dao.EntryCategoriesDAOiBatisImpl"
-          depends-on="org.atomserver-propertyConfigurer">
-        <property name="dataSource" ref="org.atomserver-dataSource"/>
-        <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
-        <property name="databaseType" value="${db.type}"/>
-        <property name="performanceLog" ref="org.atomserver-performanceLog"/>
-    </bean>
-
-    <bean id="org.atomserver-entryCategoryLogEventDAO"
-          class="org.atomserver.core.dbstore.dao.EntryCategoryLogEventDAOiBatisImpl"
           depends-on="org.atomserver-propertyConfigurer">
         <property name="dataSource" ref="org.atomserver-dataSource"/>
         <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
