@@ -108,6 +108,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                     getEntriesDAO().acquireLock();
                     return task.execute();
                 } finally {
+                    getEntriesDAO().releaseLock();
                     if ( getPerformanceLog() != null ) {
                         getPerformanceLog().log( "DB.txn", "DB.txn", stopWatch );
                     }

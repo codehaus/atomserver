@@ -791,4 +791,9 @@ public class EntriesDAOiBatisImpl
         log.debug("ACQUIRING LOCK");
         getSqlMapClientTemplate().queryForObject("acquireLock", paramMap());
     }
+
+    public void releaseLock() {
+        log.debug("RELEASING LOCK");
+        getSqlMapClientTemplate().queryForObject("releaseLock", paramMap());
+    }
 }
