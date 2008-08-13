@@ -22,6 +22,9 @@
 <!--  iBatis SQL Map for EntryStore -->
 <sqlMap>
 
+
+    <!-- EXEC sp_getapplock @Resource='ATOMSERVER_APPLOCK', @LockMode='EXCLUSIVE', @LockTimeout='${db.timeout.applock}' -->
+
     <!-- ####################  lock table ############### -->
     <select id="acquireLock">
       <dynamic>
@@ -37,6 +40,14 @@
       </dynamic>
     </select>
 
+    <!-- ####################  lock table ############### -->
+    <select id="releaseLock">
+      <dynamic>
+        <isEqual property="dbType" compareValue="sqlserver" >
+            EXEC sp_releaseapplock @Resource='ATOMSERVER_APPLOCK'
+        </isEqual>
+      </dynamic>
+    </select>
 
     <!-- #################### insert ############### -->
     <insert id="insertEntry-sqlserver" parameterClass="map">
