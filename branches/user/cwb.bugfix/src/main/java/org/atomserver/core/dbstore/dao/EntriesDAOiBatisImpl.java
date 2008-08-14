@@ -470,8 +470,7 @@ public class EntriesDAOiBatisImpl
                 .param("collection", entryDescriptor.getCollection())
                 .param("entryId", entryDescriptor.getEntryId());
         if (entryDescriptor.getLocale() != null) {
-            paramMap.param("country", entryDescriptor.getLocale().getCountry());
-            paramMap.param("language", entryDescriptor.getLocale().getLanguage());
+            paramMap.addLocaleInfo(entryDescriptor.getLocale());
         }
         if (joinWorkspaces != null && !joinWorkspaces.isEmpty()) {
             paramMap.param("joinWorkspaces", joinWorkspaces);

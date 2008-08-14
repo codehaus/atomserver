@@ -78,33 +78,28 @@ public class OptConcDBSTest extends CRUDDBSTestCase {
         log.debug( "########################################## testInsertNonZeroRev " );
         // Insert with as widgets/acme/33445566.en.xml/100
         //  This one should fail.
-        insertRev( "/100", false );
+        insertRev( "/100", false, false, 0 );
     }
 
     public void testInsertZeroRev() throws Exception {
         log.debug( "########################################## testInsertZeroRev " );
-        insertRev( "/0", true );
+        insertRev( "/0", true, true, 1 );
 
         // make sure that we can't insert it again at /0
-        insertRev( "/0", false, true );        
+        insertRev( "/0", false, true, 1 );
     }
 
     public void testInsertNoRev() throws Exception {
         log.debug( "########################################## testInsertNoRev " );
-        insertRev( "", true );
+        insertRev( "", true , true, 1 );
     }
 
     public void testInsertAnyRev() throws Exception {
         log.debug( "########################################## testInsertAnyRev " );
-        insertRev( "/*", true );
+        insertRev( "/*", true, true, 1 );
     }
     
-    private void insertRev( String rev, boolean expects201 ) throws Exception {
-        boolean fileShouldExist = (expects201) ? true : false;
-        insertRev( rev, expects201, fileShouldExist);
-    }
-
-    private void insertRev( String rev, boolean expects201, boolean fileShouldExist ) throws Exception {
+    private void insertRev( String rev, boolean expects201, boolean fileShouldExist, int nextRev ) throws Exception {
         String urlPath = getURLPath();
         String fullURL = getServerURL() + urlPath;
         String id = urlPath;
@@ -123,10 +118,8 @@ public class OptConcDBSTest extends CRUDDBSTestCase {
         else
             assertFalse(propFile.exists());
 
-        /* FIXME
         int irev = extractRevisionFromURI(editURI);
         log.debug( "irev= " + irev );
-        assertEquals( 0, irev );
-        */
+        assertEquals( nextRev, irev );
     }
 }
