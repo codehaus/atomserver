@@ -349,6 +349,27 @@ public class AggregateFeedsTest extends DBSTestCase {
         feed = getPage("$join/urn:link/-/(urn:group)even?max-results=2&start-index=" + endIndex);
         assertEquals(1, feed.getEntries().size());
         assertEquals("3008", feed.getEntries().get(0).getSimpleExtension(AtomServerConstants.ENTRY_ID));
+
+        // the following is a regression test against the bug we discovered where entries in a
+        // locale that consisted of a language only (i.e. no country) were not retrievable.  This
+        // ensures that we can reference such aggregates correctly.
+
+        // set up a single aggregate entry in the locale=de feed
+        modifyEntry("lalas", "my", "90210", Locale.GERMAN.toString(), lalaXml(90210), true, "0");
+        modifyEntry("cuckoos", "my", "90210", null, cuckooXml(90210), true, "0");
+        modifyEntry("aloos", "my", "90210", null, alooXml(90210), true, "0");
+        // pull the feed - should get one result
+        feed = getPage("$join/urn:link?locale=de");
+        assertEquals(1, feed.getEntries().size());
+        for (Entry entry : feed.getEntries()) {
+            // pull down the one and only full entry - make sure we get it and that it is complete
+            String entryUrl = getServerRoot() + entry.getLink("self").getHref();
+            Entry fullEntry = getEntry(entryUrl);
+            assertTrue(fullEntry.getContent().startsWith("<aggregate"));
+            assertTrue(fullEntry.getContent().contains("<lala"));
+            assertTrue(fullEntry.getContent().contains("<cuckoo"));
+            assertTrue(fullEntry.getContent().contains("<aloo"));
+        }
     }
 
     private void checkPageContainsExpectedEntries(Feed feed, List<String> expected) {
