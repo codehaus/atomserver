@@ -132,6 +132,15 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
 
     abstract protected String getURLPath();
 
+    protected String getSelfUriFromEditUri( String editUri ) {
+        int rev = extractRevisionFromURI(editUri) - 1;
+        int last = editUri.lastIndexOf("/");
+        String selfUri = editUri.substring(0, last);
+        selfUri = selfUri + "/" + rev;
+        log.debug("editUri= " + editUri + "  selfUri= " + selfUri);
+        return selfUri;
+    }
+
     //=========================
     protected String runCRUDTest() throws Exception {
         return runCRUDTest( true );
@@ -198,7 +207,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         int rev = 0;
         if ( shouldCheckOptConc ) {
             rev = extractRevisionFromURI(editURI);
-            assertEquals( 0, rev );
+            assertEquals( 1, rev );
         }
 
         // SELECT
@@ -207,7 +216,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         log.debug( "########################################## editURI = " + editURI );
         if ( shouldCheckOptConc ) {
             rev = extractRevisionFromURI(editURI);
-            assertEquals( 0, rev );
+            assertEquals( 1, rev );
         }
 
         // UPDATE
@@ -222,7 +231,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         }
         if ( shouldCheckOptConc ) {
             rev = extractRevisionFromURI(editURI);
-            assertEquals( 1, rev );
+            assertEquals( 2, rev );
         }
 
         // SELECT
@@ -231,7 +240,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         log.debug( "########################################## editURI = " + editURI );
         if ( shouldCheckOptConc ) {
             rev = extractRevisionFromURI(editURI);
-            assertEquals( 1, rev );
+            assertEquals( 2, rev );
         }
 
         // DELETE
@@ -246,7 +255,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         }
         if ( shouldCheckOptConc ) {
             rev = extractRevisionFromURI(editURI);
-            assertEquals( 2, rev );
+            assertEquals( 3, rev );
         }
 
         if (getStoreName().equals("org.atomserver-atomService") && shouldCheckOptConc ) {
@@ -268,6 +277,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
             editURI = delete(fullURLWithRevisionOverride);
             assertEquals(revision + 1, (revision = extractRevisionFromURI(editURI)));
         }
+        
         return editURI;
     }
 

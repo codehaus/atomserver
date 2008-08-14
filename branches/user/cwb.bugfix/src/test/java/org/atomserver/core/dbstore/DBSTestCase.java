@@ -220,7 +220,7 @@ public class DBSTestCase extends AtomServerTestCase {
                                                                              collection,
                                                                              entryId,
                                                                              LocaleUtils.toLocale(locale),
-                                                                             rev)));
+                                                                             (rev - 1) )));
         }
 
         // COUNT

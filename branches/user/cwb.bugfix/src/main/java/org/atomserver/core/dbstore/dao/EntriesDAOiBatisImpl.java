@@ -98,10 +98,10 @@ public class EntriesDAOiBatisImpl
                     boolean deleted = (opType == OperationType.delete);
                     EntryMetaData metaData = entriesDAO.safeCastToEntryMetaData(uriData);
                     if (metaData != null) {
-                        executor.update(
-                                "updateEntry",
-                                entriesDAO.prepareUpdateParamMap(
-                                        deleted, uriData.getRevision(), metaData));
+                        executor.update("updateEntry",
+                                         entriesDAO.prepareUpdateParamMap(deleted,
+                                                                          uriData.getRevision(),
+                                                                          metaData));
                     }
                 } else {
                     String msg = "Unknown OperationType";
@@ -331,7 +331,6 @@ public class EntriesDAOiBatisImpl
         }
     }
 
-
     //-----------------------
     //       UPDATE
     //-----------------------
@@ -359,9 +358,10 @@ public class EntriesDAOiBatisImpl
                 return 0;
             }
 
-            return getSqlMapClientTemplate().update(
-                    "updateEntry",
-                    prepareUpdateParamMap(deleted, entryQuery.getRevision(), metaData));
+            return getSqlMapClientTemplate().update("updateEntry",
+                                                     prepareUpdateParamMap(deleted,
+                                                                           entryQuery.getRevision(),
+                                                                           metaData));
         }
         finally {
             if (perflog != null) {
@@ -393,11 +393,10 @@ public class EntriesDAOiBatisImpl
 
             int revision = (resetRevision) ? 0 : -1;
 
-            return getSqlMapClientTemplate().update(
-                    "updateEntryOverwrite",
-                    prepareUpdateParamMap(false, revision, entry)
-                            .param("publishedDate", published)
-                            .param("lastModifiedDate", lastModified));
+            return getSqlMapClientTemplate().update("updateEntryOverwrite",
+                                                    prepareUpdateParamMap(false, revision, entry)
+                                                            .param("publishedDate", published)
+                                                            .param("lastModifiedDate", lastModified));
         }
         finally {
             if (perflog != null) {
@@ -447,13 +446,12 @@ public class EntriesDAOiBatisImpl
             }
         }
 
-        getSqlMapClientTemplate().delete(
-                "deleteEntry",
-                paramMap()
-                        .param("workspace", entryQuery.getWorkspace())
-                        .param("collection", entryQuery.getCollection())
-                        .param("entryId", entryQuery.getEntryId())
-                        .addLocaleInfo(entryQuery.getLocale()));
+        getSqlMapClientTemplate().delete("deleteEntry",
+                                         paramMap()
+                                                 .param("workspace", entryQuery.getWorkspace())
+                                                 .param("collection", entryQuery.getCollection())
+                                                 .param("entryId", entryQuery.getEntryId())
+                                                 .addLocaleInfo(entryQuery.getLocale()));
     }
 
 
@@ -480,11 +478,11 @@ public class EntriesDAOiBatisImpl
         }
 
         Map<String, AggregateEntryMetaData> map =
-                AggregateEntryMetaData.aggregate(
-                        entryDescriptor.getWorkspace(),
-                        entryDescriptor.getCollection(),
-                        entryDescriptor.getLocale(),
-                        getSqlMapClientTemplate().queryForList("selectAggregateEntries", paramMap));
+                AggregateEntryMetaData.aggregate(entryDescriptor.getWorkspace(),
+                                                 entryDescriptor.getCollection(),
+                                                 entryDescriptor.getLocale(),
+                                                 getSqlMapClientTemplate().queryForList("selectAggregateEntries",
+                                                                                        paramMap));
 
         return map.get(entryDescriptor.getEntryId());
     }
@@ -574,12 +572,11 @@ public class EntriesDAOiBatisImpl
                                                            Date lastModifiedDate) {
         StopWatch stopWatch = new AutomaticStopWatch();
         try {
-            return getSqlMapClientTemplate().queryForList(
-                    "selectEntriesByLastModified",
-                    paramMap()
-                            .param("lastModifiedDate", lastModifiedDate)
-                            .param("workspace", workspace)
-                            .param("collection", collection));
+            return getSqlMapClientTemplate().queryForList("selectEntriesByLastModified",
+                                                          paramMap()
+                                                                  .param("lastModifiedDate", lastModifiedDate)
+                                                                  .param("workspace", workspace)
+                                                                  .param("collection", collection));
         }
         finally {
             if (perflog != null) {
@@ -594,12 +591,11 @@ public class EntriesDAOiBatisImpl
                                                                  Date lastModifiedDate) {
         StopWatch stopWatch = new AutomaticStopWatch();
         try {
-            return getSqlMapClientTemplate().queryForList(
-                    "selectEntriesByLastModifiedSeqNum",
-                    paramMap()
-                            .param("lastModifiedDate", lastModifiedDate)
-                            .param("workspace", feed.getWorkspace())
-                            .param("collection", feed.getCollection()));
+            return getSqlMapClientTemplate().queryForList("selectEntriesByLastModifiedSeqNum",
+                                                          paramMap()
+                                                                  .param("lastModifiedDate", lastModifiedDate)
+                                                                  .param("workspace", feed.getWorkspace())
+                                                                  .param("collection", feed.getCollection()));
         }
         finally {
             if (perflog != null) {
@@ -649,14 +645,14 @@ public class EntriesDAOiBatisImpl
     int getCountByLastModifiedInternal(String workspace, String collection, Date lastModified) {
         StopWatch stopWatch = new AutomaticStopWatch();
         try {
-            Integer count = (Integer) (getSqlMapClientTemplate().queryForObject(
-                    "$join".equals(workspace) ?
-                    "countModifiedAggregateEntries" :
-                    "countEntriesByLastModified",
-                    paramMap()
-                            .param("lastModifiedDate", lastModified)
-                            .param("workspace", workspace)
-                            .param("collection", collection)));
+            Integer count =
+                    (Integer) (getSqlMapClientTemplate().queryForObject("$join".equals(workspace) ?
+                                                                        "countModifiedAggregateEntries" :
+                                                                        "countEntriesByLastModified",
+                                                                        paramMap()
+                                                                                .param("lastModifiedDate", lastModified)
+                                                                                .param("workspace", workspace)
+                                                                                .param("collection", collection)));
             return count == null ? 0 : count;
         }
         finally {
@@ -742,13 +738,12 @@ public class EntriesDAOiBatisImpl
     }
 
     public Object selectEntryInternalId(EntryDescriptor entryQuery) {
-        return getSqlMapClientTemplate().queryForObject(
-                "selectEntryInternalId",
-                paramMap()
-                        .param("workspace", entryQuery.getWorkspace())
-                        .param("collection", entryQuery.getCollection())
-                        .param("entryId", entryQuery.getEntryId())
-                        .addLocaleInfo(entryQuery.getLocale()));
+        return getSqlMapClientTemplate().queryForObject("selectEntryInternalId",
+                                                        paramMap()
+                                                                .param("workspace", entryQuery.getWorkspace())
+                                                                .param("collection", entryQuery.getCollection())
+                                                                .param("entryId", entryQuery.getEntryId())
+                                                                .addLocaleInfo(entryQuery.getLocale()));
     }
 
     public EntryMetaData selectEntryByInternalId(Object internalId) {
