@@ -87,16 +87,22 @@ public class OptConcDBSTest extends CRUDDBSTestCase {
 
         // make sure that we can't insert it again at /0
         insertRev( "/0", false, true, 1 );
+
+        // or at some other rev, e.g /100
+        insertRev( "/100", false, true, 1 );
     }
 
     public void testInsertNoRev() throws Exception {
         log.debug( "########################################## testInsertNoRev " );
         insertRev( "", true , true, 1 );
+
+        // make sure that we can't insert it again at ""
+        insertRev( "", false, true, 1 );
     }
 
     public void testInsertAnyRev() throws Exception {
         log.debug( "########################################## testInsertAnyRev " );
-        insertRev( "/*", true, true, 1 );
+        insertRev( "/*", true, true, 1 );        
     }
     
     private void insertRev( String rev, boolean expects201, boolean fileShouldExist, int nextRev ) throws Exception {

@@ -8,11 +8,17 @@
 
     <body>
         <section name="Release 2.1-SNAPSHOT (??/??/08)">
-            This release is tagged 2.1 because it is <b>not</b> entirely transparent. The Spring configuration
-            changes somewhat. The only actual non-backwards-compatible change is in the wiring of XPathAutoTaggers
-            for a workspace; the entryCategoriesDAO property should be replaced with a
-            categoriesHandler property. This change plugs a leaky abstraction, and allows all Category operations
-            to happen through the CategoriesHander. <br/>
+            This release is tagged 2.1 because it is <b>not</b> entirely transparent.
+            <ul>
+                <li>The Spring configurationchanges somewhat. The wiring of XPathAutoTaggers for a workspace
+                    has slightly changed; the entryCategoriesDAO property should be
+                    replaced with a categoriesHandler property. This change plugs a leaky abstraction,
+                    and allows all Category operations to happen through the CategoriesHander. </li>
+                <li>The "edit" and "self" links for Entry XML have been corrected. The edit links now
+                    point to the <i>next</i> revision, and the self links point to the <i>current</i> revision</li>
+                <li>Calls to GET for an Entry at a revision other than the current revision now produces
+                    a 404 NOT FOUND, instead of a 409 CONFLICT.</li>
+            </ul>
             Changes in 2.1 include:
             <ol>
                 <li>Better performance for aggregate feeds</li>
@@ -24,6 +30,7 @@
                     Cleaned up the Jars that get included in the War's WEB-INF/lib.
                     Created new top-level /lib dir in the standalone version to house Jetty and Servlet API Jars,
                     which fixes Tomcat deploy issues</li>
+                <li>The "edit" and "self" links for Entry XML have been corrected, as mentioned above</li>
                 <li>Cleaned up the API to remove RequestContext from the abstract methods of AbstractAtomCollection</li>
                 <li>Added a very simple standalone AtomServer (TestingAtomServer) for Atom client unit testing.
                     Made HsqlBootstrapper restartable, and made TestingAtomServer do so on each construction</li>
