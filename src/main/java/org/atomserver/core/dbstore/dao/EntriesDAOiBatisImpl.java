@@ -787,13 +787,16 @@ public class EntriesDAOiBatisImpl
                 paramMap().param("internalId", internalId));
     }
 
-    public void acquireLock() {
+    public int acquireLock() {
         log.debug("ACQUIRING LOCK");
-        getSqlMapClientTemplate().queryForObject("acquireLock", paramMap());
+        Integer status = (Integer) getSqlMapClientTemplate().queryForObject("acquireLock", paramMap());
+        log.debug( "acquireLock() STATUS = " + status );
+        return status;
     }
 
     public void releaseLock() {
         log.debug("RELEASING LOCK");
-        getSqlMapClientTemplate().queryForObject("releaseLock", paramMap());
+        Integer status = (Integer) getSqlMapClientTemplate().queryForObject("releaseLock", paramMap());
+        log.debug( "releaseLock() STATUS = " + status );
     }
 }
