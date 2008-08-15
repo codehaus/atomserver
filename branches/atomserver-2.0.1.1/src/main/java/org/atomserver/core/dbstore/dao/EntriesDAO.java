@@ -150,7 +150,7 @@ public interface EntriesDAO
 
     EntryMetaData selectEntryByInternalId(Object internalId);
 
-    void acquireLock();
+    int acquireLock();
     void releaseLock();
 
     List<AggregateEntryMetaData> selectAggregateEntriesByPage(

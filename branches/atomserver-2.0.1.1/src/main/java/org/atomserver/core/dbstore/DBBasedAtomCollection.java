@@ -105,10 +105,13 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             public Object doInTransaction(TransactionStatus transactionStatus) {
                 StopWatch stopWatch = new AutomaticStopWatch();
                 try {
-                    getEntriesDAO().acquireLock();
+                    int status = getEntriesDAO().acquireLock();
+                    if ( status < 0 ) {
+                        throw new AtomServerException( "Could not acquire the database lock (status= " +
+                                                       status + ")");
+                    }
                     return task.execute();
                 } finally {
-                    getEntriesDAO().releaseLock();
                     if ( getPerformanceLog() != null ) {
                         getPerformanceLog().log( "DB.txn", "DB.txn", stopWatch );
                     }
