@@ -3,17 +3,19 @@
 <head>
   <link rel="StyleSheet" href="css/style.css" type="text/css">
   <title>atomserver Protocol Reference</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-  <meta name="verify-v1" content="sRQSq4VA5FRMhwzFB4U3I9AtgLMtIWTdpVVO6jg1az4=" />
-<script type="text/javascript">
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+  <meta name="verify-v1"
+ content="sRQSq4VA5FRMhwzFB4U3I9AtgLMtIWTdpVVO6jg1az4=">
+  <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
 document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-</script>
-<script type="text/javascript">
+  </script>
+  <script type="text/javascript">
 var pageTracker = _gat._getTracker("UA-4603527-2");
 pageTracker._initData();
 pageTracker._trackPageview();
-</script>
+  </script>
 </head>
 <body class="maincontent">
 <h1><img style="width: 75px; height: 75px;" src="images/atom-logo.gif"
@@ -21,7 +23,7 @@ pageTracker._trackPageview();
 <div class="content">
 <div id="header"><span style="font-style: italic;">Chris Berry, Bryon
 Jacob. Updated
-05/01/08</span><br>
+08/15/08</span><br>
 <br>
 This
 document describes the protocol used by the AtomServer data APIs
@@ -136,7 +138,7 @@ XPath notation: in particular, slashes show the element hierarchy, and
 an @ sign indicates an attribute of an element.</p>
 <p>In each of the following tables, the highlighted items are required.</p>
 <p>The following table shows the elements of a AtomServer feed:</p>
-<table border="5">
+<table style="width: 733px; height: 228px;" border="5">
   <tbody>
     <tr>
       <th>Feed Schema Item</th>
@@ -152,8 +154,8 @@ an @ sign indicates an attribute of an element.</p>
     </tr>
     <tr>
       <td class="row-heading">Feed HTML Link</td>
-      <td><code>/feed/link[@rel="alternate"]</code>\<br>
-      <code>[@type="text/html"]/@href</code></td>
+      <td><code>/feed/link[@rel="alternate"]</code><span
+ style="font-family: monospace;"> </span><code>[@type="text/html"]/@href</code></td>
     </tr>
     <tr>
       <td class="row-heading">Feed Language</td>
@@ -162,9 +164,9 @@ an @ sign indicates an attribute of an element.</p>
     <tr>
       <td class="row-heading">Feed Author</td>
       <td>
-      <p><code>/feed/author/name</code><code><br>
-      </code></p>
-      <p>(Required in certain cases; see Atom specification.)</p>
+      <p><code>/feed/author/name</code><code></code>&nbsp; <br>
+(Required in certain cases; see Atom specification.)<br>
+      </p>
       </td>
     </tr>
     <tr>
@@ -179,7 +181,7 @@ section for further details.</td>
 that AtomServer exposes some of the <a
  href="http://www.opensearch.org/Specifications/OpenSearch/1.1#OpenSearch_response_elements">OpenSearch
 1.1 Response elements</a> in its search-results feeds.</p>
-<table border="5">
+<table style="width: 738px; height: 103px;" border="5">
   <tbody>
     <tr>
       <th>Search Result Feed Schema Item</th>
@@ -221,8 +223,8 @@ that AtomServer exposes some of the <a
     <tr>
       <td class="row-heading">Entry Content</td>
       <td>
-      <p><code>/feed/entry/content</code></p>
-      <p>(If no content element, then entry must contain at least one <code>&lt;link
+      <p><code>/feed/entry/content</code><br>
+(If no content element, then entry must contain at least one <code>&lt;link
 rel="alternate"&gt;</code> element.)</p>
       </td>
     </tr>
@@ -529,11 +531,26 @@ specification):</p>
 <dl>
   <dt style="font-weight: bold;"><code>&lt;link rel="self" type="..."
 href="..."/&gt;</code></dt>
-  <dd>Contains the URI of this resource. The value of the <code>type</code>
+  <dd>For Entries, this contains the URI of <span
+ style="font-style: italic;">this</span> resource, <span
+ style="font-style: italic;">including its revision number</span>. For
+Feeds, this contains the URI required to get back this particular page.
+The value of the <code>type</code>
 attribute depends on the requested format. If no data changes in the
 interim, sending another GET to the <span
  style="font-family: monospace;">self </span>URI returns the same
 response.</dd>
+  <dt style="font-weight: bold;"><code>&lt;link rel="edit" type="..."
+href="..."/&gt;</code></dt>
+  <dd>Contains the URI of the <span style="font-style: italic;">next</span>,
+presumably unwritten, resource, <span style="font-style: italic;">including
+its revision number</span>. The value of the <code>type</code>
+attribute depends on the requested format. If no data changes in the
+interim, sending PUT to the <span style="font-family: monospace;">edit
+    </span>URI will produce a successful update. <span
+ style="font-style: italic;">It is alway recommended that you PUT to
+the "edit URI</span>.<br>
+  </dd>
   <dt style="font-weight: bold;"><code>&lt;link rel="next"
 type="application/atom+xml"
 href="..."/&gt;</code></dt>
@@ -568,7 +585,7 @@ it for further processing. </dd>
  style="font-weight: bold;"><span style="font-weight: bold;">   &lt;link href="/myserver/v1/widgets/acme?start-index=0&amp;amp;max-results=2" rel="self" /&gt;</span><br
  style="font-weight: bold;"><span style="font-weight: bold;"> </span>  &lt;author&gt;&lt;name&gt;AtomServer APP Service&lt;/name&gt;&lt;/author&gt;<br>   &lt;title type="text"&gt;acme entries&lt;/title&gt;<br>   &lt;updated&gt;2007-10-05T19:17:42.750Z&lt;/updated&gt;<br>   &lt;id&gt;tag:atomserver.org,2007:v1:acme&lt;/id&gt;<br>   &lt;entry&gt;<br>      &lt;id&gt;/myserver/v1/widgets/acme/205390.en.xml&lt;/id&gt;<br><span
  style="font-weight: bold;">      &lt;as:entryId&gt;205390&lt;/as:entryId&gt;</span><br
- style="font-weight: bold;">      &lt;updated&gt;2007-10-05T18:48:23.437Z&lt;/updated&gt;<br>      &lt;published&gt;2007-10-05T18:48:23.437Z&lt;/published&gt;<br>      &lt;title type="text"&gt; Entry: acme 205390.en&lt;/title&gt;&lt;author&gt;<br>      &lt;name&gt;AtomServer Atom Service&lt;/name&gt;&lt;/author&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml" rel="self" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml/2" rel="edit" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml" rel="alternate" /&gt;<br>   &lt;/entry&gt;<br>   &lt;entry&gt;<br>      &lt;id&gt;/myserver/v1/widgets/acme/205395.en.xml&lt;/id&gt;<br>      &lt;as:entryId&gt;205395&lt;/as:entryId&gt;<br>      &lt;updated&gt;2007-10-05T15:48:56.437Z&lt;/updated&gt;<br>      &lt;published&gt;2007-10-05T12:50:76.437Z&lt;/published&gt;<br>      &lt;title type="text"&gt; Entry: acme 205395.en&lt;/title&gt;&lt;author&gt;<br>      &lt;name&gt;AtomServer Atom Service&lt;/name&gt;&lt;/author&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205395.en.xml" rel="self" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205395.en.xml/1" rel="edit" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205395.en.xml" rel="alternate" /&gt;<br>   &lt;/entry&gt;<span
+ style="font-weight: bold;">      &lt;updated&gt;2007-10-05T18:48:23.437Z&lt;/updated&gt;<br>      &lt;published&gt;2007-10-05T18:48:23.437Z&lt;/published&gt;<br>      &lt;title type="text"&gt; Entry: acme 205390.en&lt;/title&gt;&lt;author&gt;<br>      &lt;name&gt;AtomServer Atom Service&lt;/name&gt;&lt;/author&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml/1" rel="self" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml/2" rel="edit" /&gt;<br>   &lt;/entry&gt;<br>   &lt;entry&gt;<br>      &lt;id&gt;/myserver/v1/widgets/acme/205395.en.xml&lt;/id&gt;<br>      &lt;as:entryId&gt;205395&lt;/as:entryId&gt;<br>      &lt;updated&gt;2007-10-05T15:48:56.437Z&lt;/updated&gt;<br>      &lt;published&gt;2007-10-05T12:50:76.437Z&lt;/published&gt;<br>      &lt;title type="text"&gt; Entry: acme 205395.en&lt;/title&gt;&lt;author&gt;<br>      &lt;name&gt;AtomServer Atom Service&lt;/name&gt;&lt;/author&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205395.en.xml/0" rel="self" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205395.en.xml/1" rel="edit" /&gt;<br>   &lt;/entry&gt;<span
  style="font-family: monospace;"></span><span
  style="font-family: monospace;"><br>&lt;/feed&gt;</span></pre>
 </div>
@@ -581,8 +598,10 @@ points to a feed containing the next set of entries. Subsequent sets
 contain a corresponding <code>&lt;link rel="previous"
 type="application/atom+xml" href="..."/&gt;</code> element. By
 following all the <em>next</em> links, a client can retrieve all
-entries from a feed. Note that following "next links" is the <span
- style="font-style: italic;">only</span> reliable way to retrieve pages.<br>
+entries from a feed. Note that <span style="font-style: italic;">following
+"next links" is the </span><span
+ style="font-style: italic; font-weight: bold;">only</span><span
+ style="font-style: italic;"> reliable way to retrieve pages.</span><br>
 </p>
 <h3><a name="time-sensitive-feeds"></a>Dealing with Time-sensitive Feeds<br>
 </h3>
@@ -713,10 +732,19 @@ version.<br>
 In AtomServer, we achieve these semantics by appending a version ID to
 each
 entry's <span style="font-family: monospace;">edit</span> URI. Note
+that <span style="font-style: italic;">the</span> <span
+ style="font-family: monospace;">edit</span> <span
+ style="font-style: italic;">URI always points to the version you
+should PUT to</span> (i.e. to one version greater than the current
+version), while <span style="font-style: italic;">the</span> <span
+ style="font-family: monospace;">self </span><span
+ style="font-style: italic;">URI always points to the current version</span>.
+Note
 that only the <span style="font-family: monospace;">edit </span>URI
 is affected, not the entry
-ID. In this scheme, each update changes the entry's <span
- style="font-family: monospace;">edit</span> URI, thus
+ID. In this scheme, each update changes the entry's revision number,
+and its corresponding&nbsp; <span style="font-family: monospace;">edit</span>
+URI, thus
 guaranteeing that <span style="font-style: italic;">subsequent updates
 based on the original version fail</span>. Deletes, of course, are
 identical to updates with respect to this feature; if you send a delete
@@ -724,7 +752,7 @@ with an old version number, the delete fails.<br>
 <br>
 If the server detects a version conflict on PUT or DELETE, the server
 responds with <span style="font-family: monospace;">409 Conflict.</span>
-The body of the response contains the <span
+The body of the response contains the correct <span
  style="font-family: monospace;">edit</span> URI of the entry. The
 client is advised to resolve the conflict and
 resubmit the request, using the <span style="font-family: monospace;">edit
@@ -752,15 +780,21 @@ href="/myserver/v1/widgets/acme/12345.en.xml/3" rel="edit" /&gt;</span><br
 <span style="font-family: monospace;"></span></div>
 <br>
 A couple of things to note:<br>
-&nbsp;&nbsp;&nbsp; * you are not required to send the version ID on a <span
+&nbsp;&nbsp;&nbsp; * you are <span style="font-weight: bold;">not</span>
+required to send the version ID on a <span
  style="font-family: monospace;">GET </span>(in fact, it is
 discouraged), but if you supply one, it must be
-correct, and you will get a <span style="font-family: monospace;">409
-Conflict</span> if it is wrong<br>
+correct, and you will get a <span style="font-family: monospace;">404
+NOT FOUND</span> if it is wrong<br>
 &nbsp;&nbsp;&nbsp; * if you try to <span
  style="font-family: monospace;">DELETE</span> a resource that does not
-exist, you will get a <span style="font-family: monospace;">404 Not
-Found</span> response.<br>
+exist, you will get a <span style="font-family: monospace;">404 NOT
+FOUND</span> response.<br>
+&nbsp;&nbsp;&nbsp; * if you try to <span
+ style="font-family: monospace;">PUT</span> or <span
+ style="font-family: monospace;">DELETE</span> a revision that already
+has been written, you will get a <span style="font-family: monospace;">409
+CONFLICT</span>.<br>
 <br>
 <span style="font-weight: bold;">Overriding Optimistic Concurrency</span><br>
 <br>
@@ -781,7 +815,7 @@ specifying a version ID of "*". For example, if you do a <span
 <span style="font-family: monospace;">http://foo.com/myserver/v1/widgets/acme/1234.en.xml/*</span>,
 your write will succeed, regardless of the current version ID. The
 response will still
-contain the correct entry link and version ID.<br>
+contain the correct entry links and version ID.<br>
 <br>
 <span style="font-weight: bold;">Motivation and design notes</span><br>
 <br>

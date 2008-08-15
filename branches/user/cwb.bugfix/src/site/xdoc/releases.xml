@@ -30,7 +30,8 @@
                     Cleaned up the Jars that get included in the War's WEB-INF/lib.
                     Created new top-level /lib dir in the standalone version to house Jetty and Servlet API Jars,
                     which fixes Tomcat deploy issues</li>
-                <li>The "edit" and "self" links for Entry XML have been corrected, as mentioned above</li>
+                <li>The "edit" and "self" links for Entry XML have been corrected, as mentioned above.
+                    Also fixed some bugs related to Optimistic Concurrency and initial Entry creation.</li>
                 <li>Cleaned up the API to remove RequestContext from the abstract methods of AbstractAtomCollection</li>
                 <li>Added a very simple standalone AtomServer (TestingAtomServer) for Atom client unit testing.
                     Made HsqlBootstrapper restartable, and made TestingAtomServer do so on each construction</li>

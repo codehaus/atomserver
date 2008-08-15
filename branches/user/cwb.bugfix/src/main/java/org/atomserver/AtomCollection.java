@@ -76,6 +76,11 @@ public interface AtomCollection {
      * Note that the AtomServer (actually the URIHandler) has already decoded the URL enough to know
      * that the URL refers to an Entry request, but we must pass along the RequestContext because
      * other parts of the RequestContext may be required for processing (Headers, etc.)
+     * <p/>
+     * Note also that if you submit a GET to a URL which contains a revision number (i.e "/widgets/acme/123.xml/0"),
+     * then you <b>must</b> request the correct, current revision, <i>or you will receive a 404 NOT FOUND</i>.
+     * This URL would correspond to the "self" link available in the Entry. Because of this restriction, it is
+     * generally advisable to submit GETs to a URL without a revision number (i.e "/widgets/acme/123.xml").
      * @param request The Abdera RequestContext, which contains the URL and all HTTP Headers.
      * @return The Abdera Entry object.
      * @throws AtomServerException
@@ -97,6 +102,14 @@ public interface AtomCollection {
      * Note that the AtomServer (actually the URIHandler) has already decoded the URL enough to know
      * that the URL refers to an update Entry request, but we must pass along the RequestContext because
      * other parts of the RequestContext may be required for processing (Headers, etc.)
+     * <p/>
+     * Note also that the when using Optimistic Concurency, you <b>must</b> submit <i>the revision you intend
+     * to write</i>. This would correspond to the "edit" link available in the Entry. E.g. if the current Entry
+     * was at, say, "/widgets/acme/123.xml/4", then you must submit the PUT to "/widgets/acme/123.xml/5".
+     * <p/>
+     * When doing the "initial PUT" (i.e. the initial Entry creation), and you are using Optimistic Concurency,
+     * you should PUT to either "/0" or leave off the revision number altogether.  E.g. either, say,
+     * "/widgets/acme/123.xml/0" or "/widgets/acme/123.xml".
      * @param request The Abdera RequestContext, which contains the URL and all HTTP Headers.
      * @return CreateOrUpdateEntry which
      * @throws AtomServerException
@@ -111,6 +124,11 @@ public interface AtomCollection {
      * that the URL refers to a delete Entry request, but we must pass along the RequestContext because
      * other parts of the RequestContext may be required for processing (Headers, etc.)
      * @param request The Abdera RequestContext, which contains the URL and all HTTP Headers.
+     * <p/>
+     * Note that the when using Optimistic Concurency, you <b>must</b> submit <i>the revision you intend
+     * to write</i>. This would correspond to the "edit" link available in the Entry. E.g. if the current Entry
+     * was at, say, "/widgets/acme/123.xml/4", then you must submit the DELETE to "/widgets/acme/123.xml/5".
+
      * @return An Abdera Entry object
      * @throws AtomServerException
      */

@@ -2,25 +2,27 @@
 <html>
 <head>
   <link rel="StyleSheet" href="css/style.css" type="text/css">
-  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
-  <meta name="verify-v1" content="sRQSq4VA5FRMhwzFB4U3I9AtgLMtIWTdpVVO6jg1az4=" />
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <meta name="verify-v1"
+ content="sRQSq4VA5FRMhwzFB4U3I9AtgLMtIWTdpVVO6jg1az4=">
   <title>AtomServer, Protocol Basics</title>
-<script type="text/javascript">
+  <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
 document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-</script>
-<script type="text/javascript">
+  </script>
+  <script type="text/javascript">
 var pageTracker = _gat._getTracker("UA-4603527-2");
 pageTracker._initData();
 pageTracker._trackPageview();
-</script>
+  </script>
 </head>
 <body class="maincontent">
 <h1><img style="width: 75px; height: 75px;" src="images/atom-logo.gif"
  alt="logo">&nbsp;&nbsp;&nbsp;<span style="font-weight: bold;"></span>AtomServer,
 Protocol Basics <span style="color: rgb(255, 0, 0);"></span></h1>
-<div class="content"><span style="font-style: italic;"><br>
-Chris Berry, Bryon Jacob. Updated 05/01/08</span><br>
+<div class="content"><span style="font-style: italic;">Chris Berry,
+Bryon Jacob. Updated 08/15/08</span><br>
 <br>
 This document describes the basics of the protocol used by AtomServer,
 including examples of what requests looks like, what results look like,
@@ -199,7 +201,7 @@ The server responds:<span style="font-family: monospace;"></span><br>
 <div id="codebox"><span style="font-family: monospace;">200
 OK</span><span style="font-family: monospace;"><br>
 </span>
-<pre id="line1">&lt;?xml version='1.0' encoding='UTF-8'?&gt;<br>&lt;feed xmlns="http://www.w3.org/2005/Atom" xmlns:ha="http://atomserver.org/namespaces/1.0/" xmlns:os="http://a9.com/-/spec/opensearchrss/1.1/"&gt;<br>   &lt;as:endIndex&gt;153&lt;/as:endIndex&gt;<br>   &lt;link href="/myserver/v1/widgets/acme" rel="self" /&gt;<br>   &lt;author&gt;&lt;name&gt;AtomServer APP Service&lt;/name&gt;&lt;/author&gt;<br>   &lt;title type="text"&gt;acme entries&lt;/title&gt;<br>   &lt;updated&gt;2007-10-05T19:17:42.750Z&lt;/updated&gt;<br>   &lt;id&gt;tag:atomserver.org,2007:v1:acme&lt;/id&gt;<br>   &lt;entry&gt;<br>      &lt;id&gt;/myserver/v1/widgets/acme/205390.en.xml&lt;/id&gt;<br>      &lt;updated&gt;2007-10-05T19:17:42.750Z&lt;/updated&gt;<br>      &lt;published&gt;2007-10-05T18:48:23.437Z&lt;/published&gt;<br>      &lt;title type="text"&gt; Entry: acme 205390.en&lt;/title&gt;&lt;author&gt;<br>      &lt;name&gt;AtomServer Atom Service&lt;/name&gt;&lt;/author&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml" rel="self" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml/2" rel="edit" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml" rel="alternate" /&gt;<br>   &lt;/entry&gt;<br>   &lt;entry&gt;<br>      &lt;id&gt;/myserver/v1/widgets/acme/205391.en.xml&lt;/id&gt;<br>      &lt;updated&gt;2007-10-05T18:48:23.437Z&lt;/updated&gt;<br>      &lt;published&gt;2007-10-05T12:36:23.437Z&lt;/published&gt;<br>      &lt;title type="text"&gt; Entry: acme 205391.en&lt;/title&gt;&lt;author&gt;<br>      &lt;name&gt;AtomServer Atom Service&lt;/name&gt;&lt;/author&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205391.en.xml" rel="self" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205391.en.xml/1" rel="edit" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205391.en.xml" rel="alternate" /&gt;<br>   &lt;/entry&gt;<span
+<pre id="line1">&lt;?xml version='1.0' encoding='UTF-8'?&gt;<br>&lt;feed xmlns="http://www.w3.org/2005/Atom" xmlns:ha="http://atomserver.org/namespaces/1.0/" xmlns:os="http://a9.com/-/spec/opensearchrss/1.1/"&gt;<br>   &lt;as:endIndex&gt;153&lt;/as:endIndex&gt;<br>   &lt;link href="/myserver/v1/widgets/acme" rel="self" /&gt;<br>   &lt;author&gt;&lt;name&gt;AtomServer APP Service&lt;/name&gt;&lt;/author&gt;<br>   &lt;title type="text"&gt;acme entries&lt;/title&gt;<br>   &lt;updated&gt;2007-10-05T19:17:42.750Z&lt;/updated&gt;<br>   &lt;id&gt;tag:atomserver.org,2007:v1:acme&lt;/id&gt;<br>   &lt;entry&gt;<br>      &lt;id&gt;/myserver/v1/widgets/acme/205390.en.xml&lt;/id&gt;<br>      &lt;updated&gt;2007-10-05T19:17:42.750Z&lt;/updated&gt;<br>      &lt;published&gt;2007-10-05T18:48:23.437Z&lt;/published&gt;<br>      &lt;title type="text"&gt; Entry: acme 205390.en&lt;/title&gt;&lt;author&gt;<br>      &lt;name&gt;AtomServer Atom Service&lt;/name&gt;&lt;/author&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml/1" rel="self" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml/2" rel="edit" /&gt;<br>   &lt;/entry&gt;<br>   &lt;entry&gt;<br>      &lt;id&gt;/myserver/v1/widgets/acme/205391.en.xml&lt;/id&gt;<br>      &lt;updated&gt;2007-10-05T18:48:23.437Z&lt;/updated&gt;<br>      &lt;published&gt;2007-10-05T12:36:23.437Z&lt;/published&gt;<br>      &lt;title type="text"&gt; Entry: acme 205391.en&lt;/title&gt;&lt;author&gt;<br>      &lt;name&gt;AtomServer Atom Service&lt;/name&gt;&lt;/author&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205391.en.xml/0" rel="self" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205391.en.xml/1" rel="edit" /&gt;<br>   &lt;/entry&gt;<span
  style="font-family: monospace;"></span><span
  style="font-family: monospace;"><br>&lt;/feed</span>
 </pre>
@@ -307,7 +309,7 @@ The server responds with:<span style="font-family: monospace;"></span><br>
 <div style="margin-left: 40px;"><span style="font-family: monospace;"></span><br>
 <div id="codebox"><span style="font-family: monospace;">200
 OK</span><br style="font-family: monospace;">
-<pre id="line1">&lt;?xml version='1.0' encoding='UTF-8'?&gt;<br>&lt;feed xmlns="http://www.w3.org/2005/Atom" xmlns:ha="http://atomserver.org/namespaces/1.0/" xmlns:os="http://a9.com/-/spec/opensearchrss/1.1/"&gt;<br>   &lt;as:endIndex&gt;154&lt;/as:endIndex&gt;<br>   &lt;link href="/myserver/v1/widgets/acme" rel="self" /&gt;<br>   &lt;author&gt;&lt;name&gt;AtomServer APP Service&lt;/name&gt;&lt;/author&gt;<br>   &lt;title type="text"&gt;acme entries&lt;/title&gt;<br>   &lt;updated&gt;2007-10-05T20:17:50.750Z&lt;/updated&gt;<br>   &lt;id&gt;tag:atomserver.org,2007:v1:acme&lt;/id&gt;<br>   &lt;entry&gt;<br>      &lt;id&gt;/myserver/v1/widgets/acme/205390.en.xml&lt;/id&gt;<br>      &lt;updated&gt;2007-10-05T20:17:50.750Z&lt;/updated&gt;<br>      &lt;published&gt;2007-10-05T18:48:23.437Z&lt;/published&gt;<br>      &lt;title type="text"&gt; Entry: acme 205390.en&lt;/title&gt;&lt;author&gt;<br>      &lt;name&gt;AtomServer Atom Service&lt;/name&gt;&lt;/author&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml" rel="self" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml/3" rel="edit" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml" rel="alternate" /&gt;<br>   &lt;/entry&gt;<span
+<pre id="line1">&lt;?xml version='1.0' encoding='UTF-8'?&gt;<br>&lt;feed xmlns="http://www.w3.org/2005/Atom" xmlns:ha="http://atomserver.org/namespaces/1.0/" xmlns:os="http://a9.com/-/spec/opensearchrss/1.1/"&gt;<br>   &lt;as:endIndex&gt;154&lt;/as:endIndex&gt;<br>   &lt;link href="/myserver/v1/widgets/acme" rel="self" /&gt;<br>   &lt;author&gt;&lt;name&gt;AtomServer APP Service&lt;/name&gt;&lt;/author&gt;<br>   &lt;title type="text"&gt;acme entries&lt;/title&gt;<br>   &lt;updated&gt;2007-10-05T20:17:50.750Z&lt;/updated&gt;<br>   &lt;id&gt;tag:atomserver.org,2007:v1:acme&lt;/id&gt;<br>   &lt;entry&gt;<br>      &lt;id&gt;/myserver/v1/widgets/acme/205390.en.xml&lt;/id&gt;<br>      &lt;updated&gt;2007-10-05T20:17:50.750Z&lt;/updated&gt;<br>      &lt;published&gt;2007-10-05T18:48:23.437Z&lt;/published&gt;<br>      &lt;title type="text"&gt; Entry: acme 205390.en&lt;/title&gt;&lt;author&gt;<br>      &lt;name&gt;AtomServer Atom Service&lt;/name&gt;&lt;/author&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml/2" rel="self" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml/3" rel="edit" /&gt;<br>   &lt;/entry&gt;<span
  style="font-family: monospace;"></span><span
  style="font-family: monospace;"><br>&lt;/feed&gt;</span></pre>
 </div>
@@ -346,7 +348,7 @@ The server responds with<br>
 <div style="margin-left: 40px;"><span style="font-family: monospace;"></span><br>
 <div id="codebox"><span style="font-family: monospace;">200
 OK </span><br>
-<pre id="line1">&lt;?xml version='1.0' encoding='UTF-8'?&gt;<br>&lt;feed xmlns="http://www.w3.org/2005/Atom" xmlns:ha="http://atomserver.org/namespaces/1.0/" xmlns:os="http://a9.com/-/spec/opensearchrss/1.1/"&gt;<br>   &lt;os:totalResults&gt;65801&lt;/os:totalResults&gt;<br>   &lt;os:startIndex&gt;0&lt;/os:startIndex&gt;<br>   &lt;os:itemsPerPage&gt;2&lt;/os:itemsPerPage&gt;<br>   &lt;as:endIndex&gt;153&lt;/as:endIndex&gt;<br>   &lt;link href="/myserver/v1/widgets/acme?start-index=153&amp;amp;max-results=2" rel="next" /&gt;<br>   &lt;link href="/myserver/v1/widgets/acme?start-index=0&amp;amp;max-results=2" rel="self" /&gt;<br>   &lt;author&gt;&lt;name&gt;AtomServer APP Service&lt;/name&gt;&lt;/author&gt;<br>   &lt;title type="text"&gt;acme entries&lt;/title&gt;<br>   &lt;updated&gt;2007-10-05T19:17:42.750Z&lt;/updated&gt;<br>   &lt;id&gt;tag:atomserver.org,2007:v1:acme&lt;/id&gt;<br>   &lt;entry&gt;<br>      &lt;id&gt;/myserver/v1/widgets/acme/205390.en.xml&lt;/id&gt;<br>      &lt;updated&gt;2007-10-05T18:48:23.437Z&lt;/updated&gt;<br>      &lt;published&gt;2007-10-05T18:48:23.437Z&lt;/published&gt;<br>      &lt;title type="text"&gt; Entry: acme 205390.en&lt;/title&gt;&lt;author&gt;<br>      &lt;name&gt;AtomServer APP Service&lt;/name&gt;&lt;/author&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml" rel="self" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml/2" rel="edit" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml" rel="alternate" /&gt;<br>   &lt;/entry&gt;<br>   &lt;entry&gt;<br>      &lt;id&gt;/myserver/v1/widgets/acme/205395.en.xml&lt;/id&gt;<br>      &lt;updated&gt;2007-10-05T15:48:56.437Z&lt;/updated&gt;<br>      &lt;published&gt;2007-10-05T12:50:76.437Z&lt;/published&gt;<br>      &lt;title type="text"&gt; Entry: acme 205395.en&lt;/title&gt;&lt;author&gt;<br>      &lt;name&gt;AtomServer APP Service&lt;/name&gt;&lt;/author&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205395.en.xml" rel="self" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205395.en.xml/1" rel="edit" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205395.en.xml" rel="alternate" /&gt;<br>   &lt;/entry&gt;<span
+<pre id="line1">&lt;?xml version='1.0' encoding='UTF-8'?&gt;<br>&lt;feed xmlns="http://www.w3.org/2005/Atom" xmlns:ha="http://atomserver.org/namespaces/1.0/" xmlns:os="http://a9.com/-/spec/opensearchrss/1.1/"&gt;<br>   &lt;os:totalResults&gt;65801&lt;/os:totalResults&gt;<br>   &lt;os:startIndex&gt;0&lt;/os:startIndex&gt;<br>   &lt;os:itemsPerPage&gt;2&lt;/os:itemsPerPage&gt;<br>   &lt;as:endIndex&gt;153&lt;/as:endIndex&gt;<br>   &lt;link href="/myserver/v1/widgets/acme?start-index=153&amp;amp;max-results=2" rel="next" /&gt;<br>   &lt;link href="/myserver/v1/widgets/acme?start-index=0&amp;amp;max-results=2" rel="self" /&gt;<br>   &lt;author&gt;&lt;name&gt;AtomServer APP Service&lt;/name&gt;&lt;/author&gt;<br>   &lt;title type="text"&gt;acme entries&lt;/title&gt;<br>   &lt;updated&gt;2007-10-05T19:17:42.750Z&lt;/updated&gt;<br>   &lt;id&gt;tag:atomserver.org,2007:v1:acme&lt;/id&gt;<br>   &lt;entry&gt;<br>      &lt;id&gt;/myserver/v1/widgets/acme/205390.en.xml&lt;/id&gt;<br>      &lt;updated&gt;2007-10-05T18:48:23.437Z&lt;/updated&gt;<br>      &lt;published&gt;2007-10-05T18:48:23.437Z&lt;/published&gt;<br>      &lt;title type="text"&gt; Entry: acme 205390.en&lt;/title&gt;&lt;author&gt;<br>      &lt;name&gt;AtomServer APP Service&lt;/name&gt;&lt;/author&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml/1" rel="self" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml/2" rel="edit" /&gt;<br>   &lt;/entry&gt;<br>   &lt;entry&gt;<br>      &lt;id&gt;/myserver/v1/widgets/acme/205395.en.xml&lt;/id&gt;<br>      &lt;updated&gt;2007-10-05T15:48:56.437Z&lt;/updated&gt;<br>      &lt;published&gt;2007-10-05T12:50:76.437Z&lt;/published&gt;<br>      &lt;title type="text"&gt; Entry: acme 205395.en&lt;/title&gt;&lt;author&gt;<br>      &lt;name&gt;AtomServer APP Service&lt;/name&gt;&lt;/author&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205395.en.xml/0" rel="self" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205395.en.xml/1" rel="edit" /&gt;<br>   &lt;/entry&gt;<span
  style="font-family: monospace;"></span><span
  style="font-family: monospace;"><br>&lt;/feed&gt;</span><br></pre>
 <span style="font-family: monospace;"></span>
@@ -472,10 +474,10 @@ OK</span><br>
  class="start-tag">name</span>&gt;AtomServer APP Service&lt;/<span
  class="end-tag">name</span>&gt;&lt;/<span class="end-tag">author</span>&gt;<br>   &lt;<span
  class="start-tag">link</span><span class="attribute-name"> href</span>=<span
- class="attribute-value">"/myserver/v1/widgets/acme/169371.en_US.xml" </span><span
+ class="attribute-value">"/myserver/v1/widgets/acme/169371.en_US.xml/0" </span><span
  class="attribute-name">rel</span>=<span class="attribute-value">"self" </span><span
  class="attribute-name">/</span>&gt;<br>   &lt;<span class="start-tag">link</span><span
- class="attribute-name"> href</span>=<span class="attribute-value">"/myserver/v1/widgets/acme/169371.en_US.xml/0" </span><span
+ class="attribute-name"> href</span>=<span class="attribute-value">"/myserver/v1/widgets/acme/169371.en_US.xml/1" </span><span
  class="attribute-name">rel</span>=<span class="attribute-value">"edit" </span><span
  class="attribute-name">/</span>&gt;<br>   &lt;<span class="start-tag">content</span><span
  class="attribute-name"></span><span class="attribute-value"></span> type="application/xml"&gt;<br>     &lt;property xmlns="http://schemas.atomserver.org/widgets/v1/rev0" systemId="acme" id="2787" inNetwork="false"&gt;<br>         .....<br>     &lt;/property&gt;<br><span
@@ -588,11 +590,11 @@ CREATED</span><br>
  class="end-tag">name</span>&gt;&lt;/<span class="end-tag">author</span>&gt;<br>   &lt;<span
  class="start-tag">link</span><span class="attribute-name"> href</span>=<span
  class="attribute-value">"/myserver/v1/widgets/acme/</span>a371412926e0439983eda36651049dfa<span
- class="attribute-value">.en_US.xml" </span><span class="attribute-name">rel</span>=<span
- class="attribute-value">"self" </span><span class="attribute-name">/</span>&gt;<br>   &lt;<span
- class="start-tag">link</span><span class="attribute-name"> href</span>=<span
- class="attribute-value">"/myserver/v1/widgets/acme/</span>a371412926e0439983eda36651049dfa<span
  class="attribute-value">.en_US.xml/0" </span><span
+ class="attribute-name">rel</span>=<span class="attribute-value">"self" </span><span
+ class="attribute-name">/</span>&gt;<br>   &lt;<span class="start-tag">link</span><span
+ class="attribute-name"> href</span>=<span class="attribute-value">"/myserver/v1/widgets/acme/</span>a371412926e0439983eda36651049dfa<span
+ class="attribute-value">.en_US.xml/1" </span><span
  class="attribute-name">rel</span>=<span class="attribute-value">"edit" </span><span
  class="attribute-name">/</span>&gt;<br>   &lt;<span class="start-tag">content</span><span
  class="attribute-name"></span> type="application/xml"&gt;<br>     &lt;property xmlns="http://schemas.atomserver.org/widgets/v1/rev0" systemId="acme" id="a371412926e0439983eda36651049dfa" inNetwork="false"&gt;<br>         .....<br>     &lt;/property&gt;<br><span
@@ -673,10 +675,10 @@ CREATED</span><br>
  class="start-tag">name</span>&gt;AtomServer APP Service&lt;/<span
  class="end-tag">name</span>&gt;&lt;/<span class="end-tag">author</span>&gt;<br>   &lt;<span
  class="start-tag">link</span><span class="attribute-name"> href</span>=<span
- class="attribute-value">"/myserver/v1/widgets/acme/169371.en_US.xml" </span><span
+ class="attribute-value">"/myserver/v1/widgets/acme/169371.en_US.xml/0" </span><span
  class="attribute-name">rel</span>=<span class="attribute-value">"self" </span><span
  class="attribute-name">/</span>&gt;<br>   &lt;<span class="start-tag">link</span><span
- class="attribute-name"> href</span>=<span class="attribute-value">"/myserver/v1/widgets/acme/169371.en_US.xml/0" </span><span
+ class="attribute-name"> href</span>=<span class="attribute-value">"/myserver/v1/widgets/acme/169371.en_US.xml/1" </span><span
  class="attribute-name">rel</span>=<span class="attribute-value">"edit" </span><span
  class="attribute-name">/</span>&gt;<br>   &lt;<span class="start-tag">content</span><span
  class="attribute-name"></span> type="application/xml"&gt;<br>     &lt;property xmlns="http://schemas.atomserver.org/widgets/v1/rev0" systemId="acme" id="2787" inNetwork="false"&gt;<br>         .....<br>     &lt;/property&gt;<br><span
@@ -757,7 +759,7 @@ OK</span><br>
  class="start-tag">name</span>&gt;AtomServer APP Service&lt;/<span
  class="end-tag">name</span>&gt;&lt;/<span class="end-tag">author</span>&gt;<br>   &lt;<span
  class="start-tag">link</span><span class="attribute-name"> href</span>=<span
- class="attribute-value">"/myserver/v1/widgets/acme/169371.en_US.xml" </span><span
+ class="attribute-value">"/myserver/v1/widgets/acme/169371.en_US.xml/3" </span><span
  class="attribute-name">rel</span>=<span class="attribute-value">"self" </span><span
  class="attribute-name">/</span>&gt;<br>   &lt;<span class="start-tag">link</span><span
  class="attribute-name"> href</span>=<span class="attribute-value">"/myserver/v1/widgets/acme/169371.en_US.xml/4" </span><span
@@ -782,7 +784,8 @@ you wish to edit (Update or Delete) the Entry. <br>
 <br>
 If you had requested a revision which did <span
  style="font-style: italic;">not </span>match the Entry's revision
-currently in the AtomServer store, then you will receive a <span
+currently in the AtomServer store (say, <span
+ style="font-family: monospace;">/2</span>), then you will receive a <span
  style="font-family: monospace;">409 Conflict </span>error response
 like that below.<br>
 <div style="margin-left: 40px;"><br>
@@ -813,8 +816,8 @@ href="/myserver/v1/widgets/acme/12345.en.xml/3" rel="edit" /&gt;</span><br
 <span style="font-family: monospace;"></span>
 </div>
 Note that you also receive an <span style="font-family: monospace;">edit</span>
-link in the error response which you can use to make your update
-request again.<br>
+link in the error response which you can use to make your next update
+request.<br>
 <br>
 Further details on the optimistic concurrency model can be found <a
  href="protocol_reference.html#Optimistic_concurrency_versioning">here</a>.<br>
@@ -873,7 +876,7 @@ OK<br>
  class="start-tag">name</span>&gt;AtomServer Atom Service&lt;/<span
  class="end-tag">name</span>&gt;&lt;/<span class="end-tag">author</span>&gt;<br>   &lt;<span
  class="start-tag">link</span><span class="attribute-name"> href</span>=<span
- class="attribute-value">"/myserver/v1/widgets/acme/205390.en.xml" </span><span
+ class="attribute-value">"/myserver/v1/widgets/acme/205390.en.xml/3" </span><span
  class="attribute-name">rel</span>=<span class="attribute-value">"self" </span><span
  class="attribute-name">/</span>&gt;<br>   &lt;<span class="start-tag">link</span><span
  class="attribute-name"> href</span>=<span class="attribute-value">"/myserver/v1/widgets/acme/205390.en.xml/4" </span><span
