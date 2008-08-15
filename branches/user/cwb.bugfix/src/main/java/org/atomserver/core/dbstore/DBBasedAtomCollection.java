@@ -398,6 +398,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         }
 
         boolean isNewEntry = (internalId == null);
+        boolean writeFailed = true;
 
         if (!isNewEntry) {
             if ( revision == 0 ) {
@@ -415,6 +416,9 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             }
 
             int numRowsModified = getEntriesDAO().updateEntry( entryTarget, false );
+            if (numRowsModified > 0) {
+                writeFailed = false;
+            }
             if (log.isDebugEnabled())
                 log.debug( "AFTER UPDATE:: [" + entryTarget.getEntryId() + "] numRowsModified= " + numRowsModified );
 
@@ -439,7 +443,9 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                 internalId = getEntriesDAO().insertEntry(entryTarget );
                 if (log.isDebugEnabled())
                    log.debug( "AFTER INSERT :: [" + entryTarget.getEntryId() + "] internalId= " + internalId);
-
+                if (internalId != null) {
+                    writeFailed = false;
+                }
             } catch( DataIntegrityViolationException ee )  {
 
                 // SELECT -- we do this select to know what revision we actually had,
@@ -480,7 +486,9 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         }
         bean.setNewlyCreated(isNewEntry);
 
-        if (revision != URIHandler.REVISION_OVERRIDE && (!isNewEntry && (bean.getRevision() != revision))) {
+        if ( writeFailed
+            || (revision != URIHandler.REVISION_OVERRIDE
+                && (!isNewEntry && (bean.getRevision() != revision)))) {
             String msg = "Entry [" + workspace + ", " + collection + ", " + entryId + ", " + locale
                 + "] Someone beat you to it (requested= " + revision
                 + " but it should be " + (bean.getRevision() + 1) + ")";

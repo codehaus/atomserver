@@ -27,8 +27,6 @@ import org.apache.abdera.i18n.iri.IRI;
 import java.io.File;
 import java.util.Locale;
 
-/**
- */
 public class OptConcDBSTest extends CRUDDBSTestCase {
 
     public static Test suite()
@@ -69,11 +67,9 @@ public class OptConcDBSTest extends CRUDDBSTestCase {
 
     protected boolean requiresDBSeeding() { return false; }
 
-
     // --------------------
     //       tests
     //---------------------
-
     public void testInsertNonZeroRev() throws Exception {
         log.debug( "########################################## testInsertNonZeroRev " );
         // Insert with as widgets/acme/33445566.en.xml/100
@@ -83,13 +79,27 @@ public class OptConcDBSTest extends CRUDDBSTestCase {
 
     public void testInsertZeroRev() throws Exception {
         log.debug( "########################################## testInsertZeroRev " );
+
+        // this one should pass
         insertRev( "/0", true, true, 1 );
 
-        // make sure that we can't insert it again at /0
+        // make sure that we can't insert it again at /0 -- should fail with 409
         insertRev( "/0", false, true, 1 );
 
-        // or at some other rev, e.g /100
+        // or at some other rev, e.g /100, will fail with 409
         insertRev( "/100", false, true, 1 );
+
+        // update the correct next one, should pass with 200
+        updateRev( 1, true, 200, 2 );
+
+        // update the previous, should fail with 409
+        updateRev( 1, true, 409, 2 );
+
+        // update a future rev, should fail with 409
+        updateRev( 3, false, 409, 2 );
+
+        // update the correct next one, should pass with 200
+        updateRev( 2, true, 200, 3 );
     }
 
     public void testInsertNoRev() throws Exception {
@@ -102,16 +112,19 @@ public class OptConcDBSTest extends CRUDDBSTestCase {
 
     public void testInsertAnyRev() throws Exception {
         log.debug( "########################################## testInsertAnyRev " );
-        insertRev( "/*", true, true, 1 );        
+        insertRev( "/*", true, true, 1 );
+
+        // update the correct next one, should pass with 200
+        updateRev( -1, true, 200, 2 );
+
+        // update the correct next one, should pass with 200
+        updateRev( -1, true, 200, 3 );
     }
     
     private void insertRev( String rev, boolean expects201, boolean fileShouldExist, int nextRev ) throws Exception {
-        String urlPath = getURLPath();
-        String fullURL = getServerURL() + urlPath;
-        String id = urlPath;
+        String fullURL = getURL();
+        String id = getURLPath();
 
-        // Insert with as widgets/acme/33445566.en.xml/*
-        //  This one should pass.
         String insertURL = fullURL + rev;
         int expectedStatus = (expects201) ? 201 : 409;
         String editURI = insert(id, insertURL, getFileXMLInsert(), false, expectedStatus, expects201 );
@@ -127,5 +140,34 @@ public class OptConcDBSTest extends CRUDDBSTestCase {
         int irev = extractRevisionFromURI(editURI);
         log.debug( "irev= " + irev );
         assertEquals( nextRev, irev );
+    }
+
+    private void updateRev( int rev, boolean fileShouldExist, int expectedStatus, int nextRev ) throws Exception {
+        String fullURL = getURL();
+        String id = getURLPath();
+
+        String srev = ( rev == -1 ) ? "/*" : ("/" + rev) ;
+        String updateURL = fullURL + srev;
+        String editURI = update(id, updateURL, getFileXMLUpdate(), false, expectedStatus );
+        log.debug( "########################################## editURI = " + editURI );
+
+        int irev = extractRevisionFromURI(editURI);
+        log.debug( "irev= " + irev );
+        assertEquals( nextRev, irev );
+
+        if (rev != -1) {
+            File propFile = getEntryFile(rev);
+            log.debug("propFile " + propFile);
+            if (fileShouldExist) {
+                assertTrue(propFile.exists());
+            } else {
+                assertFalse(propFile.exists());
+            }
+        }
+    }
+
+    private String getURL() {
+        String urlPath = getURLPath();
+        return (getServerURL() + urlPath);
     }
 }

@@ -508,6 +508,11 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
     }
 
     protected String update(String id, String fullURL, String fileXML, boolean allowsAny ) throws Exception {
+        return update(id, fullURL, fileXML, allowsAny, -1 );
+    }
+
+    protected String update(String id, String fullURL, String fileXML,
+                            boolean allowsAny, int expectedStatus ) throws Exception {
         assertNotNull( fileXML);
         AbderaClient client = new AbderaClient();
         RequestOptions options = client.getDefaultRequestOptions();
@@ -520,16 +525,18 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         ClientResponse response = client.put(fullURL, entry, options);
 
         log.debug("&&&&&&&&&&&&&& response = " + response);
+        int status = response.getStatus();
+        if (expectedStatus != -1)
+            assertEquals(expectedStatus, status);
 
         IRI editLink = null;
-        if (response.getStatus() != 200) {
-
+        if (status != 200) {
             if ( allowsAny ) {
-                log.error( "ERROR::::::::: status = " + response.getStatus() + " for " + fullURL );
+                log.error( "ERROR::::::::: status = " + status + " for " + fullURL );
                 return null;
             }
 
-            assertEquals(409, response.getStatus());
+            assertEquals(409, status);
             Document<ExtensibleElement> doc = response.getDocument();
             ExtensibleElement error = doc.getRoot();
             log.debug("&&&&&&&&&&&&&& error = " + error);
@@ -540,7 +547,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         } else {
             Document<Entry> doc = response.getDocument();
             Entry entryOut = doc.getRoot();
-            assertEquals(200, response.getStatus());
+            assertEquals(200, status);
             editLink = entryOut.getEditLinkResolvedHref();
         }
         assertNotNull("link rel='edit' must not be null", editLink);
