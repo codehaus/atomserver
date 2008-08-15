@@ -8,8 +8,6 @@ import org.atomserver.core.BaseServiceDescriptor;
 import org.atomserver.core.etc.AtomServerConstants;
 
 import java.util.Locale;
-import java.util.Arrays;
-import java.util.List;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -122,56 +120,10 @@ public class AggregateFeedsTest extends DBSTestCase {
         }
         endIndex = feed.getSimpleExtension(AtomServerConstants.END_INDEX);
 
-        // The next three sections test what happens when there are several aggregate entries with
-        // the same seqnum, and those would be split across a page boundary.  We cannot allow this,
-        // because that would break the clients' ability to page through the results.  When this
-        // happens, we always try to return a SMALLER page than requested, forcing ALL of the
-        // entries with the overlapping seqnum on to the next page.
-        //
-        // The only situation where this solution does not work is when ALL of the results on a
-        // page have the same seqnum.  In this case, there may be more, so we need to INCREASE
-        // the page size to return all of them on one page.  This should be an extremely rare case,
-        // and we solve it with a simple doubling algorithm -- we re-select the same page again,
-        // doubling the page size recursively until we either reach the end of the feed or find a
-        // heterogeneous set.
-
-        // in this case, we can solve the problem by REDUCING the page size from the requested 4
-        // down to 3 - this is the usual case.
-        modifyEntry("aloos", "my", "3009", null, alooXml(3009), false, "1");
-        modifyEntry("aloos", "my", "3012", null, alooXml(3012), false, "0");
-        feed = getPage("$join/urn:link?max-results=4&start-index=" + endIndex);
-        checkPageContainsExpectedEntries(feed, Arrays.asList("3009", "3010", "3011"));
-        endIndex = feed.getSimpleExtension(AtomServerConstants.END_INDEX);
-        feed = getPage("$join/urn:link?max-results=4&start-index=" + endIndex);
-        checkPageContainsExpectedEntries(feed, Arrays.asList("3012", "3013", "3014"));
-        endIndex = feed.getSimpleExtension(AtomServerConstants.END_INDEX);
-
-        // here, we have to double from the requested 2 up to 4, which is then reduced as above to
-        // 3 before we return.
-        modifyEntry("aloos", "my", "3009", null, alooXml(3009), false, "2");
-        modifyEntry("aloos", "my", "3012", null, alooXml(3012), false, "1");
-        feed = getPage("$join/urn:link?max-results=2&start-index=" + endIndex);
-        checkPageContainsExpectedEntries(feed, Arrays.asList("3009", "3010", "3011"));
-        endIndex = feed.getSimpleExtension(AtomServerConstants.END_INDEX);
-        feed = getPage("$join/urn:link?max-results=2&start-index=" + endIndex);
-        checkPageContainsExpectedEntries(feed, Arrays.asList("3012", "3013", "3014"));
-        endIndex = feed.getSimpleExtension(AtomServerConstants.END_INDEX);
-
-        // here, we have to double TWICE from the requested 1 to 2 and then to 4, which is then
-        // reduced as above to 3 before we return.
-        modifyEntry("aloos", "my", "3009", null, alooXml(3009), false, "3");
-        modifyEntry("aloos", "my", "3012", null, alooXml(3012), false, "2");
-        feed = getPage("$join/urn:link?max-results=1&start-index=" + endIndex);
-        checkPageContainsExpectedEntries(feed, Arrays.asList("3009", "3010", "3011"));
-        endIndex = feed.getSimpleExtension(AtomServerConstants.END_INDEX);
-        feed = getPage("$join/urn:link?max-results=1&start-index=" + endIndex);
-        checkPageContainsExpectedEntries(feed, Arrays.asList("3012", "3013", "3014"));
-        endIndex = feed.getSimpleExtension(AtomServerConstants.END_INDEX);
-
         // changing these "overlapping" objects should result in five entries in our aggregate feed
         modifyEntry("lalas", "my", "3017", Locale.US.toString(), lalaXml(3017), false, "0");
         modifyEntry("cuckoos", "my", "3014", null, cuckooXml(3014), false, "0");
-        modifyEntry("aloos", "my", "3012", null, alooXml(3012), false, "3");
+        modifyEntry("aloos", "my", "3012", null, alooXml(3012), false, "0");
         feed = getPage("$join/urn:link?start-index=" + endIndex);
         assertEquals(5, feed.getEntries().size());
         for (Entry entry : feed.getEntries()) {
@@ -259,7 +211,7 @@ public class AggregateFeedsTest extends DBSTestCase {
         // changing these "overlapping" objects should result in five entries in our aggregate feed
         modifyEntry("lalas", "my", "3017", Locale.US.toString(), lalaXml(3017), false, "1");
         modifyEntry("cuckoos", "my", "3014", null, cuckooXml(3014), false, "1");
-        modifyEntry("aloos", "my", "3012", null, alooXml(3012), false, "4");
+        modifyEntry("aloos", "my", "3012", null, alooXml(3012), false, "1");
         feed = getPage("$join/urn:link?locale=en_US&start-index=" + endIndex);
         assertEquals(5, feed.getEntries().size());
         for (Entry entry : feed.getEntries()) {
@@ -300,13 +252,8 @@ public class AggregateFeedsTest extends DBSTestCase {
         assertEquals(1, feed.getEntries().size());
         feed = getPage("$join/urn:link/-/(urn:group)odd/(urn:group)red?locale=en_US&start-index=" + endIndex);
         assertEquals(1, feed.getEntries().size());
-        feed = getPage("$join/urn:link/-/OR" +
-                       "/AND/(urn:group)even/(urn:group)blue" +
-                       "/AND/(urn:group)odd/(urn:group)red" +
-                       "?locale=en_US&start-index=" + endIndex);
-        assertEquals(2, feed.getEntries().size());
 
-        // Test that we can limit the set of workspaces included in the join.
+
         feed = getPage("$join(lalas,cuckoos)/urn:link");
         assertEquals(12, feed.getEntries().size());
         for (Entry entry : feed.getEntries()) {
@@ -349,35 +296,6 @@ public class AggregateFeedsTest extends DBSTestCase {
         feed = getPage("$join/urn:link/-/(urn:group)even?max-results=2&start-index=" + endIndex);
         assertEquals(1, feed.getEntries().size());
         assertEquals("3008", feed.getEntries().get(0).getSimpleExtension(AtomServerConstants.ENTRY_ID));
-
-        // the following is a regression test against the bug we discovered where entries in a
-        // locale that consisted of a language only (i.e. no country) were not retrievable.  This
-        // ensures that we can reference such aggregates correctly.
-
-        // set up a single aggregate entry in the locale=de feed
-        modifyEntry("lalas", "my", "90210", Locale.GERMAN.toString(), lalaXml(90210), true, "0");
-        modifyEntry("cuckoos", "my", "90210", null, cuckooXml(90210), true, "0");
-        modifyEntry("aloos", "my", "90210", null, alooXml(90210), true, "0");
-        // pull the feed - should get one result
-        feed = getPage("$join/urn:link?locale=de");
-        assertEquals(1, feed.getEntries().size());
-        for (Entry entry : feed.getEntries()) {
-            // pull down the one and only full entry - make sure we get it and that it is complete
-            String entryUrl = getServerRoot() + entry.getLink("self").getHref();
-            Entry fullEntry = getEntry(entryUrl);
-            assertTrue(fullEntry.getContent().startsWith("<aggregate"));
-            assertTrue(fullEntry.getContent().contains("<lala"));
-            assertTrue(fullEntry.getContent().contains("<cuckoo"));
-            assertTrue(fullEntry.getContent().contains("<aloo"));
-        }
-    }
-
-    private void checkPageContainsExpectedEntries(Feed feed, List<String> expected) {
-        assertEquals(expected.size(), feed.getEntries().size());
-        for (int i = 0; i < expected.size(); i++) {
-            String entryId = feed.getEntries().get(i).getSimpleExtension(AtomServerConstants.ENTRY_ID);
-            assertTrue(expected.contains(entryId));
-        }
     }
 
     private static void dumpToFile(Base object) throws IOException {

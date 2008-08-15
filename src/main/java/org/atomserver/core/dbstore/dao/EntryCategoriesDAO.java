@@ -29,8 +29,7 @@ import java.util.Set;
  *
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
- *         TODO: ideally, we would like to change all of the methods that refer
- *               to workspace or collection as strings into ones that take a descriptor of some sort.
+ *         TODO: ideally, we would like to change all of the methods that refer to workspace or collection as strings into ones that take a descriptor of some sort.
  */
 public interface EntryCategoriesDAO
         extends AtomServerDAO {
@@ -38,49 +37,56 @@ public interface EntryCategoriesDAO
     //======================================
     //          CRUD OPERATIONS
     //======================================
-    int insertEntryCategory(EntryCategory entry);
+    public int insertEntryCategory(EntryCategory entry);
 
-    EntryCategory selectEntryCategory(EntryCategory entryQuery);
+    public EntryCategory selectEntryCategory(EntryCategory entryQuery);
 
-    void deleteEntryCategory(EntryCategory entryQuery);
+    public void deleteEntryCategory(EntryCategory entryQuery);
 
     //======================================
     //          BATCH OPERATIONS
     //======================================
-    void insertEntryCategoryBatch(List<EntryCategory> entryCategoryList);
+    public void insertEntryCategoryBatch(List<EntryCategory> entryCategoryList);
 
-    void deleteEntryCategoryBatch(List<EntryCategory> entryCategoryList);
+    public void deleteEntryCategoryBatch(List<EntryCategory> entryCategoryList);
 
     //======================================
     //          LIST QUERIES
     //======================================
-    List<EntryCategory> selectEntriesCategories(String workspace, String collection, Set<String> entryIds);
+    public List<EntryCategory> selectEntriesCategories(String workspace,
+                                                       String collection,
+                                                       Set<String> entryIds);
 
-    List<EntryCategory> selectEntryCategories(EntryDescriptor entryQuery);
+    public List<EntryCategory> selectEntryCategories(EntryDescriptor entryQuery);
 
-    List<EntryCategory> selectEntryCategoriesInScheme(EntryDescriptor entryQuery, String scheme);
+    public List<EntryCategory> selectEntryCategoriesInScheme(EntryDescriptor entryQuery,
+                                                             String scheme);
 
-    void deleteEntryCategories(EntryDescriptor entryQuery);
+    public void deleteEntryCategories(EntryDescriptor entryQuery);
 
-    void deleteEntryCategoriesInScheme(EntryMetaData entryQuery, String scheme);
+    public void deleteEntryCategoriesInScheme(EntryMetaData entryQuery,
+                                              String scheme);
 
-    List<String> selectDistictCollections(String workspace);
+    public List<String> selectDistictCollections(String workspace);
 
-    List<Map<String, String>> selectDistictCategoriesPerCollection(String workspace, String collection);
+    public List<Map<String, String>> selectDistictCategoriesPerCollection(String workspace,
+                                                                          String collection);
 
     //======================================
     //          LIST OPERATIONS
     //======================================
-    void deleteAllEntryCategories(String workspace);
+    public void deleteAllEntryCategories(String workspace);
 
-    void deleteAllEntryCategories(String workspace, String collection);
+    public void deleteAllEntryCategories(String workspace,
+                                         String collection);
 
-    void deleteAllRowsFromEntryCategories();
+    public void deleteAllRowsFromEntryCategories();
 
     //======================================
     //          COUNT QUERIES
     //======================================
-    int getTotalCount(String workspace);
+    public int getTotalCount(String workspace);
 
-    int getTotalCount(String workspace, String collection);
+    public int getTotalCount(String workspace,
+                             String collection);
 }

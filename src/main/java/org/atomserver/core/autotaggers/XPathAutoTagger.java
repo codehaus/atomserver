@@ -18,11 +18,14 @@
 package org.atomserver.core.autotaggers;
 
 import org.atomserver.core.EntryCategory;
+import org.atomserver.utils.collections.BidirectionalMap;
+import org.atomserver.utils.perf.StopWatch;
+import org.atomserver.utils.perf.AutomaticStopWatch;
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.etc.AtomServerPerformanceLog;
-import org.atomserver.utils.collections.BidirectionalMap;
-import org.atomserver.utils.perf.AutomaticStopWatch;
-import org.atomserver.utils.perf.StopWatch;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
@@ -31,6 +34,7 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+
 import java.io.StringReader;
 import java.text.MessageFormat;
 import java.util.*;
@@ -95,6 +99,7 @@ import java.util.regex.Pattern;
 public class XPathAutoTagger
         extends BaseAutoTagger
         implements NamespaceContext {
+    private static final Log log = LogFactory.getLog(XPathAutoTagger.class);
 
     private final ThreadLocal<XPath> xPath = new ThreadLocal<XPath>() {
         protected XPath initialValue() {
@@ -118,7 +123,7 @@ public class XPathAutoTagger
         // verify that nothing needs to change.
 
         // load the initial list of categories for the entry
-        List<EntryCategory> initialState = getCategoriesHandler().selectEntryCategories(entry);
+        List<EntryCategory> initialState = getEntryCategoriesDAO().selectEntryCategories(entry);
         for (EntryCategory entryCategory : initialState) {
             log.debug("TAG-INITIAL:" + entryCategory);
         }
@@ -155,14 +160,14 @@ public class XPathAutoTagger
                     log.debug("TAG-WRITE:" + entryCategory);
                 }
             }
-            getCategoriesHandler().insertEntryCategoryBatch(new ArrayList<EntryCategory>(categoryMods));
+            getEntryCategoriesDAO().insertEntryCategoryBatch(new ArrayList<EntryCategory>(categoryMods));
         }
         // delete anything that needs to be deleted
         if (!toDelete.isEmpty()) {
             if (log.isDebugEnabled()) {
                 log.debug("autotagger performing " + toDelete.size() + " deletes");
             }
-            getCategoriesHandler().deleteEntryCategoryBatch(toDelete);
+            getEntryCategoriesDAO().deleteEntryCategoryBatch(toDelete);
         }
     }
 

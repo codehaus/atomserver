@@ -25,5 +25,5 @@ import java.util.Set;
  */
 public interface BooleanExpression<T> {
     ExpressionType getType();
-    void buildTermSet(Set<BooleanTerm<? extends T>> terms);
+    void buildTermSet(Set<BooleanTerm> terms);
 }

@@ -1,3 +1,4 @@
+
 =======================================================
 Building AtomServer
 =======================================================
@@ -7,25 +8,27 @@ env  is the atomserver environment to use. It controls which environment propert
            These files live at src/main/resources/env. And follow the naming convention {env}.properties
            postgres.properties is setup for a local Postgres Server.
 
-$ mvn -Denv=asdev-postgres clean install
+$ mvn -Denv=postgres clean install
 
 BTW; you can also control logging somewhat this same way; 
-  rootLoglevel    is the root log4j log level (default=DEBUG)
-  loglevel        is the log4j log level for "org.atomserver" (default=TRACE)
+rootLoglevel    is the root log4j log level (default=DEBUG)
+loglevel        is the log4j log level for "org.atomserver" (default=TRACE)
 
-$ mvn -Denv=asdev-postgres -DrootLogLevel=WARN install
+$ mvn -Denv=postgres -DrootLogLevel=WARN install
 
 NOTES
 ------
+
 A)   If you kill a build mid-flight you might leave the DB in a "bad state". So you may need to "clear it".
 Just use this backdoor JUnit (which clears all rows from the tables)
 (of course, you can just use a SQL client with "DELETE *  FROM EntryStore" to do the same, assuming you have access)
 
-$ mvn -Denv=asdev-postgres -DENABLE_DB_CLEAR_ALL=true -Dtest=DBClearTest test
+$ mvn -Denv=postgres -DENABLE_DB_CLEAR_ALL=true -Dtest=DBClearTest test
+
 
 =======================================================
 Database Information
-====================
+==============
 
 Setting up Postgres
 ---------------------

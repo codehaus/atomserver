@@ -21,7 +21,6 @@ import org.atomserver.EntryDescriptor;
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.dbstore.dao.ContentDAO;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
-import org.springframework.jmx.export.annotation.ManagedResource;
 
 import java.util.Locale;
 
@@ -29,7 +28,6 @@ import java.util.Locale;
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
-@ManagedResource(description = "Content Storage")
 public class DBBasedContentStorage implements ContentStorage {
 
     private EntriesDAO entriesDAO;
@@ -41,9 +39,6 @@ public class DBBasedContentStorage implements ContentStorage {
 
     public void setContentDAO(ContentDAO contentDAO) {
         this.contentDAO = contentDAO;
-    }
-    public ContentDAO getContentDAO() {
-        return contentDAO;
     }
 
     public String getContent(EntryDescriptor descriptor) {

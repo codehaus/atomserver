@@ -18,16 +18,19 @@ package org.atomserver.core.dbstore;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.apache.abdera.i18n.iri.IRI;
-import org.apache.abdera.model.Document;
+
 import org.apache.abdera.model.Entry;
+import org.apache.abdera.model.Document;
 import org.apache.abdera.protocol.client.ClientResponse;
-import org.atomserver.core.filestore.FileBasedContentStorage;
-import org.atomserver.testutils.client.MockRequestContext;
+import org.apache.abdera.i18n.iri.IRI;
+import org.apache.commons.lang.StringUtils;
 import org.atomserver.uri.EntryTarget;
+import org.atomserver.testutils.client.MockRequestContext;
+import org.atomserver.core.filestore.FileBasedContentStorage;
 import org.atomserver.utils.locale.LocaleUtils;
 
 import java.io.File;
+import java.util.Locale;
 
 /**
  */
@@ -164,12 +167,10 @@ public class PostDBSTest extends CRUDDBSTestCase {
         log.debug("fullURL = " + fullURL);
 
         log.debug("########################################## editURI = " + editURI);
-        if (contentStorage instanceof FileBasedContentStorage) {
-            File propFile = getEntryFile(0);
-            assertNotNull(propFile);
-            log.debug("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%propFile " + propFile);
-            assertTrue(propFile.exists());
-        }
+        File propFile = getEntryFile(0);
+        assertNotNull(propFile);
+        log.debug("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%propFile " + propFile);
+        assertTrue(propFile.exists());
 
         int rev = extractRevisionFromURI(editURI);
         assertEquals(0, rev);

@@ -30,6 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.atomserver.*;
 import org.atomserver.core.*;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
+import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
 import org.atomserver.core.etc.AtomServerConstants;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.exceptions.BadRequestException;
@@ -70,6 +71,10 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
          return ((DBBasedAtomService)parentAtomWorkspace.getParentAtomService()).getEntriesDAO();
     }
 
+     public EntryCategoriesDAO getEntryCategoriesDAO() {
+         return ((DBBasedAtomService)parentAtomWorkspace.getParentAtomService()).getEntryCategoriesDAO();
+     }
+
      public TransactionTemplate getTransactionTemplate() {
          return ((DBBasedAtomService)parentAtomWorkspace.getParentAtomService()).getTransactionTemplate();
      }
@@ -84,7 +89,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             getTransactionTemplate().execute(new TransactionCallbackWithoutResult() {
                 protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                     getEntriesDAO().obliterateEntry(entryMetaData);
-                    getCategoriesHandler().deleteEntryCategories(entryMetaData);
+                    getEntryCategoriesDAO().deleteEntryCategories(entryMetaData);
                     getContentStorage().obliterateContent(entryMetaData);
                 }
             });
@@ -100,7 +105,11 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             public Object doInTransaction(TransactionStatus transactionStatus) {
                 StopWatch stopWatch = new AutomaticStopWatch();
                 try {
-                    getEntriesDAO().acquireLock();
+                    int status = getEntriesDAO().acquireLock();
+                    if ( status < 0 ) {
+                        throw new AtomServerException( "Could not acquire the database lock (status= " +
+                                                       status + ")");
+                    }
                     return task.execute();
                 } finally {
                     if ( getPerformanceLog() != null ) {
@@ -120,13 +129,14 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
     //--------------------------------
     /**
      */
-    protected long getEntries(Abdera abdera,
-                              IRI iri,
+    protected long getEntries(RequestContext request,
                               FeedTarget feedTarget,
                               long ifModifiedSinceLong,
-                              Feed feed
-    )
+                              Feed feed)
             throws AtomServerException {
+
+        Abdera abdera = request.getServiceContext().getAbdera();
+        IRI iri = request.getUri();
 
         Date ifModifiedSince = new Date(ifModifiedSinceLong);
         String collection = feedTarget.getCollection();
@@ -153,14 +163,33 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
 
         Collection<BooleanExpression<AtomCategory>> categoryQuery = feedTarget.getCategoriesQuery();
 
+        // Ask for one more than the pageSize !!!
+        //   This enables us to know if we're on the last page when the last page equals pageSize
+        int pageSizePlus1 = pageSize + 1;
+
         // SELECT Entries BY Page and Locale
-        List<EntryMetaData> sortedList = getEntriesDAO().selectFeedPage(
-                ifModifiedSince,
-                startingPageDelim,
-                pageSize + 1 /* ask for 1 more than pageSize, to detect the end of the feed */,
-                locale == null ? null : locale.toString(),
-                feedTarget,
-                categoryQuery);
+        List<EntryMetaData> sortedList = null;
+        if (locale == null) {
+            if ( categoryQuery != null ) {
+                sortedList = getEntriesDAO().selectEntriesByPagePerCategory(feedTarget,
+                                                                        ifModifiedSince, startingPageDelim, pageSizePlus1,
+                                                                         categoryQuery );
+            } else {
+                sortedList = getEntriesDAO().selectEntriesByPage(feedTarget,
+                                                                        ifModifiedSince, startingPageDelim, pageSizePlus1);
+            }
+        } else {
+            if ( categoryQuery != null ) {
+                sortedList = getEntriesDAO().selectEntriesByPageAndLocalePerCategory(feedTarget,
+                                                                        ifModifiedSince, startingPageDelim, pageSizePlus1,
+                                                                                 locale.toString(),
+                                                                                 categoryQuery);
+             } else {
+                sortedList = getEntriesDAO().selectEntriesByPageAndLocale(feedTarget,
+                                                                        ifModifiedSince, startingPageDelim,
+                                                                     pageSizePlus1, locale.toString());
+            }
+        }
 
         int numEntries = sortedList.size();
         if (numEntries <= 0) {
@@ -169,7 +198,6 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
 
         // Load the Categories to the EntryMetaData in the Feed 
         //   NOTE: this method calls the database!!!
-        //   TODO: we could load these in the same query as above, except for HSQL limitations.
         if ( isProducingEntryCategoriesFeedElement() ) {
             loadCategoriesToEntryMetaData( sortedList, workspace, collection );
         }
@@ -177,7 +205,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         // Add elements to the Feed document
         return createFeedElements(feed, abdera, iri, feedTarget, entryType,
                                   sortedList, workspace, collection, locale,
-                                  numEntries, (numEntries <= pageSize), pageSize,
+                                  numEntries, pageSizePlus1, pageSize,
                                   startingPageDelim, totalEntries);
     }
 
@@ -185,7 +213,8 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
      * NOTE: "deleted" entries ARE returned (since they are never really deleted from the DB)
      * And Feed clients will want to know that an entry has been deleted
      */
-    protected EntryMetaData getEntry(EntryTarget entryTarget)
+    protected EntryMetaData getEntry(RequestContext request,
+                                     EntryTarget entryTarget)
             throws AtomServerException {
 
         String workspace = entryTarget.getWorkspace();
@@ -232,8 +261,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
     /**
      */
     protected Collection<BatchEntryResult> deleteEntries(RequestContext request,
-                                                         Collection<EntryTarget> allEntriesUriData)
-            throws AtomServerException {
+                                                         Collection<EntryTarget> allEntriesUriData) throws AtomServerException {
 
         MultiMap<Locale, EntryTarget> dataByLocale = new MultiHashMap<Locale, EntryTarget>();
         for (EntryTarget uriData : allEntriesUriData) {
@@ -290,9 +318,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
     /**
      */
     protected Collection<BatchEntryResult> modifyEntries(RequestContext request,
-                                                         Collection<EntryTarget> allEntriesUriData)
-            throws AtomServerException {
-
+                                                         Collection<EntryTarget> allEntriesUriData) throws AtomServerException {
         MultiMap<Locale, EntryTarget> dataByLocale = new MultiHashMap<Locale, EntryTarget>();
         for (EntryTarget uriData : allEntriesUriData) {
             dataByLocale.put(uriData.getLocale(), uriData);
@@ -379,6 +405,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
     /**
      */
     protected EntryMetaData modifyEntry(Object internalId,
+                                        RequestContext request,
                                         EntryTarget entryTarget,
                                         boolean mustAlreadyExist)
             throws AtomServerException {
@@ -418,7 +445,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                 // so we can create the proper editURI
                 EntryMetaData entryMetaData = getEntriesDAO().selectEntryByInternalId(internalId);
 
-                String msg;
+                String msg = null;
                 if (revision == URIHandler.REVISION_OVERRIDE) {
                     msg = "Entry [" + workspace + ", " + collection + ", " + entryId + ", " + locale
                           + "] threw a DataIntegrityViolationException during an INSERT."
@@ -470,7 +497,8 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
      * <p/>
      * NOTE: we do NOT actually delete the row from the DB, we simply mark it as "deleted"
      */
-    protected EntryMetaData deleteEntry(final EntryTarget entryTarget,
+    protected EntryMetaData deleteEntry(RequestContext request,
+                                        final EntryTarget entryTarget,
                                         final boolean setDeletedFlag)
             throws AtomServerException {
 
@@ -514,9 +542,9 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
     //--------------------------------
     //      private methods
     //--------------------------------
-    private void addOpenSearchElements(Feed feed, int startingPageDelim,
+    private void addOpenSearchElements(Feed feed, int startingPageDelim, 
                                        int pageSize, int totalEntries ) {
-        if ( totalEntries > 0 )
+        if ( totalEntries > 0 ) 
             feed.addSimpleExtension(OpenSearchConstants.TOTAL_RESULTS, Integer.toString(totalEntries));
 
         feed.addSimpleExtension(OpenSearchConstants.START_INDEX, Integer.toString(startingPageDelim));
@@ -534,15 +562,15 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         String nextURI = iri.getPath() + "?" +
                          QueryParam.startIndex.getParamName() + "=" + endingPageDelim
             + "&" + QueryParam.maxResults.getParamName() + "=" + pageSize;
-
+        
         Locale locale = uriTarget.getLocaleParam();
-        if ( locale != null )
+        if ( locale != null ) 
             nextURI += "&" + QueryParam.locale.getParamName() + "=" + locale.toString();
-
+        
         EntryType entryType = uriTarget.getEntryTypeParam();
-        if ( entryType != null )
+        if ( entryType != null ) 
             nextURI += "&" + QueryParam.entryType.getParamName() + "=" + entryType.toString();
-
+        
         FeedPagingHelper.setNext(feed, nextURI);
     }
 
@@ -583,9 +611,9 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             log.trace("getEntries:: entryType= " + entryType + " " + maxEntriesPerPage );
         }
 
-        if ( pageSize > maxEntriesPerPage )
-            log.info("Resetting pagesize(" + pageSize + ") to  MAX_RESULTS_PER_PAGE (" + maxEntriesPerPage + ")");
-
+        if ( pageSize > maxEntriesPerPage ) 
+            log.info("Resetting pagesize(" + pageSize + ") to  MAX_RESULTS_PER_PAGE (" + maxEntriesPerPage + ")");        
+        
         if ( pageSize == 0 || pageSize > maxEntriesPerPage ) {
             pageSize = maxEntriesPerPage;
         }
@@ -600,7 +628,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         }
 
         List<EntryCategory> entryCategories =
-                getCategoriesHandler().selectEntriesCategories( workspace, collection, entriesByEntryId.keySet());
+            getEntryCategoriesDAO().selectEntriesCategories( workspace, collection, entriesByEntryId.keySet());
 
         for (EntryCategory entryCategory : entryCategories) {
             EntryMetaData metaData = entriesByEntryId.get(entryCategory.getEntryId());
@@ -615,15 +643,17 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                                      FeedTarget feedTarget, EntryType entryType,
                                      List<? extends EntryMetaData> sortedList,
                                      String workspace, String collection, Locale locale,
-                                     int numEntries, boolean resultsFitOnOnePage, int pageSize,
+                                     int numEntries, int pageSizePlus1, int pageSize,  
                                      int startingPageDelim, int totalEntries ) {
 
+        boolean resultsFitOnOnePage = numEntries != pageSizePlus1;
+        
         // Pick out the last item in the list and pull lastModified from it
         //  Note: we asked for one more than we really needed so subtract 2...
-        int subtract = ( resultsFitOnOnePage ) ? 1 : 2;
+        int subtract = ( resultsFitOnOnePage ) ? 1 : 2;  
 
         int lastIndex = ( (sortedList.size() - subtract) >= 0) ? (sortedList.size() - subtract) : 0;
-
+          
         EntryMetaData entry = sortedList.get(lastIndex);
         long lastModified = (entry.getLastModifiedDate() != null) ? entry.getLastModifiedDate().getTime() : 0L;
         int endingPageDelim = (int) (entry.getLastModifiedSeqNum());
@@ -633,15 +663,15 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                       + " numEntries= " + numEntries + " totalEntries= " + totalEntries);
         }
 
-        boolean isLastPage = ((startingPageDelim != 0) && resultsFitOnOnePage);
+        boolean isLastPage = ((startingPageDelim != 0) && (numEntries > 0) && (numEntries <= pageSize));
 
         StopWatch stopWatch = new AutomaticStopWatch();
-        try {
+        try { 
             addAtomServerFeedElements(feed, endingPageDelim );
             if ( ! resultsFitOnOnePage || startingPageDelim != 0 ) {
                 addOpenSearchElements(feed, startingPageDelim, pageSize, totalEntries);
-
-                if ( ! isLastPage )
+                
+                if ( ! isLastPage ) 
                     addPagingLinks(feed, iri, endingPageDelim, pageSize, feedTarget );
             }
             addSelfLink(abdera, feed, iri, startingPageDelim, pageSize );
@@ -651,7 +681,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                 getPerformanceLog().log( "XML.feed", getPerformanceLog().getPerfLogFeedString( locale, workspace, collection ), stopWatch );
             }
         }
-        return lastModified;
+        return lastModified; 
     }
 
     private final Set<String> seenCollections = new HashSet<String>();

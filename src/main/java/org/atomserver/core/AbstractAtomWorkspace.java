@@ -73,13 +73,6 @@ abstract public class AbstractAtomWorkspace implements AtomWorkspace {
     /**
      * {@inheritDoc}
      */
-    public String getVisibleName() {
-        return name;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public AtomService getParentAtomService() {
         return parentService;
     }

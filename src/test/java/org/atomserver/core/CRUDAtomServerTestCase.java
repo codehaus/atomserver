@@ -91,6 +91,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
                                 int revision) 
             throws Exception {
         FileBasedContentStorage contentStorage = (FileBasedContentStorage)this.contentStorage;
+//                (FileBasedContentStorage) getSpringFactory().getBean("org.atomserver-contentStorage");
         PartitionPathGenerator pathGenerator = contentStorage.getPartitionPathGenerators().get(0);
         log.debug("PATH GENERATOR CLASS : " + pathGenerator.getClass());
         return contentStorage.generateEntryFilePath(
@@ -342,7 +343,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
                 return editLinkStr;
             }
             else {
-                assertTrue( "status must be either 200 or 201 (" + status + ")", statusIs200or201 );
+                assertTrue( "status must be either 200 or 201", statusIs200or201 );
             }
         }
 

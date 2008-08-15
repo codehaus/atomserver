@@ -43,11 +43,7 @@
                 <entry key="org.atomserver.beans:type=StatsTracker,name=StatsTracker"
                        value-ref="org.atomserver-statsTracker"/>
 
-                <!--
                 <entry key="org.atomserver.beans:type=FileBasedContentStorage,name=FBContentStorage"
-                       value-ref="org.atomserver-contentStorage"/>
-                       -->
-                <entry key="org.atomserver.beans:type=ContentStorage,name=ContentStorage"
                        value-ref="org.atomserver-contentStorage"/>
 
                 <entry key="org.atomserver.beans:type=DelegatingProvider,name=DelegatingProvider"

@@ -29,16 +29,16 @@ import java.util.Locale;
  * @author Bryon Jacob (bryon at jacob.net)
  */
 public class EntryCategory {
-    protected Long entryStoreId = null;
-    protected String workspace = null;
-    protected String collection = null;
-    protected String entryId = null;
-    protected String language = "**";
-    protected String country = "**";
+    private Long entryStoreId = null;
+    private String workspace = null;
+    private String collection = null;
+    private String entryId = null;
+    private String language = "**";
+    private String country = "**";
 
-    protected String scheme = null;
-    protected String term = null;
-    protected String label = null;
+    private String scheme = null;
+    private String term = null;
+    private String label = null;
 
     public EntryCategory() {}
 

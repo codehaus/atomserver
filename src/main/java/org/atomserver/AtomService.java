@@ -88,24 +88,7 @@ public interface AtomService {
                                  IRI iri,
                                  boolean checkIfCollectionExists);
 
-    /**
-     * Return the maximum number of link aggregate entries in a given page
-     * @return  the maximum number of link aggregate entries in a given page
-     */
     int getMaxLinkAggregateEntriesPerPage();
 
-    /**
-     * Return the maximum number of full aggregate entries in a given page
-     * @return  the maximum number of full aggregate entries in a given page
-     */
     int getMaxFullAggregateEntriesPerPage();
-
-    /**
-     * Return the VirtualWorkspaceHandler which corresponds to a given Id.
-     * Typically, these Ids can be found as constants in the VirtualWorkspaceHandler interface.
-     * And the VirtualWorkspaceHandlers are wired into the AtomService using the IOC system.
-     * @param id  the Id of the VirtualWorkspaceHandler to return.
-     * @return  the corresponding VirtualWorkspaceHandler
-     */
-    public VirtualWorkspaceHandler getVirtualWorkspaceHandler( String id );
 }
