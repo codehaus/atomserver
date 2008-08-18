@@ -21,10 +21,21 @@
 
 <sqlMap>
 
+    <select id="noop" >
+        <isEqual property="dbType" compareValue="sqlserver" >
+            SELECT -42 as noop;
+        </isEqual>
+        <isEqual property="dbType" compareValue="postgres" >
+            SELECT 1
+        </isEqual>
+        <isEqual property="dbType" compareValue="hsql">
+            CALL IDENTITY()
+        </isEqual>       
+    </select>
+
     <select id="acquireLock" resultClass="int">
       <dynamic>
         <isEqual property="dbType" compareValue="sqlserver" >
-            SELECT 1;
             DECLARE @result int;
             EXEC @result = sp_getapplock @Resource='ATOMSERVER_APPLOCK', @LockMode='Exclusive', @LockTimeout='${db.timeout.applock}';
             SELECT @result as status
@@ -44,7 +55,7 @@
         <isEqual property="dbType" compareValue="sqlserver" >
             DECLARE @result int;
             EXEC @result = sp_releaseapplock @Resource='ATOMSERVER_APPLOCK';
-            SELECT @result
+            SELECT @result as status
         </isEqual>
       </dynamic>
     </select>
