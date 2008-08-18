@@ -756,11 +756,26 @@ public class EntriesDAOiBatisImpl
                 paramMap().param("internalId", internalId));
     }
 
-    public int acquireLock() {
+    public void acquireLock() throws AtomServerException {
+        // in SQL Server, a status of 0 or 1 indicates successful acquisition (synchonously and
+        // asynchronously, respectively) of the application lock.
+        // 
+        // error codes < 0 indicate errors as follows:
+        //  -1      : the lock request timed out
+        //  -2      : the lock request was cancelled
+        //  -3      : the lock request was chosen as a deadlock victim
+        //  -999    : Indicates a parameter validation or other call error
+        //
+        // in other DBs, we artificially make the lock acquisition query return a non-negative
+        // value when the lock is successfully acquired.
         log.debug("ACQUIRING LOCK");
         Integer status = (Integer) getSqlMapClientTemplate().queryForObject("acquireLock", paramMap());
         log.debug( "acquireLock() STATUS = " + status );
-        return status;
+        if ( status < 0 ) {
+            String message = "Could not acquire the database lock (status= " + status + ")";
+            log.error(message);
+            throw new AtomServerException(message);
+        }
     }
 
     public void releaseLock() {
