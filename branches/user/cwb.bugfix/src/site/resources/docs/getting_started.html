@@ -558,7 +558,7 @@ have much whitespace in it)<br>
 <div id="codebox"><span style="font-family: monospace;">&lt;?xml
 version='1.0' encoding='UTF-8'?&gt;<br>
 &lt;entry xmlns="http://www.w3.org/2005/Atom"&gt;<br>
-&nbsp;&nbsp; id&gt;/atomserver/v1/pets/dogs/fido.xml&lt;/id&gt;<br>
+&nbsp;&nbsp; &lt;id&gt;/atomserver/v1/pets/dogs/fido.xml&lt;/id&gt;<br>
 &nbsp;&nbsp; &lt;title type="text"&gt; Entry: dogs fido&lt;/title&gt;<br>
 &nbsp;&nbsp; &lt;author&gt;&lt;name&gt;AtomServer APP
 Service&lt;/name&gt;&lt;/author&gt;<br>
@@ -622,14 +622,38 @@ hands dirty digging under the covers.<br>
 <h2><a name="PUTs"></a>Testing PUTs and DELETEs</h2>
 Again, we use Firefox, so our example will center around that browser.
 Before we get started, there is an excellent Firefox plugin named
-<a href="https://addons.mozilla.org/en-US/firefox/addon/2691">Poster,</a>
-which enables you to easily POST, PUT, or DELETE to a URL, that
-we'll use in this section. After you've installed Poster, open it.
+<a href="https://addons.mozilla.org/en-US/firefox/addon/2691">Poster</a>
+that you'll need to install if you wish to follow along. Poster is a
+highly recommended&nbsp; tool for RESTful service developers. It
+enables you to easily POST, PUT, or DELETE to a URL. After you've
+installed Poster, open it.
 (Poster opens using a tiny little [P] at bottom of your browser. It's
 easy to miss ;-). <br>
 <br>
-Let's PUT a new dog named "Fang". Set up Poster as shown below. NOTE;
-the namespaces shown below in the "Content to Send" are <span
+Let's PUT a new dog named "Fang" into our example Workspace. Set up
+Poster as shown below, with <br>
+<ul>
+  <li>URL = <span style="font-family: monospace;">http://localhost:7890/atomserver/v1/pets/dogs/fang.xml</span></li>
+  <li>Content Type = <span style="font-family: monospace;">application/xml</span></li>
+  <li>Actions = <span style="font-family: monospace;">PUT</span></li>
+  <li>Content to Send = <br>
+    <span style="font-family: monospace;">&lt;entry
+xmlns="http://www.w3.org/2005/Atom"&gt;<br>
+&nbsp;&nbsp; &lt;id&gt;/atomserver/v1/pets/dogs/fang.xml&lt;/id&gt;<br>
+&nbsp;&nbsp; &lt;content type="application/xml"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;pet xmlns="</span><span
+ style="font-family: monospace;">http://schemas.atomserver.org/pets/v1/rev0</span><span
+ style="font-family: monospace;">" type="dog"&gt;<br>
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &lt;breed&gt;Mixed&lt;/breed&gt;<br>
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &lt;name&gt;Fang&lt;/name&gt;<br>
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &lt;owner&gt;Chris Berry&lt;/owner&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/pet&gt;<br>
+&nbsp;&nbsp; &lt;/content&gt;<br>
+&lt;/entry&gt;</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+  </li>
+</ul>
+NOTE;
+the namespaces shown the "Content to Send" are <span
  style="font-weight: bold;">required</span>. (i.e. <span
  style="font-family: monospace;">&lt;entry </span><span
  style="font-weight: bold; font-family: monospace;">xmlns="http://www.w3.org/2005/Atom"</span><span
@@ -651,10 +675,17 @@ the following response from Poster;<br>
  src="images/demo-poster2.png"><br>
 </div>
 <br>
+Note that Status = <span style="font-family: monospace;">201 CREATED</span>,
+and that your Entry was returned with proper <span
+ style="font-family: monospace;">edit</span> and <span
+ style="font-family: monospace;">self</span> links,&nbsp; <span
+ style="font-family: monospace;">updated </span>and <span
+ style="font-family: monospace;">published</span> elements, etc.<br>
+&nbsp;<br>
 And if you now go back to the "Dogs Feed" (<a
  href="http://localhost:7890/atomserver/v1/pets/dogs/"><span
  style="font-family: monospace;">http://localhost:7890/atomserver/v1/pets/dogs/</span></a>)
-, you will see our new Fang.<br>
+, you will see our new dog; Fang.<br>
 <br>
 <div style="margin-left: 80px;"><img
  style="width: 527px; height: 357px;" alt="screen 3"
