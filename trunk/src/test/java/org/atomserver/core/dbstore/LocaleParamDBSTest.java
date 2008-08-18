@@ -70,12 +70,6 @@ public class LocaleParamDBSTest extends ParamDBSTestCase {
         String resolvedSelfLink = entry.getSelfLinkResolvedHref().toString();
         response.release();
 
-        // test the edit link
-        log.debug( "edit link= " + resolvedEditLink );
-        response = clientGetWithFullURL( resolvedEditLink );
-        entry = verifyEntry( response, "widgets", "acme", "4");
-        response.release();
-
         // test the self link
         log.debug( "edit link= " + resolvedSelfLink );
         response = clientGetWithFullURL( resolvedSelfLink );
@@ -134,7 +128,6 @@ public class LocaleParamDBSTest extends ParamDBSTestCase {
         lnow= (entriesDao.selectSysDate()).getTime();
 
         // INSERT
-        //int numRecs = 12 ;
         int numRecs = 6 ;
 
         int knt = 0;
@@ -171,7 +164,6 @@ public class LocaleParamDBSTest extends ParamDBSTestCase {
         feed = getPageByLocale( "de", "widgets", "acme");
         log.debug ("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" );
         log.debug( "List (de) = \n" + feed );
-        //assertEquals( 4,  feed.getEntries().size());
         assertEquals( (numRecs/3),  feed.getEntries().size());
 
         // get page (for "de_DE")
@@ -179,7 +171,6 @@ public class LocaleParamDBSTest extends ParamDBSTestCase {
         feed = getPageByLocale( "de_DE", "widgets", "acme");
         log.debug ("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" );
         log.debug( "List (de_DE) = \n" + feed );
-        //assertEquals( 4,  feed.getEntries().size());
         assertEquals( (numRecs/3),  feed.getEntries().size());
 
         // get page (for "de_CH")
@@ -187,11 +178,10 @@ public class LocaleParamDBSTest extends ParamDBSTestCase {
         feed = getPageByLocale( "de_CH", "widgets", "acme");
         log.debug ("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" );
         log.debug( "List (de_CH) = \n" + feed );
-        //assertEquals( 4,  feed.getEntries().size());
         assertEquals( (numRecs/3),  feed.getEntries().size());
 
         // get page (for "de_AT")
-       // should get:: 304 T MODIFIED
+       // should get:: 304 NOT MODIFIED
         feed = getPageByLocale( "de_AT", 304, "widgets", "acme" );
         log.debug ("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" );
         log.debug( "List (de_AT) = \n" + feed );

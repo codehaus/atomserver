@@ -130,7 +130,7 @@ public class TagsCRUDDBSTest extends CRUDDBSTestCase {
         String realEditURI = insert( realId, realEntryURL );
         
         // Now we should be able to actually add Categories
-        editURI = insert(id, fullURL, categoriesXML, false );
+        editURI = insert(id, (fullURL + "/1"), categoriesXML, false );
 
         // SELECT
         log.debug( "************************************************************* SELECT ************************************" );

@@ -56,14 +56,8 @@ public class EntryDBSTest extends DBSTestCase {
         String resolvedSelfLink = entry.getSelfLinkResolvedHref().toString();
         response.release();
 
-        // test the edit link
-        log.debug( "edit link= " + resolvedEditLink );
-        response = clientGetWithFullURL( resolvedEditLink );
-        entry = verifyProperty4( response );
-        response.release();
-
         // test the self link
-        log.debug( "edit link= " + resolvedSelfLink );
+        log.debug( "self link= " + resolvedSelfLink );
         response = clientGetWithFullURL( resolvedSelfLink );
         entry = verifyProperty4( response );
         response.release();
@@ -99,7 +93,7 @@ public class EntryDBSTest extends DBSTestCase {
         assertTrue( entry.getUpdated().getTime() >= entry.getPublished().getTime() );
 
         String xmlContent = getContentString( "acme", "9993", "eeeek" );
-        updateWidget("widgets","acme", "9993", "en", xmlContent, "0" );
+        updateWidget("widgets","acme", "9993", "en", xmlContent, "1" );
 
         // lookup 100 secs ago
         long lnow = (entriesDao.selectSysDate()).getTime();

@@ -104,9 +104,11 @@ public class PostDBSTest extends CRUDDBSTestCase {
         // run the tests up to some point
         // INSERT/SELECT/UPDATE/SELECT/DELETE
         String finalEditLink = runCRUDTest( true, "dummy/acme", true, true, false, true, null );
+        String selfLink = getSelfUriFromEditUri(finalEditLink);
+        log.debug( "selfLink= " + selfLink);
 
         // SELECT against the just deleted entry
-        ClientResponse response = clientGet( finalEditLink, null, 200, true );
+        ClientResponse response = clientGet( selfLink, null, 200, true );
 
         Document<Entry> doc = response.getDocument();
         Entry entryOut = doc.getRoot();
@@ -115,7 +117,7 @@ public class PostDBSTest extends CRUDDBSTestCase {
 
         response.release();
         if (contentStorage instanceof FileBasedContentStorage) {
-            int rev = extractRevisionFromURI( finalEditLink );
+            int rev = extractRevisionFromURI( selfLink );
             File pFile = getEntryFile(rev);
             assertTrue( pFile != null && pFile.exists() );
         }
@@ -129,9 +131,10 @@ public class PostDBSTest extends CRUDDBSTestCase {
         // run the tests up to some point
         // INSERT/SELECT/UPDATE/SELECT/DELETE
         String finalEditLink = runCRUDTest( true, "widgets/acme", true, true, false, true, "en" );
+        String selfLink = getSelfUriFromEditUri(finalEditLink);
 
         // SELECT against the just deleted entry
-        ClientResponse response = clientGet( finalEditLink, null, 200, true );
+        ClientResponse response = clientGet( selfLink, null, 200, true );
 
         Document<Entry> doc = response.getDocument();
         Entry entryOut = doc.getRoot();
@@ -140,7 +143,7 @@ public class PostDBSTest extends CRUDDBSTestCase {
 
         response.release();
         if (contentStorage instanceof FileBasedContentStorage) {
-            int rev = extractRevisionFromURI( finalEditLink );
+            int rev = extractRevisionFromURI( selfLink );
             File pFile = getEntryFile(rev);
             assertTrue( pFile != null && pFile.exists() );
         }
@@ -172,14 +175,14 @@ public class PostDBSTest extends CRUDDBSTestCase {
         }
 
         int rev = extractRevisionFromURI(editURI);
-        assertEquals(0, rev);
+        assertEquals(1, rev);
 
         // SELECT
         String xmlTestString = "This is an insert";
         editURI = select(fullURL, true, 200, xmlTestString);
         log.debug("########################################## editURI = " + editURI);
         rev = extractRevisionFromURI(editURI);
-        assertEquals(0, rev);
+        assertEquals(1, rev);
     }
 
 }

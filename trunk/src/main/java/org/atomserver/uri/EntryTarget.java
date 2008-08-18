@@ -16,12 +16,11 @@
 
 package org.atomserver.uri;
 
-import org.atomserver.EntryDescriptor;
 import org.apache.abdera.protocol.server.RequestContext;
 import org.apache.abdera.protocol.server.TargetType;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.LocaleUtils;
+import org.atomserver.EntryDescriptor;
 
 import java.util.Locale;
 

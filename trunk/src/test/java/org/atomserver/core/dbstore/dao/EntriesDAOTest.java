@@ -288,7 +288,7 @@ public class EntriesDAOTest extends DAOTestCase {
         assertEquals(0, entryOut.getRevision());
 
         // UPDATE
-        entryQuery = entryQuery.cloneWithNewRevision(entryOut.getRevision());
+        entryQuery = entryQuery.cloneWithNewRevision(entryOut.getRevision()+1);
 
         entriesDAO.ensureCollectionExists(entryQuery.getWorkspace(), entryQuery.getCollection());
         int numRows = entriesDAO.updateEntry(entryQuery, false);
@@ -314,7 +314,7 @@ public class EntriesDAOTest extends DAOTestCase {
         assertEquals(1, entryOut.getRevision());
 
         // UPDATE
-        entryQuery = entryQuery.cloneWithNewRevision(entryOut.getRevision());
+        entryQuery = entryQuery.cloneWithNewRevision(entryOut.getRevision()+1);
 
         entriesDAO.updateEntry(entryQuery, false);
 
@@ -344,7 +344,7 @@ public class EntriesDAOTest extends DAOTestCase {
         assertEquals(0, numRows);
 
         // DELETE -- this one only updates the "deleted" flag
-        entryQuery = entryQuery.cloneWithNewRevision(entryOut.getRevision());
+        entryQuery = entryQuery.cloneWithNewRevision(entryOut.getRevision()+1);
         entriesDAO.deleteEntry(entryQuery);
 
         // SELECT
@@ -409,7 +409,6 @@ public class EntriesDAOTest extends DAOTestCase {
                 entryIn.setLastModifiedDate(lastMod[(ii % 3)]);
                 entryIn.setPublishedDate(lastMod[(ii % 3)]);
                 
-                //int okay = entriesDAO.insertEntry(entryIn, true);
                 entriesDAO.ensureCollectionExists(entryIn.getWorkspace(), entryIn.getCollection());
                 entriesDAO.insertEntry(entryIn, true, lastMod[(ii % 3)], lastMod[(ii % 3)]);
             }

@@ -52,12 +52,12 @@ public class XPathAutoTaggingDBSTest extends CRUDAtomServerTestCase {
                     true,"acmeALEX", "167370");
 
             editUri = publishAndTestVersion(
-                    "/testwidget1.xml", urlPath, 0,
+                    "/testwidget1.xml", urlPath, 1,
                     Arrays.asList("red", "orange", "black", "brown", "DEFAULT:brown"),
                     false,"acmeCHRIS", "2222");
 
             editUri = publishAndTestVersion(
-                    "/testwidget2.xml", urlPath, 1,
+                    "/testwidget2.xml", urlPath, 2,
                     Arrays.asList("pink", "red", "DEFAULT:red"),
                     false, "acmeBRYON", "23450");
 

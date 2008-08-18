@@ -211,8 +211,10 @@ public class BatchEntriesDAOTest extends DAOTestCase {
             seqNum = entryOut.getLastModifiedSeqNum();
 
             IRI iri = IRI.create("http://localhost:8080/"
-                                 + entryURIHelper.constructURIString(workspace, sysId, entryOut.getEntryId(), locale, entryOut.getRevision()));
-            EntryTarget entryTarget = entryURIHelper.getEntryTarget(new MockRequestContext(serviceContext, "GET", iri.toString()), true);
+                                 + entryURIHelper.constructURIString(workspace, sysId, entryOut.getEntryId(), locale,
+                                                                     (entryOut.getRevision() + 1) ));
+            EntryTarget entryTarget = entryURIHelper.getEntryTarget(new MockRequestContext(serviceContext, "GET",
+                                                                                           iri.toString()), true);
             entryURIDatas.add(entryTarget);
         }
 
@@ -254,8 +256,10 @@ public class BatchEntriesDAOTest extends DAOTestCase {
             seqNum = entryOut.getLastModifiedSeqNum();
 
             IRI iri = IRI.create("http://localhost:8080/"
-                                 + entryURIHelper.constructURIString(workspace, sysId, entryOut.getEntryId(), locale, entryOut.getRevision()));
-            EntryTarget entryTarget = entryURIHelper.getEntryTarget(new MockRequestContext(serviceContext, "GET", iri.toString()), true);
+                                 + entryURIHelper.constructURIString(workspace, sysId, entryOut.getEntryId(),
+                                                                     locale, (entryOut.getRevision() + 1) ));
+            EntryTarget entryTarget = entryURIHelper.getEntryTarget(new MockRequestContext(serviceContext, "GET",
+                                                                                           iri.toString()), true);
             entryURIDatas.add(entryTarget);
          }
 
@@ -303,7 +307,8 @@ public class BatchEntriesDAOTest extends DAOTestCase {
             String propId = "" + (propIdSeed + knt);
             IRI iri = IRI.create("http://localhost:8080/"
                              + entryURIHelper.constructURIString(workspace, sysId, propId, locale));
-            EntryTarget entryTarget = entryURIHelper.getEntryTarget(new MockRequestContext(serviceContext, "GET", iri.toString()), true);
+            EntryTarget entryTarget = entryURIHelper.getEntryTarget(new MockRequestContext(serviceContext, "GET",
+                                                                                           iri.toString()), true);
             entriesDAO.obliterateEntry(entryTarget);
         }
 

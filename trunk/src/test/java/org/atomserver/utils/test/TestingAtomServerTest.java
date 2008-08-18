@@ -94,7 +94,7 @@ public class TestingAtomServerTest extends TestCase {
         putEntry("http://localhost:" + port + "/atomserver/v1/bars/" + collection + "/lovejoys.xml",
                  LOVEJOYS, 201);
         // update lovejoys
-        putEntry("http://localhost:" + port + "/atomserver/v1/bars/" + collection + "/lovejoys.xml",
+        putEntry("http://localhost:" + port + "/atomserver/v1/bars/" + collection + "/lovejoys.xml/1",
                  LOVEJOYS, 200);
         // should get an error from aquarium
         putEntry("http://localhost:" + port + "/atomserver/v1/bars/" + collection + "/aquarium.xml",

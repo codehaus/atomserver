@@ -27,10 +27,8 @@ import org.apache.abdera.protocol.client.RequestOptions;
 import org.atomserver.core.filestore.FileBasedContentStorage;
 import org.atomserver.core.filestore.TestingContentStorage;
 import org.atomserver.testutils.conf.TestConfUtil;
-import org.springframework.web.context.WebApplicationContext;
 
 import java.io.File;
-import java.util.Locale;
 
 /**
  */
@@ -107,13 +105,13 @@ public class TxnDBSTest extends CRUDDBSTestCase {
         }
 
         int rev = extractRevisionFromURI(editURI);
-        assertEquals( 0, rev );
+        assertEquals( 1, rev );
         
         // SELECT
         editURI = select(fullURL, true);
         log.debug( "########################################## editURI = " + editURI );
         rev = extractRevisionFromURI(editURI);
-        assertEquals( 0, rev );
+        assertEquals( 1, rev );
 
         // UPDATE
         // this one should fail cuz we set setTestingAlternatelyFailOnPut
@@ -125,14 +123,14 @@ public class TxnDBSTest extends CRUDDBSTestCase {
         entry.setId(id);
         entry.setContentAsXhtml( getFileXMLUpdate());
 
-        ClientResponse response = client.put(fullURL, entry, options);
+        ClientResponse response = client.put( (fullURL + "/1"), entry, options);
         assertEquals(500, response.getStatus());
      
         // SELECT
         editURI = select(fullURL, true);
         log.debug( "########################################## editURI = " + editURI );
         rev = extractRevisionFromURI(editURI);
-        assertEquals( 0, rev );
+        assertEquals( 1, rev );
 
         // verify that the file is rolled back
         // NOTE: the SELECT above has actually verified the content is the original content...

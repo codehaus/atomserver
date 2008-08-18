@@ -132,6 +132,15 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
 
     abstract protected String getURLPath();
 
+    protected String getSelfUriFromEditUri( String editUri ) {
+        int rev = extractRevisionFromURI(editUri) - 1;
+        int last = editUri.lastIndexOf("/");
+        String selfUri = editUri.substring(0, last);
+        selfUri = selfUri + "/" + rev;
+        log.debug("editUri= " + editUri + "  selfUri= " + selfUri);
+        return selfUri;
+    }
+
     //=========================
     protected String runCRUDTest() throws Exception {
         return runCRUDTest( true );
@@ -198,7 +207,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         int rev = 0;
         if ( shouldCheckOptConc ) {
             rev = extractRevisionFromURI(editURI);
-            assertEquals( 0, rev );
+            assertEquals( 1, rev );
         }
 
         // SELECT
@@ -207,7 +216,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         log.debug( "########################################## editURI = " + editURI );
         if ( shouldCheckOptConc ) {
             rev = extractRevisionFromURI(editURI);
-            assertEquals( 0, rev );
+            assertEquals( 1, rev );
         }
 
         // UPDATE
@@ -222,7 +231,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         }
         if ( shouldCheckOptConc ) {
             rev = extractRevisionFromURI(editURI);
-            assertEquals( 1, rev );
+            assertEquals( 2, rev );
         }
 
         // SELECT
@@ -231,7 +240,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         log.debug( "########################################## editURI = " + editURI );
         if ( shouldCheckOptConc ) {
             rev = extractRevisionFromURI(editURI);
-            assertEquals( 1, rev );
+            assertEquals( 2, rev );
         }
 
         // DELETE
@@ -246,7 +255,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         }
         if ( shouldCheckOptConc ) {
             rev = extractRevisionFromURI(editURI);
-            assertEquals( 2, rev );
+            assertEquals( 3, rev );
         }
 
         if (getStoreName().equals("org.atomserver-atomService") && shouldCheckOptConc ) {
@@ -268,6 +277,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
             editURI = delete(fullURLWithRevisionOverride);
             assertEquals(revision + 1, (revision = extractRevisionFromURI(editURI)));
         }
+        
         return editURI;
     }
 
@@ -321,23 +331,22 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         boolean statusIs200or201 = ((status == 200) || (status == 201 ));
         if ( !statusIs200or201 && ( allowAny || expectedResponse > 201 )) {
             log.warn( "WARN::::::::: status = " + status + " for " + fullURL + " expected = " + expectedResponse );
-            return null;
+            if ( !allowAny )
+                assertEquals( expectedResponse, status );
+
+            String editLinkStr = null;
+            if ( expectedResponse == 409 ) {
+                editLinkStr = get409EditLink( response );
+            }
+            response.release();
+            return editLinkStr;
         }
         if ( expects201 ) {
             assertEquals(201, status);
         }  else {
 
             if ( status == 409 ) {
-                Document<ExtensibleElement> doc = response.getDocument();
-                ExtensibleElement error = doc.getRoot();
-                log.debug( "&&&&&&&&&&&&&& error = " + error );
-
-                Link link = error.getExtension( LINK );
-                IRI editLink = link.getResolvedHref();
-                String editLinkStr = null;
-                if ( editLink != null )
-                    editLink.toString();
-
+                String editLinkStr = get409EditLink( response );
                 response.release();
                 return editLinkStr;
             }
@@ -361,6 +370,21 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         String editLinkStr = editLink.toString();
 
         response.release();
+        return editLinkStr;
+    }
+
+    private String get409EditLink( ClientResponse response ) {
+        assertEquals( 409, response.getStatus() );
+        Document<ExtensibleElement> doc = response.getDocument();
+        ExtensibleElement error = doc.getRoot();
+        log.debug( "&&&&&&&&&&&&&& error = " + error );
+
+        Link link = error.getExtension( LINK );
+        IRI editLink = link.getResolvedHref();
+        String editLinkStr = null;
+        if ( editLink != null )
+            editLinkStr = editLink.toString();
+
         return editLinkStr;
     }
 
@@ -484,6 +508,11 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
     }
 
     protected String update(String id, String fullURL, String fileXML, boolean allowsAny ) throws Exception {
+        return update(id, fullURL, fileXML, allowsAny, -1 );
+    }
+
+    protected String update(String id, String fullURL, String fileXML,
+                            boolean allowsAny, int expectedStatus ) throws Exception {
         assertNotNull( fileXML);
         AbderaClient client = new AbderaClient();
         RequestOptions options = client.getDefaultRequestOptions();
@@ -496,16 +525,18 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         ClientResponse response = client.put(fullURL, entry, options);
 
         log.debug("&&&&&&&&&&&&&& response = " + response);
+        int status = response.getStatus();
+        if (expectedStatus != -1)
+            assertEquals(expectedStatus, status);
 
         IRI editLink = null;
-        if (response.getStatus() != 200) {
-
+        if (status != 200) {
             if ( allowsAny ) {
-                log.error( "ERROR::::::::: status = " + response.getStatus() + " for " + fullURL );
+                log.error( "ERROR::::::::: status = " + status + " for " + fullURL );
                 return null;
             }
 
-            assertEquals(409, response.getStatus());
+            assertEquals(409, status);
             Document<ExtensibleElement> doc = response.getDocument();
             ExtensibleElement error = doc.getRoot();
             log.debug("&&&&&&&&&&&&&& error = " + error);
@@ -516,7 +547,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         } else {
             Document<Entry> doc = response.getDocument();
             Entry entryOut = doc.getRoot();
-            assertEquals(200, response.getStatus());
+            assertEquals(200, status);
             editLink = entryOut.getEditLinkResolvedHref();
         }
         assertNotNull("link rel='edit' must not be null", editLink);
