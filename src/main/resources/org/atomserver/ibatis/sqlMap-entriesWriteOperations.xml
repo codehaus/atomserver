@@ -27,7 +27,7 @@
             SELECT 1;
             DECLARE @result int;
             EXEC @result = sp_getapplock @Resource='ATOMSERVER_APPLOCK', @LockMode='Exclusive', @LockTimeout='${db.timeout.applock}';
-            SELECT @result
+            SELECT @result as status
         </isEqual>
         <isEqual property="dbType" compareValue="postgres" >
             LOCK TABLE EntryStore IN EXCLUSIVE MODE;
