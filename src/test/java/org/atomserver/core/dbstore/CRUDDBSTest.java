@@ -57,9 +57,11 @@ public class CRUDDBSTest extends CRUDDBSTestCase {
         // run the tests up to some point
         // INSERT/SELECT/UPDATE/SELECT/DELETE
         String finalEditLink = runCRUDTest();
+        String url = getSelfUriFromEditUri(finalEditLink);
+        int rev = extractRevisionFromURI(url);
 
         // SELECT against the just deleted entry
-        ClientResponse response = clientGet( finalEditLink, null, 200, true );
+        ClientResponse response = clientGet( url, null, 200, true );
 
         Document<Entry> doc = response.getDocument();
         Entry entryOut = doc.getRoot();
@@ -78,7 +80,6 @@ public class CRUDDBSTest extends CRUDDBSTestCase {
 
         response.release();
         if (contentStorage instanceof FileBasedContentStorage) {
-            int rev = extractRevisionFromURI( finalEditLink );
             File pFile = getEntryFile(rev);
             assertTrue( pFile != null && pFile.exists() );
         }

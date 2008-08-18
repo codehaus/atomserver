@@ -261,7 +261,6 @@ public class FeedDBSTestCase extends DBSTestCase {
 
         int incomingMax = options.getDefaultMaxLinkEntriesPerPage();
 
-        //int maxPerPage = 4;
         int maxPerPage = (startCount/2) - 1;
 
         options.setDefaultMaxLinkEntriesPerPage(maxPerPage);
@@ -273,7 +272,6 @@ public class FeedDBSTestCase extends DBSTestCase {
 
     protected void readFeedWithMaxNoStart( String wspace, String collection ) throws Exception {
 
-        //int pgSize = 4;
         int pgSize = (startCount/2) - 1;
 
         ClientResponse response = clientGet( wspace + "/" + collection + "?max-results=" + pgSize);
@@ -428,20 +426,22 @@ public class FeedDBSTestCase extends DBSTestCase {
 
             // in the multithreaded test, we want to GET every entry....
             if ( isMTtest ) {
-                String resolvedSelfLink = eee.getSelfLinkResolvedHref().toString();
-                log.debug( "link= " + resolvedSelfLink );
-                response = clientGetWithFullURL( resolvedSelfLink );
+
+                //String link = eee.getSelfLinkResolvedHref().toString();
+                String link = getServerRoot() + eee.getId();
+                log.debug( "link= " + link );
+
+                response = clientGetWithFullURL( link );
                 Document<Entry> doc = response.getDocument();
                 Entry entry = doc.getRoot();
-                assertNotNull( "entry is NULL (for " + resolvedSelfLink + ")", entry );
+                assertNotNull( "entry is NULL (for " + link + ")", entry );
 
                 if ( entry.getContent() == null ) {
                     java.io.StringWriter stringWriter = new java.io.StringWriter();
                     doc.writeTo( abdera.getWriterFactory().getWriter("PrettyXML"), stringWriter );
-                    log.warn( "CONTENT IS NULL FOR (" + resolvedSelfLink + ")" + "\n" + stringWriter.toString() );           
-                    assertNotNull( "content is NULL (for " + resolvedSelfLink + ")", entry.getContent() );
+                    log.warn( "CONTENT IS NULL FOR (" + link + ")" + "\n" + stringWriter.toString() );
+                    assertNotNull( "content is NULL (for " + link + ")", entry.getContent() );
                 }
-
 
                 assertTrue( entry.getContent().indexOf( "id=" ) != -1 );
                 response.release();
@@ -462,7 +462,6 @@ public class FeedDBSTestCase extends DBSTestCase {
         IRI next = FeedPagingHelper.getNext(feed);
         log.debug("========> next= " + next);
 
-        //response.release();
         return next;
     }
 

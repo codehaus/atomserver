@@ -60,44 +60,44 @@ public class RevisionDBSTest extends CRUDDBSTestCase {
         String fullURL0 = fullURL + "/0";
         editURI = select(fullURL0, true);
         log.debug("editURI= " + editURI);
-        assertTrue(editURI.indexOf("/0") != -1);
+        assertTrue(editURI.indexOf("/1") != -1);
 
         // SELECT
         // This should fail -- there is no 1 yet
         String fullURL1 = fullURL + "/1";
-        editURI = select(fullURL1, true, 409);
+        editURI = select(fullURL1, true, 404);
         log.debug("editURI= " + editURI);
-        assertTrue(editURI.indexOf("/0") != -1);
+        assertNull(editURI);
 
         // UPDATE -- now we go to 1
-        editURI = update(id, fullURL0);
+        editURI = update(id, fullURL1);
         log.debug("editURI= " + editURI);
-        assertTrue(editURI.indexOf("/1") != -1);
+        assertTrue(editURI.indexOf("/2") != -1);
 
         // SELECT -- should find 1
         editURI = select(fullURL1, false);
         log.debug("editURI= " + editURI);
-        assertTrue(editURI.indexOf("/1") != -1);
+        assertTrue(editURI.indexOf("/2") != -1);
 
         // UPDATE
-        // This should fail -- there is no 2 yet
-        String fullURL2 = fullURL + "/2";
-        editURI = update(id, fullURL2);
+        // This should fail -- there is no 3 yet
+        String fullURL3 = fullURL + "/3";
+        editURI = update(id, fullURL3);
         log.debug("editURI= " + editURI);
         // this should return the proper edit URI
-        assertTrue(editURI.indexOf("/1") != -1);
+        assertTrue(editURI.indexOf("/2") != -1);
 
         // DELETE
-        // This should fail -- there is no 2 yet
-        editURI = delete(fullURL2);
+        // This should fail -- there is no 3 yet
+        editURI = delete(fullURL3);
         log.debug("editURI= " + editURI);
         // this should return the proper edit URI
-        assertTrue(editURI.endsWith("/1"));
+        assertTrue(editURI.endsWith("/2"));
 
         // DELETE
         editURI = delete(editURI);
         log.debug("editURI= " + editURI);
-        assertTrue(editURI.endsWith("/2"));
+        assertTrue(editURI.endsWith("/3"));
 
         // check that what happens when we delete a non-existent entry with the /* override is what we expect
         AbderaClient client = new AbderaClient();
