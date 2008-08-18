@@ -20,6 +20,7 @@ import org.atomserver.AtomCategory;
 import org.atomserver.EntryDescriptor;
 import org.atomserver.FeedDescriptor;
 import org.atomserver.ServiceDescriptor;
+import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.core.AggregateEntryMetaData;
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.utils.logic.BooleanExpression;
@@ -119,7 +120,8 @@ public interface EntriesDAO
 
     EntryMetaData selectEntryByInternalId(Object internalId);
 
-    void acquireLock();
+    void acquireLock() throws AtomServerException;
+    void releaseLock();
 
     List<AggregateEntryMetaData> selectAggregateEntriesByPage(FeedDescriptor feed,
                                                               Date lastModifiedDate,

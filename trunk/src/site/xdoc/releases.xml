@@ -39,7 +39,8 @@
                 <li>The "edit" and "self" links for Entry XML have been corrected, as mentioned above.
                     Also fixed some bugs related to Optimistic Concurrency and initial Entry creation.</li>
                 <li>Cleaned up the API to remove RequestContext from the abstract methods of AbstractAtomCollection</li>
-                <li>Added a very simple standalone AtomServer (TestingAtomServer) for Atom client unit testing.
+                <li>Added a very simple standalone AtomServer (TestingAtomServer) for Atom client unit testing,
+                    which makes writing unit tests for Atom clients <b>much</b> simpler.
                     Made HsqlBootstrapper restartable, and made TestingAtomServer do so on each construction</li>
                 <li>Refactored the code to handle generic "virtual workspaces".
                     Consolidated all DB-based Category handling into the EntryCategoriesHandler,
@@ -52,6 +53,11 @@
                     This is enabled by setting the "loggingAllCategoryEvents" to true in 
                     the "org.atomserver-entryCategoriesHandler" Spring Bean</li>
                 <li>Fixed unneccessary failure for a possible race condition on the creation of new collections</li>
+                <li>Corrected a problem when using SQLServer's sp_getapplock stored procedure. First, sp_getapplock
+                    fails silently, which could cause an applock to not be released, so we now properly check
+                    the return code. Second, it appears that sp_getapplock interacts oddly with JDBC, and that you
+                    <b>must</b> call SELECT 1 to get the transaction started, otherwise sp_getapplock returns a
+                    -999 error and doesn't take out a lock at all</li>
             </ol>
 
         </section>
