@@ -719,19 +719,21 @@ install the latest Maven</a></li>
 Building is simple, just type;<br>
 <div style="margin-left: 40px;"><br>
 <div id="codebox"><span style="font-family: monospace;">$ mvn clean
-install<br>
+install -Denv=asdev-hsql-mem<br>
 </span> </div>
 <span style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span></div>
 <br>
-If you need to use another environment, like, say, Postgresql, you'll
-need to supply the "<span style="font-family: monospace;">-env</span>"
-switch<br>
+This would build using the built-in HSQLDB in-memory database. <br>
+<br>
+If you to specify another environment, like, say, Postgresql, you'll
+need to supply a different "<span style="font-family: monospace;">-env</span>"
+switch. (Although, the default env is, infact,&nbsp; asdev-postgres.)
 <div style="margin-left: 40px;"><br>
 <div id="codebox"><span style="font-family: monospace;">$ mvn clean
-install -Denv=postgres<br>
+install -Denv=asdev-postgres<br>
 </span> </div>
 <span style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span><span
@@ -741,13 +743,14 @@ install -Denv=postgres<br>
 <hr style="width: 100%; height: 2px;">
 <h2><a name="postgresql"></a>Configuring Postgresql</h2>
 Let's assume that you've already installed Postgresql on your computer,
-and that you're ready to install the AtomServer database. It is assumed
-that you have the conventional Postgresql admin user; "<span
- style="font-family: monospace;">postgres</span>"<br>
+and that you're ready to install the AtomServer database. Furthermore,
+let's assume
+that you have created the conventional Postgresql admin user; "<span
+ style="font-family: monospace;">postgres</span>".<br>
 <br>
 1) You'll need to create a user on your computer named "<span
  style="font-family: monospace;">atomserver</span>". The scripts below
-assume this user with the password; "<span
+assume this user exists, with the password; "<span
  style="font-family: monospace;">atomserver</span>". Obviously, you can
 create your own versions of any of these scripts, and use any
 username/password you'd like.<br>
@@ -766,7 +769,7 @@ $ createdb atomserver_dev<br>
 <div style="margin-left: 40px;"><br>
 <div id="codebox"><span style="font-family: monospace;">$ su postgres<br>
 $ psql atomserver_dev -f
-$ATOMSERVER_HOME/webapps/atomserver-X.X/WEB-INF/classes/postgres_ddl.sql<br>
+$ATOMSERVER_HOME/webapps/atomserver-X.X/WEB-INF/classes/org/atomserver/sql/postgres/postgres_ddl.sql<br>
 </span> </div>
 <span style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span><span
@@ -792,7 +795,9 @@ to <span style="font-family: monospace;">atomserver</span>;<br>
 <div id="codebox"><span style="font-family: monospace;">$ </span><span
  style="font-family: monospace;">su postgres<br>
 $ psql atomserver_dev -f
-$ATOMSERVER_HOME/webapps/atomserver-X.X/WEB-INF/classes/grant_perms.sql</span>
+$ATOMSERVER_HOME/webapps/atomserver-X.X/WEB-INF/classes/</span><span
+ style="font-family: monospace;">org/atomserver/sql/postgres/</span><span
+ style="font-family: monospace;">grant_perms.sql</span>
 </div>
 <span style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span><span
