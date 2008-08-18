@@ -2,28 +2,29 @@
 <html>
 <head>
   <link rel="StyleSheet" href="css/style.css" type="text/css">
-  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
-  <meta name="verify-v1" content="sRQSq4VA5FRMhwzFB4U3I9AtgLMtIWTdpVVO6jg1az4=" />
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <meta name="verify-v1"
+ content="sRQSq4VA5FRMhwzFB4U3I9AtgLMtIWTdpVVO6jg1az4=">
   <title>atomserver Batching</title>
-<script type="text/javascript">
+  <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
 document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-</script>
-<script type="text/javascript">
+  </script>
+  <script type="text/javascript">
 var pageTracker = _gat._getTracker("UA-4603527-2");
 pageTracker._initData();
 pageTracker._trackPageview();
-</script>
+  </script>
 </head>
 <body class="maincontent">
 <h1><img style="width: 75px; height: 75px;" src="images/atom-logo.gif"
  alt="logo">&nbsp;&nbsp;
 <span style="font-weight: bold;"></span>AtomServer, Batching Details </h1>
-<br>
-<div class="content"><span style="font-style: italic;">Chris Berry,
+<span style="font-style: italic;">Chris Berry,
 Bryon Jacob.
-Updated&nbsp;&nbsp; 05/01/08 </span><br>
-<br>
+Updated&nbsp;&nbsp; 08/15/08 </span><br>
+<div class="content"><br>
 This
 document describes some specific details about batch processing in
 AtomServer. Batch processing gives you the ability to execute multiple
@@ -95,7 +96,7 @@ xmlns:ha="http://atomserver.org/namespaces/atomserver/1.0/"&gt;<br>
 &lt;asbatch:operation type="delete"/&gt;</span><br
  style="font-weight: bold;">
 <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;link href="/myserver/v1/widgets/acme/92345.en.xml/0" rel="edit"/&gt;</span><br
+&lt;link href="/myserver/v1/widgets/acme/92345.en.xml/1" rel="edit"/&gt;</span><br
  style="font-weight: bold;">
 &nbsp;&nbsp;&nbsp;&nbsp; &lt;/entry&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp; &lt;entry
@@ -390,10 +391,10 @@ type="text"&gt;Entry: acme 92348.en&lt;/title&gt;<br>
 &lt;author&gt;&lt;name&gt;AtomServer Atom
 Service&lt;/name&gt;&lt;/author&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
-href="/myserver/v1/widgets/acme/a371412926e0439983eda36651049dfa.en.xml"
+href="/myserver/v1/widgets/acme/a371412926e0439983eda36651049dfa.en.xml/0"
 rel="self"/&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
-href="/myserver/v1/widgets/acme/a371412926e0439983eda36651049dfa.en.xml/0"
+href="/myserver/v1/widgets/acme/a371412926e0439983eda36651049dfa.en.xml/1"
 rel="edit"/&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;content
 type="application/xml"&gt;<br>
@@ -483,7 +484,7 @@ id="92348" inNetwork="false"&gt;<br>
 type="update"/&gt;</span><br style="font-weight: bold;">
 <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &lt;link
-href="/myserver/v1/widgets/acme/92348.en.xml" rel="edit"/&gt;</span><br>
+href="/myserver/v1/widgets/acme/92348.en.xml/0" rel="edit"/&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp; &lt;/entry&gt;<br>
 &lt;/feed&gt;<br>
 </div>
@@ -515,9 +516,9 @@ type="text"&gt;Entry: acme 92348.en&lt;/title&gt;<br>
 &lt;name&gt;AtomServer Atom Service&lt;/name&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/author&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
-href="/myserver/v1/widgets/acme/92348.en.xml" rel="self"/&gt;<br>
+href="/myserver/v1/widgets/acme/92348.en.xml/0" rel="self"/&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
-href="/myserver/v1/widgets/acme/92348.en.xml/0" rel="edit"/&gt;<br>
+href="/myserver/v1/widgets/acme/92348.en.xml/1" rel="edit"/&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;content
 type="application/xml"&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -580,7 +581,7 @@ xmlns:ha="http://atomserver.org/namespaces/atomserver/1.0/"&gt;<br>
 type="delete"/&gt;</span><br style="font-weight: bold;">
 <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &lt;link
-href="/myserver/v1/widgets/acme/92345.en.xml/0" rel="edit"/&gt;</span><br
+href="/myserver/v1/widgets/acme/92345.en.xml/1" rel="edit"/&gt;</span><br
  style="font-weight: bold;">
 <span style="font-weight: bold;">&nbsp;</span>&nbsp;&nbsp;&nbsp;
 &lt;/entry&gt;<br>
@@ -613,9 +614,9 @@ type="text"&gt;Entry: acme 92345.en&lt;/title&gt;<br>
 &lt;name&gt;AtomServer Atom Service&lt;/name&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/author&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
-href="/myserver/v1/widgets/acme/92345.en.xml" rel="self"/&gt;<br>
+href="/myserver/v1/widgets/acme/92345.en.xml/1" rel="self"/&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
-href="/myserver/v1/widgets/acme/92345.en.xml/1" rel="edit"/&gt;<br>
+href="/myserver/v1/widgets/acme/92345.en.xml/2" rel="edit"/&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;content
 type="application/xml"&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -726,7 +727,7 @@ id="92347" inNetwork="false"&gt;<br>
 type="update"/&gt;</span><br style="font-weight: bold;">
 <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &lt;link
-href="/myserver/v1/widgets/acme/92347.en.xml/0" rel="edit"/&gt;</span><br
+href="/myserver/v1/widgets/acme/92347.en.xml/1" rel="edit"/&gt;</span><br
  style="font-weight: bold;">
 <span style="font-weight: bold;">&nbsp;</span>&nbsp;&nbsp;&nbsp;
 &lt;/entry&gt;<br>
@@ -737,7 +738,7 @@ xmlns:ha="http://atomserver.org/namespaces/atomserver/1.0/"&gt;<br>
 type="delete"/&gt;</span><br style="font-weight: bold;">
 <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &lt;link
-href="/myserver/v1/widgets/acme/92345.en.xml/0" rel="edit"/&gt;</span><br
+href="/myserver/v1/widgets/acme/92345.en.xml/1" rel="edit"/&gt;</span><br
  style="font-weight: bold;">
 <span style="font-weight: bold;">&nbsp;</span>&nbsp;&nbsp;&nbsp;
 &lt;/entry&gt;<br>
@@ -748,7 +749,7 @@ xmlns:ha="http://atomserver.org/namespaces/atomserver/1.0/"&gt;<br>
 type="delete"/&gt;</span><br style="font-weight: bold;">
 <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &lt;link
-href="/myserver/v1/widgets/acme/23456.en.xml/2" rel="edit"/&gt;</span><br
+href="/myserver/v1/widgets/acme/23456.en.xml/5" rel="edit"/&gt;</span><br
  style="font-weight: bold;">
 <span style="font-weight: bold;">&nbsp;</span>&nbsp;&nbsp;&nbsp;
 &lt;/entry&gt;<br>
@@ -775,7 +776,7 @@ id="92348" inNetwork="false"&gt;<br>
 type="update"/&gt;</span><br style="font-weight: bold;">
 <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &lt;link
-href="/myserver/v1/widgets/acme/92348.en.xml" rel="edit"/&gt;</span><br
+href="/myserver/v1/widgets/acme/92348.en.xml/0" rel="edit"/&gt;</span><br
  style="font-weight: bold;">
 &nbsp;&nbsp;&nbsp;&nbsp; &lt;/entry&gt;<br>
 &lt;/feed&gt;<br>
@@ -810,9 +811,9 @@ type="text"&gt;Entry: acme 92347.en&lt;/title&gt;<br>
 &lt;author&gt;&lt;name&gt;AtomServer APP
 Service&lt;/name&gt;&lt;/author&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
-href="/myserver/v1/widgets/acme/92347.en.xml" rel="self"/&gt;<br>
+href="/myserver/v1/widgets/acme/92347.en.xml/1" rel="self"/&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
-href="/myserver/v1/widgets/acme/92347.en.xml/1" rel="edit"/&gt;<br>
+href="/myserver/v1/widgets/acme/92347.en.xml/2" rel="edit"/&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;content
 type="application/xml"&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -853,9 +854,9 @@ type="text"&gt;Entry: acme 92345.en&lt;/title&gt;<br>
 &lt;author&gt;&lt;name&gt;AtomServer APP
 Service&lt;/name&gt;&lt;/author&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
-href="/myserver/v1/widgets/acme/92345.en.xml" rel="self"/&gt;<br>
+href="/myserver/v1/widgets/acme/92345.en.xml/1" rel="self"/&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
-href="/myserver/v1/widgets/acme/92345.en.xml/1" rel="edit"/&gt;<br>
+href="/myserver/v1/widgets/acme/92345.en.xml/2" rel="edit"/&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;content
 type="application/xml"&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -898,9 +899,9 @@ type="text"&gt; Entry: acme 23456.en&lt;/title&gt;<br>
 &lt;author&gt;&lt;name&gt;AtomServer APP
 Service&lt;/name&gt;&lt;/author&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
-href="/atomserver/v1/widgets/acme/23456.en.xml" rel="self" /&gt;<br>
+href="/atomserver/v1/widgets/acme/23456.en.xml/1" rel="self" /&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
-href="/atomserver/v1/widgets/acme/23456.en.xml/0" rel="edit" /&gt;<br>
+href="/atomserver/v1/widgets/acme/23456.en.xml/2" rel="edit" /&gt;<br>
 &nbsp;<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &lt;asbatch:operation type="delete" /&gt;</span><br
  style="font-weight: bold;">
@@ -924,9 +925,9 @@ type="text"&gt;Entry: acme 92348.en&lt;/title&gt;<br>
 &lt;author&gt;&lt;name&gt;AtomServer APP
 Service&lt;/name&gt;&lt;/author&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
-href="/myserver/v1/widgets/acme/92348.en.xml" rel="self"/&gt;<br>
+href="/myserver/v1/widgets/acme/92348.en.xml/0" rel="self"/&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
-href="/myserver/v1/widgets/acme/92348.en.xml/0" rel="edit"/&gt;<br>
+href="/myserver/v1/widgets/acme/92348.en.xml/1" rel="edit"/&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;content
 type="application/xml"&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;

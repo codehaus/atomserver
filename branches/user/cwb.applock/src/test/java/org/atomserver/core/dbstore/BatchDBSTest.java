@@ -118,8 +118,7 @@ public class BatchDBSTest extends DBSTestCase {
         Feed batch = getFactory().newFeed();
         String updateText = "testIntermixedInsertsAndUpdates()";
 
-
-        batch.addEntry(createUpdateEntry("92345", updateText, 0));
+        batch.addEntry(createUpdateEntry("92345", updateText, 1));
         batch.addEntry(createUpdateEntry("92347", updateText, 0));
 
         // this 1 will get POSTed, and have Ids generated
@@ -127,7 +126,7 @@ public class BatchDBSTest extends DBSTestCase {
         batch.addEntry(createInsertEntry("92349", updateText));
 
         batch.addEntry(createUpdateEntry("92348", updateText, 0));
-        batch.addEntry(createUpdateEntry("92346", updateText, 0));
+        batch.addEntry(createUpdateEntry("92346", updateText, 1));
 
         // this 1 will get POSTed, and have Ids generated
         //   but the 92349 will show up in the <content>
@@ -178,10 +177,10 @@ public class BatchDBSTest extends DBSTestCase {
         String batchURI = getServerURL() + "widgets/acme/$batch";
         Feed batch = getFactory().newFeed();
         String updateText = "testUpdatesOnly()";
-        batch.addEntry(createOplessEntry("92345", updateText, 1));
-        batch.addEntry(createOplessEntry("92346", updateText, 1));
-        batch.addEntry(createOplessEntry("92347", updateText, 0));
-        batch.addEntry(createOplessEntry("92348", updateText, 0));
+        batch.addEntry(createOplessEntry("92345", updateText, 2));
+        batch.addEntry(createOplessEntry("92346", updateText, 2));
+        batch.addEntry(createOplessEntry("92347", updateText, 1));
+        batch.addEntry(createOplessEntry("92348", updateText, 1));
         String[] entryIdOrder = { "92345", "92346", "92347", "92348" };
         ClientResponse clientResponse = runBatch(client, batchURI, batch, 200);
         Feed response = clientResponse.<Feed>getDocument().getRoot();
@@ -242,10 +241,10 @@ public class BatchDBSTest extends DBSTestCase {
         String batchURI = getServerURL() + "widgets/acme/$batch";
         Feed batch = getFactory().newFeed();
         String updateText = "testOptimisticConcurrencyErrors()";
-        batch.addEntry(createUpdateEntry("92345", updateText, 1));
-        batch.addEntry(createUpdateEntry("92347", updateText, 1));
-        batch.addEntry(createUpdateEntry("92346", updateText, 1));
-        batch.addEntry(createUpdateEntry("92348", updateText, 1));
+        batch.addEntry(createUpdateEntry("92345", updateText, 2));
+        batch.addEntry(createUpdateEntry("92347", updateText, 2));
+        batch.addEntry(createUpdateEntry("92346", updateText, 2));
+        batch.addEntry(createUpdateEntry("92348", updateText, 2));
         String[] entryIdOrder = { "92345", "92347", "92346", "92348" };
         ClientResponse clientResponse = runBatch(client, batchURI, batch, 200);
         Feed response = clientResponse.<Feed>getDocument().getRoot();
@@ -286,8 +285,8 @@ public class BatchDBSTest extends DBSTestCase {
         String batchURI = getServerURL() + "widgets/acme/$batch";
         Feed batch = getFactory().newFeed();
         String updateText = "testBadRequests()";
-        batch.addEntry(createUpdateEntry("2/3/4/5/6", updateText, 1));
-        batch.addEntry(createUpdateEntry("#2323", updateText, 1));
+        batch.addEntry(createUpdateEntry("2/3/4/5/6", updateText, 2));
+        batch.addEntry(createUpdateEntry("#2323", updateText, 2));
         String[] entryIdOrder = {"2/3/4/5/6", "#2323"};
         ClientResponse clientResponse = runBatch(client, batchURI, batch, 200);
         Feed response = clientResponse.<Feed>getDocument().getRoot();
@@ -303,11 +302,11 @@ public class BatchDBSTest extends DBSTestCase {
             // the error message must be one of the following...
             try {
                 assertEquals("Bad Request:: /" + getBaseURI() + "/widgets/acme/$batch\n" +
-                             "Reason:: Bad request URI: /widgets/acme/2/3/4/5/6.en.xml/1",
+                             "Reason:: Bad request URI: /widgets/acme/2/3/4/5/6.en.xml/2",
                              status.getReason());
             } catch (Throwable e) {
                 assertEquals("Bad Request:: /" + getBaseURI() + "/widgets/acme/$batch\n" +
-                             "Reason:: Bad request URI: /widgets/acme/#2323.en.xml/1",
+                             "Reason:: Bad request URI: /widgets/acme/#2323.en.xml/2",
                              status.getReason());
             }
             assertTrue(entry.getContent().contains(entryIdOrder[order]));
@@ -327,7 +326,7 @@ public class BatchDBSTest extends DBSTestCase {
         Feed batch = getFactory().newFeed();
         String updateText = "testBatchTooLarge()";
         for (int i = 10; i < 30; i++) {
-            batch.addEntry(createUpdateEntry("9900" + i, updateText, 1));
+            batch.addEntry(createUpdateEntry("9900" + i, updateText, 2));
         }
         ClientResponse clientResponse = runBatch(client, batchURI, batch, 400);
         assertEquals("Bad Request", clientResponse.getStatusText());
@@ -350,7 +349,7 @@ public class BatchDBSTest extends DBSTestCase {
         String batchURI = getServerURL() + "widgets/acme/$batch";
         Feed batch = getFactory().newFeed();
         String updateText = "testMultipleOperationsApplied()";
-        Entry updateEntry = createUpdateEntry("990041", updateText, 1);
+        Entry updateEntry = createUpdateEntry("990041", updateText, 2);
         ((Operation)updateEntry.addExtension(AtomServerConstants.OPERATION)).setType("other");
         batch.addEntry(updateEntry);
 
@@ -418,13 +417,12 @@ public class BatchDBSTest extends DBSTestCase {
          String batchURI = getServerURL() + "widgets/acme/$batch";
          Feed batch = getFactory().newFeed();
          String updateText = "testSameEntryTwice()";
-
-         batch.addEntry(createOplessEntry("92345", updateText, 2));
-         batch.addEntry(createOplessEntry("92346", updateText, 2));
-         batch.addEntry(createOplessEntry("92347", updateText, 2));
-         batch.addEntry(createOplessEntry("92346", updateText, 3));
-         batch.addEntry(createOplessEntry("92348", updateText, 2));
-         batch.addEntry(createOplessEntry("92347", updateText, 3));
+        batch.addEntry(createOplessEntry("92345", updateText, 3));
+        batch.addEntry(createOplessEntry("92346", updateText, 3));
+        batch.addEntry(createOplessEntry("92347", updateText, 3));
+        batch.addEntry(createOplessEntry("92346", updateText, 4));
+        batch.addEntry(createOplessEntry("92348", updateText, 3));
+        batch.addEntry(createOplessEntry("92347", updateText, 4));
 
          String[] entryIdOrder = { "92345", "92346", "92347", "92346", "92348", "92347" };
          ClientResponse clientResponse = runBatch(client, batchURI, batch, 200);
@@ -460,12 +458,12 @@ public class BatchDBSTest extends DBSTestCase {
          Feed batch = getFactory().newFeed();
          String updateText = "testSameEntryTwice()";
 
-         batch.addEntry(createOplessEntry("92345", updateText, 3));
-         batch.addEntry(createOplessEntry("92346", updateText, 4));
-         batch.addEntry(createOplessEntry("92347", updateText, 4));
-         batch.addEntry(createOplessEntry("92346", updateText, 3));
-         batch.addEntry(createOplessEntry("92348", updateText, 3));
-         batch.addEntry(createOplessEntry("92347", updateText, 3));
+        batch.addEntry(createOplessEntry("92345", updateText, 4));
+        batch.addEntry(createOplessEntry("92346", updateText, 5));
+        batch.addEntry(createOplessEntry("92347", updateText, 5));
+        batch.addEntry(createOplessEntry("92346", updateText, 4));
+        batch.addEntry(createOplessEntry("92348", updateText, 4));
+        batch.addEntry(createOplessEntry("92347", updateText, 4));
 
          String[] entryIdOrder = { "92345", "92346", "92347", "92346", "92348", "92347" };
          ClientResponse clientResponse = runBatch(client, batchURI, batch, 200);
@@ -506,10 +504,11 @@ public class BatchDBSTest extends DBSTestCase {
             String batchURI = getServerURL() + "widgets/acme/$batch";
             Feed batch = getFactory().newFeed();
             ((Operation) batch.addExtension(AtomServerConstants.OPERATION)).setType("delete");
-            batch.addEntry(createOplessEntry("92345", null, 4));
-            batch.addEntry(createOplessEntry("92346", null, 3));
-            batch.addEntry(createOplessEntry("92347", null, 3));
-            batch.addEntry(createOplessEntry("92348", null, 4));
+            batch.addEntry(createOplessEntry("92345", null, 5));
+            batch.addEntry(createOplessEntry("92346", null, 4));
+            batch.addEntry(createOplessEntry("92347", null, 4));
+            batch.addEntry(createOplessEntry("92348", null, 5));
+
             ClientResponse clientResponse = runBatch(client, batchURI, batch, 200);
             Feed response = clientResponse.<Feed>getDocument().getRoot();
             checkFeedResults(response, 0, 0, 4, 0);

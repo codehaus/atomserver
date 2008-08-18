@@ -320,6 +320,17 @@ public class EntryCategoriesHandler
             public int getRevision() {
                 return descriptor.getRevision();
             }
+
+            public String toString() {
+                return new StringBuffer()
+                    .append("EntryDescriptor:: [")
+                    .append(getWorkspace())
+                    .append(" ").append(getCollection())
+                    .append(" ").append(getEntryId())
+                    .append(" ").append(getLocale())
+                    .append(" ").append(getRevision())
+                    .append("]").toString();
+            }           
         };
     }
 

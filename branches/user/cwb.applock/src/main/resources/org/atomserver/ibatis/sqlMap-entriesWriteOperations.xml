@@ -130,7 +130,7 @@
          </dynamic>
          WHERE EntryStoreId=#entryStoreId#
         <isNotEqual property="revision" compareValue="-1">
-            AND RevisionNum=#revision#
+            AND RevisionNum=(#revision# - 1)
         </isNotEqual>
     </update>
 

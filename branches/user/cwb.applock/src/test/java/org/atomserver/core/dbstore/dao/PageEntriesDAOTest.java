@@ -102,7 +102,6 @@ public class PageEntriesDAOTest extends DAOTestCase {
             entryIn.setLastModifiedDate(lastMod[(ii % 3)]);
             entryIn.setPublishedDate(lastMod[(ii % 3)]);
 
-            //int okay = entriesDAO.insertEntry(entryIn, true);
             entriesDAO.ensureCollectionExists(entryIn.getWorkspace(), entryIn.getCollection());
             entriesDAO.insertEntry(entryIn, true, lastMod[(ii % 3)], lastMod[(ii % 3)]);
         }
@@ -181,8 +180,10 @@ public class PageEntriesDAOTest extends DAOTestCase {
         for (int ii = 0; ii < numRecs / 2; ii++) {
             String propId = "" + (propIdSeed + ii);
             IRI iri = IRI.create("http://localhost:8080/"
-                                 + entryURIHelper.constructURIString(workspace, sysId, propId, locale));
-            EntryTarget entryTarget = entryURIHelper.getEntryTarget(new MockRequestContext(serviceContext, "GET", iri.toString()), true);
+                                 + entryURIHelper.constructURIString(workspace, sysId, propId, locale, 1));
+
+            EntryTarget entryTarget = entryURIHelper.getEntryTarget(new MockRequestContext(serviceContext, "GET",
+                                                                                           iri.toString()), true);
             entriesDAO.obliterateEntry(entryTarget);
         }
 
@@ -229,7 +230,8 @@ public class PageEntriesDAOTest extends DAOTestCase {
             String propId = "" + (propIdSeed + ii);
             IRI iri = IRI.create("http://localhost:8080/"
                                  + entryURIHelper.constructURIString(workspace, sysId, propId, locale));
-            EntryTarget entryTarget = entryURIHelper.getEntryTarget(new MockRequestContext(serviceContext, "GET", iri.toString()), true);
+            EntryTarget entryTarget = entryURIHelper.getEntryTarget(new MockRequestContext(serviceContext, "GET",
+                                                                                           iri.toString()), true);
             entriesDAO.obliterateEntry(entryTarget);
         }
 
@@ -327,8 +329,9 @@ public class PageEntriesDAOTest extends DAOTestCase {
         for (int ii = 0; ii < numRecs / 2; ii++) {
             String propId = "" + (propIdSeed + ii);
             IRI iri = IRI.create("http://localhost:8080/"
-                                 + entryURIHelper.constructURIString(workspace, sysId, propId, locale));
-            EntryTarget entryTarget = entryURIHelper.getEntryTarget(new MockRequestContext(serviceContext, "GET", iri.toString()), true);
+                                 + entryURIHelper.constructURIString(workspace, sysId, propId, locale, 1));
+            EntryTarget entryTarget = entryURIHelper.getEntryTarget(new MockRequestContext(serviceContext, "GET",
+                                                                                           iri.toString()), true);
             int okay = entriesDAO.deleteEntry(entryTarget);
             assertTrue(okay > 0);
         }

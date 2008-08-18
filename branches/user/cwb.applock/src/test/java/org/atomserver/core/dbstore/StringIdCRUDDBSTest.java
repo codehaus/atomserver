@@ -64,9 +64,10 @@ public class StringIdCRUDDBSTest extends CRUDDBSTestCase {
         // run the tests up to some point
         // INSERT/SELECT/UPDATE/SELECT/DELETE
         String finalEditLink = runCRUDTest( false );
+        String selfLink = getSelfUriFromEditUri(finalEditLink);
 
         // SELECT against the just deleted entry
-        ClientResponse response = clientGet( finalEditLink, null, 200, true );
+        ClientResponse response = clientGet( selfLink, null, 200, true );
 
         Document<Entry> doc = response.getDocument();
         Entry entryOut = doc.getRoot();

@@ -464,7 +464,8 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     /**
      * {@inheritDoc}
      */
-    public UpdateCreateOrDeleteEntry.CreateOrUpdateEntry updateEntry(final RequestContext request) throws AtomServerException {
+    public UpdateCreateOrDeleteEntry.CreateOrUpdateEntry updateEntry(final RequestContext request)
+            throws AtomServerException {
         Abdera abdera = request.getServiceContext().getAbdera();
         final EntryTarget entryTarget = getURIHandler().getEntryTarget(request, false);
 
@@ -478,6 +479,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         EntryMetaData entryMetaData = executeTransactionally(
                 new TransactionalTask<EntryMetaData>() {
                     public EntryMetaData execute() {
+
                         final EntryTarget target = getEntryTarget(request);
 
                         // determine if we are creating the entryId -- i.e. if this was a POST
@@ -529,7 +531,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
      * @param entryTarget The EntryTarget, decoded from the Request URI
      * @return The internal Id
      */
-    protected Object getInternalId(EntryTarget entryTarget) {
+    protected Object getInternalId(EntryDescriptor entryTarget) {
         return -1;
     }
 
@@ -744,9 +746,10 @@ abstract public class AbstractAtomCollection implements AtomCollection {
 
                     addAuthorToEntry(factory, entry, "AtomServer APP Service");
 
-                    addLinkToEntry(factory, entry, fileURI, "self");
+                    String selfURL = fileURI + "/" + result.getEntryTarget().getRevision();
+                    addLinkToEntry(factory, entry, selfURL, "self");
 
-                    String editURL = fileURI + "/" + result.getEntryTarget().getRevision();
+                    String editURL = fileURI + "/" + (result.getEntryTarget().getRevision() + 1);
                     addLinkToEntry(factory, entry, editURL, "edit");
 
                     deleteEntry = new UpdateCreateOrDeleteEntry.DeleteEntry(entry);
@@ -994,7 +997,8 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                        (" Entry: " + collection + " " + entryId + "." + locale) :
                        (" Entry: " + collection + " " + entryId));
         entry.addAuthor("AtomServer APP Service");
-        addLinkToEntry(factory, entry, fileURI, "self");
+
+        addSelfLink(revision, factory, entry, fileURI);
 
         addEditLink(revision, factory, entry, fileURI);
 
@@ -1003,8 +1007,17 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         return entry;
     }
 
+    //~~~~~~~~~~~~~~~~~~~~~~
+    protected void addSelfLink(int revision, Factory factory, Entry entry, String fileURI) {
+        String selfURL = (revision != URIHandler.REVISION_OVERRIDE && revision != EntryDescriptor.UNDEFINED_REVISION ) 
+                         ? (fileURI + "/" + revision)
+                         : fileURI;
+        addLinkToEntry(factory, entry, selfURL, "self");
+    }
+
+    //~~~~~~~~~~~~~~~~~~~~~~
     protected void addEditLink(int revision, Factory factory, Entry entry, String fileURI) {
-        String editURL = (revision != URIHandler.REVISION_OVERRIDE) ? (fileURI + "/" + revision) : fileURI;
+        String editURL = (revision != URIHandler.REVISION_OVERRIDE) ? (fileURI + "/" + (revision + 1)) : fileURI;
         addLinkToEntry(factory, entry, editURL, "edit");
     }
 

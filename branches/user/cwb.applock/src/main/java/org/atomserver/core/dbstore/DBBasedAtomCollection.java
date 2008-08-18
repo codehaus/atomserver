@@ -111,8 +111,10 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         });
     }
 
-    protected Object getInternalId(EntryTarget entryTarget) {
-        return getEntriesDAO().selectEntryInternalId(entryTarget);
+    protected Object getInternalId(EntryDescriptor descriptor) {
+        Object id = getEntriesDAO().selectEntryInternalId(descriptor);
+        log.debug("getInternalId= " + id);
+        return id;
     }
 
     //--------------------------------
@@ -124,8 +126,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                               IRI iri,
                               FeedTarget feedTarget,
                               long ifModifiedSinceLong,
-                              Feed feed
-    )
+                              Feed feed )
             throws AtomServerException {
 
         Date ifModifiedSince = new Date(ifModifiedSinceLong);
@@ -194,7 +195,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         String entryId = entryTarget.getEntryId();
         int revision = entryTarget.getRevision();
         if (log.isDebugEnabled()) {
-            log.debug("DBBasedEntriestore.(SELECT) [" + collection + ", "
+            log.debug("DBBasedAtomCollection.(SELECT) [" + collection + ", "
                       + locale + ", " + entryId + ", " + revision + "]");
         }
 
@@ -202,7 +203,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         EntryMetaData entry = innerGetEntry(entryTarget);
 
         if (log.isDebugEnabled()) {
-            log.debug("DBBasedEntriestore.(SELECT) entry= [" + entry + "]");
+            log.debug("DBBasedAtomCollection.(SELECT) entry= [" + entry + "]");
         }
 
         if (entry == null) {
@@ -217,10 +218,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                          + "] does NOT match the revision requested (requested= "
                          + revision + " actual= " + entry.getRevision() + ")";
             log.error(msg);
-
-            String editURI = getURIHandler().constructURIString(workspace, entry.getCollection(), entry.getEntryId(),
-                                                               entry.getLocale(), entry.getRevision());
-            throw new OptimisticConcurrencyException(msg, editURI);
+            throw new EntryNotFoundException(msg,null);
         }
         return entry;
     }
@@ -266,17 +264,17 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                     log.warn(msg);
                     returnValue.add(new BatchEntryResult(entryTarget, new EntryNotFoundException(msg)));
                 }
-                else if (URIHandler.REVISION_OVERRIDE != revision && (metaData.getRevision() != (revision + 1))) {
+                else if (URIHandler.REVISION_OVERRIDE != revision && (metaData.getRevision() != revision)) {
                     String msg = "Entry [" + entryTarget.getWorkspace() + ", " + entryTarget.getCollection() + ", " +
                                  entryTarget.getEntryId() + ", " + entryTarget.getLocale()
                                  + "] Someone beat you to it (requested= " + revision
-                        + " but it should be " + metaData.getRevision() + ")";
+                        + " but it should be " + (metaData.getRevision()+1) + ")";
                     log.error(msg);
                     String editURI = getURIHandler().constructURIString(metaData.getWorkspace(),
-                                                                       metaData.getCollection(),
-                                                                       metaData.getEntryId(),
-                                                                       metaData.getLocale(),
-                                                                       metaData.getRevision());
+                                                                        metaData.getCollection(),
+                                                                        metaData.getEntryId(),
+                                                                        metaData.getLocale(),
+                                                                        (metaData.getRevision() + 1) );
                     returnValue.add(new BatchEntryResult(entryTarget, new OptimisticConcurrencyException(msg, editURI)));
                 } else {
                     returnValue.add(new BatchEntryResult(entryTarget, metaData));
@@ -327,18 +325,21 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                 String entryId = entryURIData.getEntryId();
                 int revision = entryURIData.getRevision();
                 EntryMetaData entryMetaData = metaData.get(entryURIData);
+
                 if (revision != URIHandler.REVISION_OVERRIDE &&
-                    ((entryMetaData == null && revision > 0) ||
-                     (entryMetaData != null && (revision != entryMetaData.getRevision())))) {
+                    ((entryMetaData == null && revision != 0) ||
+                     (entryMetaData != null && (revision != (entryMetaData.getRevision() + 1) )))) {
+                        
                     String msg = "Entry [" + workspace + ", " + collection + ", " + entryId + ", " + locale
-                                 + "] does NOT match the revision requested (requested= "
+                                 + "] edit revision does NOT match the revision requested (requested= "
                                  + revision + " actual= " +
-                                 (entryMetaData == null ? 0 : entryMetaData.getRevision()) + ")";
+                                 (entryMetaData == null ? 0 : (entryMetaData.getRevision() + 1)) + ")";
                     log.error(msg);
                     String editURI =
                             entryMetaData == null ? null :
-                            getURIHandler().constructURIString(workspace, entryMetaData.getCollection(), entryMetaData.getEntryId(),
-                                                              entryMetaData.getLocale(), entryMetaData.getRevision());
+                            getURIHandler().constructURIString(workspace, entryMetaData.getCollection(),
+                                                               entryMetaData.getEntryId(), entryMetaData.getLocale(),
+                                                               (entryMetaData.getRevision() + 1) );
                     failed.put(entryURIData, new OptimisticConcurrencyException(msg, editURI));
                     continue;
                 }
@@ -377,6 +378,9 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
 
 
     /**
+     * This method handles BOTH inserts and updates
+     * <p/>
+     * NOTE: A PUT will receive an EntryTarget which points at the NEXT revision
      */
     protected EntryMetaData modifyEntry(Object internalId,
                                         EntryTarget entryTarget,
@@ -389,14 +393,32 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         String entryId = entryTarget.getEntryId();
         int revision = entryTarget.getRevision();
         if (log.isDebugEnabled()) {
-            log.debug("DBBasedEntriestore.(MODIFY) [" + workspace + ", " + collection + ", "
-                      + locale + ", " + entryId + ", " + revision + "]");
+            log.debug("DBBasedAtomCollection.(MODIFY) [" + workspace + ", " + collection + ", "
+                      + locale + ", " + entryId + ", " + revision + "]" + "Id= " + internalId );
         }
 
         boolean isNewEntry = (internalId == null);
+        boolean writeFailed = true;
 
         if (!isNewEntry) {
+            if ( revision == 0 ) {
+                // SELECT -- we do this select to know what revision we actually had,
+                // so we can create the proper editURI
+                EntryMetaData metaData = getEntriesDAO().selectEntryByInternalId(internalId);
+
+                String msg = "Entry [" + workspace + ", " + collection + ", " + entryId + ", " + locale
+                    + "] You requested a write at revision 0, but this has already been written"
+                    + " It should be " + (metaData.getRevision() + 1) + ")";
+                log.error(msg);
+                String editURI = getURIHandler().constructURIString(workspace, collection, entryId,
+                                                                    locale, (metaData.getRevision() + 1) );
+                throw new OptimisticConcurrencyException(msg, editURI);
+            }
+
             int numRowsModified = getEntriesDAO().updateEntry( entryTarget, false );
+            if (numRowsModified > 0) {
+                writeFailed = false;
+            }
             if (log.isDebugEnabled())
                 log.debug( "AFTER UPDATE:: [" + entryTarget.getEntryId() + "] numRowsModified= " + numRowsModified );
 
@@ -407,11 +429,23 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                 log.error(msg);
                 throw new BadRequestException(msg);
             }
+
+            if ( revision != 0 && revision != URIHandler.REVISION_OVERRIDE ) {
+                String msg = "Entry [" + workspace + ", " + collection + ", " + entryId + ", " + locale
+                             + "] does NOT exist, but you requested it to be created at revision= " + revision +
+                             "\nNOTE: only /0, /*, or nothing is acceptable for initial creation";
+                log.error(msg);
+                String editURI = getURIHandler().constructURIString(workspace, collection, entryId, locale, 0);
+                throw new OptimisticConcurrencyException(msg, null, editURI);
+            }
+
             try {
                 internalId = getEntriesDAO().insertEntry(entryTarget );
                 if (log.isDebugEnabled())
                    log.debug( "AFTER INSERT :: [" + entryTarget.getEntryId() + "] internalId= " + internalId);
-
+                if (internalId != null) {
+                    writeFailed = false;
+                }
             } catch( DataIntegrityViolationException ee )  {
 
                 // SELECT -- we do this select to know what revision we actually had,
@@ -427,15 +461,16 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                           + "\nException = " + ee.getMessage();
                 } else {
                     msg = "Entry [" + workspace + ", " + collection + ", " + entryId + ", " + locale
-                          + "] does NOT match the revision requested (requested= "
+                          + "] edit revision does NOT match the revision requested (requested= "
                           + revision + " actual= " +
-                          (entryMetaData == null ? 0 : entryMetaData.getRevision()) + ")";
+                          (entryMetaData == null ? 0 : (entryMetaData.getRevision() + 1) ) + ")";
                 }
                 log.error(msg, ee);
                 String editURI =
                         entryMetaData == null ? null :
-                        getURIHandler().constructURIString(workspace, entryMetaData.getCollection(), entryMetaData.getEntryId(),
-                                                           entryMetaData.getLocale(), entryMetaData.getRevision());
+                        getURIHandler().constructURIString(workspace, entryMetaData.getCollection(),
+                                                           entryMetaData.getEntryId(), entryMetaData.getLocale(),
+                                                           (entryMetaData.getRevision() + 1) );
                 throw new OptimisticConcurrencyException(msg, ee, editURI);
             }
         }
@@ -451,13 +486,15 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         }
         bean.setNewlyCreated(isNewEntry);
 
-        if (revision != URIHandler.REVISION_OVERRIDE && (!isNewEntry && (bean.getRevision() != (revision + 1)))) {
+        if ( writeFailed
+            || (revision != URIHandler.REVISION_OVERRIDE
+                && (!isNewEntry && (bean.getRevision() != revision)))) {
             String msg = "Entry [" + workspace + ", " + collection + ", " + entryId + ", " + locale
                 + "] Someone beat you to it (requested= " + revision
-                + " but it should be " + bean.getRevision() + ")";
+                + " but it should be " + (bean.getRevision() + 1) + ")";
             log.error(msg);
             String editURI = getURIHandler().constructURIString(workspace, bean.getCollection(), bean.getEntryId(),
-                                                                bean.getLocale(), bean.getRevision());
+                                                                bean.getLocale(), (bean.getRevision() + 1) );
             throw new OptimisticConcurrencyException(msg, editURI);
         }
 
@@ -466,9 +503,10 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
 
 
     /**
-     * When we deleted entry XML files, we write a new "deleted" file
+     * When we delete entry XML files, we write a new "deleted" file
      * <p/>
      * NOTE: we do NOT actually delete the row from the DB, we simply mark it as "deleted"
+     * NOTE: A DELETE will receive an EntryTarget which points at the NEXT revision 
      */
     protected EntryMetaData deleteEntry(final EntryTarget entryTarget,
                                         final boolean setDeletedFlag)
@@ -497,14 +535,13 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             throw new EntryNotFoundException(msg);
         }
 
-        if (URIHandler.REVISION_OVERRIDE != revision &&
-            (bean.getRevision() != (revision + 1)) || (numRowsModified == 0)) {
+        if (URIHandler.REVISION_OVERRIDE != revision && bean.getRevision() != revision || numRowsModified == 0) {
             String msg = "Entry [" + workspace + ", " + collection + ", " + entryId + ", " + locale
                          + "] Someone beat you to it (requested= " + revision
                          + " but it should be " + bean.getRevision() + ")";
             log.error(msg);
             String editURI = getURIHandler().constructURIString(workspace, bean.getCollection(), bean.getEntryId(),
-                                                                bean.getLocale(), bean.getRevision());
+                                                                bean.getLocale(), (bean.getRevision() + 1) );
             throw new OptimisticConcurrencyException(msg, editURI);
         }
 
@@ -546,7 +583,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         FeedPagingHelper.setNext(feed, nextURI);
     }
 
-    private void addSelfLink(Abdera abdera, Feed feed, IRI iri, int startingPageDelim, int pageSize) {
+    private void addFeedSelfLink(Abdera abdera, Feed feed, IRI iri, int startingPageDelim, int pageSize) {
         String selfURI = iri.getPath();
         selfURI += "?" + QueryParam.maxResults.getParamName() + "=" + pageSize;
         if ( startingPageDelim != 0 ) {
@@ -644,7 +681,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                 if ( ! isLastPage )
                     addPagingLinks(feed, iri, endingPageDelim, pageSize, feedTarget );
             }
-            addSelfLink(abdera, feed, iri, startingPageDelim, pageSize );
+            addFeedSelfLink(abdera, feed, iri, startingPageDelim, pageSize );
             addFeedEntries( abdera, feed, sortedList, pageSize, entryType );
         } finally {
             if ( getPerformanceLog() != null ) {

@@ -2,23 +2,26 @@
 <html>
 <head>
   <link rel="StyleSheet" href="css/style.css" type="text/css">
-  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
-  <meta name="verify-v1" content="sRQSq4VA5FRMhwzFB4U3I9AtgLMtIWTdpVVO6jg1az4=" />    
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <meta name="verify-v1"
+ content="sRQSq4VA5FRMhwzFB4U3I9AtgLMtIWTdpVVO6jg1az4=">
   <title>AtomServer; Getting Started</title>
-<script type="text/javascript">
+  <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
 document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-</script>
-<script type="text/javascript">
+  </script>
+  <script type="text/javascript">
 var pageTracker = _gat._getTracker("UA-4603527-2");
 pageTracker._initData();
 pageTracker._trackPageview();
-</script></head>
+  </script>
+</head>
 <body class="maincontent">
 <h1><img src="images/atom-logo.gif" alt="logo"> AtomServer, Getting
 Started</h1>
 <span style="font-style: italic;">Chris Berry, Bryon Jacob.
-Updated 05/01/08</span><br>
+Updated 08/15/08</span><br>
 <div class="content"><br>
 This
 document describes some specific details about getting started with
@@ -62,6 +65,8 @@ this document.<br>
   <li><a href="#dist">Exploring the Distribution</a></li>
   <li><a href="#conf">Exploring the Configuration</a></li>
   <li><a href="#Feed">Some Example Feed Requests</a></li>
+  <li><a href="#PUTs">Testing PUTs and DELETEs</a><br>
+  </li>
   <li><a href="#build">Building AtomServer</a></li>
   <li><a href="#postgresql">Configuring Postgresql</a><br>
   </li>
@@ -553,13 +558,13 @@ have much whitespace in it)<br>
 <div id="codebox"><span style="font-family: monospace;">&lt;?xml
 version='1.0' encoding='UTF-8'?&gt;<br>
 &lt;entry xmlns="http://www.w3.org/2005/Atom"&gt;<br>
-&nbsp;&nbsp; id&gt;/atomserver/v1/pets/dogs/fido.xml&lt;/id&gt;<br>
+&nbsp;&nbsp; &lt;id&gt;/atomserver/v1/pets/dogs/fido.xml&lt;/id&gt;<br>
 &nbsp;&nbsp; &lt;title type="text"&gt; Entry: dogs fido&lt;/title&gt;<br>
 &nbsp;&nbsp; &lt;author&gt;&lt;name&gt;AtomServer APP
 Service&lt;/name&gt;&lt;/author&gt;<br>
-&nbsp;&nbsp; &lt;link href="/atomserver/v1/pets/dogs/fido.xml"
-rel="self" /&gt;<br>
 &nbsp;&nbsp; &lt;link href="/atomserver/v1/pets/dogs/fido.xml/0"
+rel="self" /&gt;<br>
+&nbsp;&nbsp; &lt;link href="/atomserver/v1/pets/dogs/fido.xml/1"
 rel="edit" /&gt;<br>
 &nbsp;&nbsp; &lt;updated&gt;2008-05-02T21:22:06.122Z&lt;/updated&gt;<br>
 &nbsp;&nbsp; &lt;published&gt;2008-05-02T21:22:06.122Z&lt;/published&gt;<br>
@@ -614,6 +619,81 @@ we hope that we've piqued your interest enough for you to get your
 hands dirty digging under the covers.<br>
 <br>
 <hr style="width: 100%; height: 2px;">
+<h2><a name="PUTs"></a>Testing PUTs and DELETEs</h2>
+Again, we use Firefox, so our example will center around that browser.
+Before we get started, there is an excellent Firefox plugin named
+<a href="https://addons.mozilla.org/en-US/firefox/addon/2691">Poster</a>
+that you'll need to install if you wish to follow along. Poster is a
+highly recommended&nbsp; tool for RESTful service developers. It
+enables you to easily POST, PUT, or DELETE to a URL. After you've
+installed Poster, open it.
+(Poster opens using a tiny little [P] at bottom of your browser. It's
+easy to miss ;-). <br>
+<br>
+Let's PUT a new dog named "Fang" into our example Workspace. Set up
+Poster as shown below, with <br>
+<ul>
+  <li>URL = <span style="font-family: monospace;">http://localhost:7890/atomserver/v1/pets/dogs/fang.xml</span></li>
+  <li>Content Type = <span style="font-family: monospace;">application/xml</span></li>
+  <li>Actions = <span style="font-family: monospace;">PUT</span></li>
+  <li>Content to Send = <br>
+    <span style="font-family: monospace;">&lt;entry
+xmlns="http://www.w3.org/2005/Atom"&gt;<br>
+&nbsp;&nbsp; &lt;id&gt;/atomserver/v1/pets/dogs/fang.xml&lt;/id&gt;<br>
+&nbsp;&nbsp; &lt;content type="application/xml"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;pet xmlns="</span><span
+ style="font-family: monospace;">http://schemas.atomserver.org/pets/v1/rev0</span><span
+ style="font-family: monospace;">" type="dog"&gt;<br>
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &lt;breed&gt;Mixed&lt;/breed&gt;<br>
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &lt;name&gt;Fang&lt;/name&gt;<br>
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &lt;owner&gt;Chris Berry&lt;/owner&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/pet&gt;<br>
+&nbsp;&nbsp; &lt;/content&gt;<br>
+&lt;/entry&gt;</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+  </li>
+</ul>
+NOTE;
+the namespaces shown the "Content to Send" are <span
+ style="font-weight: bold;">required</span>. (i.e. <span
+ style="font-family: monospace;">&lt;entry </span><span
+ style="font-weight: bold; font-family: monospace;">xmlns="http://www.w3.org/2005/Atom"</span><span
+ style="font-family: monospace;">&gt;</span> and <span
+ style="font-family: monospace;">&lt;pet </span><span
+ style="font-weight: bold; font-family: monospace;">xmlns="http://schemas.atomserver.org/pets/v1/rev0"</span>
+)<br>
+<br>
+<div style="margin-left: 80px;"><img
+ style="width: 490px; height: 549px;" alt="Poster 1"
+ src="images/demo-poster1.png"><br>
+</div>
+&nbsp; <br>
+Now hit <span style="font-weight: bold;">GO</span>, and you will get
+the following response from Poster;<br>
+<br>
+<div style="margin-left: 80px;"><img
+ style="width: 504px; height: 543px;" alt="Poster 2"
+ src="images/demo-poster2.png"><br>
+</div>
+<br>
+Note that Status = <span style="font-family: monospace;">201 CREATED</span>,
+and that your Entry was returned with proper <span
+ style="font-family: monospace;">edit</span> and <span
+ style="font-family: monospace;">self</span> links,&nbsp; <span
+ style="font-family: monospace;">updated </span>and <span
+ style="font-family: monospace;">published</span> elements, etc.<br>
+&nbsp;<br>
+And if you now go back to the "Dogs Feed" (<a
+ href="http://localhost:7890/atomserver/v1/pets/dogs/"><span
+ style="font-family: monospace;">http://localhost:7890/atomserver/v1/pets/dogs/</span></a>)
+, you will see our new dog; Fang.<br>
+<br>
+<div style="margin-left: 80px;"><img
+ style="width: 527px; height: 357px;" alt="screen 3"
+ src="images/demo-screen3.png"><br>
+</div>
+<br>
+<br>
+<hr style="width: 100%; height: 2px;">
 <h2><a name="build"></a>Building AtomServer</h2>
 Most people will never need to actually build AtomServer, instead they
 will simply deploy the AtomServer WAR and configure it to their
@@ -639,19 +719,21 @@ install the latest Maven</a></li>
 Building is simple, just type;<br>
 <div style="margin-left: 40px;"><br>
 <div id="codebox"><span style="font-family: monospace;">$ mvn clean
-install<br>
+install -Denv=asdev-hsql-mem<br>
 </span> </div>
 <span style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span></div>
 <br>
-If you need to use another environment, like, say, Postgresql, you'll
-need to supply the "<span style="font-family: monospace;">-env</span>"
-switch<br>
+This would build using the built-in HSQLDB in-memory database. <br>
+<br>
+If you to specify another environment, like, say, Postgresql, you'll
+need to supply a different "<span style="font-family: monospace;">-env</span>"
+switch. (Although, the default env is, infact,&nbsp; asdev-postgres.)
 <div style="margin-left: 40px;"><br>
 <div id="codebox"><span style="font-family: monospace;">$ mvn clean
-install -Denv=postgres<br>
+install -Denv=asdev-postgres<br>
 </span> </div>
 <span style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span><span
@@ -661,13 +743,14 @@ install -Denv=postgres<br>
 <hr style="width: 100%; height: 2px;">
 <h2><a name="postgresql"></a>Configuring Postgresql</h2>
 Let's assume that you've already installed Postgresql on your computer,
-and that you're ready to install the AtomServer database. It is assumed
-that you have the conventional Postgresql admin user; "<span
- style="font-family: monospace;">postgres</span>"<br>
+and that you're ready to install the AtomServer database. Furthermore,
+let's assume
+that you have created the conventional Postgresql admin user; "<span
+ style="font-family: monospace;">postgres</span>".<br>
 <br>
 1) You'll need to create a user on your computer named "<span
  style="font-family: monospace;">atomserver</span>". The scripts below
-assume this user with the password; "<span
+assume this user exists, with the password; "<span
  style="font-family: monospace;">atomserver</span>". Obviously, you can
 create your own versions of any of these scripts, and use any
 username/password you'd like.<br>
@@ -686,7 +769,7 @@ $ createdb atomserver_dev<br>
 <div style="margin-left: 40px;"><br>
 <div id="codebox"><span style="font-family: monospace;">$ su postgres<br>
 $ psql atomserver_dev -f
-$ATOMSERVER_HOME/webapps/atomserver-X.X/WEB-INF/classes/postgres_ddl.sql<br>
+$ATOMSERVER_HOME/webapps/atomserver-X.X/WEB-INF/classes/org/atomserver/sql/postgres/postgres_ddl.sql<br>
 </span> </div>
 <span style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span><span
@@ -712,7 +795,9 @@ to <span style="font-family: monospace;">atomserver</span>;<br>
 <div id="codebox"><span style="font-family: monospace;">$ </span><span
  style="font-family: monospace;">su postgres<br>
 $ psql atomserver_dev -f
-$ATOMSERVER_HOME/webapps/atomserver-X.X/WEB-INF/classes/grant_perms.sql</span>
+$ATOMSERVER_HOME/webapps/atomserver-X.X/WEB-INF/classes/</span><span
+ style="font-family: monospace;">org/atomserver/sql/postgres/</span><span
+ style="font-family: monospace;">grant_perms.sql</span>
 </div>
 <span style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span><span

@@ -25,7 +25,6 @@ import org.atomserver.core.filestore.TestingContentStorage;
 import org.atomserver.testutils.conf.TestConfUtil;
 
 import java.io.File;
-import java.util.Locale;
 
 /**
  */
@@ -136,13 +135,15 @@ public class FileRetryDBSTest extends CRUDDBSTestCase {
         }
 
         int rev = extractRevisionFromURI(editURI);
-        assertEquals( 0, rev );
+        assertEquals( 1, rev );
         
         // Note: it is the GET that should see failures!!!
         // SELECT
         editURI = select(fullURL, true, expectedResult);
         log.debug( "########################################## editURI = " + editURI );
         rev = extractRevisionFromURI(editURI);
-        assertEquals( 0, rev );
+
+        int expectedRev = ( expectedResult == 200 ) ? 1 : 0;
+        assertEquals( expectedRev, rev );
     }
 }
