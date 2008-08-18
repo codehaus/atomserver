@@ -21,13 +21,17 @@
 
 <sqlMap>
 
-    <select id="acquireLock">
+    <select id="acquireLock" resultClass="int">
       <dynamic>
         <isEqual property="dbType" compareValue="sqlserver" >
-            EXEC sp_getapplock @Resource='ATOMSERVER_APPLOCK', @LockMode='EXCLUSIVE'
+            SELECT 1;
+            DECLARE @result int;
+            EXEC @result = sp_getapplock @Resource='ATOMSERVER_APPLOCK', @LockMode='Exclusive', @LockTimeout='${db.timeout.applock}';
+            SELECT @result
         </isEqual>
         <isEqual property="dbType" compareValue="postgres" >
-            LOCK TABLE EntryStore IN EXCLUSIVE MODE
+            LOCK TABLE EntryStore IN EXCLUSIVE MODE;
+            SELECT 1
         </isEqual>
         <isEqual property="dbType" compareValue="hsql">
             CALL IDENTITY()
@@ -35,7 +39,16 @@
       </dynamic>
     </select>
 
-
+    <select id="releaseLock" resultClass="int">
+      <dynamic>
+        <isEqual property="dbType" compareValue="sqlserver" >
+            DECLARE @result int;
+            EXEC @result = sp_releaseapplock @Resource='ATOMSERVER_APPLOCK';
+            SELECT @result
+        </isEqual>
+      </dynamic>
+    </select>
+    
     <insert id="insertEntry-sqlserver" parameterClass="map">
         INSERT INTO EntryStore
         (Workspace, Collection, LanCode, CountryCode, EntryId, UpdateDate, CreateDate, UpdateSeqNum, DeleteFlag, RevisionNum)
