@@ -764,6 +764,7 @@ public class EntriesDAOiBatisImpl
         // in other DBs, we artificially make the lock acquisition query return a non-negative
         // value when the lock is successfully acquired.
         log.debug("ACQUIRING LOCK");
+        getSqlMapClientTemplate().queryForObject("noop", paramMap());
         Integer status = (Integer) getSqlMapClientTemplate().queryForObject("acquireLock", paramMap());
         log.debug( "acquireLock() STATUS = " + status );
         if ( status < 0 ) {
