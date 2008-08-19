@@ -23,7 +23,7 @@
 
     <select id="noop" >
         <isEqual property="dbType" compareValue="sqlserver" >
-            SELECT -42 as noop;
+            SELECT COUNT(*) FROM AtomWorkspace as noop;
         </isEqual>
         <isEqual property="dbType" compareValue="postgres" >
             SELECT 1

@@ -752,9 +752,19 @@ public class EntriesDAOiBatisImpl
     }
 
     public void acquireLock() throws AtomServerException {
-        // in SQL Server, a status of 0 or 1 indicates successful acquisition (synchonously and
+        log.debug("ACQUIRING LOCK");
+
+        // JTDS forces us to actually "touch" a DB Table before it will begin the transaction
+        // so we have to do this No Op which does a "SELECT COUNT(*) from AtomWorkspace"
+        // If we don't do this, then sp_getapplock returns -999, which indicates that it
+        // is NOT in a transaction
+        getSqlMapClientTemplate().queryForObject("noop", paramMap());
+
+        Integer status = (Integer) getSqlMapClientTemplate().queryForObject("acquireLock", paramMap());
+        
+        // in SQL Server, a status of 0 or 1 indicates successful acquisition (synchronously and
         // asynchronously, respectively) of the application lock.
-        // 
+        //
         // error codes < 0 indicate errors as follows:
         //  -1      : the lock request timed out
         //  -2      : the lock request was cancelled
@@ -763,9 +773,6 @@ public class EntriesDAOiBatisImpl
         //
         // in other DBs, we artificially make the lock acquisition query return a non-negative
         // value when the lock is successfully acquired.
-        log.debug("ACQUIRING LOCK");
-        getSqlMapClientTemplate().queryForObject("noop", paramMap());
-        Integer status = (Integer) getSqlMapClientTemplate().queryForObject("acquireLock", paramMap());
         log.debug( "acquireLock() STATUS = " + status );
         if ( status < 0 ) {
             String message = "Could not acquire the database lock (status= " + status + ")";
