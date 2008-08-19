@@ -14,8 +14,8 @@
                     has slightly changed; the entryCategoriesDAO property should be
                     replaced with a categoriesHandler property. This change plugs a leaky abstraction,
                     and allows all Category operations to happen through the CategoriesHander. </li>
-                <li>The "edit" and "self" links for Entry XML have been corrected. The edit links now
-                    point to the <i>next</i> revision, and the self links point to the <i>current</i> revision</li>
+                <li>The "edit" link for an Entry XML has been corrected. The edit links now
+                    point to the <i>next</i> revision</li>
                 <li>Calls to GET for an Entry at a revision other than the current revision now produces
                     a 404 NOT FOUND, instead of a 409 CONFLICT.</li>
                 <li>You will need to update your database to reflect the new table and views that came in
@@ -36,7 +36,7 @@
                     Cleaned up the Jars that get included in the War's WEB-INF/lib.
                     Created new top-level /lib dir in the standalone version to house Jetty and Servlet API Jars,
                     which fixes Tomcat deploy issues</li>
-                <li>The "edit" and "self" links for Entry XML have been corrected, as mentioned above.
+                <li>The "edit" link for an Entry XML has been corrected, as mentioned above.
                     Also fixed some bugs related to Optimistic Concurrency and initial Entry creation.</li>
                 <li>Cleaned up the API to remove RequestContext from the abstract methods of AbstractAtomCollection</li>
                 <li>Added a very simple standalone AtomServer (TestingAtomServer) for Atom client unit testing,

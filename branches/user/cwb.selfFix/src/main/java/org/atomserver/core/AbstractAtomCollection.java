@@ -746,8 +746,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
 
                     addAuthorToEntry(factory, entry, "AtomServer APP Service");
 
-                    String selfURL = fileURI + "/" + result.getEntryTarget().getRevision();
-                    addLinkToEntry(factory, entry, selfURL, "self");
+                    addLinkToEntry(factory, entry, fileURI, "self");
 
                     String editURL = fileURI + "/" + (result.getEntryTarget().getRevision() + 1);
                     addLinkToEntry(factory, entry, editURL, "edit");
@@ -998,21 +997,13 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                        (" Entry: " + collection + " " + entryId));
         entry.addAuthor("AtomServer APP Service");
 
-        addSelfLink(revision, factory, entry, fileURI);
+        addLinkToEntry(factory, entry, fileURI, "self");
 
         addEditLink(revision, factory, entry, fileURI);
 
         entry.addSimpleExtension(AtomServerConstants.ENTRY_ID, entryId);
 
         return entry;
-    }
-
-    //~~~~~~~~~~~~~~~~~~~~~~
-    protected void addSelfLink(int revision, Factory factory, Entry entry, String fileURI) {
-        String selfURL = (revision != URIHandler.REVISION_OVERRIDE && revision != EntryDescriptor.UNDEFINED_REVISION ) 
-                         ? (fileURI + "/" + revision)
-                         : fileURI;
-        addLinkToEntry(factory, entry, selfURL, "self");
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~
