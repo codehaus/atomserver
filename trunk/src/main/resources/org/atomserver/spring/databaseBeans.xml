@@ -19,6 +19,8 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
 
+    <!-- NOTE: defaultAutoCommit must remain true here (the default)
+               Otherwise, the Transaction (withing Spring's TransactionManager) will NOT commit --> 
     <bean id="org.atomserver-dataSource"
           class="org.apache.commons.dbcp.BasicDataSource"
           destroy-method="close"
