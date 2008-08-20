@@ -446,6 +446,10 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         Abdera abdera = request.getServiceContext().getAbdera();
         EntryTarget entryTarget = getEntryTarget(request);
 
+        if ( entryTarget.getRawRevision() != null ) {
+            throw new BadRequestException( "Do NOT include the revision number when GET-ing an Entry" );
+        }
+
         EntryMetaData entryMetaData = getEntry(entryTarget);
 
         long thisLastModified =
