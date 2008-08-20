@@ -16,12 +16,14 @@
 package org.atomserver.utils;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 import static java.lang.Character.MAX_RADIX;
 import static java.lang.Character.MIN_RADIX;
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * ShardedPathGenerator - a hashing algorithm to generate a path of partition directories from a String seed.
@@ -46,6 +48,8 @@ import java.util.regex.Matcher;
  * @author Bryon Jacob (bryon at jacob.net)
  */
 public class ShardedPathGenerator implements PartitionPathGenerator {
+    private static final Log log = LogFactory.getLog(ShardedPathGenerator.class);
+
     // the radix that we use for the shards is the maximum radix allowed by Integer.toString
     public static final int DEFAULT_RADIX = MAX_RADIX;
     // by default, paths are one sharded one level deep
@@ -117,12 +121,23 @@ public class ShardedPathGenerator implements PartitionPathGenerator {
         return shards;
     }
 
+    /**
+     * genarate the shard for the given seed, using the given number of shards and radix.
+     *
+     * @param seed      the seed for the shard
+     * @param numShards the number of shards being generated
+     * @param radix     the radix to use when formatting the shard
+     * @return
+     */
     public static String computeShard(String seed, int numShards, int radix) {
-        System.out.println("BRYON:: seed = " + seed);
-        System.out.println("BRYON:: numShards = " + numShards);
-        System.out.println("BRYON:: radix = " + radix);
         String shard = computeShard(hash(seed), 0, numShards, radix);
-        System.out.println("BRYON:: shard = " + shard);
+        if (log.isDebugEnabled()) {
+            log.debug(new StringBuilder("computing shard : ")
+                    .append("seed=").append(seed)
+                    .append(",numShards=").append(numShards)
+                    .append(",radix=").append(radix)
+                    .append(" : shard=").append(shard).toString());
+        }
         return shard;
     }
 
@@ -137,20 +152,20 @@ public class ShardedPathGenerator implements PartitionPathGenerator {
         final Matcher matcher = pattern.matcher(relativePath);
         return matcher.matches() &&
                matcher.group(1).equals(StringUtils.join(computeShards(matcher.group(2)), "/")) ?
-               new ReverseMatch() {
-                   public String getPartition() {
-                       return matcher.group(1);
-                   }
+                                                                                               new ReverseMatch() {
+                                                                                                   public String getPartition() {
+                                                                                                       return matcher.group(1);
+                                                                                                   }
 
-                   public String getSeed() {
-                       return matcher.group(2);
-                   }
+                                                                                                   public String getSeed() {
+                                                                                                       return matcher.group(2);
+                                                                                                   }
 
-                   public String getRest() {
-                       return matcher.group(3);
-                   }
-               } :
-                 null;
+                                                                                                   public String getRest() {
+                                                                                                       return matcher.group(3);
+                                                                                                   }
+                                                                                               } :
+                                                                                                 null;
     }
 
     private static final int[] PRIMES = {8675309, 16661, 17};
@@ -199,10 +214,10 @@ public class ShardedPathGenerator implements PartitionPathGenerator {
 
     /**
      * print out the base directory for a listing - based on the default sharding algorithm.
-     *
+     * <p/>
      * This isn't terribly generic - it would have to be rewritten a bit to support custom
      * paramters to the ShardedPathGenerator.
-     * 
+     *
      * @param args command line args - should be exactly three (workspace, collection, entryId)
      */
     public static void main(String[] args) {

@@ -8,6 +8,14 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 
+/**
+ * StripingAutoTagger - auto tagger to be used for grouping entries into "stripes".
+ *
+ * This auto tagger can be used to self-organize entries into a number of "stripes" -- arbitrary
+ * groups of data that are useful for doing distributed processing of feeds - this tagger will
+ * apply a "stripe" category to each entry as it is written, and then feed processors can pull
+ * categorized feeds by those stripes to partition work amongst several processors.
+ */
 public class StripingAutoTagger extends BaseAutoTagger {
 
     private String stripeScheme = "urn:stripe";
