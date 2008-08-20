@@ -16,8 +16,8 @@
                     and allows all Category operations to happen through the CategoriesHander. </li>
                 <li>The "edit" link for an Entry XML has been corrected. The edit links now
                     point to the <i>next</i> revision</li>
-                <li>Calls to GET for an Entry at a revision other than the current revision now produces
-                    a 404 NOT FOUND, instead of a 409 CONFLICT.</li>
+                <li>Calls to GET for an Entry using <i>any revision number, including the current revision</i>,
+                    now produces a 400 BAD REQUEST, instead either being legal or producing a 409 CONFLICT.</li>
                 <li>You will need to update your database to reflect the new table and views that came in
                     as part of both the Agggregate Feed and Categories event logging changes described below.
                     Note that the DB changes are indicated in the DDLs in org/atomserver/schemas,
@@ -54,10 +54,14 @@
                     the "org.atomserver-entryCategoriesHandler" Spring Bean</li>
                 <li>Fixed unneccessary failure for a possible race condition on the creation of new collections</li>
                 <li>Corrected a problem when using SQLServer's sp_getapplock stored procedure. First, sp_getapplock
-                    fails silently, which could cause an applock to not be released, so we now properly check
-                    the return code. Second, it appears that sp_getapplock interacts oddly with JDBC, and that you
-                    <b>must</b> call SELECT 1 to get the transaction started, otherwise sp_getapplock returns a
-                    -999 error and doesn't take out a lock at all</li>
+                    can fail silently, which could cause an applock to not be released, so we now properly check
+                    the return code. Second, it appears that sp_getapplock interacts oddly with some JDBC drivers (JTDS),
+                    such that you <b>must</b> call SQL against a Table to get the transaction started, 
+                    otherwise sp_getapplock returns a -999 error and doesn't take out a lock at all</li>
+                <li>Added a StripedAutoTagger, which tags each Entry with a unique identifier (per stripe)
+                    that can be used to balance load when processing Feeds. Because a Feeds may contain
+                    repeated instances of the same Entry, they <b>must</b> be handled by the same Feed processor,
+                    and thus, one must resort to schemes such as striping</li>
             </ol>
 
         </section>
