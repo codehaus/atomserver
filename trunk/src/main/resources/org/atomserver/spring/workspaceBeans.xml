@@ -70,31 +70,45 @@
             </property>
             <property name="defaultEntryIdGenerator" ref="org.atomserver-entryIdGenerator"/>
             <property name="defaultAutoTagger">
-                <bean class="org.atomserver.core.autotaggers.XPathAutoTagger">
-                    <property name="performanceLog" ref="org.atomserver-performanceLog"/>
-                    <!-- <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO"/> -->
-                    <property name="categoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
-                    <property name="script">
-                        <value>
-                            <![CDATA[
-                    NAMESPACE widgets = http://schemas.atomserver.org/widgets/v1/rev0;
-                    DELETE SCHEME {urn:foo.colors};
-                    MATCH "//widgets:color" {urn:foo.colors}$;
-                    MATCH "//widgets:color[@isDefault='true']" {urn:foo.colors}DEFAULT:$[Entry has default color $];
-                    DELETE SCHEME {urn:foo.systems};
-                    MATCH "/widgets:property[@systemId='acme' and
-                            (@id >= 1 and @id < 20000)]" {urn:foo.systems}acmeCHRIS;
-                    MATCH "/widgets:property[@systemId='acme' and
-                            (@id >= 20000 and @id < 50000)]" {urn:foo.systems}acmeBRYON;
-                    MATCH "/widgets:property[@systemId='acme' and
-                            (@id >= 50000)]" {urn:foo.systems}acmeALEX;
-                    MATCH "/widgets:property[@systemId='whizbang']" {urn:foo.systems}whizbang;
-                    DELETE SCHEME {urn:composite};
-                    MATCH "/widgets:property" {urn:composite}$|@systemId|-$|@id|;
-                    DELETE SCHEME "/widgets:property" {urn:sys.$|@systemId|};
-                    MATCH "/widgets:property" {urn:sys.$|@systemId|}$|@id|;
-                    ]]>
-                        </value>
+                <bean class="org.atomserver.core.autotaggers.MultiAutoTagger">
+                    <property name="taggers">
+                        <list>
+                            <bean class="org.atomserver.core.autotaggers.XPathAutoTagger">
+                                <property name="performanceLog" ref="org.atomserver-performanceLog"/>
+                                <!-- <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO"/> -->
+                                <property name="categoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
+                                <property name="script">
+                                    <value>
+                                        <![CDATA[
+                                NAMESPACE widgets = http://schemas.atomserver.org/widgets/v1/rev0;
+                                DELETE SCHEME {urn:foo.colors};
+                                MATCH "//widgets:color" {urn:foo.colors}$;
+                                MATCH "//widgets:color[@isDefault='true']" {urn:foo.colors}DEFAULT:$[Entry has default color $];
+                                DELETE SCHEME {urn:foo.systems};
+                                MATCH "/widgets:property[@systemId='acme' and
+                                        (@id >= 1 and @id < 20000)]" {urn:foo.systems}acmeCHRIS;
+                                MATCH "/widgets:property[@systemId='acme' and
+                                        (@id >= 20000 and @id < 50000)]" {urn:foo.systems}acmeBRYON;
+                                MATCH "/widgets:property[@systemId='acme' and
+                                        (@id >= 50000)]" {urn:foo.systems}acmeALEX;
+                                MATCH "/widgets:property[@systemId='whizbang']" {urn:foo.systems}whizbang;
+                                DELETE SCHEME {urn:composite};
+                                MATCH "/widgets:property" {urn:composite}$|@systemId|-$|@id|;
+                                DELETE SCHEME "/widgets:property" {urn:sys.$|@systemId|};
+                                MATCH "/widgets:property" {urn:sys.$|@systemId|}$|@id|;
+                                ]]>
+                                    </value>
+                                </property>
+                            </bean>
+                            <bean class="org.atomserver.core.autotaggers.StripingAutoTagger">
+                                <property name="categoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
+                                <property name="performanceLog" ref="org.atomserver-performanceLog"/>
+                                <property name="stripeScheme" value="urn:test-stripes"/>
+                                <property name="numStripes" value="4"/>
+                                <property name="radix" value="2"/>
+                                <property name="label" value="Stripes used to distribute feed processing."/>
+                            </bean>
+                        </list>
                     </property>
                 </bean>
             </property>
