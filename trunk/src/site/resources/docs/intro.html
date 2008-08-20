@@ -2,18 +2,20 @@
 <html>
 <head>
   <link rel="StyleSheet" href="css/style.css" type="text/css">
-  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
-  <meta name="verify-v1" content="sRQSq4VA5FRMhwzFB4U3I9AtgLMtIWTdpVVO6jg1az4=" />
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <meta name="verify-v1"
+ content="sRQSq4VA5FRMhwzFB4U3I9AtgLMtIWTdpVVO6jg1az4=">
   <title>Atomserver, An Introduction</title>
-<script type="text/javascript">
+  <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
 document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-</script>
-<script type="text/javascript">
+  </script>
+  <script type="text/javascript">
 var pageTracker = _gat._getTracker("UA-4603527-2");
 pageTracker._initData();
 pageTracker._trackPageview();
-</script>
+  </script>
 </head>
 <body class="maincontent">
 <h1><img style="width: 75px; height: 75px;" src="images/atom-logo.gif"
@@ -164,12 +166,13 @@ practically every computer language you might imagine.<br>
 <br>
 Atom lists are <span style="font-style: italic;">feeds</span>, and the
 items in the lists are <span style="font-style: italic;">entries</span>.
-Atom is a REST-ful protocol. These days, most weblogs, wikis, news
+Atom is a <span style="font-style: italic;">RESTful</span> protocol.
+These days, most weblogs, wikis, news
 services, etc. expose a special resource whose representation is an
 Atom feed. The entries in the feed describe and link to other
 resources; weblog or wiki entries or news stories published on the
 site. The client can consume these resources with a feed reader or some
-other external program.&nbsp; An example Atom feed looks might look
+other external program.&nbsp; An example Atom feed might look
 something like this; <br>
 <br>
 <div style="margin-left: 80px;"><span style="font-family: monospace;">&lt;?xml
@@ -241,7 +244,7 @@ published resource - a set of purchase orders, images, a list of
 search results, whatever. Or you can omit the <span
  style="font-family: monospace; font-weight: bold;">link</span>&nbsp;
 element in the <span style="font-weight: bold; font-family: monospace;">entry</span>
-and use Atom as a container for the original content.<br>
+and use Atom as a container for the original content. <br>
 <br>
 APP is all about pushing around Atom entries. And it is important to
 note that entries, like feeds<span
@@ -285,9 +288,9 @@ Atom feeds. Clients that do not understand your special elements will
 see a normal Atom feed with some mysterious data in it, which it is
 required to simply ignore. <br>
 <br>
-Atom is an important addition to a REST-ful architecture.&nbsp; As
-shown above, it provides a standard to the program control. And it also
-provides a standard to the error processing. A client knows exactly how
+Atom is an important addition to a RESTful architecture.&nbsp; It
+provides a standard for both program control, and for error processing.
+By definition, a client knows exactly how
 to interact with Atom and what will happen (error codes, etc.) when
 things go wrong. This makes it easy to write generic clients, and to
 mash together disparate Atom feeds into something greater than the
@@ -315,7 +318,7 @@ specifications have emerged. <a href="http://www.opensearch.org/Home">OpenSearch
 is one XML
 vocabulary that's sometimes embedded in Atom documents. OpenSearch is a
 Creative-Commons-licensed specification, that was created by Amazon in
-2003. OpenSearch defines a REST-ful protocol for searching, including a
+2003. OpenSearch defines a RESTful protocol for searching, including a
 format for
 advertising what kind of search your site supports, and specifying how
 to return your search results in Atom or RSS. An OpenSearch-enabled web
@@ -352,7 +355,8 @@ for <span style="font-family: monospace;">next</span> and <span
 use to chain through pages of results.
 <h2><a name="atomserver"></a>The Atom Store<br>
 </h2>
-In the last year these two ideas, the Atom Publishing Protocol and
+In the last couple of years these two ideas, the Atom Publishing
+Protocol and
 additional Paging Specs, that have started to show up together. The
 most important
 and seminal example of this being <a
