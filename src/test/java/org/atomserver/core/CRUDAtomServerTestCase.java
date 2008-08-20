@@ -133,10 +133,8 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
     abstract protected String getURLPath();
 
     protected String getSelfUriFromEditUri( String editUri ) {
-        int rev = extractRevisionFromURI(editUri) - 1;
         int last = editUri.lastIndexOf("/");
         String selfUri = editUri.substring(0, last);
-        selfUri = selfUri + "/" + rev;
         log.debug("editUri= " + editUri + "  selfUri= " + selfUri);
         return selfUri;
     }

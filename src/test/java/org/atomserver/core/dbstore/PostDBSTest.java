@@ -117,7 +117,7 @@ public class PostDBSTest extends CRUDDBSTestCase {
 
         response.release();
         if (contentStorage instanceof FileBasedContentStorage) {
-            int rev = extractRevisionFromURI( selfLink );
+            int rev = extractRevisionFromURI( finalEditLink ) - 1;
             File pFile = getEntryFile(rev);
             assertTrue( pFile != null && pFile.exists() );
         }
@@ -143,7 +143,7 @@ public class PostDBSTest extends CRUDDBSTestCase {
 
         response.release();
         if (contentStorage instanceof FileBasedContentStorage) {
-            int rev = extractRevisionFromURI( selfLink );
+            int rev = extractRevisionFromURI( finalEditLink ) - 1;
             File pFile = getEntryFile(rev);
             assertTrue( pFile != null && pFile.exists() );
         }

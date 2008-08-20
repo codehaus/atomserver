@@ -533,7 +533,7 @@ specification):</p>
 href="..."/&gt;</code></dt>
   <dd>For Entries, this contains the URI of <span
  style="font-style: italic;">this</span> resource, <span
- style="font-style: italic;">including its revision number</span>. For
+ style="font-style: italic;">without </span>its revision number. For
 Feeds, this contains the URI required to get back this particular page.
 The value of the <code>type</code>
 attribute depends on the requested format. If no data changes in the
@@ -585,7 +585,7 @@ it for further processing. </dd>
  style="font-weight: bold;"><span style="font-weight: bold;">   &lt;link href="/myserver/v1/widgets/acme?start-index=0&amp;amp;max-results=2" rel="self" /&gt;</span><br
  style="font-weight: bold;"><span style="font-weight: bold;"> </span>  &lt;author&gt;&lt;name&gt;AtomServer APP Service&lt;/name&gt;&lt;/author&gt;<br>   &lt;title type="text"&gt;acme entries&lt;/title&gt;<br>   &lt;updated&gt;2007-10-05T19:17:42.750Z&lt;/updated&gt;<br>   &lt;id&gt;tag:atomserver.org,2007:v1:acme&lt;/id&gt;<br>   &lt;entry&gt;<br>      &lt;id&gt;/myserver/v1/widgets/acme/205390.en.xml&lt;/id&gt;<br><span
  style="font-weight: bold;">      &lt;as:entryId&gt;205390&lt;/as:entryId&gt;</span><br
- style="font-weight: bold;">      &lt;updated&gt;2007-10-05T18:48:23.437Z&lt;/updated&gt;<br>      &lt;published&gt;2007-10-05T18:48:23.437Z&lt;/published&gt;<br>      &lt;title type="text"&gt; Entry: acme 205390.en&lt;/title&gt;&lt;author&gt;<br>      &lt;name&gt;AtomServer Atom Service&lt;/name&gt;&lt;/author&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml/1" rel="self" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml/2" rel="edit" /&gt;<br>   &lt;/entry&gt;<br>   &lt;entry&gt;<br>      &lt;id&gt;/myserver/v1/widgets/acme/205395.en.xml&lt;/id&gt;<br>      &lt;as:entryId&gt;205395&lt;/as:entryId&gt;<br>      &lt;updated&gt;2007-10-05T15:48:56.437Z&lt;/updated&gt;<br>      &lt;published&gt;2007-10-05T12:50:76.437Z&lt;/published&gt;<br>      &lt;title type="text"&gt; Entry: acme 205395.en&lt;/title&gt;&lt;author&gt;<br>      &lt;name&gt;AtomServer Atom Service&lt;/name&gt;&lt;/author&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205395.en.xml/0" rel="self" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205395.en.xml/1" rel="edit" /&gt;<br>   &lt;/entry&gt;<span
+ style="font-weight: bold;">      &lt;updated&gt;2007-10-05T18:48:23.437Z&lt;/updated&gt;<br>      &lt;published&gt;2007-10-05T18:48:23.437Z&lt;/published&gt;<br>      &lt;title type="text"&gt; Entry: acme 205390.en&lt;/title&gt;&lt;author&gt;<br>      &lt;name&gt;AtomServer Atom Service&lt;/name&gt;&lt;/author&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml" rel="self" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml/2" rel="edit" /&gt;<br>   &lt;/entry&gt;<br>   &lt;entry&gt;<br>      &lt;id&gt;/myserver/v1/widgets/acme/205395.en.xml&lt;/id&gt;<br>      &lt;as:entryId&gt;205395&lt;/as:entryId&gt;<br>      &lt;updated&gt;2007-10-05T15:48:56.437Z&lt;/updated&gt;<br>      &lt;published&gt;2007-10-05T12:50:76.437Z&lt;/published&gt;<br>      &lt;title type="text"&gt; Entry: acme 205395.en&lt;/title&gt;&lt;author&gt;<br>      &lt;name&gt;AtomServer Atom Service&lt;/name&gt;&lt;/author&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205395.en.xml" rel="self" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205395.en.xml/1" rel="edit" /&gt;<br>   &lt;/entry&gt;<span
  style="font-family: monospace;"></span><span
  style="font-family: monospace;"><br>&lt;/feed&gt;</span></pre>
 </div>
@@ -737,8 +737,10 @@ that <span style="font-style: italic;">the</span> <span
  style="font-style: italic;">URI always points to the version you
 should PUT to</span> (i.e. to one version greater than the current
 version), while <span style="font-style: italic;">the</span> <span
- style="font-family: monospace;">self </span><span
- style="font-style: italic;">URI always points to the current version</span>.
+ style="font-family: monospace;">self<span
+ style="font-family: Verdana,Arial,Helvetica,sans-serif;"><span
+ style="font-style: italic;"> link</span></span></span><span
+ style="font-style: italic;"> always points to an "unversioned" URI</span>.
 Note
 that only the <span style="font-family: monospace;">edit </span>URI
 is affected, not the entry
