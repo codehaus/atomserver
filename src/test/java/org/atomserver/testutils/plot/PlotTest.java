@@ -211,7 +211,7 @@ public class PlotTest  extends TestCase {
      }
 
 
-    public void XXtestToGeneratePlots() throws Exception {
+    public void XXXtestToGeneratePlots() throws Exception {
         List<String> methodNamesToPlot = Arrays.asList(
                 "GET.entry", "PUT.entry", "DELETE.entry", "GET.feed");
 
@@ -228,8 +228,9 @@ public class PlotTest  extends TestCase {
                    true, "tpm.png", " - Throughput", "Throughput (TPM)");
     }
 
-    private void createPlot(List<String> methodNamesToPlot, int width, int height,
-                            String csvFile, String title, boolean plotTPM, String filename, String titleSuffix, String yAxis) throws Exception {
+    private void createPlot(List<String> methodNamesToPlot, int width, int height, String csvFile, String title,
+                            boolean plotTPM, String filename, String titleSuffix, String yAxis) 
+            throws Exception {
         XYDataset dataset = readDataSet(csvFile, false, methodNamesToPlot, null,
                                         true, 8, plotTPM);
         File pngFile = new File(new File(csvFile).getParentFile(), filename);
