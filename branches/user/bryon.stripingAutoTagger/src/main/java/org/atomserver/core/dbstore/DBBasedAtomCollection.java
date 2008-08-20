@@ -198,7 +198,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             log.debug("DBBasedAtomCollection.(SELECT) [" + collection + ", "
                       + locale + ", " + entryId + ", " + revision + "]");
         }
-
+        
         // SELECT
         EntryMetaData entry = innerGetEntry(entryTarget);
 
@@ -212,14 +212,6 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             throw new EntryNotFoundException(msg);
         }
 
-        // Does NOT require revision in the URL, but if you give it to me it must match !!!
-        if ((revision != 0) && (revision != URIHandler.REVISION_OVERRIDE) && (entry.getRevision() != revision)) {
-            String msg = "Entry [" + workspace + ", " + collection + ", " + entryId + ", " + locale
-                         + "] does NOT match the revision requested (requested= "
-                         + revision + " actual= " + entry.getRevision() + ")";
-            log.error(msg);
-            throw new EntryNotFoundException(msg,null);
-        }
         return entry;
     }
 

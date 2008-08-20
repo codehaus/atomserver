@@ -57,8 +57,8 @@ public class CRUDDBSTest extends CRUDDBSTestCase {
         // run the tests up to some point
         // INSERT/SELECT/UPDATE/SELECT/DELETE
         String finalEditLink = runCRUDTest();
-        String url = getSelfUriFromEditUri(finalEditLink);
-        int rev = extractRevisionFromURI(url);
+        String url = getSelfUriFromEditUri(finalEditLink);       
+        int rev = extractRevisionFromURI(finalEditLink) - 1;
 
         // SELECT against the just deleted entry
         ClientResponse response = clientGet( url, null, 200, true );

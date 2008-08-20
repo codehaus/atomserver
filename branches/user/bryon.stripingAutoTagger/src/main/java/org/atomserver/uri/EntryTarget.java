@@ -101,6 +101,10 @@ public class EntryTarget extends URITarget implements EntryDescriptor {
         return revision == null ? 0 : revision;
     }
 
+    public Integer getRawRevision() {
+        return revision;
+    }
+
     public Locale getLocale() {
         return locale;
     }
@@ -110,7 +114,7 @@ public class EntryTarget extends URITarget implements EntryDescriptor {
                                workspace,
                                getCollection(),
                                getEntryId(),
-                               getRevision(),
+                               getRawRevision(),
                                getLocale());
     }
 
@@ -153,7 +157,7 @@ public class EntryTarget extends URITarget implements EntryDescriptor {
             .append(" ").append(getCollection())
             .append(" ").append(getEntryId())
             .append(" ").append(getLocale())
-            .append(" ").append(getRevision())
+            .append(" ").append(getRawRevision())
             .append("]").toString();
     }
 

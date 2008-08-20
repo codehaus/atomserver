@@ -16,47 +16,34 @@
 
 package org.atomserver;
 
-import org.atomserver.ext.batch.Operation;
-import org.atomserver.ext.batch.Results;
-import org.atomserver.ext.batch.Status;
-import org.atomserver.core.etc.AtomServerConstants;
-import org.atomserver.uri.FeedTarget;
-import org.atomserver.uri.EntryTarget;
-import org.atomserver.exceptions.*;
-import org.atomserver.utils.perf.AutomaticStopWatch;
-import org.atomserver.utils.perf.PerformanceLog;
-import org.atomserver.utils.perf.StopWatch;
-import org.atomserver.utils.IOCLog;
-
 import org.apache.abdera.Abdera;
 import org.apache.abdera.factory.Factory;
 import org.apache.abdera.i18n.iri.IRISyntaxException;
-import org.apache.abdera.model.Category;
-import org.apache.abdera.model.Collection;
-import org.apache.abdera.model.Categories;
-import org.apache.abdera.model.Document;
-import org.apache.abdera.model.Entry;
-import org.apache.abdera.model.Feed;
-import org.apache.abdera.model.Link;
-import org.apache.abdera.model.Workspace;
+import org.apache.abdera.model.*;
 import org.apache.abdera.protocol.error.Error;
 import org.apache.abdera.protocol.server.RequestContext;
 import org.apache.abdera.protocol.server.ResponseContext;
-import org.apache.abdera.protocol.server.impl.AbstractProvider;
-import org.apache.abdera.protocol.server.impl.AbstractResponseContext;
-import org.apache.abdera.protocol.server.impl.BaseResponseContext;
-import org.apache.abdera.protocol.server.impl.EmptyResponseContext;
-import org.apache.abdera.protocol.server.impl.HttpServletRequestContext; 
+import org.apache.abdera.protocol.server.impl.*;
 import org.apache.abdera.util.EntityTag;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.atomserver.core.etc.AtomServerConstants;
+import org.atomserver.exceptions.*;
+import org.atomserver.ext.batch.Operation;
+import org.atomserver.ext.batch.Results;
+import org.atomserver.ext.batch.Status;
+import org.atomserver.uri.EntryTarget;
+import org.atomserver.uri.FeedTarget;
+import org.atomserver.utils.IOCLog;
+import org.atomserver.utils.perf.AutomaticStopWatch;
+import org.atomserver.utils.perf.PerformanceLog;
+import org.atomserver.utils.perf.StopWatch;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

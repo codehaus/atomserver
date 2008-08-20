@@ -58,14 +58,14 @@ public class RevisionDBSTest extends CRUDDBSTestCase {
 
         // SELECT
         String fullURL0 = fullURL + "/0";
-        editURI = select(fullURL0, true);
+        editURI = select(fullURL, true);
         log.debug("editURI= " + editURI);
         assertTrue(editURI.indexOf("/1") != -1);
 
         // SELECT
-        // This should fail -- there is no 1 yet
+        // This should fail -- cannot use rev numbers in a GET
         String fullURL1 = fullURL + "/1";
-        editURI = select(fullURL1, true, 404);
+        editURI = select(fullURL1, true, 400);
         log.debug("editURI= " + editURI);
         assertNull(editURI);
 
@@ -75,7 +75,7 @@ public class RevisionDBSTest extends CRUDDBSTestCase {
         assertTrue(editURI.indexOf("/2") != -1);
 
         // SELECT -- should find 1
-        editURI = select(fullURL1, false);
+        editURI = select(fullURL, false);
         log.debug("editURI= " + editURI);
         assertTrue(editURI.indexOf("/2") != -1);
 
