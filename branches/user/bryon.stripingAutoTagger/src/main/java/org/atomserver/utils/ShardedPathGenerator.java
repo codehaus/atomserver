@@ -112,10 +112,22 @@ public class ShardedPathGenerator implements PartitionPathGenerator {
         String[] shards = new String[depth];
         int hash = hash(seed);
         for (int i = 0; i < depth; i++) {
-            shards[i] = Integer.toString(
-                    Math.abs(hash * prime(i)) % nodesPerLevel, radix);
+            shards[i] = computeShard(hash, i, nodesPerLevel, radix);
         }
         return shards;
+    }
+
+    public static String computeShard(String seed, int numShards, int radix) {
+        System.out.println("BRYON:: seed = " + seed);
+        System.out.println("BRYON:: numShards = " + numShards);
+        System.out.println("BRYON:: radix = " + radix);
+        String shard = computeShard(hash(seed), 0, numShards, radix);
+        System.out.println("BRYON:: shard = " + shard);
+        return shard;
+    }
+
+    private static String computeShard(int hash, int i, int nodesPerLevel, int radix) {
+        return Integer.toString(Math.abs(hash * prime(i)) % nodesPerLevel, radix);
     }
 
     public ReverseMatch reverseMatch(File root, File file) {
