@@ -7,15 +7,16 @@
     </properties>
 
     <body>
-        <section name="Release 2.1-SNAPSHOT (??/??/08)">
+        <section name="Release 2.1 (08/24/08)">
             This release is tagged 2.1 because it is <b>not</b> entirely transparent.
             <ul>
-                <li>The Spring configurationchanges somewhat. The wiring of XPathAutoTaggers for a workspace
+                <li>The Spring configuration has changed somewhat. The wiring of XPathAutoTaggers for a workspace
                     has slightly changed; the entryCategoriesDAO property should be
                     replaced with a categoriesHandler property. This change plugs a leaky abstraction,
                     and allows all Category operations to happen through the CategoriesHander. </li>
-                <li>The "edit" link for an Entry XML has been corrected. The edit links now
-                    point to the <i>next</i> revision</li>
+                <li>All calls to PUT or DELETE now require that you send the <b>next</b> revision as opposed
+                    to the current revision. And likewise, the "edit" link within an Entry XML has been
+                    corrected also to point at the next revision.</li>
                 <li>Calls to GET for an Entry using <i>any revision number, including the current revision</i>,
                     now produces a 400 BAD REQUEST, instead either being legal or producing a 409 CONFLICT.</li>
                 <li>You will need to update your database to reflect the new table and views that came in

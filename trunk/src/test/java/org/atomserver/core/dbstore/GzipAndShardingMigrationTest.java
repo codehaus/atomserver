@@ -2,17 +2,18 @@ package org.atomserver.core.dbstore;
 
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
-import org.apache.commons.lang.LocaleUtils;
 import org.atomserver.core.BaseServiceDescriptor;
 import org.atomserver.core.etc.AtomServerConstants;
 import org.atomserver.core.filestore.FileBasedContentStorage;
 import org.atomserver.testutils.conf.TestConfUtil;
+import org.atomserver.utils.PartitionPathGenerator;
 import org.atomserver.utils.PrefixPartitionPathGenerator;
 import org.atomserver.utils.ShardedPathGenerator;
 import static org.atomserver.utils.ShardedPathGenerator.DEFAULT_RADIX;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 public class GzipAndShardingMigrationTest extends DBSTestCase {
@@ -104,8 +105,13 @@ public class GzipAndShardingMigrationTest extends DBSTestCase {
 
         // change the gzipping and sharding settings
         ((FileBasedContentStorage) contentStorage).setGzipEnabled(true);
-        ((FileBasedContentStorage) contentStorage).setPartitionPathGenerators(
-                Arrays.asList(SHARDED_PATH_GENERATOR, new PrefixPartitionPathGenerator()));
+
+        // failing in cobertura
+        //((FileBasedContentStorage) contentStorage).setPartitionPathGenerators(
+        //       Arrays.asList(SHARDED_PATH_GENERATOR, new PrefixPartitionPathGenerator()));
+        List<PartitionPathGenerator> pathGenerators =
+                Arrays.asList(SHARDED_PATH_GENERATOR, new PrefixPartitionPathGenerator());
+        ((FileBasedContentStorage) contentStorage).setPartitionPathGenerators(pathGenerators);                
 
         Thread.sleep(2000); // wait 2 seconds, so we will sweep to the trash
 
