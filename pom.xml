@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation=" http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation=" http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -8,7 +7,7 @@
 
     <packaging>war</packaging>
 
-    <version>2.1-SNAPSHOT</version>
+    <version>2.1</version>
 
     <name>Atomserver</name>
 
@@ -106,9 +105,9 @@
     </developers>
 
     <scm>
-        <connection>scm:svn:http://svn.codehaus.org/atomserver/</connection>
-        <developerConnection>scm:svn:https://svn.codehaus.org/atomserver/</developerConnection>
-        <url>http://fisheye.codehaus.org/browse/atomserver</url>
+        <connection>scm:svn:http://svn.codehaus.org/atomserver/atomserver-2.1</connection>
+        <developerConnection>scm:svn:https://svn.codehaus.org/atomserver/tags/atomserver-2.1</developerConnection>
+        <url>http://fisheye.codehaus.org/browse/atomserver/atomserver-2.1</url>
     </scm>
 
     <ciManagement>
@@ -133,8 +132,8 @@
         <dataDir>file:target/var</dataDir>
 
         <!-- configuration dirs -->
-        <confDir/>
-        <opsConfDir/>
+        <confDir />
+        <opsConfDir />
 
         <!-- JMX (jmxBeans.xml) -->
         <jmxHttpPort>50505</jmxHttpPort>
@@ -550,17 +549,17 @@
                         <inherited>false</inherited>
                         <configuration>
                             <tasks>
-                                <mkdir dir="${project.build.directory}"/>
+                                <mkdir dir="${project.build.directory}" />
                                 <exec executable="svn" output="${project.build.directory}/version.properties">
-                                    <arg value="info"/>
-                                    <arg value="."/>
+                                    <arg value="info" />
+                                    <arg value="." />
                                     <redirector>
                                         <outputfilterchain>
                                             <linecontains>
-                                                <contains value="Revision"/>
+                                                <contains value="Revision" />
                                             </linecontains>
                                             <tokenfilter>
-                                                <replacestring from="Revision: " to="atomserver.revision="/>
+                                                <replacestring from="Revision: " to="atomserver.revision=" />
                                             </tokenfilter>
                                         </outputfilterchain>
                                     </redirector>
@@ -568,7 +567,7 @@
                                 <echo file="${project.build.directory}/version.properties" append="true">
                                     atomserver.version=${project.version}
                                 </echo>
-                                <fixcrlf srcdir="${project.build.directory}" eol="lf" includes="version.properties"/>
+                                <fixcrlf srcdir="${project.build.directory}" eol="lf" includes="version.properties" />
                             </tasks>
                         </configuration>
                         <goals>
