@@ -176,10 +176,12 @@
             <id>Apache Incubator</id>
             <url>http://people.apache.org/repo/m2-incubating-repository/</url>
         </repository>
+<!--
         <repository>
             <id>relaxng4j</id>
             <url>http://relaxng4j.googlecode.com/svn/repo/</url>
         </repository>
+-->
     </repositories>
 
     <pluginRepositories>
@@ -219,9 +221,14 @@
         </dependency>
 
         <dependency>
+<!--
             <groupId>com.relaxng4j</groupId>
             <artifactId>relaxng4j-validator</artifactId>
             <version>1.0</version>
+-->
+            <groupId>thaiopensource</groupId>
+            <artifactId>jing</artifactId>
+            <version>20030619</version>
         </dependency>
 
         <dependency>
