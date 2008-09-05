@@ -328,6 +328,11 @@ public class AggregateFeedsTest extends DBSTestCase {
             assertFalse(fullEntry.getContent().contains("<aloo"));
         }
         feed = getPage("$join(lalas,cuckoos)/urn:link?entry-type=full&max-results=10");
+
+        System.out.println("::DUMPING FEED [begin]::");
+        feed.writeTo(System.out);
+        System.out.println("::DUMPING FEED [end]::");
+
         assertEquals(10, feed.getEntries().size());
         for (Entry entry : feed.getEntries()) {            
             assertTrue(entry.getContent().startsWith("<aggregate"));
