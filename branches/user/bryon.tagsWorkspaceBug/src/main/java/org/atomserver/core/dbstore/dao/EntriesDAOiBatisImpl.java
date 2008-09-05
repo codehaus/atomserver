@@ -722,7 +722,12 @@ public class EntriesDAOiBatisImpl
                         (Integer) getSqlMapClientTemplate().queryForObject("workspaceExists",
                                                                            paramMap);
         if (count == 0) {
-            getSqlMapClientTemplate().insert("createWorkspace", paramMap);
+            try {
+                getSqlMapClientTemplate().insert("createWorkspace", paramMap);
+            } catch (DataIntegrityViolationException e) {
+                log.warn("race condition while guaranteeing existence of workspace " +
+                         workspace + " - this is probably okay.");
+            }
         }
     }
 
