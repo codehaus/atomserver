@@ -86,7 +86,7 @@ public class AggregateEntryMetaData extends EntryMetaData {
                                                                 String collectionName,
                                                                 Locale locale,
                                                                 Collection<EntryMetaData> metaData) {
-        HashMap<String, AggregateEntryMetaData> map = new HashMap<String, AggregateEntryMetaData>();
+        HashMap<String, AggregateEntryMetaData> map = new LinkedHashMap<String, AggregateEntryMetaData>();
         for (EntryMetaData entry : metaData) {
             for (EntryCategory category : entry.getCategories()) {
                 if (category.getScheme().equals(collectionName)) {
