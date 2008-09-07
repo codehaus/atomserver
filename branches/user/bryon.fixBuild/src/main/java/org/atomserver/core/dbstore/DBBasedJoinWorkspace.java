@@ -123,6 +123,15 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
 
                 System.out.println("BRYON:::lastSeqnumOnPage = " + lastSeqnumOnPage);
 
+                for (AggregateEntryMetaData aemd : list) {
+                    System.out.println("BRYON:::aemd.getLastModifiedSeqNum() = " +
+                                       aemd.getLastModifiedSeqNum());
+                }
+                for (AggregateEntryMetaData aemd : list) {
+                    System.out.println("BRYON:::aemd.getEntryId() = " +
+                                       aemd.getEntryId());
+                }
+
                 if (!resultsFitOnOnePage && lastSeqnumOnPage == list.get(list.size() - 2).getLastModifiedSeqNum()) {
                     long firstSeqnumOnPage = list.get(0).getLastModifiedSeqNum();
                     System.out.println("BRYON:::firstSeqnumOnPage = " + firstSeqnumOnPage);
