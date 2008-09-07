@@ -221,7 +221,7 @@
         <dependency>
             <groupId>com.relaxng4j</groupId>
             <artifactId>relaxng4j-validator</artifactId>
-            <version>1.0</version>
+            <version>1.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>
