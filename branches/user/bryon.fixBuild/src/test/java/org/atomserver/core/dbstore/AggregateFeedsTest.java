@@ -333,8 +333,12 @@ public class AggregateFeedsTest extends DBSTestCase {
         feed.writeTo(System.out);
         System.out.println("::DUMPING FEED [end]::");
 
+        long updateIndex = 0;
         assertEquals(10, feed.getEntries().size());
-        for (Entry entry : feed.getEntries()) {            
+        for (Entry entry : feed.getEntries()) {
+            long nextIndex = Long.valueOf(entry.getSimpleExtension(AtomServerConstants.UPDATE_INDEX));
+            assertTrue(nextIndex >= updateIndex);
+            updateIndex = nextIndex;
             assertTrue(entry.getContent().startsWith("<aggregate"));
             assertTrue(entry.getContent().contains("<lala"));
             assertTrue(entry.getContent().contains("<cuckoo"));

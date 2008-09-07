@@ -1006,6 +1006,10 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         addEditLink(revision, factory, entry, fileURI);
 
         entry.addSimpleExtension(AtomServerConstants.ENTRY_ID, entryId);
+        if (entryMetaData instanceof EntryMetaData) {
+            entry.addSimpleExtension(AtomServerConstants.UPDATE_INDEX,
+                                     String.valueOf(((EntryMetaData) entryMetaData).getLastModifiedSeqNum()));
+        }
 
         return entry;
     }

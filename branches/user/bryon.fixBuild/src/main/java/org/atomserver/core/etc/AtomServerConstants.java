@@ -35,6 +35,9 @@ public final class AtomServerConstants {
 
     public static final String ATOMSERVER_BATCH_NS_PREFIX = "asbatch";
 
+    public static final String UPDATE_INDEX_LN = "updateIndex";
+    public static final QName UPDATE_INDEX = new QName(ATOMSERVER_NS, UPDATE_INDEX_LN, ATOMSERVER_NS_PREFIX);
+
     public static final String END_INDEX_LN = "endIndex";
     public static final QName END_INDEX = new QName(ATOMSERVER_NS, END_INDEX_LN, ATOMSERVER_NS_PREFIX);
 
