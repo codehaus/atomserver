@@ -509,7 +509,15 @@ public class EntriesDAOiBatisImpl
                            CategoryQueryGenerator.generateCategorySearch(categoriesQuery));
         }
 
-        List entries = getSqlMapClientTemplate().queryForList("selectAggregateEntries", paramMap);
+        List<EntryMetaData> entries = getSqlMapClientTemplate().queryForList("selectAggregateEntries", paramMap);
+
+        for (EntryMetaData emd : entries) {
+            System.out.println("BRYON:::short=" + emd.getWorkspace() + "/" + emd.getEntryId() + " : " + emd.getLastModifiedSeqNum());
+        }
+        for (EntryMetaData emd : entries) {
+            System.out.println("BRYON:::full=" + emd.toString());
+        }
+
         Map<String, AggregateEntryMetaData> map =
                 AggregateEntryMetaData.aggregate(feed.getWorkspace(), feed.getCollection(), locale, entries);
         return new ArrayList(map.values());
