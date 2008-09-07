@@ -103,6 +103,8 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
                     return 0L;
                 }
 
+                System.out.println("BRYON:::list.size() = " + list.size());
+
                 Collections.sort(list, new Comparator<AggregateEntryMetaData>() {
                     public int compare(AggregateEntryMetaData a, AggregateEntryMetaData b) {
                         return a.getLastModifiedSeqNum() < b.getLastModifiedSeqNum() ? -1 :
@@ -113,18 +115,25 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
 
                 boolean resultsFitOnOnePage = list.size() <= pageSize;
 
+                System.out.println("BRYON:::resultsFitOnOnePage = " + resultsFitOnOnePage);
+
                 // if there are more than should fit on one page, and the last two are the same
                 // seqnum, then we have to specially handle things.
                 long lastSeqnumOnPage = list.get(list.size() - 1).getLastModifiedSeqNum();
 
+                System.out.println("BRYON:::lastSeqnumOnPage = " + lastSeqnumOnPage);
+
                 if (!resultsFitOnOnePage && lastSeqnumOnPage == list.get(list.size() - 2).getLastModifiedSeqNum()) {
                     long firstSeqnumOnPage = list.get(0).getLastModifiedSeqNum();
+                    System.out.println("BRYON:::firstSeqnumOnPage = " + firstSeqnumOnPage);
 
                     if (lastSeqnumOnPage != firstSeqnumOnPage) {
                         while (list.get(list.size() - 1).getLastModifiedSeqNum() == lastSeqnumOnPage) {
+                            System.out.println("BRYON:::reducing!");
                             list.remove(list.size() - 1);
                         }
                     } else {
+                        System.out.println("BRYON:::doubling!");
                         return internalGetEntries(abdera, iri, feedTarget, ifModifiedSinceLong, feed, entryType,
                                                   pageSize * 2);
                     }
