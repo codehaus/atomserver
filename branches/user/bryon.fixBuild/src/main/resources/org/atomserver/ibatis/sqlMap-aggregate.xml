@@ -59,6 +59,10 @@
             <iterate property="joinWorkspaces" open="(" close=")" conjunction=",">
                #joinWorkspaces[]#
             </iterate>
+           AND recentlyChangedEntries.Workspace IN
+            <iterate property="joinWorkspaces" open="(" close=")" conjunction=",">
+               #joinWorkspaces[]#
+            </iterate>
         </isNotNull>
            <!-- This final join gets all of the categories for all of the siblings, as we return
                 those in each sub-entry of an aggregate feed. Note that at this point we are done
@@ -93,9 +97,9 @@
            <!-- In SQL Server, we don't want to do this ORDER BY (in fact, it's not even valid)
                 because we guarantee the order of the query by the way we index the view.  In other
                 DB engines, we NEED this order by in order to make things correct. -->
-        <!--<isNotEqual property="dbType" compareValue="sqlserver">-->
+        <isNotEqual property="dbType" compareValue="sqlserver">
          ORDER BY recentlyChangedEntries.UpdateTimestamp ASC
-        <!--</isNotEqual>-->
+        </isNotEqual>
         <include refid="paginationSuffix"/>
     </sql>
 
