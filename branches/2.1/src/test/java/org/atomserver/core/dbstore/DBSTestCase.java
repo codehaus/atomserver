@@ -27,6 +27,7 @@ import org.apache.abdera.protocol.client.RequestOptions;
 import org.apache.commons.lang.LocaleUtils;
 import org.apache.commons.io.FileUtils;
 import org.atomserver.core.*;
+import org.atomserver.core.etc.AtomServerConstants;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
 import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
 import org.atomserver.core.dbstore.utils.DBSeeder;
@@ -325,6 +326,17 @@ public class DBSTestCase extends AtomServerTestCase {
         Feed feed = (Feed) response.getDocument().getRoot();
         log.debug("SIZE=" + feed.getEntries().size());
         response.release();
+
+        // every time we pull a feed in a test case, run through the update indices and assert
+        // that they are in increasing order (note that it's not strictly increasing, since
+        // several aggregate feeds can have the same updateIndex) 
+        long updateIndex = 0L;
+        for (Entry entry : feed.getEntries()) {
+            Long nextIndex = Long.valueOf(entry.getSimpleExtension(AtomServerConstants.UPDATE_INDEX));
+            assertTrue(nextIndex >= updateIndex);
+            updateIndex = nextIndex;
+        }
+
         return feed;
     }
 
