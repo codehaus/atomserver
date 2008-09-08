@@ -27,6 +27,7 @@ import org.apache.abdera.model.Feed;
 import org.apache.abdera.protocol.server.RequestContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang.StringUtils;
 import org.atomserver.*;
 import org.atomserver.core.*;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
@@ -48,6 +49,8 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.*;
+import java.io.File;
+import java.text.MessageFormat;
 
 /**
  * A Store implementation that uses the DB to store entry meta data.
@@ -166,6 +169,24 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         int numEntries = sortedList.size();
         if (numEntries <= 0) {
             return 0L;
+        }
+
+        for (EntryMetaData entryMetaData : sortedList) {
+            // we are looking for the unthinkable here -- if this if block ever triggers, that
+            // means that SQL Server returned us a row with an UpdateTimestamp less than or equal
+            // to the page delimiter that we requested!
+            if (entryMetaData.getLastModifiedSeqNum() <= startingPageDelim) {
+                String message = MessageFormat.format("SQL-SERVER-ERROR!  We requested the page starting at {0}, " +
+                                                      "and the response to the query contained an entry at {1}!\n" +
+                                                      "** the full offending entry was: {2}\n" +
+                                                      "** the list of all entries was: \n *{3}",
+                                                      startingPageDelim,
+                                                      entryMetaData.getLastModifiedSeqNum(),
+                                                      entryMetaData,
+                                                      StringUtils.join(sortedList, "\n *"));
+                log.error(message);
+                throw new AtomServerException(message);
+            }
         }
 
         // Load the Categories to the EntryMetaData in the Feed 
