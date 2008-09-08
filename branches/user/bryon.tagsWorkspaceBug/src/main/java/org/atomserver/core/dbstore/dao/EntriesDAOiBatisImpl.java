@@ -468,7 +468,8 @@ public class EntriesDAOiBatisImpl
     public AggregateEntryMetaData selectAggregateEntry(EntryDescriptor entryDescriptor, List<String> joinWorkspaces) {
         ParamMap paramMap = paramMap()
                 .param("collection", entryDescriptor.getCollection())
-                .param("entryId", entryDescriptor.getEntryId());
+                .param("entryId", entryDescriptor.getEntryId())
+                .param("pageSize", 1);
         if (entryDescriptor.getLocale() != null) {
             paramMap.addLocaleInfo(entryDescriptor.getLocale());
         }
