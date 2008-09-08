@@ -101,25 +101,29 @@ public class LocaleEntriesDAOTest extends DAOTestCase {
 
         // get page (for "de") 
         BaseFeedDescriptor feedDescriptor = new BaseFeedDescriptor(workspace, null);
-        List sortedList = entriesDAO.selectEntriesByPageAndLocale(feedDescriptor, ZERO_DATE, 0, pageSize, locales[0]);
+        List sortedList = entriesDAO.selectFeedPage(ZERO_DATE, 0, pageSize,
+                                                    locales[0], feedDescriptor, null);
         log.debug("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         log.debug("List (de) = \n" + sortedList);
         assertEquals(4, sortedList.size());
 
         // get page (for "de_DE") 
-        sortedList = entriesDAO.selectEntriesByPageAndLocale(feedDescriptor, ZERO_DATE, 0, pageSize, locales[1]);
+        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, 0, pageSize,
+                                               locales[1], feedDescriptor, null);
         log.debug("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         log.debug("List (de_DE) = \n" + sortedList);
         assertEquals(4, sortedList.size());
 
         // get page (for "de_CH") 
-        sortedList = entriesDAO.selectEntriesByPageAndLocale(feedDescriptor, ZERO_DATE, 0, pageSize, locales[2]);
+        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, 0, pageSize,
+                                               locales[2], feedDescriptor, null);
         log.debug("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         log.debug("List (de_CH) = \n" + sortedList);
         assertEquals(4, sortedList.size());
 
         // get page (for "de_AT") 
-        sortedList = entriesDAO.selectEntriesByPageAndLocale(feedDescriptor, ZERO_DATE, 0, pageSize, "de_AT");
+        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, 0, pageSize,
+                                               "de_AT", feedDescriptor, null);
         log.debug("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         log.debug("List (de_AT) = \n" + sortedList);
         assertEquals(0, sortedList.size());
