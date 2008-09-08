@@ -7,7 +7,7 @@
 
     <packaging>war</packaging>
 
-    <version>2.1.1</version>
+    <version>2.1.2-SNAPSHOT</version>
 
     <name>Atomserver</name>
 
@@ -105,9 +105,9 @@
     </developers>
 
     <scm>
-        <connection>scm:svn:http://svn.codehaus.org/atomserver/atomserver-2.1.1</connection>
-        <developerConnection>scm:svn:https://svn.codehaus.org/atomserver/tags/atomserver-2.1.1</developerConnection>
-        <url>http://fisheye.codehaus.org/browse/atomserver/atomserver-2.1.1</url>
+        <connection>scm:svn:http://svn.codehaus.org/atomserver/atomserver-2.1</connection>
+        <developerConnection>scm:svn:https://svn.codehaus.org/atomserver/tags/atomserver-2.1</developerConnection>
+        <url>http://fisheye.codehaus.org/browse/atomserver/atomserver-2.1</url>
     </scm>
 
     <ciManagement>
