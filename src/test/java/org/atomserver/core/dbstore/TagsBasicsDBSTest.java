@@ -368,7 +368,7 @@ public class TagsBasicsDBSTest extends CRUDDBSTestCase {
         IRI entryIRI4 = IRI.create("http://localhost:8080/"
                               + widgetURIHelper.constructURIString( "tags:widgets", "acme", "4",  LocaleUtils.toLocale("en") ) );
         EntryTarget entryTarget4 =
-                widgetURIHelper.getEntryTarget(new MockRequestContext(serviceContext, "GET", entryIRI4.toString()), true);
+                widgetURIHelper.getEntryTarget(new MockRequestContext(serviceContext, "GET", entryIRI4.toString()), false);
         entriesDAO.obliterateEntry(entryTarget4);
 
         // Let's verify that the Categories are gone and that the Entry content has not been deleted
@@ -384,7 +384,7 @@ public class TagsBasicsDBSTest extends CRUDDBSTestCase {
         IRI entryIRI2797 = IRI.create("http://localhost:8080/"
                               + widgetURIHelper.constructURIString( "tags:widgets", "acme", "2797",  LocaleUtils.toLocale("en") ) );
         EntryTarget entryTarget2797 =
-                widgetURIHelper.getEntryTarget(new MockRequestContext(serviceContext, "GET", entryIRI2797.toString()), true);
+                widgetURIHelper.getEntryTarget(new MockRequestContext(serviceContext, "GET", entryIRI2797.toString()), false);
         entriesDAO.obliterateEntry(entryTarget2797);
 
         String xmlContent = entryOut.getContent();
