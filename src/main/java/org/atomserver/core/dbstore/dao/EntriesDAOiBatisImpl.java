@@ -455,21 +455,10 @@ public class EntriesDAOiBatisImpl
     }
 
 
-    public List<EntryMetaData> selectEntriesByPageAndLocale(
-            FeedDescriptor feed,
-            Date lastModifiedDate,
-            int pageDelim,
-            int pageSize,
-            String locale) {
-        return selectFeedPage(lastModifiedDate, pageDelim, pageSize,
-                                     locale, feed, null);
-    }
-
     public AggregateEntryMetaData selectAggregateEntry(EntryDescriptor entryDescriptor, List<String> joinWorkspaces) {
         ParamMap paramMap = paramMap()
                 .param("collection", entryDescriptor.getCollection())
-                .param("entryId", entryDescriptor.getEntryId())
-                .param("pageSize", 1);
+                .param("entryId", entryDescriptor.getEntryId());
         if (entryDescriptor.getLocale() != null) {
             paramMap.addLocaleInfo(entryDescriptor.getLocale());
         }
@@ -723,12 +712,7 @@ public class EntriesDAOiBatisImpl
                         (Integer) getSqlMapClientTemplate().queryForObject("workspaceExists",
                                                                            paramMap);
         if (count == 0) {
-            try {
-                getSqlMapClientTemplate().insert("createWorkspace", paramMap);
-            } catch (DataIntegrityViolationException e) {
-                log.warn("race condition while guaranteeing existence of workspace " +
-                         workspace + " - this is probably okay.");
-            }
+            getSqlMapClientTemplate().insert("createWorkspace", paramMap);
         }
     }
 
