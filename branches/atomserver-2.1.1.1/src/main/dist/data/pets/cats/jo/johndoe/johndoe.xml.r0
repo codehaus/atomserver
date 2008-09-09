@@ -1,0 +1,5 @@
+<pet type="cat">
+    <breed>Mixed</breed>
+    <name>John Doe</name>
+    <owner>Celia Berry</owner>
+</pet>
