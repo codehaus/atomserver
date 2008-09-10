@@ -18,8 +18,6 @@
 package org.atomserver.core.dbstore;
 
 import org.atomserver.core.BaseServiceDescriptor;
-import org.atomserver.core.dbstore.dao.EntriesDAOiBatisImpl;
-import org.atomserver.core.dbstore.dao.ContentDAO;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.apache.abdera.ext.history.FeedPagingHelper;
@@ -31,12 +29,6 @@ import org.apache.abdera.model.Feed;
 
 import java.io.StringWriter;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.sql.Connection;
 
 /**
  */
@@ -426,76 +418,4 @@ public class TagsFeedQueriesDBSTest extends DBSTestCase {
         log.debug( "finalCount = " + finalCount );
         assertEquals( startCount, finalCount );
     }
-
-    public void testRaceConditionWritingNewTagsWorkspace() throws Exception {
-        // we don't always hit the race condition, so run through this three times - if we pass all
-        // three, we can be fairly sure we haven't regressed.
-        for (int j = 0; j < 3 ; j++) {
-            // first, we need to clear out the offending workspace, since the bug only occurs when we
-            // try to insert a workspace for the first time
-            ContentDAO contentDAO = (ContentDAO) appSpringFactory.getBean("org.atomserver-contentDAO");
-            contentDAO.deleteAllContent();
-            entryCategoriesDAO.deleteAllRowsFromEntryCategories();
-            entriesDao.deleteAllRowsFromEntries();
-            Connection conn = ((EntriesDAOiBatisImpl) entriesDao).getDataSource().getConnection();
-            conn.createStatement().execute(
-                "DELETE FROM AtomCollection WHERE workspace = 'tags:widgets'");
-            conn.createStatement().execute(
-                "DELETE FROM AtomWorkspace WHERE workspace = 'tags:widgets'");
-            conn.close();
-
-            int propIdSeed = 94949;
-            int numEntries = 7;
-
-            for (int i = 0; i < numEntries; i++) {
-                String propId = "" + (propIdSeed + i);
-                createWidget("widgets", "acme", propId, "en_US", createWidgetXMLFileString(propId));
-            }
-
-            ArrayList<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
-            for (int i = 0; i < numEntries; i++) {
-                final String propId = "" + (propIdSeed + i);
-
-                Categories categories = getFactory().newCategories();
-
-                Category category = getFactory().newCategory();
-                category.setScheme("urn:test-scheme");
-                category.setTerm("test-" + i % 3);
-                categories.addCategory(category);
-
-                category = getFactory().newCategory();
-                category.setScheme("urn:test-scheme2");
-                category.setTerm("test-" + i % 5);
-                categories.addCategory(category);
-
-                category = getFactory().newCategory();
-                category.setScheme("urn:test-scheme3");
-                category.setTerm("test-" + i % 7);
-                categories.addCategory(category);
-
-                StringWriter stringWriter = new StringWriter();
-                categories.writeTo(stringWriter);
-                final String categoriesXML = stringWriter.toString();
-
-                tasks.add(new Callable<Object>() {
-                    public Object call() throws Exception {
-                        try {
-                            modifyEntry("tags:widgets", "acme", propId, "en_US", categoriesXML, false, "1", false);
-                            return null;
-                        } catch (Exception e) {
-                            return e;
-                        }
-                    }
-                });
-            }
-
-            ExecutorService threadPool = Executors.newFixedThreadPool(numEntries);
-            List<Future<Object>> futures = threadPool.invokeAll(tasks);
-            for (Future<Object> future : futures) {
-                Exception exception = (Exception) future.get();
-                assertNull(exception == null ? "" : exception.getMessage(), exception);
-            }
-        }
-    }
-    
 }

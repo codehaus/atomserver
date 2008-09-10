@@ -86,8 +86,9 @@ public class DBBasedVirtualAtomWorkspace extends DBBasedAtomWorkspace {
             }
 
             protected EntryTarget getEntryTarget(RequestContext request) {
-                return getURIHandler().getEntryTarget(request, false)
-                        .cloneWithNewWorkspace(getEntriesWorkspaceName());
+                EntryTarget entryTarget = getURIHandler().getEntryTarget(request, true);
+                entryTarget = entryTarget.cloneWithNewWorkspace(getEntriesWorkspaceName());
+                return entryTarget;
             }
 
             protected boolean mustAlreadyExist() {
