@@ -41,6 +41,12 @@ public final class AtomServerConstants {
     public static final String ENTRY_ID_LN = "entryId";
     public static final QName ENTRY_ID = new QName(ATOMSERVER_NS, ENTRY_ID_LN, ATOMSERVER_NS_PREFIX);
 
+    public static final String UPDATE_INDEX_LN = "updateIndex";
+    public static final QName UPDATE_INDEX = new QName(ATOMSERVER_NS, UPDATE_INDEX_LN, ATOMSERVER_NS_PREFIX);
+
+    public static final String REVISION_LN = "revision";
+    public static final QName REVISION = new QName(ATOMSERVER_NS, REVISION_LN, ATOMSERVER_NS_PREFIX);
+
     public static final String WORKSPACE_LN = "workspace";
     public static final QName WORKSPACE = new QName(ATOMSERVER_NS, WORKSPACE_LN, ATOMSERVER_NS_PREFIX);
 

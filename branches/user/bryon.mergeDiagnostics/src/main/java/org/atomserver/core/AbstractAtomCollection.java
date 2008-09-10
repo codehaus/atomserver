@@ -976,19 +976,19 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~
-    protected Entry newEntryWithCommonContentOnly(Abdera abdera, EntryDescriptor entryMetaData)
+    protected Entry newEntryWithCommonContentOnly(Abdera abdera, EntryDescriptor entryDescriptor)
             throws AtomServerException {
 
         if (log.isTraceEnabled()) {
-            log.trace("RETURNING ENTRY:: " + entryMetaData);
+            log.trace("RETURNING ENTRY:: " + entryDescriptor);
         }
 
-        String workspace = entryMetaData.getWorkspace();
-        String collection = entryMetaData.getCollection();
-        String entryId = entryMetaData.getEntryId();
-        java.util.Locale locale = entryMetaData.getLocale();
+        String workspace = entryDescriptor.getWorkspace();
+        String collection = entryDescriptor.getCollection();
+        String entryId = entryDescriptor.getEntryId();
+        java.util.Locale locale = entryDescriptor.getLocale();
 
-        int revision = entryMetaData.getRevision();
+        int revision = entryDescriptor.getRevision();
 
         Factory factory = AtomServer.getFactory(abdera);
         Entry entry = factory.newEntry();
@@ -1006,6 +1006,15 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         addEditLink(revision, factory, entry, fileURI);
 
         entry.addSimpleExtension(AtomServerConstants.ENTRY_ID, entryId);
+        if (entryDescriptor instanceof EntryMetaData) {
+            EntryMetaData entryMetaData = (EntryMetaData) entryDescriptor;
+            entry.addSimpleExtension(AtomServerConstants.UPDATE_INDEX,
+                                     String.valueOf(entryMetaData.getLastModifiedSeqNum()));
+            if (entryMetaData.getRevision() >= 0) {
+                entry.addSimpleExtension(AtomServerConstants.REVISION,
+                                     String.valueOf(entryMetaData.getRevision()));
+            }
+        }
 
         return entry;
     }
