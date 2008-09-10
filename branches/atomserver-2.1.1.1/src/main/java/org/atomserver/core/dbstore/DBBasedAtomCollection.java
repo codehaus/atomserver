@@ -189,20 +189,6 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                 throw new AtomServerException(message);
             }
 
-            if (entryMetaData.getLastModifiedDate().before(ifModifiedSince) ||
-                entryMetaData.getLastModifiedDate().before(sortedList.get(0).getLastModifiedDate())) {
-                String message = MessageFormat.format("SQL-SERVER-ERROR!  (DATE/TIME)  We requested the page " +
-                                                      "starting at {0}, " +
-                                                      "and the response to the query contained an entry at {1}!\n" +
-                                                      "** the full offending entry was: {2}\n" +
-                                                      "** the list of all entries was: \n *{3}",
-                                                      ifModifiedSince,
-                                                      entryMetaData.getLastModifiedDate(),
-                                                      entryMetaData,
-                                                      StringUtils.join(sortedList, "\n *"));
-                log.error(message);
-                throw new AtomServerException(message);
-            }
         }
 
         // Load the Categories to the EntryMetaData in the Feed 
