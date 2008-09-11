@@ -2,12 +2,17 @@ package org.atomserver.core.dbstore.dao;
 
 import org.apache.commons.lang.mutable.MutableLong;
 import org.atomserver.core.EntryMetaData;
+import org.atomserver.core.BaseFeedDescriptor;
 import org.atomserver.core.dbstore.DBBasedAtomService;
+import org.atomserver.uri.QueryParam;
+import org.atomserver.uri.URIHandler;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Locale;
+import java.util.List;
+import java.util.Date;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Executors;
 
@@ -39,9 +44,11 @@ public class TransactionTest extends DAOTestCase {
 
         // test whether things work when we commit the txn
         runTest(template, entryIn, false);
+        runTimestampBehaviorTest(template, entryIn, false);
 
         // test whether things work when we roll the txn back
         runTest(template, entryIn, true);
+        runTimestampBehaviorTest(template, entryIn, true);
     }
 
     private void runTest(final TransactionTemplate template,
@@ -118,6 +125,101 @@ public class TransactionTest extends DAOTestCase {
             assertNotNull(metaData);
             // verify that we see the SAME thing we saw inside the txn
             assertEquals(idWithinTransaction.getValue(), metaData.getEntryStoreId());
+            // clean up
+            entriesDAO.obliterateEntry(entryIn);
+        }
+    }
+
+    private void runTimestampBehaviorTest(final TransactionTemplate template,
+                                          final EntryMetaData entryIn,
+                                          final boolean shouldRollback)
+            throws Exception {
+        // we use these three CyclicBarriers to sync up at t0, t1, and t2
+        final CyclicBarrier[] t = new CyclicBarrier[]{
+                new CyclicBarrier(2), new CyclicBarrier(2), new CyclicBarrier(2)
+        };
+
+        final MutableLong idWithinTransaction = new MutableLong(0);
+
+        entriesDAO.insertEntry(entryIn);
+
+        final EntryMetaData entryMetaData = entriesDAO.selectEntry(entryIn);
+        entryMetaData.setRevision(URIHandler.REVISION_OVERRIDE);
+
+        final int pageDelim = (int) entryMetaData.getLastModifiedSeqNum();
+
+        Executors.newSingleThreadExecutor().submit(
+                new Runnable() {
+                    public void run() {
+                        template.execute(new TransactionCallbackWithoutResult() {
+                            public void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                                entriesDAO.updateEntry(entryMetaData, false);
+
+                                List<EntryMetaData> list = entriesDAO.selectFeedPage(
+                                        new Date(0L), pageDelim, 10, entryIn.getLocale().toString(),
+                                        new BaseFeedDescriptor(entryIn.getWorkspace(), entryIn.getCollection()),
+                                        null);
+                                idWithinTransaction.setValue(list.get(0).getEntryStoreId());
+
+                                // sync up at t0 - the entry has been inserted IN txn, but not committed
+                                try {
+                                    t[0].await();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+                                // sync up at t1 - we've verified that the entry is not visible
+                                // outside the txn, but we have not yet committed
+                                try {
+                                    t[1].await();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+                                if (shouldRollback) {
+                                    transactionStatus.setRollbackOnly();
+                                }
+                            }
+                        });
+                        // sync up at t2 - txn committed
+                        try {
+                            t[2].await();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+        );
+
+        // sync up at t0 - the entry has been inserted IN txn, but not committed
+        t[0].await();
+
+        List<EntryMetaData> list = entriesDAO.selectFeedPage(
+                null, pageDelim, 1, entryIn.getLocale().toString(),
+                new BaseFeedDescriptor(entryIn.getWorkspace(), entryIn.getCollection()),
+                null);
+        assertTrue(list.isEmpty());
+
+        // sync up at t1 - we've verified that the entry is not visible outside the txn, but we
+        // have not yet committed
+        t[1].await();
+
+        // sync up at t2 - txn committed
+        t[2].await();
+
+        list = entriesDAO.selectFeedPage(
+                new Date(0L), pageDelim, 10, entryIn.getLocale().toString(),
+                new BaseFeedDescriptor(entryIn.getWorkspace(), entryIn.getCollection()),
+                null);
+
+        if (shouldRollback) {
+            // verify that we still can't see it
+            assertTrue(list.isEmpty());
+        } else {
+            // verify that we CAN see it now
+            assertFalse(list.isEmpty());
+            // verify that we see the SAME thing we saw inside the txn
+            assertEquals(idWithinTransaction.getValue(), list.get(0).getEntryStoreId());
             // clean up
             entriesDAO.obliterateEntry(entryIn);
         }
