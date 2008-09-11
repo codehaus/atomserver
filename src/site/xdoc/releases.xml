@@ -7,6 +7,20 @@
     </properties>
 
     <body>
+        <section name="Release 2.1.1.1 (09/09/08)">
+            This is a hotfix release to remove one diagnostic because it conflicts with some very
+            old data in production
+        </section>
+
+        <section name="Release 2.1.1 (09/08/08)">
+            This is a hotfix release to diagnose production problems observed with the 2.1 release
+            <ul>
+                <li>Added updateIndex and revision as Atom extensions to entry elements</li>
+                <li>Added diagnostic code to detect errors in our SQL Server queries (or potentially in
+                    SQL Server itself</li>
+            </ul>
+        </section>
+
         <section name="Release 2.1 (08/24/08)">
             This release is tagged 2.1 because it is <b>not</b> entirely transparent.
             <ul>
