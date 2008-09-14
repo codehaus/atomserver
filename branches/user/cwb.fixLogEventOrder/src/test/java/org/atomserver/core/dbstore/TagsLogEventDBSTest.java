@@ -20,11 +20,12 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.apache.abdera.model.Categories;
 import org.apache.abdera.model.Category;
-import org.atomserver.testutils.conf.TestConfUtil;
-import org.atomserver.core.EntryCategoryLogEvent;
 import org.atomserver.core.EntryCategory;
+import org.atomserver.core.EntryCategoryLogEvent;
+import org.atomserver.testutils.conf.TestConfUtil;
 
 import java.io.StringWriter;
+import java.util.Date;
 import java.util.List;
 
 public class TagsLogEventDBSTest extends CRUDDBSTestCase {
@@ -136,13 +137,23 @@ public class TagsLogEventDBSTest extends CRUDDBSTestCase {
         log.debug("====> logEvents = " + logEvents);
         assertNotNull(logEvents);
         assertTrue(logEvents.size() == numCats);
+        Date lastDate = new Date();
+        for( EntryCategoryLogEvent event : logEvents ) {
+            assertTrue( (event.getCreateDate().compareTo(lastDate) <= 0) );
+            lastDate= event.getCreateDate();
+        }
 
         entryIn.setScheme( "urn:widgets/foo" );
         logEvents = entryCategoryLogEventDAO.selectEntryCategoryLogEventByScheme(entryIn);
         log.debug("====> logEvents = " + logEvents);
         assertNotNull(logEvents);
         assertTrue(logEvents.size() == numCats);
-
+        lastDate = new Date();
+        for( EntryCategoryLogEvent event : logEvents ) {
+            assertTrue( (event.getCreateDate().compareTo(lastDate) <= 0) );
+            lastDate= event.getCreateDate();
+        }
+        
         entryIn.setTerm( "testutils:1" );
         logEvents = entryCategoryLogEventDAO.selectEntryCategoryLogEventBySchemeAndTerm(entryIn);
         log.debug("====> logEvents = " + logEvents);
