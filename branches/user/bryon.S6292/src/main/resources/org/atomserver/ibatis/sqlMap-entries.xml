@@ -49,6 +49,11 @@
         </isNotNull>
          WHERE UpdateDate >= #lastModifiedDate#
            AND UpdateTimestamp > #lastModifiedSeqNum#
+        <isNotNull property="latencySeconds">
+           <![CDATA[
+           AND UpdateTimestamp <=
+           ]]> ( <include refid="maxSafeTimestamp"/> )
+        </isNotNull>
            AND Workspace = #workspace#
         <isNotNull property="collection">
            AND Collection=#collection#

@@ -144,6 +144,24 @@
             </isEqual>
         </dynamic>
     </select>
-    
+
+    <sql id="maxSafeTimestamp">
+        SELECT MAX(UpdateTimestamp) as maxSafeTimestamp
+          FROM EntryStore
+        <isEqual property="dbType" compareValue="hsql">
+         WHERE DATEDIFF('ss', UpdateDate, NOW()) >= $latencySeconds$
+        </isEqual>
+        <isEqual property="dbType" compareValue="sqlserver">
+        <![CDATA[
+         WHERE UpdateDate <= DATEADD(s, -1 * $latencySeconds$, GETDATE())
+         ]]>
+        </isEqual>
+        <isEqual property="dbType" compareValue="postgres">
+        <![CDATA[
+         WHERE UpdateDate <= NOW() - interval '$latencySeconds$ seconds'
+         ]]>
+        </isEqual>
+    </sql>
+
 </sqlMap>
 

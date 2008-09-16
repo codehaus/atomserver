@@ -22,6 +22,7 @@ import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.BaseServiceDescriptor;
 import org.atomserver.core.BaseFeedDescriptor;
 import org.atomserver.testutils.client.MockRequestContext;
+import org.atomserver.testutils.latency.LatencyUtil;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -85,6 +86,7 @@ public class LocaleEntriesDAOTest extends DAOTestCase {
                 knt++;
             }
         }
+        LatencyUtil.updateLastWrote();
 
         /* So we end up with this::
            44400,de        44402,de_DE      44404,de_CH
@@ -99,7 +101,9 @@ public class LocaleEntriesDAOTest extends DAOTestCase {
 
         int pageSize = count + 1;
 
-        // get page (for "de") 
+        LatencyUtil.accountForLatency();
+
+        // get page (for "de")
         BaseFeedDescriptor feedDescriptor = new BaseFeedDescriptor(workspace, null);
         List sortedList = entriesDAO.selectFeedPage(ZERO_DATE, 0, pageSize,
                                                     locales[0], feedDescriptor, null);

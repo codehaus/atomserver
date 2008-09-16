@@ -50,6 +50,7 @@ public class EntriesDAOiBatisImpl
     private ContentDAO contentDAO;
     private EntryCategoriesDAO entryCategoriesDAO;
     private EntryCategoryLogEventDAO entryCategoryLogEventDAO;
+    private int latencySeconds = -1;
 
     public void setContentDAO(ContentDAO contentDAO) {
         this.contentDAO = contentDAO;
@@ -61,6 +62,10 @@ public class EntriesDAOiBatisImpl
 
     public void setEntryCategoryLogEventDAO(EntryCategoryLogEventDAO entryCategoryLogEventDAO) {
         this.entryCategoryLogEventDAO = entryCategoryLogEventDAO;
+    }
+
+    public void setLatencySeconds(int latencySeconds) {
+        this.latencySeconds = latencySeconds;
     }
 
     //======================================
@@ -500,6 +505,10 @@ public class EntriesDAOiBatisImpl
                            CategoryQueryGenerator.generateCategorySearch(categoriesQuery));
         }
 
+        if (latencySeconds > 0) {
+            paramMap.param("latencySeconds", latencySeconds);
+        }
+
         List entries = getSqlMapClientTemplate().queryForList("selectAggregateEntries", paramMap);
         Map<String, AggregateEntryMetaData> map =
                 AggregateEntryMetaData.aggregate(feed.getWorkspace(), feed.getCollection(), locale, entries);
@@ -524,6 +533,10 @@ public class EntriesDAOiBatisImpl
                                CategoryQueryGenerator.generateCategoryFilter(categoryQuery));
                 paramMap.param("categoryQuerySql",
                                CategoryQueryGenerator.generateCategorySearch(categoryQuery));
+            }
+
+            if (latencySeconds > 0) {
+                paramMap.param("latencySeconds", latencySeconds);
             }
 
             return getSqlMapClientTemplate().queryForList("selectFeedPage", paramMap);
@@ -748,32 +761,36 @@ public class EntriesDAOiBatisImpl
     }
 
     public void acquireLock() throws AtomServerException {
-        log.debug("ACQUIRING LOCK");
+        if (latencySeconds <= 0) {
+            log.debug("ACQUIRING LOCK");
 
-        // JTDS forces us to actually "touch" a DB Table before it will begin the transaction
-        // so we have to do this No Op which does a "SELECT COUNT(*) from AtomWorkspace"
-        // If we don't do this, then sp_getapplock returns -999, which indicates that it
-        // is NOT in a transaction
-        getSqlMapClientTemplate().queryForObject("noop", paramMap());
+            // JTDS forces us to actually "touch" a DB Table before it will begin the transaction
+            // so we have to do this No Op which does a "SELECT COUNT(*) from AtomWorkspace"
+            // If we don't do this, then sp_getapplock returns -999, which indicates that it
+            // is NOT in a transaction
+            getSqlMapClientTemplate().queryForObject("noop", paramMap());
 
-        Integer status = (Integer) getSqlMapClientTemplate().queryForObject("acquireLock", paramMap());
-        
-        // in SQL Server, a status of 0 or 1 indicates successful acquisition (synchronously and
-        // asynchronously, respectively) of the application lock.
-        //
-        // error codes < 0 indicate errors as follows:
-        //  -1      : the lock request timed out
-        //  -2      : the lock request was cancelled
-        //  -3      : the lock request was chosen as a deadlock victim
-        //  -999    : Indicates a parameter validation or other call error
-        //
-        // in other DBs, we artificially make the lock acquisition query return a non-negative
-        // value when the lock is successfully acquired.
-        log.debug( "acquireLock() STATUS = " + status );
-        if ( status < 0 ) {
-            String message = "Could not acquire the database lock (status= " + status + ")";
-            log.error(message);
-            throw new AtomServerException(message);
+            Integer status = (Integer) getSqlMapClientTemplate().queryForObject("acquireLock", paramMap());
+
+            // in SQL Server, a status of 0 or 1 indicates successful acquisition (synchronously and
+            // asynchronously, respectively) of the application lock.
+            //
+            // error codes < 0 indicate errors as follows:
+            //  -1      : the lock request timed out
+            //  -2      : the lock request was cancelled
+            //  -3      : the lock request was chosen as a deadlock victim
+            //  -999    : Indicates a parameter validation or other call error
+            //
+            // in other DBs, we artificially make the lock acquisition query return a non-negative
+            // value when the lock is successfully acquired.
+            log.debug( "acquireLock() STATUS = " + status );
+            if ( status < 0 ) {
+                String message = "Could not acquire the database lock (status= " + status + ")";
+                log.error(message);
+                throw new AtomServerException(message);
+            }
+        } else {
+            log.debug("NO NEED TO APPLOCK - using enforced latency instead.");
         }
     }
 

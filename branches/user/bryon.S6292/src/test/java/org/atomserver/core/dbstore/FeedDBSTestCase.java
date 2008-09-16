@@ -125,7 +125,7 @@ public class FeedDBSTestCase extends DBSTestCase {
         int count = entriesDao.getTotalCount(feedDescriptor);
         if ( checkCount )
             assertEquals( (start + numRecs), count );
-        return start; 
+        return start;
     }
 
     protected void deleteWidgets( String wspace, int start, int propIdSeed, String collection, String locale ) throws Exception {

@@ -35,6 +35,11 @@
         <isNotNull property="lastModifiedSeqNum">
            AND recentlyChangedEntries.UpdateTimestamp > #lastModifiedSeqNum#
         </isNotNull>
+        <isNotNull property="latencySeconds">
+           <![CDATA[
+           AND recentlyChangedEntries.UpdateTimestamp <=
+           ]]> ( <include refid="maxSafeTimestamp"/> )
+        </isNotNull>
            <!-- This same query can be used to pull a SINGLE aggregate entry.  Note that we should
                 never provide both lastModifiedSeqNum AND entryId. -->
         <isNotNull property="entryId">
