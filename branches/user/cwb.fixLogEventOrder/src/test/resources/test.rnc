@@ -1,9 +1,0 @@
-namespace n = "http://atomserver.org/test"
-
-grammar {
-start = FOO
-    FOO = element n:foo {
-        attribute id { text },
-        element n:bar { text }
-    }
-}
