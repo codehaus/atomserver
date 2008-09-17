@@ -49,7 +49,7 @@ public class WorkspaceOptions {
     private boolean verboseDeletions = true;
 
     private boolean producingTotalResultsFeedElement = false;
-    private boolean producingEntryCategoriesFeedElement = false;
+    private boolean producingEntryCategoriesFeedElement = true;
 
     private ContentStorage defaultContentStorage = null;
     private ContentValidator defaultContentValidator = null;
