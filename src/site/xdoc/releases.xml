@@ -7,6 +7,15 @@
     </properties>
 
     <body>
+        <section name="Release 2.2-SNAPSHOT (09/??/08)">
+            <ul>
+                <li>Entry Category Log Events are now ordered by their CreateDate,
+                    in ascending order</li>
+                <li>The default for the Worspace option; defaultProducingEntryCategoriesFeedElement
+                    is now "true"</li>
+            </ul>
+        </section>
+
         <section name="Release 2.1.1.1 (09/09/08)">
             This is a hotfix release to remove one diagnostic because it conflicts with some very
             old data in production
