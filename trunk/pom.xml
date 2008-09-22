@@ -7,7 +7,7 @@
 
     <packaging>war</packaging>
 
-    <version>2.2-SNAPSHOT</version>
+    <version>2.1.2-SNAPSHOT</version>
 
     <name>Atomserver</name>
 
