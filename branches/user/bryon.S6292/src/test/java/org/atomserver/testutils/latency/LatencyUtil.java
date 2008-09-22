@@ -5,7 +5,7 @@ import org.apache.log4j.Logger;
 public class LatencyUtil {
     private static final Logger log = Logger.getLogger(LatencyUtil.class);
 
-    public static final int ACCOUNT_FOR_LATENCY = 1100;
+    public static final int ACCOUNT_FOR_LATENCY = 2100;
 
     private static long lastWrote;
 

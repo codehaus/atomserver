@@ -73,7 +73,7 @@ public class TestingAtomServer {
             throw new IllegalStateException("Must stop server before calling start");
         }
 
-        for (int i = 40000; i < 41000; i++) {
+        for (int i = 40000; i < 40010; i++) {
             try {
                 this.httpServer = createServer(this.port = i,
                                                atomserverServletContext,

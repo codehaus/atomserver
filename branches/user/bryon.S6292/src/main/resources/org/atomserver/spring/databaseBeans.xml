@@ -65,7 +65,7 @@
         <property name="contentDAO" ref="org.atomserver-contentDAO"/>
         <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO" />
         <property name="entryCategoryLogEventDAO" ref="org.atomserver-entryCategoryLogEventDAO" />
-        <property name="latencySeconds" value="1"/>
+        <property name="latencySeconds" value="2"/>
     </bean>
 
     <bean id="org.atomserver-contentDAO"
@@ -93,6 +93,22 @@
         <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
         <property name="databaseType" value="${db.type}"/>
         <property name="performanceLog" ref="org.atomserver-performanceLog"/>
+    </bean>
+
+    <bean class="org.atomserver.utils.spring.StartupConstraints"
+          depends-on="org.atomserver-entriesDAO">
+        <property name="constraints">
+            <value>
+                <![CDATA[
+                entriesDAO = context.getBean("org.atomserver-entriesDAO");
+                if (entriesDAO.latencySeconds > 0 &&
+                    entriesDAO.latencySeconds <= ${db.timeout.sql.stmts}) {
+                    reject("ERROR: latencySeconds set to " + entriesDAO.latencySeconds +
+                           ", but transaction timeout ${db.timeout.sql.stmts}.");
+                }
+                ]]>
+            </value>
+        </property>
     </bean>
 
 </beans>

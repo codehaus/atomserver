@@ -33,12 +33,24 @@
                 from the minTimestamp.-->
             ON recentlyChangedEntries.Scheme = #collection#
         <isNotNull property="lastModifiedSeqNum">
+          JOIN EntryStore entryStore
+            ON recentlyChangedEntries.EntryStoreId = entryStore.EntryStoreId
            AND recentlyChangedEntries.UpdateTimestamp > #lastModifiedSeqNum#
         </isNotNull>
         <isNotNull property="latencySeconds">
-           <![CDATA[
-           AND recentlyChangedEntries.UpdateTimestamp <=
-           ]]> ( <include refid="maxSafeTimestamp"/> )
+            <isNotNull property="latencySeconds">
+               AND (
+                <isEqual property="dbType" compareValue="hsql">
+                 DATEDIFF('ss', entryStore.UpdateDate, NOW()) >= $latencySeconds$
+                </isEqual>
+                <isEqual property="dbType" compareValue="sqlserver">
+                 DATEADD(s, -1 * $latencySeconds$, GETDATE()) >= entryStore.UpdateDate
+                </isEqual>
+                <isEqual property="dbType" compareValue="postgres">
+                 NOW() - interval '$latencySeconds$ seconds' >= entryStore.UpdateDate
+                </isEqual>
+                )
+            </isNotNull>
         </isNotNull>
            <!-- This same query can be used to pull a SINGLE aggregate entry.  Note that we should
                 never provide both lastModifiedSeqNum AND entryId. -->

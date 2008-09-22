@@ -32,6 +32,7 @@ import org.atomserver.utils.perf.AutomaticStopWatch;
 import org.atomserver.utils.perf.StopWatch;
 import org.springframework.orm.ibatis.SqlMapClientCallback;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DataAccessException;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -62,6 +63,10 @@ public class EntriesDAOiBatisImpl
 
     public void setEntryCategoryLogEventDAO(EntryCategoryLogEventDAO entryCategoryLogEventDAO) {
         this.entryCategoryLogEventDAO = entryCategoryLogEventDAO;
+    }
+
+    public int getLatencySeconds() {
+        return latencySeconds;
     }
 
     public void setLatencySeconds(int latencySeconds) {
