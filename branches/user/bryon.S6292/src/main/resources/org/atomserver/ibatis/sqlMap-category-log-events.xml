@@ -49,7 +49,9 @@
           Workspace, Collection, EntryId,
           EntryCategoryLogEvent.CreateDate AS CreateDate,
           Scheme, Term, Label
-        FROM EntryCategoryLogEvent JOIN EntryStore ON EntryCategoryLogEvent.EntryStoreId = EntryStore.EntryStoreId
+        FROM EntryCategoryLogEvent
+        JOIN EntryStore
+        ON EntryCategoryLogEvent.EntryStoreId = EntryStore.EntryStoreId
           <isNotNull property="entryStoreId">
               WHERE EntryStore.EntryStoreId = #entryStoreId#
           </isNotNull>
@@ -68,16 +70,19 @@
         <include refid="selectEntryCategoryLogEventsFragment" />
         AND Scheme=#scheme#
         AND Term=#term#
+        ORDER BY EntryCategoryLogEvent.CreateDate        
     </select>
 
     <select id="selectEntryCategoryLogEventsByScheme"
             parameterClass="entryCategory" resultMap="entryCategoryLogEventResult" >
         <include refid="selectEntryCategoryLogEventsFragment" />
         AND Scheme=#scheme#
+        ORDER BY EntryCategoryLogEvent.CreateDate
     </select>
 
     <select id="selectEntryCategoryLogEvents" parameterClass="entryCategory" resultMap="entryCategoryLogEventResult" >
         <include refid="selectEntryCategoryLogEventsFragment" />
+        ORDER BY EntryCategoryLogEvent.CreateDate
     </select>
 
     <!-- #################### delete  ############### -->

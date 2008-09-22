@@ -104,7 +104,7 @@
                 if (entriesDAO.latencySeconds > 0 &&
                     entriesDAO.latencySeconds <= ${db.timeout.sql.stmts}) {
                     reject("ERROR: latencySeconds set to " + entriesDAO.latencySeconds +
-                           ", but transaction timeout ${db.timeout.sql.stmts}.");
+                           ", but transaction timeout is ${db.timeout.sql.stmts}.");
                 }
                 ]]>
             </value>
