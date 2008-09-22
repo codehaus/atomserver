@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<document url="http://java-build.wvrgroup.internal:/opt/sites/atomserver/releases.html">
+
+    <properties>
+        <title>Release Notes</title>
+        <author email="chriswberry@gmail.com">Chris Berry</author>
+    </properties>
+
+    <body>
+        <section name="Release 2.1.2 (09/22/08)">
+            <ul>
+                <li>Fixed race condition bug when creating Virtual Workspaces</li>
+                <li>Entry Category Log Events are now ordered by their CreateDate,
+                    in ascending order</li>
+                <li>The default for the Worspace option; defaultProducingEntryCategoriesFeedElement
+                    is now "true"</li>
+            </ul>
+        </section>
+
+        <section name="Release 2.1.1.1 (09/09/08)">
+            This is a hotfix release to remove one diagnostic because it conflicts with some very
+            old data in production
+        </section>
+
+        <section name="Release 2.1.1 (09/08/08)">
+            This is a hotfix release to diagnose production problems observed with the 2.1 release
+            <ul>
+                <li>Added updateIndex and revision as Atom extensions to entry elements</li>
+                <li>Added diagnostic code to detect errors in our SQL Server queries (or potentially in
+                    SQL Server itself</li>
+            </ul>
+        </section>
+
+        <section name="Release 2.1 (08/24/08)">
+            This release is tagged 2.1 because it is <b>not</b> entirely transparent.
+            <ul>
+                <li>The Spring configuration has changed somewhat. The wiring of XPathAutoTaggers for a workspace
+                    has slightly changed; the entryCategoriesDAO property should be
+                    replaced with a categoriesHandler property. This change plugs a leaky abstraction,
+                    and allows all Category operations to happen through the CategoriesHander. </li>
+                <li>All calls to PUT or DELETE now require that you send the <b>next</b> revision as opposed
+                    to the current revision. And likewise, the "edit" link within an Entry XML has been
+                    corrected also to point at the next revision.</li>
+                <li>Calls to GET for an Entry using <i>any revision number, including the current revision</i>,
+                    now produces a 400 BAD REQUEST, instead either being legal or producing a 409 CONFLICT.</li>
+                <li>You will need to update your database to reflect the new table and views that came in
+                    as part of both the Agggregate Feed and Categories event logging changes described below.
+                    Note that the DB changes are indicated in the DDLs in org/atomserver/schemas,
+                    and that no data migration is required</li>
+            </ul>
+            Changes in 2.1 include:
+            <ol>
+                <li>Better performance for Aggregate Feeds. The queries were completely rewritten.
+                    The performance boost is huge (it is many times faster), and essentially made Aggregate Feeds
+                    usable. As a byproduct, all Category query performance also significantly improved</li>
+                <li>Added tests for DB-based ContentStorage, and began using this feature in earnest on a project</li>
+                <li>AtomServer now produces a Jar artifact as well as a War, and includes this Jar within the War.
+                    Cleaned up the code to consistently use resources from the Jar.
+                    Added new documentation on deployment options for AtomServer</li>
+                <li>Added a setenv.sh script for Tomcat, which may be called from catalina.sh.
+                    Cleaned up the Jars that get included in the War's WEB-INF/lib.
+                    Created new top-level /lib dir in the standalone version to house Jetty and Servlet API Jars,
+                    which fixes Tomcat deploy issues</li>
+                <li>The "edit" link for an Entry XML has been corrected, as mentioned above.
+                    Also fixed some bugs related to Optimistic Concurrency and initial Entry creation.</li>
+                <li>Cleaned up the API to remove RequestContext from the abstract methods of AbstractAtomCollection</li>
+                <li>Added a very simple standalone AtomServer (TestingAtomServer) for Atom client unit testing,
+                    which makes writing unit tests for Atom clients <b>much</b> simpler.
+                    Made HsqlBootstrapper restartable, and made TestingAtomServer do so on each construction</li>
+                <li>Refactored the code to handle generic "virtual workspaces".
+                    Consolidated all DB-based Category handling into the EntryCategoriesHandler,
+                    including all DAO access. Consolidated to an AtomService level CategoriesHandler, referenced
+                    through a VirtualWorkspaceHandler Map. Added access to the Abdera ServiceContext
+                    from AtomService</li>
+                <li>Added an optional ability to "log" (to the metadata DB) all changes to Categories.
+                    This ability is critical to applications that use Categories to manage a State Machine
+                    for a given Workspace, and want a log of all State changes for a given Entry.
+                    This is enabled by setting the "loggingAllCategoryEvents" to true in 
+                    the "org.atomserver-entryCategoriesHandler" Spring Bean</li>
+                <li>Fixed unneccessary failure for a possible race condition on the creation of new collections</li>
+                <li>Corrected a problem when using SQLServer's sp_getapplock stored procedure. First, sp_getapplock
+                    can fail silently, which could cause an applock to not be released, so we now properly check
+                    the return code. Second, it appears that sp_getapplock interacts oddly with some JDBC drivers (JTDS),
+                    such that you <b>must</b> call SQL against a Table to get the transaction started, 
+                    otherwise sp_getapplock returns a -999 error and doesn't take out a lock at all</li>
+                <li>Added a StripedAutoTagger, which tags each Entry with a unique identifier (per stripe)
+                    that can be used to balance load when processing Feeds. Because a Feeds may contain
+                    repeated instances of the same Entry, they <b>must</b> be handled by the same Feed processor,
+                    and thus, one must resort to schemes such as striping</li>
+            </ol>
+
+        </section>
+
+        <section name="Release 2.0.2 (8/7/08)">
+            <ol>
+                <li>Added TestingAtomServer - spin up a complete atomserver, running in Jetty, all through a java API.
+                    Makes writing unit tests for Atom clients MUCH simpler.</li>
+            </ol>
+        </section>
+
+        <section name="Release 2.0.1 (6/23/08)">
+            <ol>
+                <li>Added a "throttled" AtomServer. This AtomServer throttles all PUTs, POSTs, and DELETEs
+                    using a ThreadPool front-ended with a Blocking Queue. When all Threads in the Pool are in use,
+                    incoming requests are queued up. The theory is that, because we serialize all writes to the DB,
+                    when it is overloaded its performance degrades significantly, and that by throttling DB input
+                    to some optimum threshold we can maximize performance. This theory was proven out in
+                    performance testing. We saw a 220% decrease in average response time for PUTs for
+                    the throttled AtomServer, with a relatively constant TPM, and smooth behavior.
+                    In contrast the "normal" AtomServer saw spiky behavior, and significant performance degradation.
+                    </li>
+                <li>Aggregate Feeds were completely rewritten.</li>
+                <li>Added "sharded paths" file-based ContentStorage. </li>
+                <li>Gzipping for file-based ContentStorage.</li>
+                <li>Cleaned up the Junits significantly. The tests no longer use a local "var" directory. </li>
+                <li>Google Analytics for the site</li>
+            </ol>
+        </section>
+
+        <section name="Release 2.0 (5/13/08)">
+            <ol>
+                <li>This is the initial open source release.
+                It is numbered 2.0 because the code behind AtomServer has been around
+                as an internal application for about 1 year, and over that time went through many revisions</li>
+            </ol>
+        </section>
+
+    </body>
+</document>
+
+
+
+
+
+
+
+
+                 
