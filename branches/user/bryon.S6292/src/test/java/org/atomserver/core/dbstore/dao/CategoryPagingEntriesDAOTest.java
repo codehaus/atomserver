@@ -40,6 +40,7 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
     // -------------------------------------------------------
     protected void setUp() throws Exception { 
         super.setUp();
+        contentDAO.deleteAllContent();
         entryCategoriesDAO.deleteAllRowsFromEntryCategories();
         entriesDAO.deleteAllRowsFromEntries();
     }

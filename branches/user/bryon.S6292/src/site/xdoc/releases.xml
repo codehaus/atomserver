@@ -7,8 +7,9 @@
     </properties>
 
     <body>
-        <section name="Release 2.2-SNAPSHOT (09/??/08)">
+        <section name="Release 2.1.2 (09/22/08)">
             <ul>
+                <li>Fixed race condition bug when creating Virtual Workspaces</li>
                 <li>Entry Category Log Events are now ordered by their CreateDate,
                     in ascending order</li>
                 <li>The default for the Worspace option; defaultProducingEntryCategoriesFeedElement
