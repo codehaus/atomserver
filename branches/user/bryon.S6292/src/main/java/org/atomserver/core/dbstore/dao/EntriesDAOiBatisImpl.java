@@ -798,10 +798,4 @@ public class EntriesDAOiBatisImpl
             log.debug("NO NEED TO APPLOCK - using enforced latency instead.");
         }
     }
-
-    public void releaseLock() {
-        log.debug("RELEASING LOCK");
-        Integer status = (Integer) getSqlMapClientTemplate().queryForObject("releaseLock", paramMap());
-        log.debug( "releaseLock() STATUS = " + status );
-    }
 }

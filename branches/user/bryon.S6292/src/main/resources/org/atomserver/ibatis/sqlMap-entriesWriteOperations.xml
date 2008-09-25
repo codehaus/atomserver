@@ -50,16 +50,6 @@
       </dynamic>
     </select>
 
-    <select id="releaseLock" resultClass="int">
-      <dynamic>
-        <isEqual property="dbType" compareValue="sqlserver" >
-            DECLARE @result int;
-            EXEC @result = sp_releaseapplock @Resource='ATOMSERVER_APPLOCK';
-            SELECT @result as status
-        </isEqual>
-      </dynamic>
-    </select>
-    
     <insert id="insertEntry-sqlserver" parameterClass="map">
         INSERT INTO EntryStore
         (Workspace, Collection, LanCode, CountryCode, EntryId, UpdateDate, CreateDate, UpdateSeqNum, DeleteFlag, RevisionNum)
