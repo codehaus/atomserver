@@ -1,9 +1,0 @@
-<entry xmlns="http://www.w3.org/2005/Atom">
-  <id>widgets/acme/12345.en.xml</id>
-
-  <!-- No content provided --> 
-  <content type="xhtml">
-    <div xmlns="http://www.w3.org/1999/xhtml">
-    </div>
-  </content>
-</entry>
