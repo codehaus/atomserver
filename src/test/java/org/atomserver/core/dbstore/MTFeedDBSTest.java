@@ -18,6 +18,7 @@
 package org.atomserver.core.dbstore;
 
 import org.atomserver.core.BaseServiceDescriptor;
+import org.atomserver.core.dbstore.dao.EntriesDAOiBatisImpl;
 import org.atomserver.testutils.mt.MultiThreadedTestCase;
 import org.atomserver.testutils.mt.MultiThreadedTestThread;
 import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
@@ -51,6 +52,7 @@ public class MTFeedDBSTest extends FeedDBSTestCase {
         }
         mtTestCase.setUp();
         super.setUp();
+        ((EntriesDAOiBatisImpl)entriesDao).setLatencySeconds(0);
     }
 
     public void tearDown() throws Exception {

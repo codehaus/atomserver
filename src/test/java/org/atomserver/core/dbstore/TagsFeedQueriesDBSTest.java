@@ -437,12 +437,18 @@ public class TagsFeedQueriesDBSTest extends DBSTestCase {
             contentDAO.deleteAllContent();
             entryCategoriesDAO.deleteAllRowsFromEntryCategories();
             entriesDao.deleteAllRowsFromEntries();
-            Connection conn = ((EntriesDAOiBatisImpl) entriesDao).getDataSource().getConnection();
-            conn.createStatement().execute(
+            Connection conn = null;
+            try {
+                conn = ((EntriesDAOiBatisImpl) entriesDao).getDataSource().getConnection();
+                conn.createStatement().execute(
                 "DELETE FROM AtomCollection WHERE workspace = 'tags:widgets'");
-            conn.createStatement().execute(
+                conn.createStatement().execute(
                 "DELETE FROM AtomWorkspace WHERE workspace = 'tags:widgets'");
-            conn.close();
+            } finally {
+                if (conn != null) {
+                    conn.close();
+                }
+            }
 
             int propIdSeed = 94949;
             int numEntries = 7;

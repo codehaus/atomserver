@@ -33,6 +33,7 @@ import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
 import org.atomserver.core.dbstore.utils.DBSeeder;
 import org.atomserver.core.filestore.FileBasedContentStorage;
 import org.atomserver.testutils.client.MockRequestContext;
+import org.atomserver.testutils.latency.LatencyUtil;
 import org.atomserver.uri.EntryTarget;
 import org.atomserver.uri.URIHandler;
 import org.springframework.context.ApplicationContext;
@@ -92,6 +93,8 @@ public class DBSTestCase extends AtomServerTestCase {
             FileUtils.copyDirectory(file, TEST_DATA_DIR);
 
             DBSeeder.getInstance(springContext).seedEntriesClearingFirst();
+
+            LatencyUtil.updateLastWrote();
         } else {
             DBSeeder.getInstance(springContext).createWidgetsDir();
         }
@@ -229,7 +232,8 @@ public class DBSTestCase extends AtomServerTestCase {
             int exitCount = entriesDao.getTotalCount(serviceDescriptor);
            assertEquals((creating ? startCount + 1 : startCount), exitCount);
         }
-    }
+         LatencyUtil.updateLastWrote();
+     }
 
     // FIXME::  THESE 2 SHOULD BE destroyEntry !!!!
     protected void deleteEntry(String workspace, String collection, String entryId, String locale)
@@ -259,6 +263,7 @@ public class DBSTestCase extends AtomServerTestCase {
         ClientResponse response = client.delete(fullURL, options);
         assertEquals(200, response.getStatus());
         response.release();
+        LatencyUtil.updateLastWrote();
     }
 
     protected String getURLPath(String workspace, String collection, String entryId, String locale, String revision) {

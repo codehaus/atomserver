@@ -24,6 +24,7 @@ import org.atomserver.AtomCategory;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.*;
 import org.atomserver.testutils.client.MockRequestContext;
+import org.atomserver.testutils.latency.LatencyUtil;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -139,6 +140,8 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
             assertTrue(inserts > 0);
         }
 
+        LatencyUtil.updateLastWrote();
+
         int countEC = entryCategoriesDAO.getTotalCount(workspace);
         assertEquals((startCountEC + numRecs*2), countEC);
  
@@ -155,7 +158,9 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
            23417 (6) f1 n1 pl        23416 (12) f0 n0 pt      23415 (19) f3 n1 it
                                      23419 (13) f3 n1 fr      23418 (20) f2 n0 zh
         */
-       
+
+        LatencyUtil.accountForLatency();
+
         //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         //                selectEntriesByPagePerCategory
         //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

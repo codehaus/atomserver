@@ -29,6 +29,7 @@ import org.atomserver.AtomServer;
 import org.atomserver.ContentStorage;
 import org.atomserver.DelegatingProvider;
 import org.atomserver.testutils.client.JettyWebAppTestCase;
+import org.atomserver.testutils.latency.LatencyUtil;
 import org.atomserver.uri.URIHandler;
 import org.springframework.context.ApplicationContext;
 
@@ -160,6 +161,8 @@ abstract public class AtomServerTestCase extends JettyWebAppTestCase {
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     protected ClientResponse clientGet( String url, Date ifModifiedDate, int expectedResult, boolean isFullURL ) {
+        LatencyUtil.accountForLatency();
+
         AbderaClient client = new AbderaClient();
         RequestOptions options = client.getDefaultRequestOptions();
         options.setHeader("Connection", "close");

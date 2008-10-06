@@ -24,6 +24,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.atomserver.testutils.mt.MultiThreadedTestCase;
 import org.atomserver.testutils.mt.MultiThreadedTestThread;
 import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
+import org.atomserver.core.dbstore.dao.EntriesDAOiBatisImpl;
 
 import java.util.HashSet;
 import java.util.Random;
@@ -45,6 +46,8 @@ public class MTEntryDBSTest extends BaseCRUDDBSTestCase {
         }
         mtTestCase.setUp();
         super.setUp();
+        ((EntriesDAOiBatisImpl)entriesDAO).setLatencySeconds(0);
+
         deleteList = new HashSet();
     }
 

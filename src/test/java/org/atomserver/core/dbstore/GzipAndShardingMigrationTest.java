@@ -6,6 +6,7 @@ import org.atomserver.core.BaseServiceDescriptor;
 import org.atomserver.core.etc.AtomServerConstants;
 import org.atomserver.core.filestore.FileBasedContentStorage;
 import org.atomserver.testutils.conf.TestConfUtil;
+import org.atomserver.testutils.latency.LatencyUtil;
 import org.atomserver.utils.PartitionPathGenerator;
 import org.atomserver.utils.PrefixPartitionPathGenerator;
 import org.atomserver.utils.ShardedPathGenerator;
@@ -227,6 +228,8 @@ public class GzipAndShardingMigrationTest extends DBSTestCase {
                      null,
                      createWidgetXMLFileString("6002"), "*");
 
+        LatencyUtil.updateLastWrote();
+
         // check the ones that migrated from r0
         assertFalse(new File(TEST_DATA_DIR, "/widgets/acme/60/6004").exists());
         assertFalse(new File(TEST_DATA_DIR, "/widgets/acme/60/6005").exists());
@@ -281,6 +284,8 @@ public class GzipAndShardingMigrationTest extends DBSTestCase {
         // at this point, we have migrated ALL of the widgets under 60..., but not all the dummies
         assertFalse(new File(TEST_DATA_DIR, "/widgets/acme/60").exists());
         assertTrue(new File(TEST_DATA_DIR, "/dummy/dumbo/60").exists());
+
+        LatencyUtil.accountForLatency();
 
         // finally, just sanity check that the feeds still contain the exact data that we've
         // published to them...

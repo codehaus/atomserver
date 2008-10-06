@@ -23,6 +23,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.atomserver.testutils.latency.LatencyUtil;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -100,10 +101,14 @@ public class TestingAtomServerTest extends TestCase {
         putEntry("http://localhost:" + port + "/atomserver/v1/bars/" + collection + "/aquarium.xml",
                  AQUARIUM, 422);
 
+        LatencyUtil.updateLastWrote();
+
         // getting Lovejoys
         Entry entry = get(Entry.class, "http://localhost:" + port + "/atomserver/v1/bars/" + collection + "/lovejoys.xml");
         assertEquals(LOVEJOYS_CONTENT, entry.getContent());
         assertEquals("Lovejoys", entry.getCategories("urn:bar.name").get(0).getTerm());
+
+        LatencyUtil.accountForLatency();
 
         // the feed should have ONE entry - LoveJoys
         Feed feed = get(Feed.class, "http://localhost:" + port + "/atomserver/v1/bars/" + collection + "?entry-type=full");

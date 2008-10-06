@@ -49,6 +49,19 @@
         </isNotNull>
          WHERE UpdateDate >= #lastModifiedDate#
            AND UpdateTimestamp > #lastModifiedSeqNum#
+        <isNotNull property="latencySeconds">
+           AND (
+            <isEqual property="dbType" compareValue="hsql">
+             DATEDIFF('ss', UpdateDate, NOW()) >= $latencySeconds$
+            </isEqual>
+            <isEqual property="dbType" compareValue="sqlserver">
+             DATEADD(s, -1 * $latencySeconds$, GETDATE()) >= UpdateDate
+            </isEqual>
+            <isEqual property="dbType" compareValue="postgres">
+             NOW() - interval '$latencySeconds$ seconds' >= UpdateDate
+            </isEqual>
+            )
+        </isNotNull>
            AND Workspace = #workspace#
         <isNotNull property="collection">
            AND Collection=#collection#
