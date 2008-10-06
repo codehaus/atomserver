@@ -121,7 +121,6 @@ public interface EntriesDAO
     EntryMetaData selectEntryByInternalId(Object internalId);
 
     void acquireLock() throws AtomServerException;
-    void releaseLock();
 
     List<AggregateEntryMetaData> selectAggregateEntriesByPage(FeedDescriptor feed,
                                                               Date lastModifiedDate,

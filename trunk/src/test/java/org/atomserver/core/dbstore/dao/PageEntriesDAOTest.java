@@ -22,6 +22,7 @@ import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.BaseServiceDescriptor;
 import org.atomserver.core.BaseFeedDescriptor;
 import org.atomserver.testutils.client.MockRequestContext;
+import org.atomserver.testutils.latency.LatencyUtil;
 import org.atomserver.ContentStorage;
 
 import junit.framework.Test;
@@ -112,6 +113,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
 
         // UPDATE -- Now we put in SeqNum
         List updatedEntries = entriesDAO.updateLastModifiedSeqNumForAllEntries(new BaseServiceDescriptor(workspace));
+        LatencyUtil.updateLastWrote();
 
         /* so the DB should look like this now
            BUT any number propId may sort differently where the lastModified is the same
@@ -137,6 +139,8 @@ public class PageEntriesDAOTest extends DAOTestCase {
         int pageDelim = startSeqNum + 5 + startCount;
 
         log.debug("pageDelim= " + pageDelim);
+
+        LatencyUtil.accountForLatency();
 
         // get page
         List sortedList = entriesDAO.selectFeedPage(lastMod[1], pageDelim, 3,
@@ -288,6 +292,8 @@ public class PageEntriesDAOTest extends DAOTestCase {
         // UPDATE -- Now we put in SeqNum
         List updatedEntries = entriesDAO.updateLastModifiedSeqNumForAllEntries(serviceDescriptor);
 
+        LatencyUtil.updateLastWrote();
+
         /* so the DB should look like this now
            BUT any number propId may sort differently where the lastModified is the same
            
@@ -301,6 +307,8 @@ public class PageEntriesDAOTest extends DAOTestCase {
            22217 (6)         22216 (12)       22215 (19)
                              22219 (13)       22218 (20)
         */
+
+        LatencyUtil.accountForLatency();
 
         // simulate a first page (delim=0) 
         List sortedList = entriesDAO.selectFeedPage(lastMod[1], 0, 3,
@@ -335,6 +343,10 @@ public class PageEntriesDAOTest extends DAOTestCase {
             int okay = entriesDAO.deleteEntry(entryTarget);
             assertTrue(okay > 0);
         }
+
+        LatencyUtil.updateLastWrote();
+        LatencyUtil.accountForLatency();
+
 
         /* so the DB should look like this now
            BUT any number propId may sort differently where the lastModified is the same

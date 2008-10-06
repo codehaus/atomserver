@@ -18,6 +18,7 @@ package org.atomserver.core.dbstore.dao;
 
 import org.atomserver.core.filestore.FileBasedContentStorage;
 import org.atomserver.testutils.client.MockRequestContext;
+import org.atomserver.testutils.latency.LatencyUtil;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -540,6 +541,9 @@ public class EntriesDAOTest extends DAOTestCase {
             entriesDAO.ensureCollectionExists(entryIn.getWorkspace(), entryIn.getCollection());
             entriesDAO.insertEntry(entryIn);
         }
+
+        LatencyUtil.updateLastWrote();
+        LatencyUtil.accountForLatency();
 
         List sortedList = entriesDAO.selectFeedPage(ZERO_DATE, 0, 0,
                                                     null, new BaseFeedDescriptor("reptiles", null), null);

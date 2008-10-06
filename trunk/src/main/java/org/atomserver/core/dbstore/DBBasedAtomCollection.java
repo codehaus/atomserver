@@ -221,7 +221,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             log.debug("DBBasedAtomCollection.(SELECT) [" + collection + ", "
                       + locale + ", " + entryId + ", " + revision + "]");
         }
-        
+
         // SELECT
         EntryMetaData entry = innerGetEntry(entryTarget);
 
@@ -344,7 +344,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                 if (revision != URIHandler.REVISION_OVERRIDE &&
                     ((entryMetaData == null && revision != 0) ||
                      (entryMetaData != null && (revision != (entryMetaData.getRevision() + 1) )))) {
-                        
+
                     String msg = "Entry [" + workspace + ", " + collection + ", " + entryId + ", " + locale
                                  + "] edit revision does NOT match the revision requested (requested= "
                                  + revision + " actual= " +
@@ -521,7 +521,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
      * When we delete entry XML files, we write a new "deleted" file
      * <p/>
      * NOTE: we do NOT actually delete the row from the DB, we simply mark it as "deleted"
-     * NOTE: A DELETE will receive an EntryTarget which points at the NEXT revision 
+     * NOTE: A DELETE will receive an EntryTarget which points at the NEXT revision
      */
     protected EntryMetaData deleteEntry(final EntryTarget entryTarget,
                                         final boolean setDeletedFlag)
@@ -713,22 +713,42 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         // do so, so we can safely cache the collections we've seen.  I see no reason to bound
         // this, but of course if there were 10 million collections then we should probably just
         // remove this and go to the DB every time.
-        if (!seenCollections.contains(collection)) {
-            // executing this transactionally just makes sure that we don't race on checking the
-            // db for existence and then inserting.  This txn inside the outer "if" technically
-            // is double-check, but it's okay in this case -- it's just to prevent data integrity
-            // errors on the updates - the only practical upshot is that two threads both calling
-            // ensureCollectionExists on the same NEW collection will occasionally still both get
-            // in here, and the txn ensures that only ONE of them will actually get so far as an
-            // INSERT statement.
-            executeTransactionally(new TransactionalTask<Object>() {
-                public Object execute() {
-                    getEntriesDAO().ensureCollectionExists(
-                            getParentAtomWorkspace().getName(), collection);
-                    seenCollections.add(collection);
-                    return null;
+        //
+        // first, we check OUTSIDE of a synchronized block, so in the exceedingly likely case that
+        // the collection exists, we don't ever block.
+        if (seenCollections.contains(collection)) {
+            return;
+        }
+        // then, we syncrhonize the update to the collection, in case we do encounter a race
+        // condition between two actors on this server
+        synchronized (seenCollections) {
+            if (!seenCollections.contains(collection)) {
+                // executing this transactionally just makes sure that we don't race BETWEEN
+                // multiple servers on checking the db for existence and then inserting.  This
+                // txn inside the outer "if" technically is double-check, but it's okay in this
+                // case -- it's just to prevent data integrity errors on the updates - the only
+                // practical upshot is that two processes both calling ensureCollectionExists on
+                // the same NEW collection will occasionally still both get in here, and the txn
+                // ensures that only ONE of them will actually get so far as an INSERT statement.
+                try {
+                    executeTransactionally(new TransactionalTask<Object>() {
+                        public Object execute() {
+                            getEntriesDAO().ensureCollectionExists(
+                                    getParentAtomWorkspace().getName(), collection);
+                            seenCollections.add(collection);
+                            return null;
+                        }
+                    });
+                } catch (Exception e) {
+                    log.warn("exception occurred while ensuring the existence of " +
+                             getParentAtomWorkspace().getName() + "/" + collection +
+                             " - this is probably okay.  This exception should be rare, but" +
+                             "could occasionally occur when two writers race to insert entries" +
+                             "in the same NEW collection.  This stack trace could provide useful" +
+                             "debug info if this WARNing is followed by ERRORs", e);
+                    // otherwise, do nothing - just means we lost the race!
                 }
-            });
+            }
         }
     }
 }

@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Date;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * there was some confusion about whether our transactions were behaving as expected.  This test
@@ -28,6 +29,8 @@ public class TransactionTest extends DAOTestCase {
             log.warn("HSQLDB is non-transactional.");
             return;
         }
+
+        entriesDAO.setLatencySeconds(0);
 
         final TransactionTemplate template =
                 ((DBBasedAtomService) springFactory.getBean("org.atomserver-atomService"))
@@ -74,17 +77,17 @@ public class TransactionTest extends DAOTestCase {
 
                                 // sync up at t0 - the entry has been inserted IN txn, but not committed
                                 try {
-                                    t[0].await();
+                                    t[0].await(3, TimeUnit.SECONDS);
                                 } catch (Exception e) {
-                                    e.printStackTrace();
+                                    throw new RuntimeException(e);
                                 }
 
                                 // sync up at t1 - we've verified that the entry is not visible
                                 // outside the txn, but we have not yet committed
                                 try {
-                                    t[1].await();
+                                    t[1].await(3, TimeUnit.SECONDS);
                                 } catch (Exception e) {
-                                    e.printStackTrace();
+                                    throw new RuntimeException(e);
                                 }
 
                                 if (shouldRollback) {
@@ -94,16 +97,16 @@ public class TransactionTest extends DAOTestCase {
                         });
                         // sync up at t2 - txn committed
                         try {
-                            t[2].await();
+                            t[2].await(3, TimeUnit.SECONDS);
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            throw new RuntimeException(e);
                         }
                     }
                 }
         );
 
         // sync up at t0 - the entry has been inserted IN txn, but not committed
-        t[0].await();
+        t[0].await(3, TimeUnit.SECONDS);
 
         EntryMetaData metaData = entriesDAO.selectEntry(entryIn);
 
@@ -111,10 +114,10 @@ public class TransactionTest extends DAOTestCase {
 
         // sync up at t1 - we've verified that the entry is not visible outside the txn, but we
         // have not yet committed
-        t[1].await();
+        t[1].await(3, TimeUnit.SECONDS);
 
         // sync up at t2 - txn committed
-        t[2].await();
+        t[2].await(3, TimeUnit.SECONDS);
 
         metaData = entriesDAO.selectEntry(entryIn);
         if (shouldRollback) {
@@ -163,17 +166,17 @@ public class TransactionTest extends DAOTestCase {
 
                                 // sync up at t0 - the entry has been inserted IN txn, but not committed
                                 try {
-                                    t[0].await();
+                                    t[0].await(3, TimeUnit.SECONDS);
                                 } catch (Exception e) {
-                                    e.printStackTrace();
+                                    throw new RuntimeException(e);
                                 }
 
                                 // sync up at t1 - we've verified that the entry is not visible
                                 // outside the txn, but we have not yet committed
                                 try {
-                                    t[1].await();
+                                    t[1].await(3, TimeUnit.SECONDS);
                                 } catch (Exception e) {
-                                    e.printStackTrace();
+                                    throw new RuntimeException(e);
                                 }
 
                                 if (shouldRollback) {
@@ -183,16 +186,16 @@ public class TransactionTest extends DAOTestCase {
                         });
                         // sync up at t2 - txn committed
                         try {
-                            t[2].await();
+                            t[2].await(3, TimeUnit.SECONDS);
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            throw new RuntimeException(e);
                         }
                     }
                 }
         );
 
         // sync up at t0 - the entry has been inserted IN txn, but not committed
-        t[0].await();
+        t[0].await(3, TimeUnit.SECONDS);
 
         List<EntryMetaData> list = entriesDAO.selectFeedPage(
                 null, pageDelim, 1, entryIn.getLocale().toString(),
@@ -202,10 +205,10 @@ public class TransactionTest extends DAOTestCase {
 
         // sync up at t1 - we've verified that the entry is not visible outside the txn, but we
         // have not yet committed
-        t[1].await();
+        t[1].await(3, TimeUnit.SECONDS);
 
         // sync up at t2 - txn committed
-        t[2].await();
+        t[2].await(3, TimeUnit.SECONDS);
 
         list = entriesDAO.selectFeedPage(
                 new Date(0L), pageDelim, 10, entryIn.getLocale().toString(),

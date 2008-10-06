@@ -22,13 +22,8 @@
 <!-- iBatis SQL Map CONFIG -->
 <sqlMapConfig>
 
-    <!-- TODO: postgres doesn't implement timeout
     <settings defaultStatementTimeout="${db.timeout.sql.stmts}"
               classInfoCacheEnabled="true"
-              statementCachingEnabled="true"/>
-              -->
-
-    <settings classInfoCacheEnabled="true"
               statementCachingEnabled="true"/>
 
     <!-- reusable SQL fragments and type definitions shared by the sqlMaps below
