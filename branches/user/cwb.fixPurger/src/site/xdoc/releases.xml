@@ -7,6 +7,15 @@
     </properties>
 
     <body>
+        <section name="Release 2.1.3 (??/??/08)">
+            <ul>
+                <li>Latency -- FIXME -- add detail here</li>
+                <li>Add ability to delete all DB-based Entry Content by workspace and collection to ContentDAO</li>
+                <li>Fix DBPurger to delete rows in Content and CategoryLogEvent tables</li>
+                <li>Add XML namespace to all "pets demo" example Entries</li>
+            </ul>
+        </section>
+
         <section name="Release 2.1.2 (09/22/08)">
             <ul>
                 <li>Fixed race condition bug when creating Virtual Workspaces</li>

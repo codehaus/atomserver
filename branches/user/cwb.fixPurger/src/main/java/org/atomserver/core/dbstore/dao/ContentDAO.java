@@ -32,5 +32,11 @@ public interface ContentDAO {
 
     boolean contentExists(EntryMetaData entry);
 
-    void deleteAllContent();
+    //void deleteAllContent();
+
+    void deleteAllContent(String workspace);
+
+    void deleteAllContent(String workspace, String collection);
+
+    void deleteAllRowsFromContent();
 }

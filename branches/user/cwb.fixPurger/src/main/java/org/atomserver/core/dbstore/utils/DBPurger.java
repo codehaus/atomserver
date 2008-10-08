@@ -24,6 +24,8 @@ import org.atomserver.ContentStorage;
 import org.atomserver.FeedDescriptor;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
 import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
+import org.atomserver.core.dbstore.dao.ContentDAO;
+import org.atomserver.core.dbstore.dao.EntryCategoryLogEventDAO;
 import org.atomserver.core.filestore.FileBasedContentStorage;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -43,9 +45,10 @@ public class DBPurger extends DBTool {
     static private ClassPathXmlApplicationContext springFactory = null;
 
     private EntriesDAO entriesDAO;
+    private EntryCategoryLogEventDAO entryCategoryLogEventDAO;
     private EntryCategoriesDAO entryCategoriesDAO;
-
-    private ContentStorage contentStorage = null;
+    private ContentStorage contentStorage;
+    private ContentDAO contentDAO;
 
     //--------------------------------
     //      static public methods
@@ -100,6 +103,16 @@ public class DBPurger extends DBTool {
         this.contentStorage = contentStorage;
     }
 
+
+    public void setContentDAO(ContentDAO contentDAO) {
+        this.contentDAO = contentDAO;
+    }
+
+    public void setEntryCategoryLogEventDAO(EntryCategoryLogEventDAO entryCategoryLogEventDAO) {
+        this.entryCategoryLogEventDAO = entryCategoryLogEventDAO;
+    }
+
+
     static private final int SLEEP_TIME = 2000;
 
     public void purge( String workspace, String collection ) throws Exception {
@@ -113,6 +126,18 @@ public class DBPurger extends DBTool {
     }
 
     private void purgeRows( final String workspace, final String collection ) throws Exception  {
+
+        log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+        log.info("==========> DELETING ROWS for ( \" + workspace + \", \" + collection + \") in EntryContent !!!!!!!!!!!!!");
+        log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+        contentDAO.deleteAllContent(workspace, collection);
+
+        log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+        log.info("==========> DELETING ROWS for ( \" + workspace + \", \" + collection + \") in EntryCategoryLogEvent !!!!!!!!!!!!!");
+        log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+        entryCategoryLogEventDAO.deleteAllEntryCategoryLogEvents(workspace, collection);
+
+
         log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.info("==========> DELETING ROWS for ( " + workspace + ", " + collection + ") in EntryCategory !!!!!!!!!!!!!");
         log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
@@ -120,8 +145,8 @@ public class DBPurger extends DBTool {
 
         log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.info("==========> DELETING ROWS ( " + workspace + ", " + collection + ") in EntryStore  !!!!!!!!!!!!!");
-        log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-        entriesDAO.deleteAllEntries(new FeedDescriptor() {
+        log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");      
+        entriesDAO.deleteAllEntries( new FeedDescriptor() {
             public String getWorkspace() {
                 return workspace;
             }

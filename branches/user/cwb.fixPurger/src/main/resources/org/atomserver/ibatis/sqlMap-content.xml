@@ -49,9 +49,24 @@
          WHERE EntryStoreId = #entryStoreId#
     </delete>
 
+    <!--
     <delete id="deleteAllContent" parameterClass="map">
         DELETE FROM EntryContent
     </delete>
+    -->
+    <delete id="deleteAllRowsFromContent" parameterClass="map">
+        DELETE FROM EntryContent
+    </delete>
+
+    <delete id="deleteContentAll" parameterClass="map">
+        DELETE FROM EntryContent
+          WHERE EntryStoreId IN (SELECT EntryStoreId FROM EntryStore
+                                 WHERE Workspace=#workspace#
+                                 <isNotNull property="collection" >
+                                   AND Collection=#collection#
+                                 </isNotNull>)
+    </delete>
+
 
 </sqlMap>
 

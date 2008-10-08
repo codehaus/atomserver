@@ -37,6 +37,8 @@
         <property name="contentStorage" ref="org.atomserver-contentStorage"/>
         <property name="entriesDAO" ref="org.atomserver-entriesDAO"/>
         <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO"/>
+        <property name="entryCategoryLogEventDAO" ref="org.atomserver-entryCategoryLogEventDAO"/>
+        <property name="contentDAO" ref="org.atomserver-contentDAO"/>
     </bean>
 
 </beans>
