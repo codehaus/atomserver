@@ -967,16 +967,6 @@
 
             <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-changelog-plugin</artifactId>
-                <configuration>
-                    <type>range</type>
-                    <range>30</range>
-                </configuration>
-            </plugin>
-
-            <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
-            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>javancss-maven-plugin</artifactId>
             </plugin>

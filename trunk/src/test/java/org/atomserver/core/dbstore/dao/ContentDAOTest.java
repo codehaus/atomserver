@@ -59,4 +59,45 @@ public class ContentDAOTest extends DAOTestCase {
             // do nothing - we expect this!
         }
     }
+
+    public void testDeleteAll1() throws Exception {
+        EntryDescriptor entry = new BaseEntryDescriptor("widgets", "acme", "16661", Locale.US);
+        EntryMetaData entryMetaData = insertContent( entry );
+        contentDAO.deleteAllContent("widgets", "acme");
+
+        assertFalse(contentDAO.contentExists(entryMetaData));
+        assertEquals(null, contentDAO.selectContent(entryMetaData));
+
+        entriesDAO.obliterateEntry(entry);
+    }
+
+    public void testDeleteAll2() throws Exception {
+        EntryDescriptor entry = new BaseEntryDescriptor("widgets", "acme", "16661", Locale.US);
+        EntryMetaData entryMetaData = insertContent( entry );
+        contentDAO.deleteAllContent("widgets");
+
+        assertFalse(contentDAO.contentExists(entryMetaData));
+        assertEquals(null, contentDAO.selectContent(entryMetaData));
+
+        entriesDAO.obliterateEntry(entry);
+    }
+
+    public void testDeleteAll3() throws Exception {
+        EntryDescriptor entry = new BaseEntryDescriptor("widgets", "acme", "16661", Locale.US);
+        EntryMetaData entryMetaData = insertContent( entry );
+        contentDAO.deleteAllRowsFromContent();
+
+        assertFalse(contentDAO.contentExists(entryMetaData));
+        assertEquals(null, contentDAO.selectContent(entryMetaData));
+
+        entriesDAO.obliterateEntry(entry);
+    }
+
+    private EntryMetaData insertContent( EntryDescriptor entry ) {
+        entriesDAO.ensureCollectionExists(entry.getWorkspace(), entry.getCollection());
+        entriesDAO.insertEntry(entry);
+        EntryMetaData entryMetaData = entriesDAO.selectEntry(entry);
+        contentDAO.putContent(entryMetaData, "<content/>");
+        return entryMetaData;
+    }
 }

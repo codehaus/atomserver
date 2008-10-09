@@ -30,9 +30,8 @@ import org.atomserver.utils.locale.LocaleUtils;
 import org.atomserver.utils.logic.BooleanExpression;
 import org.atomserver.utils.perf.AutomaticStopWatch;
 import org.atomserver.utils.perf.StopWatch;
-import org.springframework.orm.ibatis.SqlMapClientCallback;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.DataAccessException;
+import org.springframework.orm.ibatis.SqlMapClientCallback;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -675,7 +674,8 @@ public class EntriesDAOiBatisImpl
     //======================================
     public void deleteAllEntries(ServiceDescriptor service) {
         if (contentDAO != null) {
-            contentDAO.deleteAllContent();
+            //contentDAO.deleteAllContent();
+            contentDAO.deleteAllContent(service.getWorkspace());
         }
         if (entryCategoriesDAO != null) {
             entryCategoriesDAO.deleteAllEntryCategories(service.getWorkspace());

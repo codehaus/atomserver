@@ -48,3 +48,6 @@ AtomServer in the news
  Chris Berry and Bryon Jacob have written
  {{{http://www.infoq.com/articles/atomserver}an introductory article about AtomServer for InfoQ}}.
  This is a great place to start if you want to become acquainted with AtomServer.
+
+ There is also {{{http://www.infoq.com/articles/atomserver2}a follow-on article on InfoQ}},
+ which covers the advanced features of AtomServer; Auto-tagging, Aggregate Feeds, and Batching.

@@ -1,4 +1,4 @@
-<pet type="dog">
+<pet xmlns="http://schemas.atomserver.org/pets/v1/rev0" type="dog">
     <breed>Mixed</breed>
     <name>Fido</name>
     <owner>Chris Berry</owner>

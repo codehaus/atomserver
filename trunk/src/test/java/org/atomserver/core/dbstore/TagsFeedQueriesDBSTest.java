@@ -434,7 +434,8 @@ public class TagsFeedQueriesDBSTest extends DBSTestCase {
             // first, we need to clear out the offending workspace, since the bug only occurs when we
             // try to insert a workspace for the first time
             ContentDAO contentDAO = (ContentDAO) appSpringFactory.getBean("org.atomserver-contentDAO");
-            contentDAO.deleteAllContent();
+            //contentDAO.deleteAllContent();
+            contentDAO.deleteAllRowsFromContent();
             entryCategoriesDAO.deleteAllRowsFromEntryCategories();
             entriesDao.deleteAllRowsFromEntries();
             Connection conn = null;
