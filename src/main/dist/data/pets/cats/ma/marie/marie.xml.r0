@@ -1,4 +1,4 @@
-<pet type="cat">
+<pet xmlns="http://schemas.atomserver.org/pets/v1/rev0" type="cat">
     <breed>Siamese</breed>
     <name>Marie</name>
     <owner>Mady Berry</owner>

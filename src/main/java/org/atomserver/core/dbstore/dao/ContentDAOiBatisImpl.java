@@ -58,7 +58,25 @@ public class ContentDAOiBatisImpl
         return count > 0;
     }
 
+    /*
     public void deleteAllContent() {
         getSqlMapClientTemplate().delete("deleteAllContent");
     }
+    */
+    //======================================
+    //          DELETE ALL ROWS
+    //======================================
+    public void deleteAllContent(String workspace) {
+        super.deleteAllEntriesInternal(workspace, null, "deleteContentAll");
+    }
+
+    public void deleteAllContent(String workspace, String collection) {
+        super.deleteAllEntriesInternal(workspace, collection, "deleteContentAll");
+    }
+
+    public void deleteAllRowsFromContent() {
+        getSqlMapClientTemplate().delete("deleteAllRowsFromContent");
+    }
+
+
 }

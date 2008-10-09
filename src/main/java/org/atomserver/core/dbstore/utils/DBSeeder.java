@@ -120,7 +120,8 @@ public class DBSeeder extends DBTool {
         log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.info("==========> DELETING *ALL* ROWS in EntryContent !!!!!!!!!!!!!");
         log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-        contentDAO.deleteAllContent();
+        //contentDAO.deleteAllContent();
+        contentDAO.deleteAllRowsFromContent();
 
         log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.info("==========> DELETING *ALL* ROWS in EntryCategoryLogEvent !!!!!!!!!!!!!");
