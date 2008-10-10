@@ -128,15 +128,14 @@ public class DBPurger extends DBTool {
     private void purgeRows( final String workspace, final String collection ) throws Exception  {
 
         log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-        log.info("==========> DELETING ROWS for ( \" + workspace + \", \" + collection + \") in EntryContent !!!!!!!!!!!!!");
+        log.info("==========> DELETING ROWS for ( " + workspace + ", " + collection + ") in EntryContent !!!!!!!!!!!!!");
         log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         contentDAO.deleteAllContent(workspace, collection);
 
         log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-        log.info("==========> DELETING ROWS for ( \" + workspace + \", \" + collection + \") in EntryCategoryLogEvent !!!!!!!!!!!!!");
+        log.info("==========> DELETING ROWS for ( " + workspace + ", " + collection + ") in EntryCategoryLogEvent !!!!!!!!!!!!!");
         log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         entryCategoryLogEventDAO.deleteAllEntryCategoryLogEvents(workspace, collection);
-
 
         log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.info("==========> DELETING ROWS for ( " + workspace + ", " + collection + ") in EntryCategory !!!!!!!!!!!!!");
