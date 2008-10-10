@@ -25,22 +25,24 @@ import org.atomserver.utils.thread.ManagedThreadPoolTaskExecutor;
 
 public class ExtendedContextOpsDirTest extends JettyWebAppTestCase {
 
-    boolean runTest = true;
+    boolean runTest = false;
 
     protected void setUp() throws Exception {
 
         // when tests are run for TeamCity they use ops conf, so skip this test
         String opsConf = System.getProperty("atomserver.ops.conf.dir");
         if ( StringUtils.isEmpty(opsConf)) {
-            runTest = false;
+            runTest = true;
+            TestConfUtil.preSetup(null, "opsconf" );
         }
-        TestConfUtil.preSetup(null, "opsconf" );
         super.setUp();
     }
 
     protected void tearDown() throws Exception {
         super.tearDown();
-        TestConfUtil.postTearDown();
+        if ( runTest ) {
+            TestConfUtil.postTearDown();
+        }
     }
 
 
