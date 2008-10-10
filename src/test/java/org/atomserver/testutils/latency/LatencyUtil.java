@@ -5,6 +5,10 @@ import org.apache.log4j.Logger;
 public class LatencyUtil {
     private static final Logger log = Logger.getLogger(LatencyUtil.class);
 
+    // NOTE: this is hard coded to 2.1s because we assume that the tests use;
+    //       db.latency.seconds=2  and  db.timeout.sql.stmts=1
+    //       We may want to consider using the actual db.latency.seconds value
+    //       but it should never be too large (i.e. at 10s the tests take ~1hr, which is unacceptable)
     public static final int ACCOUNT_FOR_LATENCY = 2100;
 
     private static long lastWrote;
