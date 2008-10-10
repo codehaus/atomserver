@@ -18,6 +18,7 @@ package org.atomserver.core;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.lang.StringUtils;
 import org.atomserver.testutils.client.JettyWebAppTestCase;
 import org.atomserver.testutils.conf.TestConfUtil;
 import org.atomserver.utils.thread.ManagedThreadPoolTaskExecutor;
@@ -25,7 +26,14 @@ import org.atomserver.utils.thread.ManagedThreadPoolTaskExecutor;
 public class ExtendedContextOpsDirTest extends JettyWebAppTestCase {
 
     protected void setUp() throws Exception {
-        TestConfUtil.preSetup(null, "opsconf" );
+
+        // when tests are run for TeamCity they use ops conf
+        String opsConf = System.getProperty("atomserver.ops.conf.dir");
+        if ( StringUtils.isEmpty(opsConf)) {
+            opsConf = "opsconf";
+        }
+
+        TestConfUtil.preSetup(null, opsConf );
         super.setUp();
     }
 
