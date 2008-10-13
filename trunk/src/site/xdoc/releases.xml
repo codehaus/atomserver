@@ -7,9 +7,16 @@
     </properties>
 
     <body>
-        <section name="Release 2.1.3 (??/??/08)">
+        <section name="Release 2.1.3 (10/13/08)">
             <ul>
-                <li>Latency -- FIXME -- add detail here</li>
+                <li>Add the ability to add a forced latency to DB reads (Paging GETs), which allows us to
+                    remove the global page locking (APPLOCK) from the write transactions. This yields much
+                    better throughput from the system for writes (PUTs) at the expense of real-time reads.
+                    Note that this APPLOCK was introduced for the rare (~1 in a million) race condition
+                    on writing/reading timestamps when there were 2 writers and one reader, where a reader
+                    could miss Entries. This latency must be slightly higher than the SQL statement timeout.
+                    There is a new property; "db.latency.seconds" to set this value, where 0 equals no latency.
+                    Note that this option is not available in all DBs. </li>
                 <li>Add ability to delete all DB-based Entry Content by workspace and collection to ContentDAO</li>
                 <li>Fix DBPurger to delete rows in Content and CategoryLogEvent tables</li>
                 <li>Add XML namespace to all "pets demo" example Entries</li>
@@ -21,7 +28,7 @@
                 <li>Fixed race condition bug when creating Virtual Workspaces</li>
                 <li>Entry Category Log Events are now ordered by their CreateDate,
                     in ascending order</li>
-                <li>The default for the Worspace option; defaultProducingEntryCategoriesFeedElement
+                <li>The default for the Workspace option; defaultProducingEntryCategoriesFeedElement
                     is now "true"</li>
             </ul>
         </section>
