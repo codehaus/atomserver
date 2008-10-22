@@ -94,7 +94,7 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
                 list = getEntriesDAO().selectAggregateEntriesByPage(feedTarget,
                                                                     new Date(ifModifiedSinceLong),
                                                                     feedTarget.getLocaleParam(),
-                                                                    feedTarget.getPageDelimParam(),
+                                                                    feedTarget.getStartIndexParam(),
                                                                     pageSize + 1,
                                                                     feedTarget.getCategoriesQuery(),
                                                                     joinWorkspaces);
@@ -134,7 +134,7 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
                                           list, feedTarget.getWorkspace(), feedTarget.getCollection(),
                                           feedTarget.getLocaleParam(),
                                           list.size(), resultsFitOnOnePage, pageSize,
-                                          feedTarget.getPageDelimParam(), 0 /*total entries*/);
+                                          feedTarget.getStartIndexParam(), 0 /*total entries*/);
             }
 
             //~~~~~~~~~~~~~~~~~~~~~~

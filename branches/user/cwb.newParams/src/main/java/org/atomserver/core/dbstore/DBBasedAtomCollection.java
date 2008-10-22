@@ -145,7 +145,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             }
         }
 
-        int startingPageDelim = feedTarget.getPageDelimParam();
+        int startingPageDelim = feedTarget.getStartIndexParam();
         Locale locale = feedTarget.getLocaleParam();
         EntryType entryType = (feedTarget.getEntryTypeParam() != null) ? feedTarget.getEntryTypeParam() : EntryType.link;
 
@@ -627,7 +627,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
     }
 
     protected int calculatePageSize( URITarget feedURIData, EntryType entryType ) {
-        int pageSize = feedURIData.getPageSizeParam();
+        int pageSize = feedURIData.getMaxResultsParam();
 
         // we must throttle the max results per page to avoid monster requests
         int maxEntriesPerPage = ( entryType == EntryType.link ) ? getMaxLinkEntriesPerPage() : getMaxFullEntriesPerPage();
