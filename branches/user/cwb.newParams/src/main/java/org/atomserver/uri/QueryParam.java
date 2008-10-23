@@ -80,7 +80,7 @@ public enum QueryParam {
 
     abstract Object parseValue(String stringValue);
     public Object parse(RequestContext requestContext) throws BadRequestException {
-        log.debug("parsing " + this + "(" + this.paramName + ")");
+        log.debug("parsing " + this + " (" + this.paramName + ")");
         Object value = this.defaultValue;
         // there is an Abdera bug regarding its request parameter handling, so we handle it with a
         // regex - ideally, we would do this instead:
