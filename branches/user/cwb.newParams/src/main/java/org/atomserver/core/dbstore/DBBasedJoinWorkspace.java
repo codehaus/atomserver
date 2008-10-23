@@ -76,23 +76,23 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
             protected long getEntries(Abdera abdera,
                                       IRI iri,
                                       FeedTarget feedTarget,
-                                      long ifModifiedSinceLong,
+                                      Date ifModifiedSince,
                                       Feed feed) throws AtomServerException {
 
                 EntryType entryType = (feedTarget.getEntryTypeParam() != null) ?
                                       feedTarget.getEntryTypeParam() :
                                       EntryType.link;
                 return internalGetEntries(abdera, iri, feedTarget,
-                                          ifModifiedSinceLong, feed, entryType,
+                                          ifModifiedSince, feed, entryType,
                                           calculatePageSize(feedTarget, entryType));
             }
 
             private long internalGetEntries(Abdera abdera, IRI iri, FeedTarget feedTarget,
-                                            long ifModifiedSinceLong, Feed feed,
+                                            Date ifModifiedSince, Feed feed,
                                             EntryType entryType, int pageSize) {
                 List<AggregateEntryMetaData> list;
                 list = getEntriesDAO().selectAggregateEntriesByPage(feedTarget,
-                                                                    new Date(ifModifiedSinceLong),
+                                                                    ifModifiedSince,
                                                                     feedTarget.getLocaleParam(),
                                                                     feedTarget.getStartIndexParam(),
                                                                     pageSize + 1,
@@ -125,7 +125,7 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
                             list.remove(list.size() - 1);
                         }
                     } else {
-                        return internalGetEntries(abdera, iri, feedTarget, ifModifiedSinceLong, feed, entryType,
+                        return internalGetEntries(abdera, iri, feedTarget, ifModifiedSince, feed, entryType,
                                                   pageSize * 2);
                     }
                 }

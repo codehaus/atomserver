@@ -62,16 +62,18 @@ abstract public class AbstractAtomCollection implements AtomCollection {
      * @param abdera
      * @param iri
      * @param feedTarget      The FeedTarget, which was decoded from the URI
-     * @param ifModifiedSince The ifModifiedSince Date (as a long) determined using either the Header or a Query param.
+     * @param modifiedMin     The ifModifiedSince Date (as a long) determined using either the Header or a Query param.
      * @param feed            The Feed to which to add Entries
      * @return The latest lastModified Date (as a long) for an Entry in this Feed. Used to set the <updated> element in the Feed
      * @throws AtomServerException
      */
+
     abstract protected long getEntries(Abdera abdera,
                                        IRI iri,
                                        FeedTarget feedTarget,
-                                       long ifModifiedSince,
+                                       Date modifiedMin,
                                        Feed feed) throws AtomServerException;
+
 
     /**
      * The getEntry() method on the AtomCollection API delegates to this method within the subclass
@@ -115,6 +117,8 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     //   statics
     // ----------
     static private final Log log = LogFactory.getLog(AbstractAtomCollection.class);
+
+    static private final Date ZERO_DATE = new Date( 0L );
 
     // ------------
     //   instance
@@ -183,7 +187,6 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         return ((AbstractAtomService)parentAtomWorkspace.getParentAtomService()).getCategoriesHandler();
     }
 
-    // FIXME:: javadoc
     protected EntryTarget getEntryTarget(RequestContext request) {
         return getURIHandler().getEntryTarget(request, true);
     }
@@ -412,14 +415,14 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         Abdera abdera = request.getServiceContext().getAbdera();
         FeedTarget feedTarget = getURIHandler().getFeedTarget(request);
 
-        long ifModifiedSince = getIfModifiedSince(feedTarget, request);
+        Date modifiedMin = getModifiedMin(feedTarget, request);
 
         Feed feed = AtomServer.getFactory(abdera).newFeed();
 
         long lastModified = getEntries(request.getServiceContext().getAbdera(),
                                        request.getUri(),
                                        feedTarget,
-                                       ifModifiedSince,
+                                       modifiedMin,
                                        feed);
         if (lastModified != 0L) {
             try {
@@ -452,12 +455,12 @@ abstract public class AbstractAtomCollection implements AtomCollection {
 
         EntryMetaData entryMetaData = getEntry(entryTarget);
 
-        long thisLastModified =
-                (entryMetaData.getLastModifiedDate() != null) ? entryMetaData.getLastModifiedDate().getTime() : 0L;
+        Date thisLastModified =
+                (entryMetaData.getLastModifiedDate() != null) ? entryMetaData.getLastModifiedDate() : ZERO_DATE;
 
-        long ifModifiedSince = getIfModifiedSince(entryTarget, request);
+        Date modifiedMin = getModifiedMin(entryTarget, request);
         Entry entry = null;
-        if (thisLastModified > ifModifiedSince) {
+        if ( thisLastModified.after( modifiedMin ) ) {
             EntryType entryType =
                     (entryTarget.getEntryTypeParam() != null) ? entryTarget.getEntryTypeParam() : EntryType.full;
             entry = newEntry(abdera, entryMetaData, entryType);
@@ -920,7 +923,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~
-    protected long getIfModifiedSince(URITarget uriTarget,
+    protected Date getModifiedMin(URITarget uriTarget,
                                       RequestContext request)
             throws BadRequestException {
 
@@ -930,9 +933,8 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         if (ifModifiedSinceDate == null) {
             ifModifiedSinceDate = request.getIfModifiedSince();
         }
-        return (ifModifiedSinceDate == null) ? 0L : ifModifiedSinceDate.getTime();
+        return (ifModifiedSinceDate == null) ? ZERO_DATE : ifModifiedSinceDate;
     }
-
 
     //~~~~~~~~~~~~~~~~~~~~~~
     protected Entry newEntry(Abdera abdera, EntryMetaData entryMetaData, EntryType entryType)

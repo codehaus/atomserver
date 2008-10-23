@@ -127,11 +127,10 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
     protected long getEntries(Abdera abdera,
                               IRI iri,
                               FeedTarget feedTarget,
-                              long ifModifiedSinceLong,
+                              Date ifModifiedSince,
                               Feed feed )
             throws AtomServerException {
 
-        Date ifModifiedSince = new Date(ifModifiedSinceLong);
         String collection = feedTarget.getCollection();
         String workspace = feedTarget.getWorkspace();
 
@@ -157,13 +156,13 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         Collection<BooleanExpression<AtomCategory>> categoryQuery = feedTarget.getCategoriesQuery();
 
         // SELECT Entries BY Page and Locale
-        List<EntryMetaData> sortedList = getEntriesDAO().selectFeedPage(
-                ifModifiedSince,
-                startingPageDelim,
-                pageSize + 1 /* ask for 1 more than pageSize, to detect the end of the feed */,
-                locale == null ? null : locale.toString(),
-                feedTarget,
-                categoryQuery);
+        List<EntryMetaData> sortedList =
+                getEntriesDAO().selectFeedPage( ifModifiedSince,
+                                                startingPageDelim,
+                                                pageSize + 1 /* ask for 1 more than pageSize, to detect the end of the feed */,
+                                                locale == null ? null : locale.toString(),
+                                                feedTarget,
+                                                categoryQuery);
 
         int numEntries = sortedList.size();
         if (numEntries <= 0) {
