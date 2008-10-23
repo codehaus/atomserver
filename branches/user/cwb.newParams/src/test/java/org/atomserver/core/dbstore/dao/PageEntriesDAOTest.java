@@ -21,6 +21,7 @@ import org.atomserver.uri.EntryTarget;
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.BaseServiceDescriptor;
 import org.atomserver.core.BaseFeedDescriptor;
+import org.atomserver.core.etc.AtomServerConstants;
 import org.atomserver.testutils.client.MockRequestContext;
 import org.atomserver.testutils.latency.LatencyUtil;
 import org.atomserver.ContentStorage;
@@ -143,7 +144,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
         LatencyUtil.accountForLatency();
 
         // get page
-        List sortedList = entriesDAO.selectFeedPage(lastMod[1], pageDelim, 3,
+        List sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, pageDelim, 3,
                                                     null, new BaseFeedDescriptor(workspace, null), null);
         log.debug("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.debug("List= " + sortedList);
@@ -156,7 +157,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
 
         // get page
         pageDelim = getPageDelim(sortedList);
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], pageDelim, 3,
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, pageDelim, 3,
                                                null, new BaseFeedDescriptor(workspace, null), null);
         log.debug("List= " + sortedList);
 
@@ -171,7 +172,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
 
         // get page
         pageDelim = getPageDelim(sortedList);
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], pageDelim, 3,
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, pageDelim, 3,
                                                null, new BaseFeedDescriptor(workspace, null), null);
         log.debug("List= " + sortedList);
 
@@ -208,7 +209,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
         log.debug("pageDelim= " + pageDelim);
 
         // get page
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], pageDelim, 3,
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, pageDelim, 3,
                                                null, new BaseFeedDescriptor(workspace, null), null);
         log.debug("List= " + sortedList);
 
@@ -220,7 +221,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
 
         // get page
         pageDelim = getPageDelim(sortedList);
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], pageDelim, 3,
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, pageDelim, 3,
                                                null, new BaseFeedDescriptor(workspace, null), null);
         log.debug("List= " + sortedList);
 
@@ -311,7 +312,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
         LatencyUtil.accountForLatency();
 
         // simulate a first page (delim=0) 
-        List sortedList = entriesDAO.selectFeedPage(lastMod[1], 0, 3,
+        List sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, 0, 3,
                                                     null, new BaseFeedDescriptor(workspace, null), null);
         log.debug("List= " + sortedList);
 
@@ -323,7 +324,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
 
         // get second page
         int pageDelim = getPageDelim(sortedList);
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], pageDelim, 3,
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, pageDelim, 3,
                                                null, new BaseFeedDescriptor(workspace, null), null);
         log.debug("List= " + sortedList);
 
@@ -365,7 +366,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
         // OR it is possible that we just deleted the remaining one at lastMod[1], 
         // so we have 3 at lastMod[0]  (it arbitrarilly depends on the sort)
         pageDelim = getPageDelim(sortedList);
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], pageDelim, 3,
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, pageDelim, 3,
                                                null, new BaseFeedDescriptor(workspace, null), null);
         log.debug("List= " + sortedList);
 
@@ -384,7 +385,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
 
         // get page -- there should just be one left at lastMod[0]
         pageDelim = getPageDelim(sortedList);
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], pageDelim, 3,
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, pageDelim, 3,
                                                null, new BaseFeedDescriptor(workspace, null), null);
         log.debug("List= " + sortedList);
 

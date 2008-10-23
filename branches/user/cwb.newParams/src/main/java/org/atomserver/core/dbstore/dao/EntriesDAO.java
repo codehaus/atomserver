@@ -76,13 +76,13 @@ public interface EntriesDAO
     //======================================
     //          LIST OPERATIONS
     //======================================
-    List<EntryMetaData> selectFeedPage(
-            Date lastModifiedDate,
-            int pageDelim,
-            int pageSize,
-            String locale,
-            FeedDescriptor feed,
-            Collection<BooleanExpression<AtomCategory>> categoryQuery);
+    List<EntryMetaData> selectFeedPage(Date updatedMin,
+                                       Date updatedMax,
+                                       int pageDelim,
+                                       int pageSize,
+                                       String locale,
+                                       FeedDescriptor feed,
+                                       Collection<BooleanExpression<AtomCategory>> categoryQuery);
 
     List<EntryMetaData> selectEntriesByLastModifiedSeqNum(FeedDescriptor feed,
                                                           Date lastModifiedDate);

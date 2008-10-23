@@ -66,7 +66,8 @@ public class FileBasedAtomCollection
     protected long getEntries(Abdera abdera,
                               IRI iri,
                               FeedTarget feedTarget,
-                              Date ifModifiedSince,
+                              Date updatedMin,
+                              Date updatedMax,
                               Feed feed) throws AtomServerException {
 
 
@@ -81,7 +82,7 @@ public class FileBasedAtomCollection
 
         FileBasedAtomCollection.LastModified lastModified = new FileBasedAtomCollection.LastModified();
         boolean foundModifiedFile = loadFeedEntries(abdera, iri, workspace, collection, workspaceDir, collection,
-                                                   feed, lastModified, ifModifiedSince.getTime());
+                                                   feed, lastModified, updatedMin.getTime());
         return (foundModifiedFile) ? lastModified.getTime() : 0L;
     }
 

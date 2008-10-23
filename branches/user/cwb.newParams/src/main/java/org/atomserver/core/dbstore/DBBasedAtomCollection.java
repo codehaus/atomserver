@@ -127,7 +127,8 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
     protected long getEntries(Abdera abdera,
                               IRI iri,
                               FeedTarget feedTarget,
-                              Date ifModifiedSince,
+                              Date updatedMin,
+                              Date updatedMax,
                               Feed feed )
             throws AtomServerException {
 
@@ -137,7 +138,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         int totalEntries = 0;
         if ( isProducingTotalResultsFeedElement() ) {
             // SELECT COUNT BY LastModified
-            totalEntries = getEntriesDAO().getCountByLastModified(feedTarget, ifModifiedSince);
+            totalEntries = getEntriesDAO().getCountByLastModified(feedTarget, updatedMin);
 
             if (totalEntries <= 0) {
                 return 0L;
@@ -150,14 +151,15 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
 
         int pageSize = calculatePageSize( feedTarget, entryType );
         if (log.isDebugEnabled()) {
-            log.debug("getEntries:: startingPageDelim= " + startingPageDelim + " " + pageSize + " " + pageSize);
+            log.debug("getEntries:: startingPageDelim= " + startingPageDelim + " pageSize " + pageSize );
         }
 
         Collection<BooleanExpression<AtomCategory>> categoryQuery = feedTarget.getCategoriesQuery();
 
         // SELECT Entries BY Page and Locale
         List<EntryMetaData> sortedList =
-                getEntriesDAO().selectFeedPage( ifModifiedSince,
+                getEntriesDAO().selectFeedPage( updatedMin,
+                                                updatedMax,
                                                 startingPageDelim,
                                                 pageSize + 1 /* ask for 1 more than pageSize, to detect the end of the feed */,
                                                 locale == null ? null : locale.toString(),

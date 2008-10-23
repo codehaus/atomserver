@@ -28,6 +28,7 @@ import org.atomserver.uri.EntryTarget;
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.BaseServiceDescriptor;
 import org.atomserver.core.BaseFeedDescriptor;
+import org.atomserver.core.etc.AtomServerConstants;
 import org.atomserver.ContentStorage;
 
 import java.util.Date;
@@ -545,25 +546,25 @@ public class EntriesDAOTest extends DAOTestCase {
         LatencyUtil.updateLastWrote();
         LatencyUtil.accountForLatency();
 
-        List sortedList = entriesDAO.selectFeedPage(ZERO_DATE, 0, 0,
+        List sortedList = entriesDAO.selectFeedPage(ZERO_DATE, AtomServerConstants.FAR_FUTURE_DATE, 0, 0,
                                                     null, new BaseFeedDescriptor("reptiles", null), null);
         log.debug("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.debug("List= " + sortedList);
         assertEquals( 6, sortedList.size() );
 
-        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, 0, 0,
+        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, AtomServerConstants.FAR_FUTURE_DATE, 0, 0,
                                                null, new BaseFeedDescriptor("amphibeans", null), null);
         log.debug("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.debug("List= " + sortedList);
         assertEquals( 6, sortedList.size() );
 
-        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, 0, 0,
+        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, AtomServerConstants.FAR_FUTURE_DATE, 0, 0,
                                                null, new BaseFeedDescriptor("amphibeans", "lizards"), null);
         log.debug("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.debug("List= " + sortedList);
         assertEquals( 3, sortedList.size() );
 
-        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, 0, 0,
+        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, AtomServerConstants.FAR_FUTURE_DATE, 0, 0,
                                                null, new BaseFeedDescriptor("amphibeans", "toads"), null);
         log.debug("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.debug("List= " + sortedList);
@@ -572,7 +573,7 @@ public class EntriesDAOTest extends DAOTestCase {
         
         entriesDAO.deleteAllEntries(new BaseFeedDescriptor("reptiles", null));
 
-        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, 0, 0,
+        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, AtomServerConstants.FAR_FUTURE_DATE, 0, 0,
                                                null, new BaseFeedDescriptor("reptiles", null), null);
         log.debug("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.debug("List= " + sortedList);
@@ -580,12 +581,12 @@ public class EntriesDAOTest extends DAOTestCase {
         
         entriesDAO.deleteAllEntries(new BaseFeedDescriptor("amphibeans", "lizards"));
 
-        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, 0, 0,
+        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, AtomServerConstants.FAR_FUTURE_DATE, 0, 0,
                                                null, new BaseFeedDescriptor("amphibeans", "lizards"), null);
         log.debug("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.debug("List= " + sortedList);
         assertEquals( 0, sortedList.size() );
-        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, 0, 0,
+        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, AtomServerConstants.FAR_FUTURE_DATE, 0, 0,
                                                null, new BaseFeedDescriptor("amphibeans", null), null);
         log.debug("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.debug("List= " + sortedList);
@@ -593,12 +594,12 @@ public class EntriesDAOTest extends DAOTestCase {
         
         entriesDAO.deleteAllEntries(new BaseFeedDescriptor("amphibeans", "toads"));
 
-        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, 0, 0,
+        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, AtomServerConstants.FAR_FUTURE_DATE, 0, 0,
                                                null, new BaseFeedDescriptor("amphibeans", "toads"), null);
         log.debug("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.debug("List= " + sortedList);
         assertEquals( 0, sortedList.size() );
-        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, 0, 0,
+        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, AtomServerConstants.FAR_FUTURE_DATE, 0, 0,
                                                null, new BaseFeedDescriptor("amphibeans", "toads"), null);
         log.debug("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.debug("List= " + sortedList);

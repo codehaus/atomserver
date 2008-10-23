@@ -1,6 +1,7 @@
 package org.atomserver.core.dbstore;
 
 import org.apache.abdera.model.Base;
+import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
 import org.atomserver.core.BaseServiceDescriptor;
 import org.atomserver.core.etc.AtomServerConstants;
@@ -8,6 +9,7 @@ import org.atomserver.testutils.conf.TestConfUtil;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -64,8 +66,6 @@ public class AggregateFeedsTest extends DBSTestCase {
         // get the aggregate feed, and mark the end index
         feed = getPage("$join/urn:link");
 
-        /*
-        
         assertEquals(12, feed.getEntries().size());
         endIndex = feed.getSimpleExtension(AtomServerConstants.END_INDEX);
 
@@ -383,7 +383,6 @@ public class AggregateFeedsTest extends DBSTestCase {
             assertTrue(fullEntry.getContent().contains("<aloo"));
         }
 
-        */
     }
 
     private void checkPageContainsExpectedEntries(Feed feed, List<String> expected) {

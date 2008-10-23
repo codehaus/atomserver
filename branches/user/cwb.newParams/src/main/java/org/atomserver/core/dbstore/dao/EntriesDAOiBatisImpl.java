@@ -486,17 +486,16 @@ public class EntriesDAOiBatisImpl
         return map.get(entryDescriptor.getEntryId());
     }
 
-    public List<AggregateEntryMetaData> selectAggregateEntriesByPage(
-            FeedDescriptor feed,
-            Date lastModifiedDate,
-            Locale locale,
-            int pageDelim,
-            int pageSize,
-            Collection<BooleanExpression<AtomCategory>> categoriesQuery,
-            List<String> joinWorkspaces) {
-        ParamMap paramMap = prepareParamMapForSelectEntries(
-                lastModifiedDate, pageDelim, pageSize,
-                locale == null ? null : locale.toString(), feed);
+    public List<AggregateEntryMetaData> selectAggregateEntriesByPage( FeedDescriptor feed,
+                                                                      Date lastModifiedDate,
+                                                                      Locale locale,
+                                                                      int pageDelim,
+                                                                      int pageSize,
+                                                                      Collection<BooleanExpression<AtomCategory>> categoriesQuery,
+                                                                      List<String> joinWorkspaces) {
+
+        ParamMap paramMap = prepareParamMapForSelectEntries(lastModifiedDate, pageDelim, pageSize,
+                                                            locale == null ? null : locale.toString(), feed);
 
         if (joinWorkspaces != null && !joinWorkspaces.isEmpty()) {
             paramMap.param("joinWorkspaces", joinWorkspaces);
@@ -519,18 +518,16 @@ public class EntriesDAOiBatisImpl
         return new ArrayList(map.values());
     }
 
-    public List<EntryMetaData> selectFeedPage(
-            Date lastModifiedDate,
-            int pageDelim,
-            int pageSize,
-            String locale,
-            FeedDescriptor feed,
-            Collection<BooleanExpression<AtomCategory>> categoryQuery) {
+    public List<EntryMetaData> selectFeedPage(Date updatedMin,
+                                              Date updatedMax,
+                                              int pageDelim,
+                                              int pageSize,
+                                              String locale,
+                                              FeedDescriptor feed,
+                                              Collection<BooleanExpression<AtomCategory>> categoryQuery) {
         StopWatch stopWatch = new AutomaticStopWatch();
         try {
-            ParamMap paramMap =
-                    prepareParamMapForSelectEntries(
-                            lastModifiedDate, pageDelim, pageSize, locale, feed);
+            ParamMap paramMap = prepareParamMapForSelectEntries(updatedMin, pageDelim, pageSize, locale, feed);
 
             if (categoryQuery != null && !categoryQuery.isEmpty()) {
                 paramMap.param("categoryFilterSql",
@@ -553,11 +550,11 @@ public class EntriesDAOiBatisImpl
     }
 
     // NOTE: package scoped for use by EntryCategoryIBatisImpl
-    ParamMap prepareParamMapForSelectEntries(Date lastModifiedDate, int pageDelim,
+    ParamMap prepareParamMapForSelectEntries(Date updatedMin, int pageDelim,
                                              int pageSize, String locale, FeedDescriptor feed) {
         ParamMap paramMap = paramMap()
                 .param("workspace", feed.getWorkspace())
-                .param("lastModifiedDate", lastModifiedDate)
+                .param("lastModifiedDate", updatedMin)
                 .param("lastModifiedSeqNum", (long) pageDelim)
                 .param("pageSize", pageSize)
                 .param("collection", feed.getCollection());
