@@ -25,9 +25,9 @@ import org.apache.abdera.model.Category;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
 import org.apache.abdera.protocol.server.RequestContext;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.lang.StringUtils;
 import org.atomserver.*;
 import org.atomserver.core.*;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
@@ -37,6 +37,7 @@ import org.atomserver.exceptions.BadRequestException;
 import org.atomserver.exceptions.EntryNotFoundException;
 import org.atomserver.exceptions.OptimisticConcurrencyException;
 import org.atomserver.uri.*;
+import org.atomserver.utils.AtomDate;
 import org.atomserver.utils.collections.MultiHashMap;
 import org.atomserver.utils.collections.MultiMap;
 import org.atomserver.utils.logic.BooleanExpression;
@@ -48,8 +49,8 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.util.*;
 import java.text.MessageFormat;
+import java.util.*;
 
 /**
  * A Store implementation that uses the DB to store entry meta data.
@@ -585,16 +586,28 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
     private void addPagingLinks(Feed feed, IRI iri, int endingPageDelim,
                                 int pageSize, URITarget uriTarget ) {
         String nextURI = iri.getPath() + "?" +
-                         QueryParam.startIndex.getParamName() + "=" + endingPageDelim
-            + "&" + QueryParam.maxResults.getParamName() + "=" + pageSize;
+                         QueryParam.startIndex.getParamName() + "=" + endingPageDelim +
+                         "&" + QueryParam.maxResults.getParamName() + "=" + pageSize;
 
         Locale locale = uriTarget.getLocaleParam();
-        if ( locale != null )
+        if ( locale != null ) {
             nextURI += "&" + QueryParam.locale.getParamName() + "=" + locale.toString();
-
+        }
         EntryType entryType = uriTarget.getEntryTypeParam();
-        if ( entryType != null )
+        if ( entryType != null ) {
             nextURI += "&" + QueryParam.entryType.getParamName() + "=" + entryType.toString();
+        }
+
+        // NOTE: we do NOT add the updated-min param because, by definition, we have already satisfied that
+        //       condition on the first page of this page set. And the passing along start-index ensures this.
+        Date updatedMax = uriTarget.getUpdatedMaxParam();
+        if ( updatedMax != null ) {
+            nextURI += "&" + QueryParam.updatedMax.getParamName() + "=" + AtomDate.format( updatedMax );
+        }
+        int endIndex = uriTarget.getEndIndexParam();
+        if ( endIndex != -1 ) {
+            nextURI += "&" + QueryParam.endIndex.getParamName() + "=" + endIndex;
+        }
 
         FeedPagingHelper.setNext(feed, nextURI);
     }

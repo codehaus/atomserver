@@ -488,13 +488,14 @@ public class EntriesDAOiBatisImpl
 
     public List<AggregateEntryMetaData> selectAggregateEntriesByPage( FeedDescriptor feed,
                                                                       Date updatedMin,
+                                                                      Date updatedMax,
                                                                       Locale locale,
                                                                       int pageDelim,
                                                                       int pageSize,
                                                                       Collection<BooleanExpression<AtomCategory>> categoriesQuery,
                                                                       List<String> joinWorkspaces) {
 
-        ParamMap paramMap = prepareParamMapForSelectEntries(updatedMin, pageDelim, pageSize,
+        ParamMap paramMap = prepareParamMapForSelectEntries(updatedMin, updatedMax, pageDelim, pageSize,
                                                             locale == null ? null : locale.toString(), feed);
 
         if (joinWorkspaces != null && !joinWorkspaces.isEmpty()) {
@@ -527,7 +528,7 @@ public class EntriesDAOiBatisImpl
                                               Collection<BooleanExpression<AtomCategory>> categoryQuery) {
         StopWatch stopWatch = new AutomaticStopWatch();
         try {
-            ParamMap paramMap = prepareParamMapForSelectEntries(updatedMin, pageDelim, pageSize, locale, feed);
+            ParamMap paramMap = prepareParamMapForSelectEntries(updatedMin, updatedMax, pageDelim, pageSize, locale, feed);
 
             if (categoryQuery != null && !categoryQuery.isEmpty()) {
                 paramMap.param("categoryFilterSql",
@@ -550,11 +551,12 @@ public class EntriesDAOiBatisImpl
     }
 
     // NOTE: package scoped for use by EntryCategoryIBatisImpl
-    ParamMap prepareParamMapForSelectEntries(Date updatedMin, int pageDelim,
+    ParamMap prepareParamMapForSelectEntries(Date updatedMin, Date updatedMax, int pageDelim,
                                              int pageSize, String locale, FeedDescriptor feed) {
         ParamMap paramMap = paramMap()
                 .param("workspace", feed.getWorkspace())
                 .param("updatedMin", updatedMin)
+                .param("updatedMax", updatedMax)
                 .param("lastModifiedSeqNum", (long) pageDelim)
                 .param("pageSize", pageSize)
                 .param("collection", feed.getCollection());

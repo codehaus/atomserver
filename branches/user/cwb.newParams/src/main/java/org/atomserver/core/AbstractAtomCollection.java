@@ -415,9 +415,11 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         FeedTarget feedTarget = getURIHandler().getFeedTarget(request);
 
         Date modifiedMin = getModifiedMin(feedTarget, request);
-        Date modifiedMax = getModifiedMax( feedTarget );
+        //Date modifiedMax = getModifiedMax( feedTarget );
+        Date modifiedMax = feedTarget.getUpdatedMaxParam();
 
-        if ( modifiedMin.after( modifiedMax) ) {
+        //if ( modifiedMin.after( modifiedMax) ) {
+        if ( modifiedMax != null && modifiedMin.after( modifiedMax) ) {
              throw new BadRequestException("updated-min (" + modifiedMin + ") is after updated-max (" + modifiedMax + ")");
         }
 
@@ -939,11 +941,13 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~
+    /*
     protected Date getModifiedMax(URITarget uriTarget) {
         java.util.Date updatedMax = uriTarget.getUpdatedMaxParam();
 
         return updatedMax = ( updatedMax == null ) ? AtomServerConstants.FAR_FUTURE_DATE : updatedMax;
     }
+    */
 
     //~~~~~~~~~~~~~~~~~~~~~~
     protected Entry newEntry(Abdera abdera, EntryMetaData entryMetaData, EntryType entryType)

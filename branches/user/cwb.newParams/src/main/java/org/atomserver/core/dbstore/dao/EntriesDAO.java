@@ -92,7 +92,7 @@ public interface EntriesDAO
                                                           Date updatedMin);
 
     List<AggregateEntryMetaData> selectAggregateEntriesByPage(FeedDescriptor feed,
-                                                              Date updatedMin,
+                                                              Date updatedMin, Date updatedMax, 
                                                               Locale locale, int pageDelim,
                                                               int pageSize,
                                                               Collection<BooleanExpression<AtomCategory>> categoriesQuery,

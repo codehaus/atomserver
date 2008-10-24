@@ -48,6 +48,9 @@
         <isNotNull property="categoryFilterSql">AND ($categoryFilterSql$)</isNotNull>
         </isNotNull>
          WHERE UpdateDate >= #updatedMin#
+        <isNotNull property="updatedMax">
+            <![CDATA[AND UpdateDate < #updatedMax# ]]>
+        </isNotNull>
            AND UpdateTimestamp > #lastModifiedSeqNum#
         <isNotNull property="latencySeconds">
            AND (
