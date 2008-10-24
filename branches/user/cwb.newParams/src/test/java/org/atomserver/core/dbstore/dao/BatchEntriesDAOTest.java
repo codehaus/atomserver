@@ -195,9 +195,9 @@ public class BatchEntriesDAOTest extends DAOTestCase {
             assertEquals(entryOut.getDeleted(), false);
 
             if ( lastModified != null ) {
-                assertTrue( lastModified.compareTo( entryOut.getLastModifiedDate() ) <= 0  );
+                assertTrue( lastModified.compareTo( entryOut.getUpdatedDate() ) <= 0  );
             }
-            lastModified = entryOut.getLastModifiedDate();           
+            lastModified = entryOut.getUpdatedDate();
 
             if ( published != null ) {
                 assertTrue( published.compareTo( entryOut.getPublishedDate() ) <= 0  );
@@ -243,9 +243,9 @@ public class BatchEntriesDAOTest extends DAOTestCase {
             assertEquals(entryOut.getDeleted(), false);
 
             if ( lastModified != null ) {
-                assertTrue( lastModified.compareTo( entryOut.getLastModifiedDate() ) <= 0  );
+                assertTrue( lastModified.compareTo( entryOut.getUpdatedDate() ) <= 0  );
             }
-            lastModified = entryOut.getLastModifiedDate();           
+            lastModified = entryOut.getUpdatedDate();
 
             if ( published != null ) {
                 assertTrue( published.compareTo( entryOut.getPublishedDate() ) <= 0  );
@@ -287,9 +287,9 @@ public class BatchEntriesDAOTest extends DAOTestCase {
             assertEquals(entryOut.getDeleted(), true);
 
             if ( lastModified != null ) {
-                assertTrue( lastModified.compareTo( entryOut.getLastModifiedDate() ) <= 0  );
+                assertTrue( lastModified.compareTo( entryOut.getUpdatedDate() ) <= 0  );
             }
-            lastModified = entryOut.getLastModifiedDate();           
+            lastModified = entryOut.getUpdatedDate();
 
             if ( published != null ) {
                 assertTrue( published.compareTo( entryOut.getPublishedDate() ) <= 0  );

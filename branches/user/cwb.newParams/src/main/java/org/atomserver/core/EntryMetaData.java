@@ -35,7 +35,7 @@ public class EntryMetaData extends BaseEntryDescriptor {
 
     private Long entryStoreId = null;
 
-    private Date lastModifiedDate = null;
+    private Date updatedDate = null;
     private Date publishedDate = null;
 
     private long lastModifiedSeqNum = 0L;
@@ -104,7 +104,7 @@ public class EntryMetaData extends BaseEntryDescriptor {
         setLocale(locale);
         setEntryId(entryId);
 
-        this.lastModifiedDate = lastModified;
+        this.updatedDate = lastModified;
         this.isNewlyCreated = isNewlyCreated;
 
         decodeLocale(locale);
@@ -177,8 +177,8 @@ public class EntryMetaData extends BaseEntryDescriptor {
     public String getCountry() { return country; }
     public void setCountry(String country) { this.country = country; }
 
-    public Date getLastModifiedDate() { return lastModifiedDate; }
-    public void setLastModifiedDate(Date lastModifiedDate) { this.lastModifiedDate = lastModifiedDate; }
+    public Date getUpdatedDate() { return updatedDate; }
+    public void setUpdatedDate(Date updatedDate) { this.updatedDate = updatedDate; }
 
     public Date getPublishedDate() { return publishedDate; }
     public void setPublishedDate(Date publishedDate) { this.publishedDate = publishedDate; }
@@ -201,7 +201,7 @@ public class EntryMetaData extends BaseEntryDescriptor {
         clone.setLocale( getLocale() );
         clone.setRevision( getRevision() );
 
-        clone.setLastModifiedDate( getLastModifiedDate() );
+        clone.setUpdatedDate( getUpdatedDate() );
         clone.setPublishedDate( getPublishedDate() );
         clone.setNewlyCreated( isNewlyCreated() );
         clone.setDeleted( getDeleted() );
@@ -226,7 +226,7 @@ public class EntryMetaData extends BaseEntryDescriptor {
             .append(" ").append(country)
             .append(" ").append(getRevision())
             .append(" ").append(deleted)
-            .append(" <").append(lastModifiedDate).append(">")
+            .append(" <").append(updatedDate).append(">")
             .append(" <").append(publishedDate).append(">")
             .append(" ").append(isNewlyCreated)
             .append(" ").append(lastModifiedSeqNum)

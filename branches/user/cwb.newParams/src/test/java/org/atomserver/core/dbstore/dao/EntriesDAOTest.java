@@ -282,8 +282,8 @@ public class EntriesDAOTest extends DAOTestCase {
                                                      entryIn.getLocale(), 0));
         }
 
-        assertTrue(entryOut.getLastModifiedDate().after(lnow));
-        assertEquals(entryOut.getPublishedDate(), entryOut.getLastModifiedDate());
+        assertTrue(entryOut.getUpdatedDate().after(lnow));
+        assertEquals(entryOut.getPublishedDate(), entryOut.getUpdatedDate());
         Date published = entryOut.getPublishedDate();
         Thread.sleep(1000);
 
@@ -307,9 +307,9 @@ public class EntriesDAOTest extends DAOTestCase {
 
         assertTrue(entryIn.getLastModifiedSeqNum() < entryOut.getLastModifiedSeqNum());
 
-        assertTrue(entryOut.getLastModifiedDate().after(published));
+        assertTrue(entryOut.getUpdatedDate().after(published));
         assertEquals(entryOut.getPublishedDate(), published);
-        Date lastMod = entryOut.getLastModifiedDate();
+        Date lastMod = entryOut.getUpdatedDate();
         Thread.sleep(1000);
 
         long seqNumIn = entryIn.getLastModifiedSeqNum();
@@ -331,7 +331,7 @@ public class EntriesDAOTest extends DAOTestCase {
 
         assertTrue(seqNumIn < entryOut.getLastModifiedSeqNum());
 
-        assertTrue(entryOut.getLastModifiedDate().after(lastMod));
+        assertTrue(entryOut.getUpdatedDate().after(lastMod));
         assertEquals(entryOut.getPublishedDate(), published);
 
         assertEquals(2, entryOut.getRevision());
@@ -408,7 +408,7 @@ public class EntriesDAOTest extends DAOTestCase {
                 String propId = "" + (propIdSeed + ii);
                 entryIn.setEntryId(propId);
                 
-                entryIn.setLastModifiedDate(lastMod[(ii % 3)]);
+                entryIn.setUpdatedDate(lastMod[(ii % 3)]);
                 entryIn.setPublishedDate(lastMod[(ii % 3)]);
                 
                 entriesDAO.ensureCollectionExists(entryIn.getWorkspace(), entryIn.getCollection());
@@ -431,8 +431,8 @@ public class EntriesDAOTest extends DAOTestCase {
             Date lastVal = zeroDate;
             for (Object obj : sortedList) {
                 EntryMetaData entry = (EntryMetaData) obj;
-                assertTrue(lastVal.compareTo(entry.getLastModifiedDate()) <= 0);
-                lastVal = entry.getLastModifiedDate();
+                assertTrue(lastVal.compareTo(entry.getUpdatedDate()) <= 0);
+                lastVal = entry.getUpdatedDate();
             }
             
             // SORT -- from now -- so the List should be empty
@@ -454,8 +454,8 @@ public class EntriesDAOTest extends DAOTestCase {
             long seqNum = 0;
             for (Object obj : sortedList) {
                 EntryMetaData entry = (EntryMetaData) obj;
-                assertTrue(lastVal.compareTo(entry.getLastModifiedDate()) <= 0);
-                lastVal = entry.getLastModifiedDate();
+                assertTrue(lastVal.compareTo(entry.getUpdatedDate()) <= 0);
+                lastVal = entry.getUpdatedDate();
 
 
                 // FIXME -- this Should work but does not.
@@ -485,10 +485,10 @@ public class EntriesDAOTest extends DAOTestCase {
             for (Object obj : sortedList) {
                 EntryMetaData entry = (EntryMetaData) obj;
 
-                log.debug("&&&&&COMPARE DATES:: " + lastVal + " " + entry.getLastModifiedDate());
+                log.debug("&&&&&COMPARE DATES:: " + lastVal + " " + entry.getUpdatedDate());
                 
-                assertTrue(lastVal.compareTo(entry.getLastModifiedDate()) <= 0);
-                lastVal = entry.getLastModifiedDate();
+                assertTrue(lastVal.compareTo(entry.getUpdatedDate()) <= 0);
+                lastVal = entry.getUpdatedDate();
             }
             
             // DELETE the rest 

@@ -25,7 +25,6 @@ import org.apache.commons.logging.LogFactory;
 import org.atomserver.core.BaseFeedDescriptor;
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
-import org.atomserver.core.dbstore.utils.DBSeeder;
 import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -90,8 +89,8 @@ public class SeederDBSTest extends TestCase {
 
         EntriesDAO widgetsDAOiBatis = (EntriesDAO) springFactory.getBean("org.atomserver-entriesDAO");
 
-        List sortedList = widgetsDAOiBatis.selectEntriesByLastModifiedSeqNum(
-                new BaseFeedDescriptor("widgets", null), ZERO_DATE);
+        List sortedList =
+                widgetsDAOiBatis.selectEntriesByLastModifiedSeqNum(new BaseFeedDescriptor("widgets", null), ZERO_DATE);
         log.debug("List= " + sortedList);
 
         Date lastVal = ZERO_DATE;
@@ -99,8 +98,8 @@ public class SeederDBSTest extends TestCase {
         for (Object obj : sortedList) {
             EntryMetaData widget = (EntryMetaData) obj;
 
-            assertTrue(lastVal.compareTo(widget.getLastModifiedDate()) <= 0);
-            lastVal = widget.getLastModifiedDate();
+            assertTrue(lastVal.compareTo(widget.getUpdatedDate()) <= 0);
+            lastVal = widget.getUpdatedDate();
 
             assertTrue( "expected " + seqNum + " < " + widget.getLastModifiedSeqNum() + " for " + widget,
                         seqNum < widget.getLastModifiedSeqNum());

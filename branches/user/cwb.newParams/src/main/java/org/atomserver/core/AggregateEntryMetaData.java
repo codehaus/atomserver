@@ -50,9 +50,9 @@ public class AggregateEntryMetaData extends EntryMetaData {
     public void add(EntryMetaData... members) {
         for (EntryMetaData entry : members) {
             this.members.add(entry);
-            if (getLastModifiedDate() == null ||
-                entry.getLastModifiedDate().getTime() > getLastModifiedDate().getTime()) {
-                setLastModifiedDate(entry.getLastModifiedDate());
+            if (getUpdatedDate() == null ||
+                entry.getUpdatedDate().getTime() > getUpdatedDate().getTime()) {
+                setUpdatedDate(entry.getUpdatedDate());
             }
             if (getPublishedDate() == null ||
                 entry.getPublishedDate().getTime() < getPublishedDate().getTime()) {

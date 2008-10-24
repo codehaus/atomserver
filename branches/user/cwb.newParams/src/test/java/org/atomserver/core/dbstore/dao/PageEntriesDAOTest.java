@@ -101,7 +101,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
             String propId = "" + (propIdSeed + ii);
             entryIn.setEntryId(propId);
 
-            entryIn.setLastModifiedDate(lastMod[(ii % 3)]);
+            entryIn.setUpdatedDate(lastMod[(ii % 3)]);
             entryIn.setPublishedDate(lastMod[(ii % 3)]);
 
             entriesDAO.ensureCollectionExists(entryIn.getWorkspace(), entryIn.getCollection());
@@ -152,7 +152,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
         // this first set should all be at lastMod[1]
         for (Object obj : sortedList) {
             EntryMetaData entry1 = (EntryMetaData) obj;
-            assertTrue(datesAreEqual(lastMod[1], entry1.getLastModifiedDate()));
+            assertTrue(datesAreEqual(lastMod[1], entry1.getUpdatedDate()));
         }
 
         // get page
@@ -166,9 +166,9 @@ public class PageEntriesDAOTest extends DAOTestCase {
         log.debug("######################## 2 :: " + (EntryMetaData) (sortedList.get(2)));
 
         // the second set should have 3 at lastMod[1] 
-        assertTrue(datesAreEqual(lastMod[1], ((EntryMetaData) (sortedList.get(0))).getLastModifiedDate()));
-        assertTrue(datesAreEqual(lastMod[1], ((EntryMetaData) (sortedList.get(1))).getLastModifiedDate()));
-        assertTrue(datesAreEqual(lastMod[1], ((EntryMetaData) (sortedList.get(2))).getLastModifiedDate()));
+        assertTrue(datesAreEqual(lastMod[1], ((EntryMetaData) (sortedList.get(0))).getUpdatedDate()));
+        assertTrue(datesAreEqual(lastMod[1], ((EntryMetaData) (sortedList.get(1))).getUpdatedDate()));
+        assertTrue(datesAreEqual(lastMod[1], ((EntryMetaData) (sortedList.get(2))).getUpdatedDate()));
 
         // get page
         pageDelim = getPageDelim(sortedList);
@@ -177,9 +177,9 @@ public class PageEntriesDAOTest extends DAOTestCase {
         log.debug("List= " + sortedList);
 
         // this set should all be 2 at lastMod[0] and the 1 at lastMod[0]
-        assertTrue(datesAreEqual(lastMod[1], ((EntryMetaData) (sortedList.get(0))).getLastModifiedDate()));
-        assertTrue(datesAreEqual(lastMod[0], ((EntryMetaData) (sortedList.get(1))).getLastModifiedDate()));
-        assertTrue(datesAreEqual(lastMod[0], ((EntryMetaData) (sortedList.get(2))).getLastModifiedDate()));
+        assertTrue(datesAreEqual(lastMod[1], ((EntryMetaData) (sortedList.get(0))).getUpdatedDate()));
+        assertTrue(datesAreEqual(lastMod[0], ((EntryMetaData) (sortedList.get(1))).getUpdatedDate()));
+        assertTrue(datesAreEqual(lastMod[0], ((EntryMetaData) (sortedList.get(2))).getUpdatedDate()));
 
         // DELETE some 
         for (int ii = 0; ii < numRecs / 2; ii++) {
@@ -216,7 +216,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
         // this first set should all be at lastMod[1]
         for (Object obj : sortedList) {
             EntryMetaData entry1 = (EntryMetaData) obj;
-            assertTrue(datesAreEqual(lastMod[1], entry1.getLastModifiedDate()));
+            assertTrue(datesAreEqual(lastMod[1], entry1.getUpdatedDate()));
         }
 
         // get page
@@ -226,9 +226,9 @@ public class PageEntriesDAOTest extends DAOTestCase {
         log.debug("List= " + sortedList);
 
         // the second set should have 1 at lastMod[1] and the last 2 at lastMod[0]
-        assertTrue(datesAreEqual(lastMod[1], ((EntryMetaData) (sortedList.get(0))).getLastModifiedDate()));
-        assertTrue(datesAreEqual(lastMod[0], ((EntryMetaData) (sortedList.get(1))).getLastModifiedDate()));
-        assertTrue(datesAreEqual(lastMod[0], ((EntryMetaData) (sortedList.get(2))).getLastModifiedDate()));
+        assertTrue(datesAreEqual(lastMod[1], ((EntryMetaData) (sortedList.get(0))).getUpdatedDate()));
+        assertTrue(datesAreEqual(lastMod[0], ((EntryMetaData) (sortedList.get(1))).getUpdatedDate()));
+        assertTrue(datesAreEqual(lastMod[0], ((EntryMetaData) (sortedList.get(2))).getUpdatedDate()));
 
         // DELETE the rest 
         for (int ii = (numRecs / 2 - 1); ii < numRecs; ii++) {
@@ -278,7 +278,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
             String propId = "" + (propIdSeed + ii);
             entryIn.setEntryId(propId);
 
-            entryIn.setLastModifiedDate(lastMod[(ii % 3)]);
+            entryIn.setUpdatedDate(lastMod[(ii % 3)]);
             entryIn.setPublishedDate(lastMod[(ii % 3)]);
 
             //int okay = entriesDAO.insertEntry(entryIn, true );
@@ -319,7 +319,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
         // this first set should all be at lastMod[1]
         for (Object obj : sortedList) {
             EntryMetaData entry1 = (EntryMetaData) obj;
-            assertTrue(datesAreEqual(lastMod[1], entry1.getLastModifiedDate()));
+            assertTrue(datesAreEqual(lastMod[1], entry1.getUpdatedDate()));
         }
 
         // get second page
@@ -331,7 +331,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
         // this second set should also all be at lastMod[1]
         for (Object obj : sortedList) {
             EntryMetaData entry1 = (EntryMetaData) obj;
-            assertTrue(datesAreEqual(lastMod[1], entry1.getLastModifiedDate()));
+            assertTrue(datesAreEqual(lastMod[1], entry1.getUpdatedDate()));
         }
 
         // DELETE some -- using the "real" deleteEntry, which is really an update in disguise
@@ -373,9 +373,9 @@ public class PageEntriesDAOTest extends DAOTestCase {
         int foundL1 = 0;
         int foundL0 = 0;
         for (int ii = 0; ii < sortedList.size(); ii++) {
-            if (datesAreEqual(lastMod[1], ((EntryMetaData) (sortedList.get(ii))).getLastModifiedDate())) {
+            if (datesAreEqual(lastMod[1], ((EntryMetaData) (sortedList.get(ii))).getUpdatedDate())) {
                 foundL1++;
-            } else if (datesAreEqual(lastMod[0], ((EntryMetaData) (sortedList.get(ii))).getLastModifiedDate())) {
+            } else if (datesAreEqual(lastMod[0], ((EntryMetaData) (sortedList.get(ii))).getUpdatedDate())) {
                 foundL0++;
             } else {
                 fail("it had to be either L1 or L2");
@@ -392,7 +392,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
         // should have 1 at lastMod[0] and the last "deleted", or all deleted
 
         if (foundL1 == 1) {
-            assertTrue(datesAreEqual(lastMod[0], ((EntryMetaData) (sortedList.get(0))).getLastModifiedDate()));
+            assertTrue(datesAreEqual(lastMod[0], ((EntryMetaData) (sortedList.get(0))).getUpdatedDate()));
         } else {
             assertEquals(true, ((EntryMetaData) (sortedList.get(0))).getDeleted());
         }

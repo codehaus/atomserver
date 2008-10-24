@@ -136,7 +136,7 @@ public class EnforcedLatencyTest extends DBSTestCase {
                             contentStorage.revisionChangedWithoutContentChanging(emd);
                             log.debug("::trace-race-condition:: updated 2 to " +
                                                emd.getLastModifiedSeqNum() + ", " +
-                                               emd.getLastModifiedDate());
+                                               emd.getUpdatedDate());
                             timeLine.tick();
                             timeLine.tick();
                         } catch (Exception e) {
@@ -165,7 +165,7 @@ public class EnforcedLatencyTest extends DBSTestCase {
                             contentStorage.revisionChangedWithoutContentChanging(emd);
                             log.debug("::trace-race-condition:: updated 1 to " +
                                                emd.getLastModifiedSeqNum() + ", " +
-                                               emd.getLastModifiedDate());
+                                               emd.getUpdatedDate());
                         } catch (Exception e) {
                             throw new RuntimeException(e);
                         }

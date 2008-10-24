@@ -192,7 +192,7 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
          // this first set should all be at lastMod[1]
         for (Object obj : sortedList) {
             EntryMetaData entry1 = (EntryMetaData) obj;
-            assertTrue(datesAreEqual(lastMod[1], entry1.getLastModifiedDate()));
+            assertTrue(datesAreEqual(lastMod[1], entry1.getUpdatedDate()));
             String pid = entry1.getEntryId();
             assertTrue( pid.equals("23404") || pid.equals("23416") );
         }
@@ -209,7 +209,7 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         // this second set should all be at lastMod[0]
         for (Object obj : sortedList) {
             EntryMetaData entry1 = (EntryMetaData) obj;
-            assertTrue(datesAreEqual(lastMod[0], entry1.getLastModifiedDate()));
+            assertTrue(datesAreEqual(lastMod[0], entry1.getUpdatedDate()));
             String pid = entry1.getEntryId();
             assertTrue( pid.equals("23400") || pid.equals("23412") );
         }
@@ -232,7 +232,7 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         // this first set should all be at lastMod[1]
         for (Object obj : sortedList) {
             EntryMetaData entry1 = (EntryMetaData) obj;
-            assertTrue(datesAreEqual(lastMod[1], entry1.getLastModifiedDate()));
+            assertTrue(datesAreEqual(lastMod[1], entry1.getUpdatedDate()));
             String pid = entry1.getEntryId();
             assertTrue( pid.equals("23407") || pid.equals("23419") );
         }
@@ -248,7 +248,7 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         // this second set should all be at lastMod[0]
         for (Object obj : sortedList) {
             EntryMetaData entry1 = (EntryMetaData) obj;
-            assertTrue(datesAreEqual(lastMod[0], entry1.getLastModifiedDate()));
+            assertTrue(datesAreEqual(lastMod[0], entry1.getUpdatedDate()));
             String pid = entry1.getEntryId();
             assertTrue( pid.equals("23403") || pid.equals("23415") );
         }
@@ -290,7 +290,7 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         // this first set should all be at lastMod[1]
         for (Object obj : sortedList) {
             EntryMetaData entry1 = (EntryMetaData) obj;
-            assertTrue(datesAreEqual(lastMod[1], entry1.getLastModifiedDate()));
+            assertTrue(datesAreEqual(lastMod[1], entry1.getUpdatedDate()));
             String pid = entry1.getEntryId();
             assertTrue( pid.equals("23404") || pid.equals("23416") );
         }
@@ -306,7 +306,7 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         // this second set should all be at lastMod[0]
         for (Object obj : sortedList) {
             EntryMetaData entry1 = (EntryMetaData) obj;
-            assertTrue(datesAreEqual(lastMod[0], entry1.getLastModifiedDate()));
+            assertTrue(datesAreEqual(lastMod[0], entry1.getUpdatedDate()));
             String pid = entry1.getEntryId();
             assertTrue( pid.equals("23400") || pid.equals("23412") );
         }

@@ -253,7 +253,7 @@ public class EntriesDAOiBatisImpl
     public Object insertEntry(EntryDescriptor entry,
                               boolean isSeedingDB,
                               Date published,
-                              Date lastModified) {
+                              Date updated) {
         StopWatch stopWatch = new AutomaticStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntriesDAOiBatisImpl INSERT ==> " + entry);
@@ -265,7 +265,7 @@ public class EntriesDAOiBatisImpl
 
             if (isSeedingDB) {
                 paramMap.param("publishedDate", published)
-                        .param("lastModifiedDate", lastModified);
+                        .param("updatedDate", updated);
                 return getSqlMapClientTemplate().insert("insertEntrySeedingDB-" + getDatabaseType(), paramMap);
             } else {
                 return getSqlMapClientTemplate().insert("insertEntry-" + getDatabaseType(), paramMap);
@@ -393,7 +393,7 @@ public class EntriesDAOiBatisImpl
         return paramMap;
     }
 
-    private int updateEntryOverwrite(EntryMetaData entry, boolean resetRevision, Date published, Date lastModified) {
+    private int updateEntryOverwrite(EntryMetaData entry, boolean resetRevision, Date published, Date updated) {
         StopWatch stopWatch = new AutomaticStopWatch();
         try {
             if (log.isDebugEnabled()) {
@@ -405,7 +405,7 @@ public class EntriesDAOiBatisImpl
             return getSqlMapClientTemplate().update("updateEntryOverwrite",
                                                     prepareUpdateParamMap(false, revision, entry)
                                                             .param("publishedDate", published)
-                                                            .param("lastModifiedDate", lastModified));
+                                                            .param("updatedDate", updated));
         }
         finally {
             if (perflog != null) {
@@ -487,14 +487,14 @@ public class EntriesDAOiBatisImpl
     }
 
     public List<AggregateEntryMetaData> selectAggregateEntriesByPage( FeedDescriptor feed,
-                                                                      Date lastModifiedDate,
+                                                                      Date updatedMin,
                                                                       Locale locale,
                                                                       int pageDelim,
                                                                       int pageSize,
                                                                       Collection<BooleanExpression<AtomCategory>> categoriesQuery,
                                                                       List<String> joinWorkspaces) {
 
-        ParamMap paramMap = prepareParamMapForSelectEntries(lastModifiedDate, pageDelim, pageSize,
+        ParamMap paramMap = prepareParamMapForSelectEntries(updatedMin, pageDelim, pageSize,
                                                             locale == null ? null : locale.toString(), feed);
 
         if (joinWorkspaces != null && !joinWorkspaces.isEmpty()) {
@@ -554,7 +554,7 @@ public class EntriesDAOiBatisImpl
                                              int pageSize, String locale, FeedDescriptor feed) {
         ParamMap paramMap = paramMap()
                 .param("workspace", feed.getWorkspace())
-                .param("lastModifiedDate", updatedMin)
+                .param("updatedMin", updatedMin)
                 .param("lastModifiedSeqNum", (long) pageDelim)
                 .param("pageSize", pageSize)
                 .param("collection", feed.getCollection());
@@ -573,12 +573,12 @@ public class EntriesDAOiBatisImpl
      * NOTE: package scoped for use by JUnits
      */
     public List<EntryMetaData> selectEntriesByLastModified(String workspace, String collection,
-                                                           Date lastModifiedDate) {
+                                                           Date updatedMin) {
         StopWatch stopWatch = new AutomaticStopWatch();
         try {
             return getSqlMapClientTemplate().queryForList("selectEntriesByLastModified",
                                                           paramMap()
-                                                                  .param("lastModifiedDate", lastModifiedDate)
+                                                                  .param("updatedMin", updatedMin)
                                                                   .param("workspace", workspace)
                                                                   .param("collection", collection));
         }
@@ -592,12 +592,12 @@ public class EntriesDAOiBatisImpl
     /**
      */
     public List<EntryMetaData> selectEntriesByLastModifiedSeqNum(FeedDescriptor feed,
-                                                                 Date lastModifiedDate) {
+                                                                 Date updatedMin) {
         StopWatch stopWatch = new AutomaticStopWatch();
         try {
             return getSqlMapClientTemplate().queryForList("selectEntriesByLastModifiedSeqNum",
                                                           paramMap()
-                                                                  .param("lastModifiedDate", lastModifiedDate)
+                                                                  .param("updatedMin", updatedMin)
                                                                   .param("workspace", feed.getWorkspace())
                                                                   .param("collection", feed.getCollection()));
         }
@@ -621,7 +621,7 @@ public class EntriesDAOiBatisImpl
         // NOTE: this causes lastModifiedSeqNum to be generated in the correct order
         for (Object obj : sortedList) {
             EntryMetaData entry = (EntryMetaData) obj;
-            updateEntryOverwrite(entry, true, entry.getPublishedDate(), entry.getLastModifiedDate());
+            updateEntryOverwrite(entry, true, entry.getPublishedDate(), entry.getUpdatedDate());
 
         }
         return sortedList;
@@ -646,7 +646,7 @@ public class EntriesDAOiBatisImpl
         return getCountByLastModifiedInternal(feed.getWorkspace(), feed.getCollection(), lastModified);
     }
 
-    int getCountByLastModifiedInternal(String workspace, String collection, Date lastModified) {
+    int getCountByLastModifiedInternal(String workspace, String collection, Date updatedMin) {
         StopWatch stopWatch = new AutomaticStopWatch();
         try {
             Integer count =
@@ -654,7 +654,7 @@ public class EntriesDAOiBatisImpl
                                                                         "countModifiedAggregateEntries" :
                                                                         "countEntriesByLastModified",
                                                                         paramMap()
-                                                                                .param("lastModifiedDate", lastModified)
+                                                                                .param("updatedMin", updatedMin)
                                                                                 .param("workspace", workspace)
                                                                                 .param("collection", collection)));
             return count == null ? 0 : count;

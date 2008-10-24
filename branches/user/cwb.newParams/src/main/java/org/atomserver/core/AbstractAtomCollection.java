@@ -461,7 +461,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         EntryMetaData entryMetaData = getEntry(entryTarget);
 
         Date thisLastModified =
-                (entryMetaData.getLastModifiedDate() != null) ? entryMetaData.getLastModifiedDate() : AtomServerConstants.ZERO_DATE;
+                (entryMetaData.getUpdatedDate() != null) ? entryMetaData.getUpdatedDate() : AtomServerConstants.ZERO_DATE;
 
         Date modifiedMin = getModifiedMin(entryTarget, request);
         Entry entry = null;
@@ -953,7 +953,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         try {
             Entry entry = newEntryWithCommonContentOnly(abdera, entryMetaData);
 
-            java.util.Date updated = entryMetaData.getLastModifiedDate();
+            java.util.Date updated = entryMetaData.getUpdatedDate();
             java.util.Date published = entryMetaData.getPublishedDate();
 
             entry.setUpdated(updated);

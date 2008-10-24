@@ -678,7 +678,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         int lastIndex = ( (sortedList.size() - subtract) >= 0) ? (sortedList.size() - subtract) : 0;
 
         EntryMetaData entry = sortedList.get(lastIndex);
-        long lastModified = (entry.getLastModifiedDate() != null) ? entry.getLastModifiedDate().getTime() : 0L;
+        long lastModified = (entry.getUpdatedDate() != null) ? entry.getUpdatedDate().getTime() : 0L;
         int endingPageDelim = (int) (entry.getLastModifiedSeqNum());
         if (log.isDebugEnabled()) {
             log.debug("DBBasedEntriestore.loadFeedEntries:: lastModifiedSeqNum= "

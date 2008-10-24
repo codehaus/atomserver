@@ -20,9 +20,9 @@ import org.atomserver.AtomCategory;
 import org.atomserver.EntryDescriptor;
 import org.atomserver.FeedDescriptor;
 import org.atomserver.ServiceDescriptor;
-import org.atomserver.exceptions.AtomServerException;
-import org.atomserver.core.AggregateEntryMetaData;
 import org.atomserver.core.EntryMetaData;
+import org.atomserver.core.AggregateEntryMetaData;
+import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.utils.logic.BooleanExpression;
 
 import java.util.Collection;
@@ -53,7 +53,9 @@ public interface EntriesDAO
 
     EntryMetaData selectEntry(EntryDescriptor entry);
 
-    List<EntryMetaData> selectEntries(EntryDescriptor entry);
+    Object selectEntryInternalId(EntryDescriptor entryDescriptor);
+
+    EntryMetaData selectEntryByInternalId(Object internalId);
 
     int updateEntry(EntryDescriptor entry, boolean deleted);
 
@@ -76,6 +78,8 @@ public interface EntriesDAO
     //======================================
     //          LIST OPERATIONS
     //======================================
+    List<EntryMetaData> selectEntries(EntryDescriptor entry);
+
     List<EntryMetaData> selectFeedPage(Date updatedMin,
                                        Date updatedMax,
                                        int pageDelim,
@@ -85,7 +89,21 @@ public interface EntriesDAO
                                        Collection<BooleanExpression<AtomCategory>> categoryQuery);
 
     List<EntryMetaData> selectEntriesByLastModifiedSeqNum(FeedDescriptor feed,
-                                                          Date lastModifiedDate);
+                                                          Date updatedMin);
+
+    List<AggregateEntryMetaData> selectAggregateEntriesByPage(FeedDescriptor feed,
+                                                              Date updatedMin,
+                                                              Locale locale, int pageDelim,
+                                                              int pageSize,
+                                                              Collection<BooleanExpression<AtomCategory>> categoriesQuery,
+                                                              List<String> joinWorkspaces);
+
+    AggregateEntryMetaData selectAggregateEntry(EntryDescriptor entryDescriptor,
+                                                List<String> joinWorkspaces);
+
+    List<EntryMetaData> selectEntriesByLastModified(String workspace,
+                                                    String collection,
+                                                    Date updatedMin);
 
     List<EntryMetaData> updateLastModifiedSeqNumForAllEntries(ServiceDescriptor service);
 
@@ -96,15 +114,15 @@ public interface EntriesDAO
     void deleteAllRowsFromEntries();
 
     //======================================
-    //          COUNT QUERIES
+    //               MISC
     //======================================
     int getTotalCount(ServiceDescriptor service);
 
     int getTotalCount(FeedDescriptor feed);
 
-    int getCountByLastModified(ServiceDescriptor service, Date lastModifiedDate);
+    int getCountByLastModified(ServiceDescriptor service, Date updatedMin);
 
-    int getCountByLastModified(FeedDescriptor feed, Date lastModifiedDate);
+    int getCountByLastModified(FeedDescriptor feed, Date updatedMax);
 
     void obliterateEntry(EntryDescriptor entryQuery);
 
@@ -116,23 +134,6 @@ public interface EntriesDAO
 
     List<String> listCollections(String workspace);
 
-    Object selectEntryInternalId(EntryDescriptor entryDescriptor);
-
-    EntryMetaData selectEntryByInternalId(Object internalId);
-
     void acquireLock() throws AtomServerException;
 
-    List<AggregateEntryMetaData> selectAggregateEntriesByPage(FeedDescriptor feed,
-                                                              Date lastModifiedDate,
-                                                              Locale locale, int pageDelim,
-                                                              int pageSize,
-                                                              Collection<BooleanExpression<AtomCategory>> categoriesQuery,
-                                                              List<String> joinWorkspaces);
-
-    AggregateEntryMetaData selectAggregateEntry(EntryDescriptor entryDescriptor,
-                                                List<String> joinWorkspaces);
-
-    List<EntryMetaData> selectEntriesByLastModified(String workspace,
-                                                    String collection,
-                                                    Date lastModifiedDate);
 }
