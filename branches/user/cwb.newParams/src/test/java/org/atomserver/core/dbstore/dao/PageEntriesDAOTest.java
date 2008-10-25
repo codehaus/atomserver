@@ -63,13 +63,13 @@ public class PageEntriesDAOTest extends DAOTestCase {
     //          Tests 
     //----------------------------
 
-    private int getPageDelim(List sortedList) {
+    private int getLastIndex(List sortedList) {
         EntryMetaData entry = (EntryMetaData) (sortedList.get(sortedList.size() - 1));
 
-        int pageDelim = (int) (entry.getUpdateTimestamp());
+        int lastIndex = (int) (entry.getUpdateTimestamp());
 
-        log.debug("pageDelim= " + pageDelim);
-        return pageDelim;
+        log.debug("lastIndex= " + lastIndex);
+        return lastIndex;
     }
 
     public void testPage() throws Exception {
@@ -137,14 +137,14 @@ public class PageEntriesDAOTest extends DAOTestCase {
         log.debug("&&&&&&&&&&&&&&&&&endSeqNum= " + endSeqNum);
 
         // let's just jump into the middle somewhere
-        int pageDelim = startSeqNum + 5 + startCount;
+        int startIndex = startSeqNum + 5 + startCount;
 
-        log.debug("pageDelim= " + pageDelim);
+        log.debug("startIndex= " + startIndex);
 
         LatencyUtil.accountForLatency();
 
         // get page
-        List sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, pageDelim, 3,
+        List sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, startIndex, 3,
                                                     null, new BaseFeedDescriptor(workspace, null), null);
         log.debug("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.debug("List= " + sortedList);
@@ -156,8 +156,8 @@ public class PageEntriesDAOTest extends DAOTestCase {
         }
 
         // get page
-        pageDelim = getPageDelim(sortedList);
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, pageDelim, 3,
+        startIndex = getLastIndex(sortedList);
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, startIndex, 3,
                                                null, new BaseFeedDescriptor(workspace, null), null);
         log.debug("List= " + sortedList);
 
@@ -171,8 +171,8 @@ public class PageEntriesDAOTest extends DAOTestCase {
         assertTrue(datesAreEqual(lastMod[1], ((EntryMetaData) (sortedList.get(2))).getUpdatedDate()));
 
         // get page
-        pageDelim = getPageDelim(sortedList);
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, pageDelim, 3,
+        startIndex = getLastIndex(sortedList);
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, startIndex, 3,
                                                null, new BaseFeedDescriptor(workspace, null), null);
         log.debug("List= " + sortedList);
 
@@ -205,11 +205,11 @@ public class PageEntriesDAOTest extends DAOTestCase {
         */
 
         // let's just jump in at the last of the first set
-        pageDelim = startSeqNum + 5 + startCount;
-        log.debug("pageDelim= " + pageDelim);
+        startIndex = startSeqNum + 5 + startCount;
+        log.debug("startIndex= " + startIndex);
 
         // get page
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, pageDelim, 3,
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, startIndex, 3,
                                                null, new BaseFeedDescriptor(workspace, null), null);
         log.debug("List= " + sortedList);
 
@@ -220,8 +220,8 @@ public class PageEntriesDAOTest extends DAOTestCase {
         }
 
         // get page
-        pageDelim = getPageDelim(sortedList);
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, pageDelim, 3,
+        startIndex = getLastIndex(sortedList);
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, startIndex, 3,
                                                null, new BaseFeedDescriptor(workspace, null), null);
         log.debug("List= " + sortedList);
 
@@ -323,8 +323,8 @@ public class PageEntriesDAOTest extends DAOTestCase {
         }
 
         // get second page
-        int pageDelim = getPageDelim(sortedList);
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, pageDelim, 3,
+        int startIndex = getLastIndex(sortedList);
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, startIndex, 3,
                                                null, new BaseFeedDescriptor(workspace, null), null);
         log.debug("List= " + sortedList);
 
@@ -365,8 +365,8 @@ public class PageEntriesDAOTest extends DAOTestCase {
         // get page -- there couold either be 1 left at lastMod[1] and 2 at lastMod[0]
         // OR it is possible that we just deleted the remaining one at lastMod[1], 
         // so we have 3 at lastMod[0]  (it arbitrarilly depends on the sort)
-        pageDelim = getPageDelim(sortedList);
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, pageDelim, 3,
+        startIndex = getLastIndex(sortedList);
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, startIndex, 3,
                                                null, new BaseFeedDescriptor(workspace, null), null);
         log.debug("List= " + sortedList);
 
@@ -384,8 +384,8 @@ public class PageEntriesDAOTest extends DAOTestCase {
         assertTrue((foundL1 == 1 && foundL0 == 2) || (foundL0 == 3));
 
         // get page -- there should just be one left at lastMod[0]
-        pageDelim = getPageDelim(sortedList);
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, pageDelim, 3,
+        startIndex = getLastIndex(sortedList);
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, startIndex, 3,
                                                null, new BaseFeedDescriptor(workspace, null), null);
         log.debug("List= " + sortedList);
 

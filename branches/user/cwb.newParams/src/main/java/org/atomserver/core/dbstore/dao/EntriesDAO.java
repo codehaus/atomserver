@@ -82,7 +82,7 @@ public interface EntriesDAO
 
     List<EntryMetaData> selectFeedPage(Date updatedMin,
                                        Date updatedMax,
-                                       int pageDelim,
+                                       int startIndex,
                                        int pageSize,
                                        String locale,
                                        FeedDescriptor feed,
@@ -92,8 +92,10 @@ public interface EntriesDAO
                                                           Date updatedMin);
 
     List<AggregateEntryMetaData> selectAggregateEntriesByPage(FeedDescriptor feed,
-                                                              Date updatedMin, Date updatedMax, 
-                                                              Locale locale, int pageDelim,
+                                                              Date updatedMin,
+                                                              Date updatedMax,
+                                                              Locale locale,
+                                                              int startIndex,
                                                               int pageSize,
                                                               Collection<BooleanExpression<AtomCategory>> categoriesQuery,
                                                               List<String> joinWorkspaces);

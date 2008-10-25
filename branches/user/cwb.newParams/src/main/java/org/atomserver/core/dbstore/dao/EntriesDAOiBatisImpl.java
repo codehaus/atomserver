@@ -241,10 +241,10 @@ public class EntriesDAOiBatisImpl
 
     /**
      * Insert this record into the DB
-     * This form conditionally adds a Sequence Number for lastModified.
+     * This form conditionally adds a updateDate
      *
-     * @param isSeedingDB = true indicates that we WILL use the lastModified defined elsewhere
-     *                    (most likely the file's lastModified). And we will NOT set lastModifiedSeqNum
+     * @param isSeedingDB = true indicates that we WILL use the updateDate defined elsewhere
+     *                    (most likely the file's lastModified timestamp).
      */
     public Object insertEntry(EntryDescriptor entry, boolean isSeedingDB) {
         return insertEntry(entry, false, null, null);
@@ -353,7 +353,7 @@ public class EntriesDAOiBatisImpl
      * This is because we use these 3 values as a composite key
      * <p/>
      * NOTE: you MUST update records whenever the Entry is updated, even if you are NOT resetting
-     * filePath or the deleted flag. This is because we MUST have new lastModified and lastModifiedSeqNum
+     * filePath or the deleted flag. This is because we MUST have new update timestamp and date created
      * so that Pagination will work properly.
      */
     public int updateEntry(EntryDescriptor entryQuery, boolean deleted) {
@@ -490,12 +490,12 @@ public class EntriesDAOiBatisImpl
                                                                       Date updatedMin,
                                                                       Date updatedMax,
                                                                       Locale locale,
-                                                                      int pageDelim,
+                                                                      int startIndex,
                                                                       int pageSize,
                                                                       Collection<BooleanExpression<AtomCategory>> categoriesQuery,
                                                                       List<String> joinWorkspaces) {
 
-        ParamMap paramMap = prepareParamMapForSelectEntries(updatedMin, updatedMax, pageDelim, pageSize,
+        ParamMap paramMap = prepareParamMapForSelectEntries(updatedMin, updatedMax, startIndex, pageSize,
                                                             locale == null ? null : locale.toString(), feed);
 
         if (joinWorkspaces != null && !joinWorkspaces.isEmpty()) {
@@ -521,14 +521,14 @@ public class EntriesDAOiBatisImpl
 
     public List<EntryMetaData> selectFeedPage(Date updatedMin,
                                               Date updatedMax,
-                                              int pageDelim,
+                                              int startIndex,
                                               int pageSize,
                                               String locale,
                                               FeedDescriptor feed,
                                               Collection<BooleanExpression<AtomCategory>> categoryQuery) {
         StopWatch stopWatch = new AutomaticStopWatch();
         try {
-            ParamMap paramMap = prepareParamMapForSelectEntries(updatedMin, updatedMax, pageDelim, pageSize, locale, feed);
+            ParamMap paramMap = prepareParamMapForSelectEntries(updatedMin, updatedMax, startIndex, pageSize, locale, feed);
 
             if (categoryQuery != null && !categoryQuery.isEmpty()) {
                 paramMap.param("categoryFilterSql",
@@ -551,13 +551,13 @@ public class EntriesDAOiBatisImpl
     }
 
     // NOTE: package scoped for use by EntryCategoryIBatisImpl
-    ParamMap prepareParamMapForSelectEntries(Date updatedMin, Date updatedMax, int pageDelim,
+    ParamMap prepareParamMapForSelectEntries(Date updatedMin, Date updatedMax, int startIndex,
                                              int pageSize, String locale, FeedDescriptor feed) {
         ParamMap paramMap = paramMap()
                 .param("workspace", feed.getWorkspace())
                 .param("updatedMin", updatedMin)
                 .param("updatedMax", updatedMax)
-                .param("lastModifiedSeqNum", (long) pageDelim)
+                .param("startIndex", (long)startIndex )
                 .param("pageSize", pageSize)
                 .param("collection", feed.getCollection());
 
@@ -620,7 +620,7 @@ public class EntriesDAOiBatisImpl
         List sortedList = selectEntriesByLastModified(service.getWorkspace(), null, ZERO_DATE);
 
         // And now, let's walk the List and update
-        // NOTE: this causes lastModifiedSeqNum to be generated in the correct order
+        // NOTE: this causes updateTimestamp to be generated in the correct order
         for (Object obj : sortedList) {
             EntryMetaData entry = (EntryMetaData) obj;
             updateEntryOverwrite(entry, true, entry.getPublishedDate(), entry.getUpdatedDate());

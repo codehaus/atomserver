@@ -692,11 +692,11 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         int lastIndex = ( (sortedList.size() - subtract) >= 0) ? (sortedList.size() - subtract) : 0;
 
         EntryMetaData entry = sortedList.get(lastIndex);
-        long lastModified = (entry.getUpdatedDate() != null) ? entry.getUpdatedDate().getTime() : 0L;
-        int endIndex = (int) (entry.getUpdateTimestamp());
+        long lastUpdatedDate = (entry.getUpdatedDate() != null) ? entry.getUpdatedDate().getTime() : 0L;
+        int lastTimestamp = (int) (entry.getUpdateTimestamp());
         if (log.isDebugEnabled()) {
-            log.debug("DBBasedEntriestore.loadFeedEntries:: lastModifiedSeqNum= "
-                      + endIndex + " lastModified= " + lastModified
+            log.debug("DBBasedEntriestore.loadFeedEntries:: lastTimestamp= "
+                      + lastTimestamp + " lastUpdatedDate= " + lastUpdatedDate
                       + " numEntries= " + numEntries + " totalEntries= " + totalEntries);
         }
 
@@ -704,12 +704,12 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
 
         StopWatch stopWatch = new AutomaticStopWatch();
         try {
-            addAtomServerFeedElements(feed, endIndex );
+            addAtomServerFeedElements(feed, lastTimestamp );
             if ( ! resultsFitOnOnePage || startIndex != 0 ) {
                 addOpenSearchElements(feed, startIndex, pageSize, totalEntries);
 
                 if ( ! isLastPage )
-                    addPagingLinks(feed, iri, endIndex, pageSize, feedTarget );
+                    addPagingLinks(feed, iri, lastTimestamp, pageSize, feedTarget );
             }
             addFeedSelfLink(abdera, feed, iri, startIndex, pageSize );
             addFeedEntries( abdera, feed, sortedList, pageSize, entryType );
@@ -718,7 +718,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                 getPerformanceLog().log( "XML.feed", getPerformanceLog().getPerfLogFeedString( locale, workspace, collection ), stopWatch );
             }
         }
-        return lastModified;
+        return lastUpdatedDate;
     }
 
     private final Set<String> seenCollections = new HashSet<String>();

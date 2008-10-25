@@ -51,7 +51,7 @@
         <isNotNull property="updatedMax">
             <![CDATA[AND UpdateDate < #updatedMax# ]]>
         </isNotNull>
-           AND UpdateTimestamp > #lastModifiedSeqNum#
+           AND UpdateTimestamp > #startIndex#
         <isNotNull property="latencySeconds">
            AND (
             <isEqual property="dbType" compareValue="hsql">

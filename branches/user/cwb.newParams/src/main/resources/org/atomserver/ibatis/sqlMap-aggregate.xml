@@ -32,10 +32,10 @@
                 has an index of Scheme, UpdateTimestamp and Term it willscan the index forward
                 from the minTimestamp.-->
             ON recentlyChangedEntries.Scheme = #collection#
-        <isNotNull property="lastModifiedSeqNum">
+        <isNotNull property="startIndex">
           JOIN EntryStore entryStore
             ON recentlyChangedEntries.EntryStoreId = entryStore.EntryStoreId
-           AND recentlyChangedEntries.UpdateTimestamp > #lastModifiedSeqNum#
+           AND recentlyChangedEntries.UpdateTimestamp > #startIndex#
         </isNotNull>
         <isNotNull property="latencySeconds">
             <isNotNull property="latencySeconds">
@@ -53,7 +53,7 @@
             </isNotNull>
         </isNotNull>
            <!-- This same query can be used to pull a SINGLE aggregate entry.  Note that we should
-                never provide both lastModifiedSeqNum AND entryId. -->
+                never provide both updateTimestamp AND entryId. -->
         <isNotNull property="entryId">
            AND recentlyChangedEntries.Term = #entryId#
         </isNotNull>

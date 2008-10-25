@@ -198,9 +198,9 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         }
 
         // get second page
-        int pageDelim = getPageDelim(sortedList);
+        int startIndex = getLastIndex(sortedList);
 
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, pageDelim, 2,
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, startIndex, 2,
                                                null,
                                                new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
@@ -238,8 +238,8 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         }
 
         // get second page
-        pageDelim = getPageDelim(sortedList);
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, pageDelim, 2,
+        startIndex = getLastIndex(sortedList);
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, startIndex, 2,
                                                null,
                                                new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
@@ -296,8 +296,8 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         }
 
         // get second page
-        pageDelim = getPageDelim(sortedList);
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, pageDelim, 2,
+        startIndex = getLastIndex(sortedList);
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, startIndex, 2,
                                                null,
                                                new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
@@ -421,7 +421,6 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
 
             IRI iri = IRI.create("http://localhost:8080/"
                                  + entryURIHelper.constructURIString(workspace, sysId, propId, locale));
-//            URIData entryQuery = entryURIHelper.decodeEntryURI(iri);
             EntryTarget entryTarget = entryURIHelper.getEntryTarget(new MockRequestContext(serviceContext, "GET", iri.toString()), true);
 
             entryCategoriesDAO.deleteEntryCategories(entriesDAO.selectEntry(entryTarget));
@@ -486,13 +485,13 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         }
     }
 
-    private int getPageDelim(List sortedList) {
+    private int getLastIndex(List sortedList) {
         EntryMetaData entry = (EntryMetaData) (sortedList.get(sortedList.size() - 1));
 
-        int pageDelim = (int) (entry.getUpdateTimestamp());
+        int lastIndex = (int) (entry.getUpdateTimestamp());
 
-        log.debug("pageDelim= " + pageDelim);
-        return pageDelim;
+        log.debug("lastIndex= " + lastIndex);
+        return lastIndex;
     }
 
 }
