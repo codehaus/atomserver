@@ -205,10 +205,10 @@ public class BatchEntriesDAOTest extends DAOTestCase {
             published = entryOut.getPublishedDate();
 
             log.debug( "seqNum= "+ seqNum +
-                       " entryOut.getLastModifiedSeqNum()= " + entryOut.getLastModifiedSeqNum());
+                       " entryOut.getUpdateTimestamp()= " + entryOut.getUpdateTimestamp());
 
-            assertTrue( seqNum < entryOut.getLastModifiedSeqNum() );
-            seqNum = entryOut.getLastModifiedSeqNum();
+            assertTrue( seqNum < entryOut.getUpdateTimestamp() );
+            seqNum = entryOut.getUpdateTimestamp();
 
             IRI iri = IRI.create("http://localhost:8080/"
                                  + entryURIHelper.constructURIString(workspace, sysId, entryOut.getEntryId(), locale,
@@ -252,8 +252,8 @@ public class BatchEntriesDAOTest extends DAOTestCase {
             }
             published = entryOut.getPublishedDate();
 
-            assertTrue( seqNum < entryOut.getLastModifiedSeqNum() );
-            seqNum = entryOut.getLastModifiedSeqNum();
+            assertTrue( seqNum < entryOut.getUpdateTimestamp() );
+            seqNum = entryOut.getUpdateTimestamp();
 
             IRI iri = IRI.create("http://localhost:8080/"
                                  + entryURIHelper.constructURIString(workspace, sysId, entryOut.getEntryId(),
@@ -296,8 +296,8 @@ public class BatchEntriesDAOTest extends DAOTestCase {
             }
             published = entryOut.getPublishedDate();
 
-            assertTrue( seqNum < entryOut.getLastModifiedSeqNum() );
-            seqNum = entryOut.getLastModifiedSeqNum();
+            assertTrue( seqNum < entryOut.getUpdateTimestamp() );
+            seqNum = entryOut.getUpdateTimestamp();
           }
 
         // DELETE them all for real

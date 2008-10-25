@@ -66,7 +66,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
     private int getPageDelim(List sortedList) {
         EntryMetaData entry = (EntryMetaData) (sortedList.get(sortedList.size() - 1));
 
-        int pageDelim = (int) (entry.getLastModifiedSeqNum());
+        int pageDelim = (int) (entry.getUpdateTimestamp());
 
         log.debug("pageDelim= " + pageDelim);
         return pageDelim;
@@ -131,8 +131,8 @@ public class PageEntriesDAOTest extends DAOTestCase {
         */
 
         // SELECT w/ PAGINATION
-        int startSeqNum = (int) (((EntryMetaData) (updatedEntries.get(0))).getLastModifiedSeqNum());
-        int endSeqNum = (int) (((EntryMetaData) (updatedEntries.get(updatedEntries.size() - 1))).getLastModifiedSeqNum());
+        int startSeqNum = (int) (((EntryMetaData) (updatedEntries.get(0))).getUpdateTimestamp());
+        int endSeqNum = (int) (((EntryMetaData) (updatedEntries.get(updatedEntries.size() - 1))).getUpdateTimestamp());
         log.debug("&&&&&&&&&&&&&&&&&startSeqNum= " + startSeqNum);
         log.debug("&&&&&&&&&&&&&&&&&endSeqNum= " + endSeqNum);
 

@@ -149,7 +149,7 @@ public class TransactionTest extends DAOTestCase {
         final EntryMetaData entryMetaData = entriesDAO.selectEntry(entryIn);
         entryMetaData.setRevision(URIHandler.REVISION_OVERRIDE);
 
-        final int pageDelim = (int) entryMetaData.getLastModifiedSeqNum();
+        final int pageDelim = (int) entryMetaData.getUpdateTimestamp();
 
         Executors.newSingleThreadExecutor().submit(
                 new Runnable() {

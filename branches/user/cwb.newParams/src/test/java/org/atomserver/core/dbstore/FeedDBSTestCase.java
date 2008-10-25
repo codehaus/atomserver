@@ -249,7 +249,7 @@ public class FeedDBSTestCase extends DBSTestCase {
         MockRequestContext request = new MockRequestContext(serviceContext, "GET", lastEntryIRI.toString());
         EntryTarget lastEntryTarget = widgetURIHelper.getEntryTarget(request, true);
         EntryMetaData lastEntryMetaData = entriesDao.selectEntry(lastEntryTarget);
-        long endIndexEntry = lastEntryMetaData.getLastModifiedSeqNum();
+        long endIndexEntry = lastEntryMetaData.getUpdateTimestamp();
         
         log.debug( "&&&&&&&&&&&&&&&&&&& feedUpdated, endIndex= " + endIndex + ", " + endIndexEntry );
         assertEquals( endIndex, endIndexEntry );

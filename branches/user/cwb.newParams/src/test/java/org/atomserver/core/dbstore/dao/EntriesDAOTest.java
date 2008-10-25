@@ -305,14 +305,14 @@ public class EntriesDAOTest extends DAOTestCase {
         assertEquals(entryOut.getEntryId(), entryIn.getEntryId());
         assertEquals(entryOut.getDeleted(), false);
 
-        assertTrue(entryIn.getLastModifiedSeqNum() < entryOut.getLastModifiedSeqNum());
+        assertTrue(entryIn.getUpdateTimestamp() < entryOut.getUpdateTimestamp());
 
         assertTrue(entryOut.getUpdatedDate().after(published));
         assertEquals(entryOut.getPublishedDate(), published);
         Date lastMod = entryOut.getUpdatedDate();
         Thread.sleep(1000);
 
-        long seqNumIn = entryIn.getLastModifiedSeqNum();
+        long seqNumIn = entryIn.getUpdateTimestamp();
         assertEquals(1, entryOut.getRevision());
 
         // UPDATE
@@ -329,7 +329,7 @@ public class EntriesDAOTest extends DAOTestCase {
         assertEquals(entryOut.getEntryId(), entryIn.getEntryId());
         assertEquals(entryOut.getDeleted(), false);
 
-        assertTrue(seqNumIn < entryOut.getLastModifiedSeqNum());
+        assertTrue(seqNumIn < entryOut.getUpdateTimestamp());
 
         assertTrue(entryOut.getUpdatedDate().after(lastMod));
         assertEquals(entryOut.getPublishedDate(), published);
@@ -359,7 +359,7 @@ public class EntriesDAOTest extends DAOTestCase {
 
         assertEquals(entryOut.getDeleted(), true);
 
-        assertTrue(entryIn.getLastModifiedSeqNum() < entryOut.getLastModifiedSeqNum());
+        assertTrue(entryIn.getUpdateTimestamp() < entryOut.getUpdateTimestamp());
 
         // DELETE
         entriesDAO.obliterateEntry(entryQuery);
@@ -462,9 +462,9 @@ public class EntriesDAOTest extends DAOTestCase {
                 //          AFAICt there may be something wrong with the updateLastModifiedSeqNumForAllEntries
                 //          BUT this code is NOT actually used anywhere in PRD
                 //          So I am going to ignore it for now.
-                //assertTrue("[seqNum= " + seqNum + "] !< [entrySeq= " + entry.getLastModifiedSeqNum(),
-                //           seqNum < entry.getLastModifiedSeqNum());
-                seqNum = entry.getLastModifiedSeqNum();
+                //assertTrue("[seqNum= " + seqNum + "] !< [entrySeq= " + entry.getUpdateTimestamp(),
+                //           seqNum < entry.getUpdateTimestamp());
+                seqNum = entry.getUpdateTimestamp();
             }
        } finally { 
              

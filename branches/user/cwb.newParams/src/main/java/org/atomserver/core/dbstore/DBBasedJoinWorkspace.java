@@ -107,8 +107,8 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
 
                 Collections.sort(list, new Comparator<AggregateEntryMetaData>() {
                     public int compare(AggregateEntryMetaData a, AggregateEntryMetaData b) {
-                        return a.getLastModifiedSeqNum() < b.getLastModifiedSeqNum() ? -1 :
-                               a.getLastModifiedSeqNum() > b.getLastModifiedSeqNum() ? 1 :
+                        return a.getUpdateTimestamp() < b.getUpdateTimestamp() ? -1 :
+                               a.getUpdateTimestamp() > b.getUpdateTimestamp() ? 1 :
                                0;
                     }
                 });
@@ -117,13 +117,13 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
 
                 // if there are more than should fit on one page, and the last two are the same
                 // seqnum, then we have to specially handle things.
-                long lastSeqnumOnPage = list.get(list.size() - 1).getLastModifiedSeqNum();
+                long lastSeqnumOnPage = list.get(list.size() - 1).getUpdateTimestamp();
 
-                if (!resultsFitOnOnePage && lastSeqnumOnPage == list.get(list.size() - 2).getLastModifiedSeqNum()) {
-                    long firstSeqnumOnPage = list.get(0).getLastModifiedSeqNum();
+                if (!resultsFitOnOnePage && lastSeqnumOnPage == list.get(list.size() - 2).getUpdateTimestamp()) {
+                    long firstSeqnumOnPage = list.get(0).getUpdateTimestamp();
 
                     if (lastSeqnumOnPage != firstSeqnumOnPage) {
-                        while (list.get(list.size() - 1).getLastModifiedSeqNum() == lastSeqnumOnPage) {
+                        while (list.get(list.size() - 1).getUpdateTimestamp() == lastSeqnumOnPage) {
                             list.remove(list.size() - 1);
                         }
                     } else {

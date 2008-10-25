@@ -146,13 +146,13 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             }
         }
 
-        int startingPageDelim = feedTarget.getStartIndexParam();
+        int startIndex = feedTarget.getStartIndexParam();
         Locale locale = feedTarget.getLocaleParam();
         EntryType entryType = (feedTarget.getEntryTypeParam() != null) ? feedTarget.getEntryTypeParam() : EntryType.link;
 
         int pageSize = calculatePageSize( feedTarget, entryType );
         if (log.isDebugEnabled()) {
-            log.debug("getEntries:: startingPageDelim= " + startingPageDelim + " pageSize " + pageSize );
+            log.debug("getEntries:: startIndex= " + startIndex + " pageSize " + pageSize );
         }
 
         Collection<BooleanExpression<AtomCategory>> categoryQuery = feedTarget.getCategoriesQuery();
@@ -161,7 +161,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         List<EntryMetaData> sortedList =
                 getEntriesDAO().selectFeedPage( updatedMin,
                                                 updatedMax,
-                                                startingPageDelim,
+                                                startIndex,
                                                 pageSize + 1 /* ask for 1 more than pageSize, to detect the end of the feed */,
                                                 locale == null ? null : locale.toString(),
                                                 feedTarget,
@@ -177,14 +177,14 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             // means that SQL Server returned us a row with an UpdateTimestamp less than or equal
             // to the page delimiter that we requested!
 
-            if (entryMetaData.getLastModifiedSeqNum() <= startingPageDelim) {
+            if (entryMetaData.getUpdateTimestamp() <= startIndex) {
                 String message = MessageFormat.format("SQL-SERVER-ERROR!  (TIMESTAMP)  We requested the page " +
                                                       "starting at {0}, " +
                                                       "and the response to the query contained an entry at {1}!\n" +
                                                       "** the full offending entry was: {2}\n" +
                                                       "** the list of all entries was: \n *{3}",
-                                                      startingPageDelim,
-                                                      entryMetaData.getLastModifiedSeqNum(),
+                                                      startIndex,
+                                                      entryMetaData.getUpdateTimestamp(),
                                                       entryMetaData,
                                                       StringUtils.join(sortedList, "\n *"));
                 log.error(message);
@@ -204,7 +204,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         return createFeedElements(feed, abdera, iri, feedTarget, entryType,
                                   sortedList, workspace, collection, locale,
                                   numEntries, (numEntries <= pageSize), pageSize,
-                                  startingPageDelim, totalEntries);
+                                  startIndex, totalEntries);
     }
 
     /**
@@ -568,25 +568,25 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
     //--------------------------------
     //      private methods
     //--------------------------------
-    private void addOpenSearchElements(Feed feed, int startingPageDelim,
+    private void addOpenSearchElements(Feed feed, int startIndex,
                                        int pageSize, int totalEntries ) {
         if ( totalEntries > 0 )
             feed.addSimpleExtension(OpenSearchConstants.TOTAL_RESULTS, Integer.toString(totalEntries));
 
-        feed.addSimpleExtension(OpenSearchConstants.START_INDEX, Integer.toString(startingPageDelim));
+        feed.addSimpleExtension(OpenSearchConstants.START_INDEX, Integer.toString(startIndex));
         feed.addSimpleExtension(OpenSearchConstants.ITEMS_PER_PAGE, Integer.toString(pageSize));
     }
 
-    private void addAtomServerFeedElements(Feed feed, int endingPageDelim ) {
-        feed.addSimpleExtension(AtomServerConstants.END_INDEX, Integer.toString(endingPageDelim));
+    private void addAtomServerFeedElements(Feed feed, int endIndex ) {
+        feed.addSimpleExtension(AtomServerConstants.END_INDEX, Integer.toString(endIndex));
     }
 
     // We do NOT write "previous" link, because we do not have any way to know the starting index
     // for the previous page.
-    private void addPagingLinks(Feed feed, IRI iri, int endingPageDelim,
+    private void addPagingLinks(Feed feed, IRI iri, int endIndex,
                                 int pageSize, URITarget uriTarget ) {
         String nextURI = iri.getPath() + "?" +
-                         QueryParam.startIndex.getParamName() + "=" + endingPageDelim +
+                         QueryParam.startIndex.getParamName() + "=" + endIndex +
                          "&" + QueryParam.maxResults.getParamName() + "=" + pageSize;
 
         Locale locale = uriTarget.getLocaleParam();
@@ -605,19 +605,19 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         if ( updatedMax != null ) {
             nextURI += "&" + QueryParam.updatedMax.getParamName() + "=" + AtomDate.format( updatedMax );
         }
-        int endIndex = uriTarget.getEndIndexParam();
-        if ( endIndex != -1 ) {
-            nextURI += "&" + QueryParam.endIndex.getParamName() + "=" + endIndex;
+        int endIndexMax = uriTarget.getEndIndexParam();
+        if ( endIndexMax != -1 ) {
+            nextURI += "&" + QueryParam.endIndex.getParamName() + "=" + endIndexMax;
         }
 
         FeedPagingHelper.setNext(feed, nextURI);
     }
 
-    private void addFeedSelfLink(Abdera abdera, Feed feed, IRI iri, int startingPageDelim, int pageSize) {
+    private void addFeedSelfLink(Abdera abdera, Feed feed, IRI iri, int startIndex, int pageSize) {
         String selfURI = iri.getPath();
         selfURI += "?" + QueryParam.maxResults.getParamName() + "=" + pageSize;
-        if ( startingPageDelim != 0 ) {
-            selfURI += "&" + QueryParam.startIndex.getParamName() + "=" + startingPageDelim;
+        if ( startIndex != 0 ) {
+            selfURI += "&" + QueryParam.startIndex.getParamName() + "=" + startIndex;
         }
 
         addLinkToEntry(AtomServer.getFactory( abdera ), feed, selfURI, "self");
@@ -683,7 +683,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                                      List<? extends EntryMetaData> sortedList,
                                      String workspace, String collection, Locale locale,
                                      int numEntries, boolean resultsFitOnOnePage, int pageSize,
-                                     int startingPageDelim, int totalEntries ) {
+                                     int startIndex, int totalEntries ) {
 
         // Pick out the last item in the list and pull lastModified from it
         //  Note: we asked for one more than we really needed so subtract 2...
@@ -693,25 +693,25 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
 
         EntryMetaData entry = sortedList.get(lastIndex);
         long lastModified = (entry.getUpdatedDate() != null) ? entry.getUpdatedDate().getTime() : 0L;
-        int endingPageDelim = (int) (entry.getLastModifiedSeqNum());
+        int endIndex = (int) (entry.getUpdateTimestamp());
         if (log.isDebugEnabled()) {
             log.debug("DBBasedEntriestore.loadFeedEntries:: lastModifiedSeqNum= "
-                      + endingPageDelim + " lastModified= " + lastModified
+                      + endIndex + " lastModified= " + lastModified
                       + " numEntries= " + numEntries + " totalEntries= " + totalEntries);
         }
 
-        boolean isLastPage = ((startingPageDelim != 0) && resultsFitOnOnePage);
+        boolean isLastPage = ((startIndex != 0) && resultsFitOnOnePage);
 
         StopWatch stopWatch = new AutomaticStopWatch();
         try {
-            addAtomServerFeedElements(feed, endingPageDelim );
-            if ( ! resultsFitOnOnePage || startingPageDelim != 0 ) {
-                addOpenSearchElements(feed, startingPageDelim, pageSize, totalEntries);
+            addAtomServerFeedElements(feed, endIndex );
+            if ( ! resultsFitOnOnePage || startIndex != 0 ) {
+                addOpenSearchElements(feed, startIndex, pageSize, totalEntries);
 
                 if ( ! isLastPage )
-                    addPagingLinks(feed, iri, endingPageDelim, pageSize, feedTarget );
+                    addPagingLinks(feed, iri, endIndex, pageSize, feedTarget );
             }
-            addFeedSelfLink(abdera, feed, iri, startingPageDelim, pageSize );
+            addFeedSelfLink(abdera, feed, iri, startIndex, pageSize );
             addFeedEntries( abdera, feed, sortedList, pageSize, entryType );
         } finally {
             if ( getPerformanceLog() != null ) {

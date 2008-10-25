@@ -58,8 +58,8 @@ public class AggregateEntryMetaData extends EntryMetaData {
                 entry.getPublishedDate().getTime() < getPublishedDate().getTime()) {
                 setPublishedDate(entry.getPublishedDate());
             }
-            if (entry.getLastModifiedSeqNum() > getLastModifiedSeqNum()) {
-                setLastModifiedSeqNum(entry.getLastModifiedSeqNum());
+            if (entry.getUpdateTimestamp() > getUpdateTimestamp()) {
+                setUpdateTimestamp(entry.getUpdateTimestamp());
             }
             for (EntryCategory entryCategory : entry.getCategories()) {
                 EntryCategory category = new EntryCategory();

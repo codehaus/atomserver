@@ -489,7 +489,7 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
     private int getPageDelim(List sortedList) {
         EntryMetaData entry = (EntryMetaData) (sortedList.get(sortedList.size() - 1));
 
-        int pageDelim = (int) (entry.getLastModifiedSeqNum());
+        int pageDelim = (int) (entry.getUpdateTimestamp());
 
         log.debug("pageDelim= " + pageDelim);
         return pageDelim;

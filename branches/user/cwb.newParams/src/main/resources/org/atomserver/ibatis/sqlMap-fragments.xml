@@ -38,7 +38,7 @@
         <result property="entryId" column="EntryId"/>
         <result property="updatedDate" column="UpdateDate" javaType="Date" jdbcType="DATETIME"/>
         <result property="publishedDate" column="CreateDate" javaType="Date" jdbcType="DATETIME"/>
-        <result property="lastModifiedSeqNum" column="UpdateTimestamp"/>
+        <result property="updateTimestamp" column="UpdateTimestamp"/>
         <result property="deleted" column="DeleteFlag"/>
         <result property="revision" column="RevisionNum"/>
     </resultMap>
@@ -52,7 +52,7 @@
         <result property="entryId" column="EntryId"/>
         <result property="updatedDate" column="UpdateDate" javaType="Date" jdbcType="DATETIME"/>
         <result property="publishedDate" column="CreateDate" javaType="Date" jdbcType="DATETIME"/>
-        <result property="lastModifiedSeqNum" column="UpdateTimestamp"/>
+        <result property="updateTimestamp" column="UpdateTimestamp"/>
         <result property="deleted" column="DeleteFlag"/>
         <result property="revision" column="RevisionNum"/>
         <result property="categories" resultMap="entryCategoryResult"/>

@@ -101,10 +101,10 @@ public class SeederDBSTest extends TestCase {
             assertTrue(lastVal.compareTo(widget.getUpdatedDate()) <= 0);
             lastVal = widget.getUpdatedDate();
 
-            assertTrue( "expected " + seqNum + " < " + widget.getLastModifiedSeqNum() + " for " + widget,
-                        seqNum < widget.getLastModifiedSeqNum());
+            assertTrue( "expected " + seqNum + " < " + widget.getUpdateTimestamp() + " for " + widget,
+                        seqNum < widget.getUpdateTimestamp());
 
-            seqNum = widget.getLastModifiedSeqNum();
+            seqNum = widget.getUpdateTimestamp();
         }
     }
 }
