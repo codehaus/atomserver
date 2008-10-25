@@ -599,7 +599,8 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         }
 
         // NOTE: we do NOT add the updated-min param because, by definition, we have already satisfied that
-        //       condition on the first page of this page set. And the passing along start-index ensures this.
+        //       condition on the first page of this page set. (i.e. we're past that point)
+        //       And passing along start-index ensures this.
         Date updatedMax = uriTarget.getUpdatedMaxParam();
         if ( updatedMax != null ) {
             nextURI += "&" + QueryParam.updatedMax.getParamName() + "=" + AtomDate.format( updatedMax );

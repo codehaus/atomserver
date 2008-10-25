@@ -50,6 +50,8 @@ public class DBSTestCase extends AtomServerTestCase {
 
     protected int startCount = 0;
 
+    protected int numSeeded = 0;
+
     protected void insertEntry(BaseEntryDescriptor entryDescriptor, boolean writeFileContent) throws Exception {
         DBSeeder.getInstance(getSpringFactory()).insertWidget(entryDescriptor);
         if (contentStorage instanceof FileBasedContentStorage && writeFileContent ) {
@@ -92,7 +94,7 @@ public class DBSTestCase extends AtomServerTestCase {
             File file = new File(getClass().getResource("/testentries/var").toURI());
             FileUtils.copyDirectory(file, TEST_DATA_DIR);
 
-            DBSeeder.getInstance(springContext).seedEntriesClearingFirst();
+            numSeeded = DBSeeder.getInstance(springContext).seedEntriesClearingFirst();
 
             LatencyUtil.updateLastWrote();
         } else {
@@ -108,11 +110,14 @@ public class DBSTestCase extends AtomServerTestCase {
         if (requiresDBSeeding()) {
             FileUtils.deleteDirectory(TEST_DATA_DIR);            
         }
+        numSeeded = 0;
     }
 
     protected boolean requiresDBSeeding() { return false; }
 
     protected String getStoreName() { return "org.atomserver-atomService"; }
+
+    protected int getNumSeeded() { return numSeeded; } 
 
     public boolean checkTotalResults( String workspace ) {
         return store.getAtomWorkspace(workspace).getOptions().getDefaultProducingTotalResultsFeedElement();
