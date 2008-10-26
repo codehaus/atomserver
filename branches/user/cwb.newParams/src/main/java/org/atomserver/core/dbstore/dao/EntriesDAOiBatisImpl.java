@@ -491,11 +491,13 @@ public class EntriesDAOiBatisImpl
                                                                       Date updatedMax,
                                                                       Locale locale,
                                                                       int startIndex,
+                                                                      int endIndex,
                                                                       int pageSize,
                                                                       Collection<BooleanExpression<AtomCategory>> categoriesQuery,
                                                                       List<String> joinWorkspaces) {
 
-        ParamMap paramMap = prepareParamMapForSelectEntries(updatedMin, updatedMax, startIndex, pageSize,
+        ParamMap paramMap = prepareParamMapForSelectEntries(updatedMin, updatedMax,
+                                                            startIndex, endIndex, pageSize,
                                                             locale == null ? null : locale.toString(), feed);
 
         if (joinWorkspaces != null && !joinWorkspaces.isEmpty()) {
@@ -522,13 +524,16 @@ public class EntriesDAOiBatisImpl
     public List<EntryMetaData> selectFeedPage(Date updatedMin,
                                               Date updatedMax,
                                               int startIndex,
+                                              int endIndex,
                                               int pageSize,
                                               String locale,
                                               FeedDescriptor feed,
                                               Collection<BooleanExpression<AtomCategory>> categoryQuery) {
         StopWatch stopWatch = new AutomaticStopWatch();
         try {
-            ParamMap paramMap = prepareParamMapForSelectEntries(updatedMin, updatedMax, startIndex, pageSize, locale, feed);
+            ParamMap paramMap = prepareParamMapForSelectEntries(updatedMin, updatedMax,
+                                                                startIndex, endIndex,
+                                                                pageSize, locale, feed);
 
             if (categoryQuery != null && !categoryQuery.isEmpty()) {
                 paramMap.param("categoryFilterSql",
@@ -551,13 +556,15 @@ public class EntriesDAOiBatisImpl
     }
 
     // NOTE: package scoped for use by EntryCategoryIBatisImpl
-    ParamMap prepareParamMapForSelectEntries(Date updatedMin, Date updatedMax, int startIndex,
+    ParamMap prepareParamMapForSelectEntries(Date updatedMin, Date updatedMax,
+                                             int startIndex, int endIndex,
                                              int pageSize, String locale, FeedDescriptor feed) {
         ParamMap paramMap = paramMap()
                 .param("workspace", feed.getWorkspace())
                 .param("updatedMin", updatedMin)
                 .param("updatedMax", updatedMax)
                 .param("startIndex", (long)startIndex )
+                .param("endIndex", (long)endIndex )
                 .param("pageSize", pageSize)
                 .param("collection", feed.getCollection());
 

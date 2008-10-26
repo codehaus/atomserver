@@ -62,9 +62,11 @@ abstract public class AbstractAtomCollection implements AtomCollection {
      * @param abdera
      * @param iri
      * @param feedTarget      The FeedTarget, which was decoded from the URI
-     * @param modifiedMin     The ifModifiedSince Date (as a long) determined using either the Header or a Query param.
+     * @param updatedMin      The minimum update Date determined using either the Header or a Query param.
+     * @param updatedMax      The maximum update Date determined using a Query param.
      * @param feed            The Feed to which to add Entries
-     * @return The latest lastModified Date (as a long) for an Entry in this Feed. Used to set the <updated> element in the Feed
+     * @return The last update Date (as a long) for an Entry in this Feed.
+     * Used to set the <updated> element in the Feed
      * @throws AtomServerException
      */
 
@@ -74,7 +76,6 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                                        Date updatedMin,
                                        Date updatedMax,
                                        Feed feed) throws AtomServerException;
-
 
     /**
      * The getEntry() method on the AtomCollection API delegates to this method within the subclass
@@ -418,17 +419,19 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         Date updatedMax = feedTarget.getUpdatedMaxParam();
 
         if ( updatedMax != null && updatedMin.after( updatedMax) ) {
-             throw new BadRequestException("updated-min (" + updatedMin + ") is after updated-max (" + updatedMax + ")");
+            String msg = "updated-min (" + updatedMin + ") is after updated-max (" + updatedMax + ")";
+            log.error(msg);
+            throw new BadRequestException(msg);
         }
 
         Feed feed = AtomServer.getFactory(abdera).newFeed();
 
         long lastUpdated = getEntries(request.getServiceContext().getAbdera(),
-                                       request.getUri(),
-                                       feedTarget,
-                                       updatedMin,
-                                       updatedMax,
-                                       feed);
+                                      request.getUri(),
+                                      feedTarget,
+                                      updatedMin,
+                                      updatedMax,
+                                      feed);
         if (lastUpdated != 0L) {
             try {
                 String collection = feedTarget.getCollection();

@@ -106,28 +106,28 @@ public class LocaleEntriesDAOTest extends DAOTestCase {
 
         // get page (for "de")
         BaseFeedDescriptor feedDescriptor = new BaseFeedDescriptor(workspace, null);
-        List sortedList = entriesDAO.selectFeedPage(ZERO_DATE, AtomServerConstants.FAR_FUTURE_DATE, 0, pageSize,
+        List sortedList = entriesDAO.selectFeedPage(ZERO_DATE, AtomServerConstants.FAR_FUTURE_DATE, 0, -1, pageSize,
                                                     locales[0], feedDescriptor, null);
         log.debug("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         log.debug("List (de) = \n" + sortedList);
         assertEquals(4, sortedList.size());
 
         // get page (for "de_DE") 
-        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, AtomServerConstants.FAR_FUTURE_DATE, 0, pageSize,
+        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, AtomServerConstants.FAR_FUTURE_DATE, 0, -1, pageSize,
                                                locales[1], feedDescriptor, null);
         log.debug("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         log.debug("List (de_DE) = \n" + sortedList);
         assertEquals(4, sortedList.size());
 
         // get page (for "de_CH") 
-        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, AtomServerConstants.FAR_FUTURE_DATE, 0, pageSize,
+        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, AtomServerConstants.FAR_FUTURE_DATE, 0, -1, pageSize,
                                                locales[2], feedDescriptor, null);
         log.debug("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         log.debug("List (de_CH) = \n" + sortedList);
         assertEquals(4, sortedList.size());
 
         // get page (for "de_AT") 
-        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, AtomServerConstants.FAR_FUTURE_DATE, 0, pageSize,
+        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, AtomServerConstants.FAR_FUTURE_DATE, 0, -1, pageSize,
                                                "de_AT", feedDescriptor, null);
         log.debug("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         log.debug("List (de_AT) = \n" + sortedList);

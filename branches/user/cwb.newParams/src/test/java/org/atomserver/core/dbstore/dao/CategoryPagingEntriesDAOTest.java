@@ -183,7 +183,7 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         AtomCategory atomCategory = new AtomCategory( scheme, "foobar0" );
         categoryList.add(new BooleanTerm<AtomCategory>("term0", atomCategory));
 
-        List sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, 0, 2,
+        List sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, 0, -1, 2,
                                                     null,
                                                     new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
@@ -200,7 +200,7 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         // get second page
         int startIndex = getLastIndex(sortedList);
 
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, startIndex, 2,
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, startIndex, -1, 2,
                                                null,
                                                new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
@@ -223,7 +223,7 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
 
         categoryList.add(new BooleanTerm<AtomCategory>("term1", atomCategory));
 
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, 0, 2,
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, 0, -1, 2,
                                                null,
                                                new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
@@ -239,7 +239,7 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
 
         // get second page
         startIndex = getLastIndex(sortedList);
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, startIndex, 2,
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, startIndex, -1, 2,
                                                null,
                                                new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
@@ -265,7 +265,7 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
 
         categoryList.add(new BooleanTerm<AtomCategory>("term1", atomCategory));
 
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, 0, 3,
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, 0, -1, 3,
                                                null,
                                                new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
@@ -281,7 +281,7 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
 
         categoryList.add(new BooleanTerm<AtomCategory>("term1", atomCategory));
 
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, 0, 2,
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, 0, -1, 2,
                                                null,
                                                new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
@@ -297,7 +297,7 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
 
         // get second page
         startIndex = getLastIndex(sortedList);
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, startIndex, 2,
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, startIndex, -1, 2,
                                                null,
                                                new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
@@ -334,13 +334,13 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         atomCategory = new AtomCategory( scheme, "foobar0" );
 
         categoryList.add(new BooleanTerm<AtomCategory>("term0", atomCategory));
-        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, AtomServerConstants.FAR_FUTURE_DATE, 0, 100,
+        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, AtomServerConstants.FAR_FUTURE_DATE, 0, -1, 100,
                                                "zh",
                                                new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
         assertEquals( 2, sortedList.size() );
 
-        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, AtomServerConstants.FAR_FUTURE_DATE, 0, 100,
+        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, AtomServerConstants.FAR_FUTURE_DATE, 0, -1, 100,
                                                "fr",
                                                new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
@@ -351,7 +351,7 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         atomCategory = new AtomCategory( scheme, "foobar3" );
 
         categoryList.add(new BooleanTerm<AtomCategory>("term0", atomCategory));
-        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, AtomServerConstants.FAR_FUTURE_DATE, 0, 100,
+        sortedList = entriesDAO.selectFeedPage(ZERO_DATE, AtomServerConstants.FAR_FUTURE_DATE, 0, -1, 100,
                                                "fr",
                                                new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
@@ -364,7 +364,7 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         atomCategory = new AtomCategory( scheme, "foobar0" );
 
         categoryList.add(new BooleanTerm<AtomCategory>("term0", atomCategory));
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, 0, 2,
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, 0, -1, 2,
                                                "zh",
                                                new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
@@ -376,7 +376,7 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         atomCategory = new AtomCategory( scheme, "foobar2" );
 
         categoryList.add(new BooleanTerm<AtomCategory>("term0", atomCategory));
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, 0, 2,
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, 0, -1, 2,
                                                "zh",
                                                new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
@@ -394,7 +394,7 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         atomCategory = new AtomCategory( scheme, "foobar2" );
 
         categoryList.add(new BooleanTerm<AtomCategory>("term1", atomCategory));
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, 0, 3,
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, 0, -1, 3,
                                                "ar",
                                                new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
@@ -407,7 +407,7 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         atomCategory = new AtomCategory( scheme, "noogie0" );
 
         categoryList.add(new BooleanTerm<AtomCategory>("term1", atomCategory));
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, 0, 3,
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, 0, -1, 3,
                                                "zh",
                                                new BaseFeedDescriptor(workspace, sysId), categoryList);
         log.debug("List= " + sortedList);
@@ -470,7 +470,7 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         AtomCategory atomCategory = new AtomCategory( scheme, term );
         categoryList.add(new BooleanTerm<AtomCategory>("term0", atomCategory));
 
-        List sortedList = entriesDAO.selectFeedPage(ZERO_DATE, AtomServerConstants.FAR_FUTURE_DATE, 0, 100,
+        List sortedList = entriesDAO.selectFeedPage(ZERO_DATE, AtomServerConstants.FAR_FUTURE_DATE, 0, -1, 100,
                                                     null,
                                                     new BaseFeedDescriptor(workspace, sysId), categoryList);
 

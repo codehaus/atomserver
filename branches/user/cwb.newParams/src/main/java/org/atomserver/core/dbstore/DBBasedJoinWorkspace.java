@@ -97,6 +97,7 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
                                                                     updatedMax,
                                                                     feedTarget.getLocaleParam(),
                                                                     feedTarget.getStartIndexParam(),
+                                                                    feedTarget.getEndIndexParam(),
                                                                     pageSize + 1,
                                                                     feedTarget.getCategoriesQuery(),
                                                                     joinWorkspaces);

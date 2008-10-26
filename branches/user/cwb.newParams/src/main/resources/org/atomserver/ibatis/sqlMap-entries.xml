@@ -49,10 +49,13 @@
         </isNotNull>
          WHERE UpdateDate >= #updatedMin#
         <isNotNull property="updatedMax">
-            <![CDATA[AND UpdateDate < #updatedMax# ]]>
+            <![CDATA[ AND UpdateDate < #updatedMax# ]]>
         </isNotNull>
            AND UpdateTimestamp > #startIndex#
         <isNotNull property="latencySeconds">
+        <isNotEqual property="endIndex" compareValue="-1">
+           <![CDATA[ AND UpdateTimestamp <= #endIndex# ]]>
+        </isNotEqual>
            AND (
             <isEqual property="dbType" compareValue="hsql">
              DATEDIFF('ss', UpdateDate, NOW()) >= $latencySeconds$

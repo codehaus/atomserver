@@ -77,10 +77,6 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
          return ((DBBasedAtomService)parentAtomWorkspace.getParentAtomService()).getTransactionTemplate();
      }
 
-    //--------------------------------
-    //      public methods
-    //--------------------------------
-
     public void obliterateEntry(final EntryMetaData entryMetaData) {
         StopWatch stopWatch = new AutomaticStopWatch();
         try {
@@ -120,11 +116,6 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         return id;
     }
 
-    //--------------------------------
-    //      protected methods
-    //--------------------------------
-    /**
-     */
     protected long getEntries(Abdera abdera,
                               IRI iri,
                               FeedTarget feedTarget,
@@ -147,12 +138,20 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         }
 
         int startIndex = feedTarget.getStartIndexParam();
+        int endIndex = feedTarget.getEndIndexParam();
+
+        if ( endIndex != -1 && endIndex < startIndex ) {
+            String msg = "endIndex parameter (" + endIndex + ") is less than the startIndex (" + startIndex +")";
+            log.error(msg);
+            throw new BadRequestException(msg);
+        }
+
         Locale locale = feedTarget.getLocaleParam();
         EntryType entryType = (feedTarget.getEntryTypeParam() != null) ? feedTarget.getEntryTypeParam() : EntryType.link;
 
         int pageSize = calculatePageSize( feedTarget, entryType );
         if (log.isDebugEnabled()) {
-            log.debug("getEntries:: startIndex= " + startIndex + " pageSize " + pageSize );
+            log.debug("getEntries:: startIndex= " + startIndex + " endIndex= " + endIndex + " pageSize " + pageSize );
         }
 
         Collection<BooleanExpression<AtomCategory>> categoryQuery = feedTarget.getCategoriesQuery();
@@ -162,6 +161,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                 getEntriesDAO().selectFeedPage( updatedMin,
                                                 updatedMax,
                                                 startIndex,
+                                                endIndex,
                                                 pageSize + 1 /* ask for 1 more than pageSize, to detect the end of the feed */,
                                                 locale == null ? null : locale.toString(),
                                                 feedTarget,
@@ -244,8 +244,6 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         return getEntriesDAO().selectEntry(entryTarget);
     }
 
-    /**
-     */
     protected Collection<BatchEntryResult> deleteEntries(RequestContext request,
                                                          Collection<EntryTarget> allEntriesUriData)
             throws AtomServerException {
@@ -302,8 +300,6 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         return returnValue;
     }
 
-    /**
-     */
     protected Collection<BatchEntryResult> modifyEntries(RequestContext request,
                                                          Collection<EntryTarget> allEntriesUriData)
             throws AtomServerException {
@@ -565,9 +561,6 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         return bean;
     }
 
-    //--------------------------------
-    //      private methods
-    //--------------------------------
     private void addOpenSearchElements(Feed feed, int startIndex,
                                        int pageSize, int totalEntries ) {
         if ( totalEntries > 0 )
