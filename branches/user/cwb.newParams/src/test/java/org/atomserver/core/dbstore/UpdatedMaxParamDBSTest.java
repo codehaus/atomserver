@@ -5,9 +5,10 @@ package org.atomserver.core.dbstore;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.apache.abdera.protocol.client.ClientResponse;
-import org.apache.abdera.model.AtomDate;
+import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
+import org.apache.abdera.protocol.client.ClientResponse;
+import org.atomserver.utils.AtomDate;
 
 import java.util.Date;
 
@@ -124,5 +125,49 @@ public class UpdatedMaxParamDBSTest extends ParamDBSTestCase {
         response.release();
      }
 
+    public void testReadEntry() throws Exception {
+        // First grab the entry to get some test data
+        String baseURI = "widgets/acme/" + stdPropId + "." + stdLocale + ".xml";
+        ClientResponse response= clientGet( baseURI, null, 200 );
+        Entry entry = (Entry) response.getDocument().getRoot();
+        assertNotNull( entry );
+        log.debug( "updatedDate= " + entry.getUpdated() );
+        String updateDate = AtomDate.format( entry.getUpdated() );
 
+        response.release();
+
+        // setup some date test data
+        long lnow = (entriesDao.selectSysDate()).getTime();
+        String earliest = AtomDate.format( new Date( lnow - 100000 ) );
+        String earlier = AtomDate.format( new Date( lnow - 10000 ) );
+        String later = AtomDate.format( new Date( lnow + 10000 ) );
+        String latest = AtomDate.format( new Date( lnow + 100000 ) );
+
+        // request an Entry within the bounds
+        response= clientGet( baseURI + "?updated-min=" + earlier + "&updated-max=" + later, null, 200 );
+        response.release();
+
+        response= clientGet( baseURI + "?updated-min=" + earlier, null, 200 );
+        response.release();
+
+        response= clientGet( baseURI + "?updated-max=" + later, null, 200 );
+        response.release();
+
+        // request an Entry outside the bounds (earlier)
+        response= clientGet( baseURI + "?updated-min=" + earliest + "&updated-max=" + earlier, null, 304 );
+        response.release();
+        
+        // request an Entry outside the bounds (later)
+        response= clientGet( baseURI + "?updated-min=" + later + "&updated-max=" + latest, null, 304 );
+        response.release();
+
+        // request an Entry using the exact time
+        // updated-min is inclusive
+        response= clientGet( baseURI + "?updated-min=" + updateDate, null, 200 );
+        response.release();
+
+        // updated-max is exclusive
+        response= clientGet( baseURI + "?updated-max=" + updateDate, null, 304 );
+        response.release();
+    }
 }

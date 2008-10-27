@@ -22,8 +22,7 @@ pageTracker._trackPageview();
  alt="logo">&nbsp; AtomServer, Protocol Reference </h1>
 <div class="content">
 <div id="header"><span style="font-style: italic;">Chris Berry, Bryon
-Jacob. Updated
-08/15/08</span><br>
+Jacob. Updated 10/27/08</span><br>
 <br>
 This
 document describes the protocol used by the AtomServer data APIs
@@ -262,8 +261,9 @@ then you might send a query with the following URI:</p>
 <div id="codebox">
 <pre style="margin-left: 40px;">http://foo.com/myserver/v1/widgets/acme?updated-min=2005-04-19T15:30:00</pre>
 </div>
-<p>AtomServer services support HTTP Conditional <code>GET</code>. They
-set
+<p>AtomServer services support HTTP Conditional <code>GET</code>.
+AtomServer
+sets
 the <span style="font-family: monospace;">Last-Modified</span>
 response header based upon the value of the <code>&lt;atom:updated&gt;</code>
 element in the returned feed or entry. A client can send this value
@@ -274,15 +274,28 @@ hasn't changed since the <span style="font-family: monospace;">If-Modified-Since
 time, then the AtomServer
 service
 returns a <span style="font-family: monospace;">304(Not Modified) </span>HTTP
-response.</p>
-<p>AtomServer supports category queries. Passing a standard
+response. Although a better way to do this is to use the <span
+ style="font-family: monospace;">start-index</span> parameter, where
+the client sets this value to the <span style="font-family: monospace;">&lt;as:endIndex&gt;</span>
+returned in the previous page. Using <span
+ style="font-family: monospace;">start-index </span>ensures that the
+client will never see the same response twice, or miss Entries, since
+several Entries could have the same "update date", but will never have
+the same "update index".<br>
+</p>
+<div id="codebox">
+<pre style="margin-left: 40px;">http://foo.com/myserver/v1/widgets/acme?start-index=12345</pre>
+</div>
+<p>Passing a standard
 parameter not understood by a given service results in a <code>403
 Forbidden</code> response. Passing an unsupported nonstandard parameter
 results in a <code>400 Bad Request</code> response. For information on
 other status codes, see the <a href="#http-status-codes">HTTP status
 codes</a> section of this document.</p>
-<p>The standard query parameters are summarized in the following table.
-All parameter values need to be URL encoded.</p>
+<p><span style="font-weight: bold;">The standard AtomServer query
+parameters</span> are summarized in the following table.
+Note that AtomServer supports category queries. All parameter values
+need to be URL encoded.</p>
 <table border="5">
   <tbody>
     <tr>
@@ -291,7 +304,7 @@ All parameter values need to be URL encoded.</p>
       <th>Notes</th>
     </tr>
     <tr>
-      <td style="font-family: monospace;"><code>/-/</code><em>category</em></td>
+      <td style="font-family: monospace; font-weight: bold;"><code>/-/</code><em>category</em></td>
       <td>Category queries<br>
       </td>
       <td>
@@ -312,25 +325,35 @@ document</a> for further details on Category Queries<br>
       </td>
     </tr>
     <tr>
-      <td><code>updated-min</code>, <code>updated-max</code></td>
+      <td style="font-weight: bold;"><code>updated-min</code>, <code>updated-max</code></td>
       <td>Bounds on the entry update date</td>
       <td>
       <ul>
         <li>Use the RFC 4287 timestamp format. For example: <code>2005-08-09T10:57:00-08:00</code>.</li>
         <li><span style="font-style: italic;">The lower bound is
-inclusive</span>, whereas the upper bound is
-exclusive.</li>
+inclusive</span>. In other words, it is used as "<span
+ style="font-family: monospace;">&gt;= updated-min</span>" in the
+resulting query..</li>
+        <li><span style="font-style: italic;">The upper bound is
+exclusive</span>. In other words, it is used as "&lt; updated-max" in
+the
+resulting query.</li>
         <li>See the <a href="#Dates">About Date Constructs</a> section
 for further details.</li>
-        <li>NOTE: <span style="font-family: monospace;">updated-max</span>
-has NOT yet been implemented<br>
-        </li>
+        <li>These parameters may be applied to Entry requests, with
+limited meaning. A <span style="font-family: monospace;">304 NOT
+MODIFIED</span> will be returned if the Entry does not fit within the
+bounds provided.</li>
       </ul>
       </td>
     </tr>
     <tr>
-      <td><code>start-index</code></td>
-      <td>The index of the last result retrieved<br>
+      <td><code><a name="start-index"></a><span
+ style="font-weight: bold;">start-index</span><br
+ style="font-weight: bold;">
+      <span style="font-weight: bold;">end-index</span><br>
+      </code></td>
+      <td>The "update index" of the last result retrieved<br>
       </td>
       <td>
       <ul>
@@ -351,15 +374,22 @@ used to order entries, but you should <span style="font-style: italic;">never
 to use the value returned in the <span style="font-family: monospace;">openSearch:startIndex</span>
 element.</li>
         <li><span style="font-family: monospace;">start-index</span> is
-"exclusive". In other words, it is used as "<span
+exclusive. In other words, it is used as "<span
  style="font-family: monospace;">&gt; start-index</span>" in the
-resulting query.<br>
+resulting query.</li>
+        <li><span style="font-family: monospace;">end-index </span>is
+inclusive. In other words, it is used as "<span
+ style="font-family: monospace;">&lt;= end-index</span>" in the
+resulting query.</li>
+        <li>These parameters apply <span style="font-weight: bold;">only</span>
+to Feed requests, as they make little sense when applied to specific
+Entries.<br>
         </li>
       </ul>
       </td>
     </tr>
     <tr>
-      <td><code>max-results</code></td>
+      <td style="font-weight: bold;"><code>max-results</code></td>
       <td>Maximum number of results to be retrieved</td>
       <td>
       <ul>
@@ -377,7 +407,7 @@ Entry, including its <span style="font-family: monospace;">content.</span>
     </tr>
     <tr>
       <td style="vertical-align: middle;"><span
- style="font-family: monospace;">locale</span><br>
+ style="font-family: monospace; font-weight: bold;">locale</span><br>
       </td>
       <td style="vertical-align: middle;">The locale Id of the
 requested info<br>
@@ -419,7 +449,8 @@ precedence</span>.</li>
     </tr>
     <tr>
       <td style="vertical-align: middle;"><span
- style="font-family: monospace;"><a name="entry-type"></a>entry-type</span><br>
+ style="font-family: monospace;"><a name="entry-type"></a><span
+ style="font-weight: bold;">entry-type</span></span><br>
       </td>
       <td style="vertical-align: middle;">The type of Entry to return.<br>
       </td>
@@ -445,7 +476,7 @@ is <span style="font-family: monospace;">full</span>.</li>
       </td>
     </tr>
     <tr>
-      <td><em>entryID.localeID.xml</em></td>
+      <td style="font-weight: bold;"><em>entryID.localeID.xml</em></td>
       <td>ID of a specific entry to be retrieved</td>
       <td>
       <ul>
@@ -488,48 +519,145 @@ parameter (see above).<br>
 <br>
 <h4><a name="responses"></a>Query responses</h4>
 <p>Queries return an Atom Feed or an Atom Entry, depending on the
-request parameters.</p>
-<p>Query results contain the following OpenSearch elements directly
-under the <code>&lt;feed&gt;</code> element:</p>
-<dl>
-  <dt style="font-weight: bold;"><code>openSearch:totalResults</code></dt>
-  <dd>The total number of search results for the query. This element is
-optional, and is not provided by default.<br>
-  </dd>
-  <dt style="font-weight: bold;"><code>openSearch:startIndex</code></dt>
-  <dd>The index of the first result. See the <span
- style="font-family: monospace;">start-index</span> in the table
-above for important information about this element.<br>
-  </dd>
-  <dt style="font-weight: bold;"><code>openSearch:itemsPerPage</code></dt>
-  <dd>The
-maximum number of items that appear on one page. This allows clients to
+request parameters and the URL structure.</p>
+<p>Query results contain the following <span style="font-weight: bold;">OpenSearch
+elements </span>directly
+under the <code>&lt;feed&gt;</code> element:<br>
+</p>
+<table border="5">
+  <tbody>
+    <tr>
+      <th>Parameter</th>
+      <th>Meaning</th>
+      <th>Notes</th>
+    </tr>
+    <tr>
+      <td style="font-family: monospace;"><code
+ style="font-weight: bold;">openSearch:totalResults</code><em></em></td>
+      <td>The total number of search results for the query</td>
+      <td>
+      <ul>
+      </ul>
+This
+element is
+optional, and is not provided by default.
+      <ul>
+      </ul>
+      </td>
+    </tr>
+    <tr>
+      <td style="font-weight: bold;"><code>openSearch:startIndex</code></td>
+      <td style="vertical-align: top;">The index of the first result.</td>
+      <td style="vertical-align: top;">See the <span
+ style="font-family: monospace;">start-index</span> in the table <a
+ href="protocol_reference.html#start-index">above</a> for important
+information about
+this element.</td>
+    </tr>
+    <tr>
+      <td style="font-weight: bold;"><code>openSearch:itemsPerPage</code></td>
+      <td style="vertical-align: top;">The
+maximum number of items that appear on one page. </td>
+      <td style="vertical-align: top;">This allows clients to
 generate direct links to any set of subsequent pages. However, for a
 possible pitfall in using this number, see the note regarding <code>start-index</code>
-in the table in the <a href="#query-requests">Query requests</a>
-section.</dd>
-</dl>
-<p>Query results also contain the following AtomServer extension
+in the table in the <a href="protocol_reference.html#query-requests">Query
+requests</a>
+section.</td>
+    </tr>
+  </tbody>
+</table>
+<p></p>
+<br>
+<p>Query results also contain the following <span
+ style="font-weight: bold;">AtomServer extension
 elements
 directly
-under the <code>&lt;feed&gt;</code> element:</p>
-<dl>
-  <dt style="font-weight: bold;"><code>atomserver:endIndex</code></dt>
-  <dd>The index of the final result. See the <span
- style="font-family: monospace;">start-index</span> description in the
-table
-above for important information about this element. Note; the <span
- style="font-family: monospace;">endIndex</span> returned by a Feed can
+under the </span><code style="font-weight: bold;">&lt;feed&gt;</code><span
+ style="font-weight: bold;"> element: </span><span
+ style="font-weight: bold;"></span>(Note further elements are defined
+by <a href="aggregate_feeds.html">Aggregate Feeds</a> and <a
+ href="batching.html">Batch processing</a>)</p>
+<table border="5">
+  <tbody>
+    <tr>
+      <th>Parameter</th>
+      <th>Meaning</th>
+      <th>Notes</th>
+    </tr>
+    <tr>
+      <td style="font-weight: bold;"><code>atomserver:endIndex</code><em></em></td>
+      <td>The "update index" of the final result.</td>
+      <td> See the <span style="font-family: monospace;">start-index</span>
+description in the
+table <a href="protocol_reference.html#start-index">above</a> for
+important information about
+this element. Note; the <span style="font-family: monospace;">endIndex</span>
+returned by a Feed can
 be used as the <span style="font-family: monospace;">start-index</span>
-for a subsequent Feed page request.<br>
-  </dd>
-</dl>
+for a subsequent Feed page request. </td>
+    </tr>
+  </tbody>
+</table>
+<p><br>
+</p>
+<p>Query results also contain the following <span
+ style="font-weight: bold;">AtomServer extension
+elements
+directly
+under the </span><code style="font-weight: bold;">&lt;entry&gt;</code><span
+ style="font-weight: bold;"> element: </span>(Note further elements
+are defined by <a href="aggregate_feeds.html">Aggregate Feeds</a> and <a
+ href="batching.html">Batch processing</a>)
+</p>
+<table border="5">
+  <tbody>
+    <tr>
+      <th>Parameter</th>
+      <th>Meaning</th>
+      <th>Notes</th>
+    </tr>
+    <tr>
+      <td style="font-family: monospace;"><code
+ style="font-weight: bold;">atomserver:entryId</code><em></em></td>
+      <td>The Id of the Atom Entry.</td>
+      <td>This element is provided as a
+convenience to the User. It is particularly important for <span
+ style="font-family: monospace;">POST</span> requests, when the Id was
+created within AtomServer. It saves the User the trouble of parsing the
+Id out of the &lt;id&gt; element, because inevitably the User will need
+it for further processing. </td>
+    </tr>
+    <tr>
+      <td><span style="font-family: monospace; font-weight: bold;">atomserver:revision</span><br>
+      </td>
+      <td style="vertical-align: top;">The revision number of the Atom
+Entry<br>
+      </td>
+      <td style="vertical-align: top;">This element is provided as a
+convenience to the User. It is used for optimistic concurrency requests
+(<a href="#Optimistic_concurrency_versioning">see below</a>). </td>
+    </tr>
+    <tr>
+      <td><span style="font-family: monospace; font-weight: bold;">atomserver:updateIndex</span><br>
+      </td>
+      <td style="vertical-align: top;">The "update index" of the Atom
+Entry<br>
+      </td>
+      <td style="vertical-align: top;">This element is provided as a
+convenience to the User. It is primarilly used for debugging. </td>
+    </tr>
+  </tbody>
+</table>
+<p><br>
+</p>
 <p>The
 Atom response Feed and Entries may also include any of the following
 Atom and AtomServer elements (as well as others listed in the Atom
 specification):</p>
 <dl>
-  <dt style="font-weight: bold;"><code>&lt;link rel="self" type="..."
+  <dt style="font-weight: bold;"><code>&lt;link rel="self"
+type="..."
 href="..."/&gt;</code></dt>
   <dd>For Entries, this contains the URI of <span
  style="font-style: italic;">this</span> resource, <span
@@ -540,7 +668,8 @@ attribute depends on the requested format. If no data changes in the
 interim, sending another GET to the <span
  style="font-family: monospace;">self </span>URI returns the same
 response.</dd>
-  <dt style="font-weight: bold;"><code>&lt;link rel="edit" type="..."
+  <dt style="font-weight: bold;"><code>&lt;link rel="edit"
+type="..."
 href="..."/&gt;</code></dt>
   <dd>Contains the URI of the <span style="font-style: italic;">next</span>,
 presumably unwritten, resource, <span style="font-style: italic;">including
@@ -548,31 +677,19 @@ its revision number</span>. The value of the <code>type</code>
 attribute depends on the requested format. If no data changes in the
 interim, sending PUT to the <span style="font-family: monospace;">edit
     </span>URI will produce a successful update. <span
- style="font-style: italic;">It is alway recommended that you PUT to
-the "edit URI</span>.<br>
+ style="font-style: italic;">It is always recommended that you PUT
+using
+the "edit" URI</span>.<br>
   </dd>
   <dt style="font-weight: bold;"><code>&lt;link rel="next"
 type="application/atom+xml"
 href="..."/&gt;</code></dt>
-  <dd>Specifies the URI of the next chunk of this query result set, if
+  <dd>Specifies the URI of the next chunk of this query result set,
+if
 it is chunked. The client <span style="font-weight: bold;">must</span>
 use the <span style="font-family: monospace;">next</span> link when
 accessing the next page of results.<br>
   </dd>
-</dl>
-<p>Query results also contain the following AtomServer extension
-elements
-directly
-under the <code>&lt;entry&gt;</code> element:</p>
-<code></code>
-<dl>
-  <dt style="font-weight: bold;"><code>atomserver:entryId</code></dt>
-  <dd>The Id of the Atom Entry. This is element is provided as a
-convenience to the User. It is particularly important for <span
- style="font-family: monospace;">POST</span> requests, when the Id was
-created within AtomServer. It saves the User the trouble of parsing the
-Id out of the &lt;id&gt; element, because inevitably the User will need
-it for further processing. </dd>
 </dl>
 <p>Here's a sample response body, in response to a Feed query:</p>
 <div id="codebox">
@@ -603,7 +720,8 @@ entries from a feed. Note that <span style="font-style: italic;">following
  style="font-style: italic; font-weight: bold;">only</span><span
  style="font-style: italic;"> reliable way to retrieve pages.</span><br>
 </p>
-<h3><a name="time-sensitive-feeds"></a>Dealing with Time-sensitive Feeds<br>
+<h3><a name="time-sensitive-feeds"></a>Dealing with Time-sensitive
+Feeds<br>
 </h3>
 A time-sensitive Feed is one that involves requests using the <span
  style="font-style: italic;">Last Modified Date,</span> which is the
@@ -652,6 +770,26 @@ exclusive (i.e. "&gt;"), so you are therefore assured of getting the
 appropriate next Entry. The <span style="font-family: monospace;">start-index</span>
 for a Feed is equal to the <span style="font-family: monospace;">endIndex</span>
 returned by the last page you received. <br>
+<br>
+You may also place an upper bound on time-sensitive Feeds using either
+the <span style="font-family: monospace;">updated-max</span> and <span
+ style="font-family: monospace;">end-index</span> query parameters.
+(e.g. <span style="font-family: monospace;">
+GET /v1/widgets/acme?start-index=</span><span
+ style="font-family: monospace;">153&amp;end-index=299&nbsp; or&nbsp; </span><span
+ style="font-family: monospace;">widgets/acme?updated-min=2005-04-19&amp;</span><span
+ style="font-family: monospace;">updated-max=2008-10-07</span><span
+ style="font-family: monospace;">). </span>Note that <span
+ style="font-family: monospace;">updated-max</span> is "exclusive" and <span
+ style="font-family: monospace;">end-index</span> is inclusive. It is
+an error (<span style="font-family: monospace;">400 BAD REQUEST</span>)
+to request <span style="font-family: monospace;">updated-max</span>
+less than <span style="font-family: monospace;">updated-min</span>, or
+<span style="font-family: monospace;">end-index</span> less than <span
+ style="font-family: monospace;">start-index. </span>If <span
+ style="font-family: monospace;">start-index</span> equals <span
+ style="font-family: monospace;">end-index</span>, a <span
+ style="font-family: monospace;">304 NOT MODIFIED</span> is returned.<br>
 <h4><a name="Dates"></a>The RFC4287 Date Specification</h4>
 Any Dates provided must match the RFC4287 specification, which is
 described below. Most important, <span style="font-weight: bold;">dates
@@ -663,10 +801,12 @@ are assumed to be in GMT, unless you provide a timezone offset!</span><br>
 <span style="font-family: monospace;">&nbsp; A Date construct is an
 element whose content MUST conform to the</span><br
  style="font-family: monospace;">
-<span style="font-family: monospace;">&nbsp; "date-time" production in
+<span style="font-family: monospace;">&nbsp; "date-time" production
+in
 [RFC3339].&nbsp; In addition, an uppercase "T"</span><br
  style="font-family: monospace;">
-<span style="font-family: monospace;">&nbsp; character MUST be used to
+<span style="font-family: monospace;">&nbsp; character MUST be used
+to
 separate date and time, and an uppercase</span><br
  style="font-family: monospace;">
 <span style="font-family: monospace;">&nbsp; "Z" character MUST be
@@ -682,7 +822,8 @@ atomCommonAttributes,</span><br style="font-family: monospace;">
 <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;
 xsd:dateTime</span><br style="font-family: monospace;">
 <br style="font-family: monospace;">
-<span style="font-family: monospace;">&nbsp; Such date values happen to
+<span style="font-family: monospace;">&nbsp; Such date values
+happen to
 be compatible with the following</span><br
  style="font-family: monospace;">
 <span style="font-family: monospace;">&nbsp; specifications:
@@ -692,8 +833,8 @@ be compatible with the following</span><br
 [W3C.REC-xmlschema-2-20041028].</span><br
  style="font-family: monospace;">
 <br style="font-family: monospace;">
-<span style="font-family: monospace;">&nbsp; Example Date constructs:</span><br
- style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp; Example Date
+constructs:</span><br style="font-family: monospace;">
 <br style="font-family: monospace;">
 <span style="font-family: monospace;">&nbsp;
 &lt;updated&gt;2003-12-13T18:30:02Z&lt;/updated&gt;</span><br
@@ -708,10 +849,12 @@ be compatible with the following</span><br
 &lt;updated&gt;2003-12-13T18:30:02.25+01:00&lt;/updated&gt;</span><br
  style="font-family: monospace;">
 <br style="font-family: monospace;">
-<span style="font-family: monospace;">&nbsp; Date values SHOULD be as
+<span style="font-family: monospace;">&nbsp; Date values SHOULD be
+as
 accurate as possible.&nbsp; For example, it would</span><br
  style="font-family: monospace;">
-<span style="font-family: monospace;">&nbsp; be generally inappropriate
+<span style="font-family: monospace;">&nbsp; be generally
+inappropriate
 for a publishing system to apply the same</span><br
  style="font-family: monospace;">
 <span style="font-family: monospace;">&nbsp; timestamp to several
@@ -813,8 +956,8 @@ want to write should be
 written, you can avoid having to make that first round trip to
 determine the version ID by
 specifying a version ID of "*". For example, if you do a <span
- style="font-family: monospace;">PUT</span> to
-<span style="font-family: monospace;">http://foo.com/myserver/v1/widgets/acme/1234.en.xml/*</span>,
+ style="font-family: monospace;">PUT</span> to <span
+ style="font-family: monospace;">http://foo.com/myserver/v1/widgets/acme/1234.en.xml/*</span>,
 your write will succeed, regardless of the current version ID. The
 response will still
 contain the correct entry links and version ID.<br>
@@ -848,8 +991,10 @@ request /widgets?locale=en_GB, you will receive <span
 are none; 404. It was decided that this behavior was more consistent
 with a "Data Service". And that locale sensitivity was confusing and
 complicating things in the client Feed Readers.<br>
-<h3><a name="http-status-codes" id="http-status-codes">HTTP status codes</a></h3>
-<p>The following table describes what various HTTP status codes mean in
+<h3><a name="http-status-codes" id="http-status-codes">HTTP status
+codes</a></h3>
+<p>The following table describes what various HTTP status codes
+mean in
 the context of AtomServer.</p>
 <table border="5">
   <tbody>

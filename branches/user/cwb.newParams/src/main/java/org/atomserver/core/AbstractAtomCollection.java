@@ -463,12 +463,16 @@ abstract public class AbstractAtomCollection implements AtomCollection {
 
         EntryMetaData entryMetaData = getEntry(entryTarget);
 
-        Date thisLastUpdated =
-                (entryMetaData.getUpdatedDate() != null) ? entryMetaData.getUpdatedDate() : AtomServerConstants.ZERO_DATE;
+        Date thisLastUpdated = (entryMetaData.getUpdatedDate() != null)
+                               ? entryMetaData.getUpdatedDate() : AtomServerConstants.ZERO_DATE;
 
         Date updatedMin = getUpdatedMin(entryTarget, request);
+        Date updatedMax = (entryTarget.getUpdatedMaxParam() != null ) 
+                          ? entryTarget.getUpdatedMaxParam() : AtomServerConstants.FAR_FUTURE_DATE;
+
         Entry entry = null;
-        if ( thisLastUpdated.after( updatedMin ) ) {
+        if ( ( thisLastUpdated.after( updatedMin ) || thisLastUpdated.equals( updatedMin ) )
+             && thisLastUpdated.before( updatedMax ) ) {
             EntryType entryType =
                     (entryTarget.getEntryTypeParam() != null) ? entryTarget.getEntryTypeParam() : EntryType.full;
             entry = newEntry(abdera, entryMetaData, entryType);
