@@ -60,6 +60,17 @@ public class EndIndexParamDBSTest extends ParamDBSTestCase {
 
         log.debug( "SIZE=" + feed.getEntries().size() );
         assertEquals("Testing feed length", 5, feed.getEntries().size());
+
+        List<Entry> entriesCheck = feed.getEntries();
+        int lastIndex = 0;
+        for (Entry entry : entriesCheck) {
+            int thisIndex = Integer.parseInt( entry.getSimpleExtension(AtomServerConstants.UPDATE_INDEX) );
+            assertTrue( thisIndex > indexes[2] );
+            assertTrue( thisIndex > lastIndex );
+            lastIndex = thisIndex;
+        }
+        assertEquals( indexes[7], lastIndex);
+
         response.release();
 
         // end-index past the actual last index
