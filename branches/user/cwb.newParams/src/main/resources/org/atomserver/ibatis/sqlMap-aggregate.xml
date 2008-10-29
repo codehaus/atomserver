@@ -36,21 +36,29 @@
           JOIN EntryStore entryStore
             ON recentlyChangedEntries.EntryStoreId = entryStore.EntryStoreId
            AND recentlyChangedEntries.UpdateTimestamp > #startIndex#
+            <isNotEqual property="endIndex" compareValue="-1">
+               <![CDATA[ AND recentlyChangedEntries.UpdateTimestamp <= #endIndex# ]]>
+            </isNotEqual>
         </isNotNull>
+
+        <!-- TODO: make sure that agg feeds with a non-null date and a null index work -->
+           <!--AND recentlyChangedEntries.UpdateDate >= #updatedMin#-->
+        <!--<isNotNull property="updatedMax">-->
+            <!--<![CDATA[ AND recentlyChangedEntries.UpdateDate < #updatedMax# ]]>-->
+        <!--</isNotNull>-->
+        
         <isNotNull property="latencySeconds">
-            <isNotNull property="latencySeconds">
-               AND (
-                <isEqual property="dbType" compareValue="hsql">
-                 DATEDIFF('ss', entryStore.UpdateDate, NOW()) >= $latencySeconds$
-                </isEqual>
-                <isEqual property="dbType" compareValue="sqlserver">
-                 DATEADD(s, -1 * $latencySeconds$, GETDATE()) >= entryStore.UpdateDate
-                </isEqual>
-                <isEqual property="dbType" compareValue="postgres">
-                 NOW() - interval '$latencySeconds$ seconds' >= entryStore.UpdateDate
-                </isEqual>
-                )
-            </isNotNull>
+           AND (
+            <isEqual property="dbType" compareValue="hsql">
+             DATEDIFF('ss', entryStore.UpdateDate, NOW()) >= $latencySeconds$
+            </isEqual>
+            <isEqual property="dbType" compareValue="sqlserver">
+             DATEADD(s, -1 * $latencySeconds$, GETDATE()) >= entryStore.UpdateDate
+            </isEqual>
+            <isEqual property="dbType" compareValue="postgres">
+             NOW() - interval '$latencySeconds$ seconds' >= entryStore.UpdateDate
+            </isEqual>
+            )
         </isNotNull>
            <!-- This same query can be used to pull a SINGLE aggregate entry.  Note that we should
                 never provide both updateTimestamp AND entryId. -->
