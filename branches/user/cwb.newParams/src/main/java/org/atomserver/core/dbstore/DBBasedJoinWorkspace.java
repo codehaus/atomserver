@@ -33,6 +33,7 @@ import static org.atomserver.core.etc.AtomServerConstants.WORKSPACE;
 import static org.atomserver.core.etc.AtomServerConstants.COLLECTION;
 import static org.atomserver.core.etc.AtomServerConstants.LOCALE;
 import org.atomserver.exceptions.AtomServerException;
+import org.atomserver.exceptions.BadRequestException;
 import org.atomserver.uri.EntryTarget;
 import org.atomserver.uri.FeedTarget;
 
@@ -91,13 +92,23 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
             private long internalGetEntries(Abdera abdera, IRI iri, FeedTarget feedTarget,
                                             Date updatedMin, Date updatedMax, Feed feed,
                                             EntryType entryType, int pageSize) {
+
+                int startIndex = feedTarget.getStartIndexParam();
+                int endIndex = feedTarget.getEndIndexParam();
+
+                if ( endIndex != -1 && endIndex < startIndex ) {
+                    String msg = "endIndex parameter (" + endIndex + ") is less than the startIndex (" + startIndex +")";
+                    log.error(msg);
+                    throw new BadRequestException(msg);
+                }
+
                 List<AggregateEntryMetaData> list;
                 list = getEntriesDAO().selectAggregateEntriesByPage(feedTarget,
                                                                     updatedMin,
                                                                     updatedMax,
                                                                     feedTarget.getLocaleParam(),
-                                                                    feedTarget.getStartIndexParam(),
-                                                                    feedTarget.getEndIndexParam(),
+                                                                    startIndex,
+                                                                    endIndex,
                                                                     pageSize + 1,
                                                                     feedTarget.getCategoriesQuery(),
                                                                     joinWorkspaces);

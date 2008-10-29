@@ -6,10 +6,12 @@ import org.apache.abdera.model.Feed;
 import org.atomserver.core.BaseServiceDescriptor;
 import org.atomserver.core.etc.AtomServerConstants;
 import org.atomserver.testutils.conf.TestConfUtil;
+import org.atomserver.utils.AtomDate;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -383,6 +385,146 @@ public class AggregateFeedsTest extends DBSTestCase {
             assertTrue(fullEntry.getContent().contains("<aloo"));
         }
 
+    }
+
+    public void testStartEndIndex() throws Exception {
+
+        if ( "hsql".equals(entriesDao.getDatabaseType()) ) {
+            log.warn( "Aggregate Feeds do NOT currently work in HSQLDB");
+            return;
+        }
+
+        Feed feed;
+        String endIndex;
+
+        // first, check that the individual entry feeds are the size we expect:
+        feed = getPage("lalas/my");
+        assertEquals(12, feed.getEntries().size());
+        feed = getPage("cuckoos/my");
+        assertEquals(6, feed.getEntries().size());
+        feed = getPage("aloos/my");
+        assertEquals(4, feed.getEntries().size());
+
+        // get the aggregate feed, and mark the end index
+        feed = getPage("$join/urn:link");
+
+        assertEquals(12, feed.getEntries().size());
+        endIndex = feed.getSimpleExtension(AtomServerConstants.END_INDEX);
+        log.debug( "endIndex= " + endIndex );
+
+        int ii = 0;
+        int[] indexes = new int[12];
+        List<Entry> entries = feed.getEntries();
+        for (Entry entry : entries) {
+            indexes[ii] = Integer.parseInt( entry.getSimpleExtension(AtomServerConstants.UPDATE_INDEX) );
+            log.debug( "index[" + ii + "] = " + indexes[ii] );
+            ii++;
+        }
+        
+        // NOTE: start-index is exclusive, end-index is inclusive
+        feed = getPage("$join/urn:link?start-index=" + indexes[2] + "&end-index=" + indexes[7], 200);
+        log.debug( "SIZE=" + feed.getEntries().size() );
+        assertEquals("Testing feed length", 5, feed.getEntries().size());
+
+        List<Entry> entriesCheck = feed.getEntries();
+        int lastIndex = 0;
+        for (Entry entry : entriesCheck) {
+            int thisIndex = Integer.parseInt( entry.getSimpleExtension(AtomServerConstants.UPDATE_INDEX) );
+            assertTrue( thisIndex > indexes[2] );
+            assertTrue( thisIndex > lastIndex );
+            lastIndex = thisIndex;
+        }
+        assertEquals( indexes[7], lastIndex);
+
+        // end-index past the actual last index
+        int biggerIndex = indexes[11] + 100000;
+        feed = getPage("$join/urn:link?start-index=" + indexes[2] + "&end-index=" + biggerIndex, 200);
+        log.debug( "SIZE=" + feed.getEntries().size() );
+        assertEquals("Testing feed length", 9, feed.getEntries().size());
+
+        // same one for start and end, MUST return 304 cuz can't be both exclusive and inclusive
+        getPage( "$join/urn:link?start-index=" + indexes[2] + "&end-index=" + indexes[2], 304 );
+
+        // end is before start
+        getPage( "$join/urn:link?start-index=" + indexes[2] + "&end-index=" + indexes[0], 400 );
+    }
+
+    public void testUpdateMaxMin() throws Exception {
+
+        if ( "hsql".equals(entriesDao.getDatabaseType()) ) {
+            log.warn( "Aggregate Feeds do NOT currently work in HSQLDB");
+            return;
+        }
+
+        Feed feed;
+        String endIndex;
+
+        // first, check that the individual entry feeds are the size we expect:
+        feed = getPage("lalas/my");
+        assertEquals(12, feed.getEntries().size());
+        feed = getPage("cuckoos/my");
+        assertEquals(6, feed.getEntries().size());
+        feed = getPage("aloos/my");
+        assertEquals(4, feed.getEntries().size());
+
+        // get the aggregate feed, and mark the end index
+        feed = getPage("$join/urn:link");
+
+        assertEquals(12, feed.getEntries().size());
+        endIndex = feed.getSimpleExtension(AtomServerConstants.END_INDEX);
+        log.debug( "endIndex= " + endIndex );
+
+        // get max earlier than any we added
+        long lnow = (entriesDao.selectSysDate()).getTime();
+        String earlier = AtomDate.format( new Date( lnow - 100000 ) );
+
+        getPage( "$join/urn:link?updated-max=" + earlier, 304 );
+
+        // Sleep a couple of seconds, then add modify an entry
+        Thread.sleep( 2000 );
+
+        lnow = entriesDao.selectSysDate().getTime();
+        String beforeLast = AtomDate.format( new Date( lnow - 50 ) );
+
+        // changing one lala should result in a single entry in our aggregate feed
+        modifyEntry("lalas", "my", "3015", Locale.US.toString(), lalaXml(3015), false, "1");
+
+        // get all but the one we just modified
+        feed = getPage( "$join/urn:link?updated-max=" + beforeLast, 200 );
+        assertEquals("Testing feed length", 11, feed.getEntries().size());
+
+        // get just the one we just added
+        lnow = entriesDao.selectSysDate().getTime();
+        String afterLast = AtomDate.format( new Date( lnow ) );
+
+        feed = getPage( "$join/urn:link?updated-min=" + beforeLast + "&updated-max=" + afterLast, 200 );
+        assertEquals("Testing feed length", 1, feed.getEntries().size());
+
+        // get all of them
+        String beforeAll = AtomDate.format( new Date( lnow - 100000 ) );
+        feed = getPage( "$join/urn:link?updated-min=" + beforeAll + "&updated-max=" + afterLast, 200 );
+        assertEquals("Testing feed length", 12, feed.getEntries().size());
+
+        // changing one cuckoo should result in two entries in our aggregate feed
+        lnow = entriesDao.selectSysDate().getTime();
+        String beforeAnother2 = AtomDate.format( new Date( lnow ) );
+
+        modifyEntry("cuckoos", "my", "3010", null, cuckooXml(3010), false, "1");
+
+        // get just the first one we modified again
+        feed = getPage( "$join/urn:link?updated-min=" + beforeLast + "&updated-max=" + afterLast, 200 );
+        assertEquals("Testing feed length", 1, feed.getEntries().size());
+
+        // get everything but the last two modified
+        feed = getPage( "$join/urn:link?updated-min=" + beforeAll + "&updated-max=" + afterLast, 200 );
+        assertEquals("Testing feed length", 10, feed.getEntries().size());
+
+        // get only the last two modified
+        lnow = entriesDao.selectSysDate().getTime();
+        String afterAnother2 = AtomDate.format( new Date( lnow ) );
+
+        feed = getPage( "$join/urn:link?updated-min=" + beforeAnother2 + "&updated-max=" + afterAnother2, 200 );
+        assertEquals("Testing feed length", 2, feed.getEntries().size());
     }
 
     private void checkPageContainsExpectedEntries(Feed feed, List<String> expected) {

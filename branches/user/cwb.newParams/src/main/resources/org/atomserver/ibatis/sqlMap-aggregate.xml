@@ -18,6 +18,8 @@
 -->
 <sqlMap>
 
+    <!-- NOTE: This query is used for BOTH single Entry and Feed queries
+    -->
     <sql id="SELECT_modifiedAggregateEntries">
         SELECT <include refid="paginationPrefix"/>
                recentlyChangedEntries.Term AS AggregateEntryId,
@@ -41,11 +43,12 @@
             </isNotEqual>
         </isNotNull>
 
-        <!-- TODO: make sure that agg feeds with a non-null date and a null index work -->
-           <!--AND recentlyChangedEntries.UpdateDate >= #updatedMin#-->
-        <!--<isNotNull property="updatedMax">-->
-            <!--<![CDATA[ AND recentlyChangedEntries.UpdateDate < #updatedMax# ]]>-->
-        <!--</isNotNull>-->
+        <isNotNull property="updatedMin" >
+           AND recentlyChangedEntries.UpdateDate >= #updatedMin#
+        </isNotNull>
+        <isNotNull property="updatedMax">
+            <![CDATA[ AND recentlyChangedEntries.UpdateDate < #updatedMax# ]]>
+        </isNotNull>
         
         <isNotNull property="latencySeconds">
            AND (

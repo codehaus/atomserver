@@ -328,7 +328,7 @@ public class DBSTestCase extends AtomServerTestCase {
 
         ClientResponse response = clientGet(url, null, statusCode, isFullURL);
 
-        if (response.getStatus() == 304) {
+        if ( response.getStatus() != 200 ) {
             response.release();
             return null;
         }
