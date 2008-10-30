@@ -7,6 +7,16 @@
     </properties>
 
     <body>
+        <section name="Release 2.1.4-SNAPSHOT (11/??/08)">
+            <ul>
+                <li>Add updated-max and end-index query parameters, which allows one to
+                query for Feeds or Entries within a bounded range -- updated-min to updated-max
+                (inclusive to exclusive) or start-index to end-index (inclusive to exclusive).
+                Check out <a href="docs/protocol_reference.html">this AtomServer documentation</a>. 
+                for further info</li>
+            </ul>
+        </section>
+
         <section name="Release 2.1.3 (10/13/08)">
             <ul>
                 <li>Add the ability to add a forced latency to DB reads (Paging GETs), which allows us to
