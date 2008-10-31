@@ -39,9 +39,14 @@ public class DBBasedContentStorage implements ContentStorage {
         this.entriesDAO = entriesDAO;
     }
 
+    public EntriesDAO getEntriesDAO() {
+        return entriesDAO;
+    }
+
     public void setContentDAO(ContentDAO contentDAO) {
         this.contentDAO = contentDAO;
     }
+
     public ContentDAO getContentDAO() {
         return contentDAO;
     }
