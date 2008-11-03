@@ -544,7 +544,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         if (URIHandler.REVISION_OVERRIDE == revision && numRowsModified == 0 ||
             (bean = getEntriesDAO().selectEntry(entryTarget)) == null) {
             String msg = "Entry [" + workspace + ", " + collection + ", " + entryId + ", " + locale + "] NOT FOUND";
-            log.error(msg);
+            log.warn(msg);
             throw new EntryNotFoundException(msg);
         }
 
