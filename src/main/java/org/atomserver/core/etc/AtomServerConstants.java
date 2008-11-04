@@ -15,7 +15,10 @@
  */
 package org.atomserver.core.etc;
 
+import org.apache.abdera.model.AtomDate;
+
 import javax.xml.namespace.QName;
+import java.util.Date;
 
 /**
  * Constants for AtomServer, such XML namespaces and extended APP element names
@@ -64,4 +67,8 @@ public final class AtomServerConstants {
 
     public static final String RESULTS_LN = "results";
     public static final QName RESULTS = new QName(ATOMSERVER_BATCH_NS, RESULTS_LN, ATOMSERVER_BATCH_NS_PREFIX);
+
+
+    public static final Date ZERO_DATE = new Date( 0L );
+    public static final Date FAR_FUTURE_DATE = AtomDate.parse( "2222-10-07T00.00.00.000Z");   
 }

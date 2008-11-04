@@ -38,11 +38,19 @@ public enum QueryParam {
         Object parseValue(String stringValue) {
             return Integer.parseInt(stringValue);
         }},
+    endIndex("end-index", -1) {
+        Object parseValue(String stringValue) {
+            return Integer.parseInt(stringValue);
+        }},
     maxResults("max-results", 0) {
         Object parseValue(String stringValue) {
             return Integer.parseInt(stringValue);
         }},
     updatedMin("updated-min", null) {
+        Object parseValue(String stringValue) {
+            return AtomDate.parse(stringValue);
+        }},
+    updatedMax("updated-max", null) {
         Object parseValue(String stringValue) {
             return AtomDate.parse(stringValue);
         }},
@@ -61,6 +69,7 @@ public enum QueryParam {
     private final Object defaultValue;
     private final Pattern pattern;
     public String getParamName() { return paramName; }
+
     QueryParam(String paramName, Object defaultValue) {
         this.paramName = paramName;
         this.defaultValue = defaultValue;
@@ -71,7 +80,7 @@ public enum QueryParam {
 
     abstract Object parseValue(String stringValue);
     public Object parse(RequestContext requestContext) throws BadRequestException {
-        log.debug("parsing " + this + "(" + this.paramName + ")");
+        log.debug("parsing " + this + " (" + this.paramName + ")");
         Object value = this.defaultValue;
         // there is an Abdera bug regarding its request parameter handling, so we handle it with a
         // regex - ideally, we would do this instead:

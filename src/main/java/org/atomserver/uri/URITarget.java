@@ -39,16 +39,24 @@ public abstract class URITarget extends AbstractTarget {
         this.requestContext = requestContext;
     }
 
-    public int getPageDelimParam() throws BadRequestException {
+    public int getStartIndexParam() throws BadRequestException {
         return (Integer) QueryParam.startIndex.parse(this.requestContext);
     }
 
-    public int getPageSizeParam() throws BadRequestException {
+    public int getEndIndexParam() throws BadRequestException {
+        return (Integer) QueryParam.endIndex.parse(this.requestContext);
+    }
+
+    public int getMaxResultsParam() throws BadRequestException {
         return (Integer) QueryParam.maxResults.parse(this.requestContext);
     }
 
     public Date getUpdatedMinParam() throws BadRequestException {
         return (Date) QueryParam.updatedMin.parse(this.requestContext);
+    }
+
+    public Date getUpdatedMaxParam() throws BadRequestException {
+        return (Date) QueryParam.updatedMax.parse(this.requestContext);
     }
 
     public Locale getLocaleParam() throws BadRequestException {

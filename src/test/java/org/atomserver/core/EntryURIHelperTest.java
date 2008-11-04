@@ -30,7 +30,6 @@ import org.apache.abdera.protocol.server.ServiceContext;
 import org.apache.abdera.Abdera;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.Date;
@@ -127,12 +126,12 @@ public class EntryURIHelperTest extends TestCase {
         assertEquals(42,
                      testDecodeEntryIRI(
                              "http://whatever/" + baseURI + "/widgets/acme/1234.en.xml?start-index=42", false)
-                             .getPageDelimParam());
+                             .getStartIndexParam());
 
         assertEquals(8675309,
                      testDecodeEntryIRI(
                              "http://whatever/" + baseURI + "/widgets/acme/1234.en.xml?max-results=8675309", false)
-                             .getPageSizeParam());
+                             .getMaxResultsParam());
 
         assertEquals(0,
                      testDecodeEntryIRI(
@@ -196,8 +195,8 @@ public class EntryURIHelperTest extends TestCase {
             // get all of the parameters - we don't care what the values are, but these should not throw
             // execptions (unless we EXPECT a BadUrlException, in which case we need to know that, too!)
             entryURIData.getLocaleParam();
-            entryURIData.getPageDelimParam();
-            entryURIData.getPageSizeParam();
+            entryURIData.getStartIndexParam();
+            entryURIData.getMaxResultsParam();
             entryURIData.getUpdatedMinParam();
             entryURIData.getEntryTypeParam();
             assertFalse(expectBadUrlException);

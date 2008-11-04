@@ -58,7 +58,7 @@ public class RelaxNGValidator implements ContentValidator {
             validationDriver.get().validate(new InputSource(new StringReader(contentXML)));
         } catch (Exception e) {
             int numChars = (contentXML.length() < CHARS_TO_OUTPUT) ? contentXML.length() : CHARS_TO_OUTPUT;
-            String msg = "Document invalid - " + e.getMessage() +
+            String msg = "Document invalid - " + e.getClass().getName() + " message= " + e.getMessage() +
                          "\n The first 100 chars of the document:: " +
                          contentXML.substring(0, numChars);
             throw new BadContentException(msg, e);

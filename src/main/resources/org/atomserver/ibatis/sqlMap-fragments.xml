@@ -36,9 +36,9 @@
         <result property="language" column="LanCode"/>
         <result property="country" column="CountryCode"/>
         <result property="entryId" column="EntryId"/>
-        <result property="lastModifiedDate" column="UpdateDate" javaType="Date" jdbcType="DATETIME"/>
+        <result property="updatedDate" column="UpdateDate" javaType="Date" jdbcType="DATETIME"/>
         <result property="publishedDate" column="CreateDate" javaType="Date" jdbcType="DATETIME"/>
-        <result property="lastModifiedSeqNum" column="UpdateTimestamp"/>
+        <result property="updateTimestamp" column="UpdateTimestamp"/>
         <result property="deleted" column="DeleteFlag"/>
         <result property="revision" column="RevisionNum"/>
     </resultMap>
@@ -50,9 +50,9 @@
         <result property="language" column="LanCode"/>
         <result property="country" column="CountryCode"/>
         <result property="entryId" column="EntryId"/>
-        <result property="lastModifiedDate" column="UpdateDate" javaType="Date" jdbcType="DATETIME"/>
+        <result property="updatedDate" column="UpdateDate" javaType="Date" jdbcType="DATETIME"/>
         <result property="publishedDate" column="CreateDate" javaType="Date" jdbcType="DATETIME"/>
-        <result property="lastModifiedSeqNum" column="UpdateTimestamp"/>
+        <result property="updateTimestamp" column="UpdateTimestamp"/>
         <result property="deleted" column="DeleteFlag"/>
         <result property="revision" column="RevisionNum"/>
         <result property="categories" resultMap="entryCategoryResult"/>

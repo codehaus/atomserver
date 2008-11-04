@@ -21,6 +21,7 @@ import org.atomserver.uri.EntryTarget;
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.BaseServiceDescriptor;
 import org.atomserver.core.BaseFeedDescriptor;
+import org.atomserver.core.etc.AtomServerConstants;
 import org.atomserver.testutils.client.MockRequestContext;
 import org.atomserver.testutils.latency.LatencyUtil;
 import org.atomserver.ContentStorage;
@@ -62,13 +63,13 @@ public class PageEntriesDAOTest extends DAOTestCase {
     //          Tests 
     //----------------------------
 
-    private int getPageDelim(List sortedList) {
+    private int getLastIndex(List sortedList) {
         EntryMetaData entry = (EntryMetaData) (sortedList.get(sortedList.size() - 1));
 
-        int pageDelim = (int) (entry.getLastModifiedSeqNum());
+        int lastIndex = (int) (entry.getUpdateTimestamp());
 
-        log.debug("pageDelim= " + pageDelim);
-        return pageDelim;
+        log.debug("lastIndex= " + lastIndex);
+        return lastIndex;
     }
 
     public void testPage() throws Exception {
@@ -100,7 +101,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
             String propId = "" + (propIdSeed + ii);
             entryIn.setEntryId(propId);
 
-            entryIn.setLastModifiedDate(lastMod[(ii % 3)]);
+            entryIn.setUpdatedDate(lastMod[(ii % 3)]);
             entryIn.setPublishedDate(lastMod[(ii % 3)]);
 
             entriesDAO.ensureCollectionExists(entryIn.getWorkspace(), entryIn.getCollection());
@@ -130,20 +131,20 @@ public class PageEntriesDAOTest extends DAOTestCase {
         */
 
         // SELECT w/ PAGINATION
-        int startSeqNum = (int) (((EntryMetaData) (updatedEntries.get(0))).getLastModifiedSeqNum());
-        int endSeqNum = (int) (((EntryMetaData) (updatedEntries.get(updatedEntries.size() - 1))).getLastModifiedSeqNum());
+        int startSeqNum = (int) (((EntryMetaData) (updatedEntries.get(0))).getUpdateTimestamp());
+        int endSeqNum = (int) (((EntryMetaData) (updatedEntries.get(updatedEntries.size() - 1))).getUpdateTimestamp());
         log.debug("&&&&&&&&&&&&&&&&&startSeqNum= " + startSeqNum);
         log.debug("&&&&&&&&&&&&&&&&&endSeqNum= " + endSeqNum);
 
         // let's just jump into the middle somewhere
-        int pageDelim = startSeqNum + 5 + startCount;
+        int startIndex = startSeqNum + 5 + startCount;
 
-        log.debug("pageDelim= " + pageDelim);
+        log.debug("startIndex= " + startIndex);
 
         LatencyUtil.accountForLatency();
 
         // get page
-        List sortedList = entriesDAO.selectFeedPage(lastMod[1], pageDelim, 3,
+        List sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, startIndex, -1, 3,
                                                     null, new BaseFeedDescriptor(workspace, null), null);
         log.debug("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.debug("List= " + sortedList);
@@ -151,12 +152,12 @@ public class PageEntriesDAOTest extends DAOTestCase {
         // this first set should all be at lastMod[1]
         for (Object obj : sortedList) {
             EntryMetaData entry1 = (EntryMetaData) obj;
-            assertTrue(datesAreEqual(lastMod[1], entry1.getLastModifiedDate()));
+            assertTrue(datesAreEqual(lastMod[1], entry1.getUpdatedDate()));
         }
 
         // get page
-        pageDelim = getPageDelim(sortedList);
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], pageDelim, 3,
+        startIndex = getLastIndex(sortedList);
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, startIndex, -1, 3,
                                                null, new BaseFeedDescriptor(workspace, null), null);
         log.debug("List= " + sortedList);
 
@@ -165,20 +166,20 @@ public class PageEntriesDAOTest extends DAOTestCase {
         log.debug("######################## 2 :: " + (EntryMetaData) (sortedList.get(2)));
 
         // the second set should have 3 at lastMod[1] 
-        assertTrue(datesAreEqual(lastMod[1], ((EntryMetaData) (sortedList.get(0))).getLastModifiedDate()));
-        assertTrue(datesAreEqual(lastMod[1], ((EntryMetaData) (sortedList.get(1))).getLastModifiedDate()));
-        assertTrue(datesAreEqual(lastMod[1], ((EntryMetaData) (sortedList.get(2))).getLastModifiedDate()));
+        assertTrue(datesAreEqual(lastMod[1], ((EntryMetaData) (sortedList.get(0))).getUpdatedDate()));
+        assertTrue(datesAreEqual(lastMod[1], ((EntryMetaData) (sortedList.get(1))).getUpdatedDate()));
+        assertTrue(datesAreEqual(lastMod[1], ((EntryMetaData) (sortedList.get(2))).getUpdatedDate()));
 
         // get page
-        pageDelim = getPageDelim(sortedList);
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], pageDelim, 3,
+        startIndex = getLastIndex(sortedList);
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, startIndex, -1, 3,
                                                null, new BaseFeedDescriptor(workspace, null), null);
         log.debug("List= " + sortedList);
 
         // this set should all be 2 at lastMod[0] and the 1 at lastMod[0]
-        assertTrue(datesAreEqual(lastMod[1], ((EntryMetaData) (sortedList.get(0))).getLastModifiedDate()));
-        assertTrue(datesAreEqual(lastMod[0], ((EntryMetaData) (sortedList.get(1))).getLastModifiedDate()));
-        assertTrue(datesAreEqual(lastMod[0], ((EntryMetaData) (sortedList.get(2))).getLastModifiedDate()));
+        assertTrue(datesAreEqual(lastMod[1], ((EntryMetaData) (sortedList.get(0))).getUpdatedDate()));
+        assertTrue(datesAreEqual(lastMod[0], ((EntryMetaData) (sortedList.get(1))).getUpdatedDate()));
+        assertTrue(datesAreEqual(lastMod[0], ((EntryMetaData) (sortedList.get(2))).getUpdatedDate()));
 
         // DELETE some 
         for (int ii = 0; ii < numRecs / 2; ii++) {
@@ -204,30 +205,30 @@ public class PageEntriesDAOTest extends DAOTestCase {
         */
 
         // let's just jump in at the last of the first set
-        pageDelim = startSeqNum + 5 + startCount;
-        log.debug("pageDelim= " + pageDelim);
+        startIndex = startSeqNum + 5 + startCount;
+        log.debug("startIndex= " + startIndex);
 
         // get page
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], pageDelim, 3,
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, startIndex, -1, 3,
                                                null, new BaseFeedDescriptor(workspace, null), null);
         log.debug("List= " + sortedList);
 
         // this first set should all be at lastMod[1]
         for (Object obj : sortedList) {
             EntryMetaData entry1 = (EntryMetaData) obj;
-            assertTrue(datesAreEqual(lastMod[1], entry1.getLastModifiedDate()));
+            assertTrue(datesAreEqual(lastMod[1], entry1.getUpdatedDate()));
         }
 
         // get page
-        pageDelim = getPageDelim(sortedList);
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], pageDelim, 3,
+        startIndex = getLastIndex(sortedList);
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, startIndex, -1, 3,
                                                null, new BaseFeedDescriptor(workspace, null), null);
         log.debug("List= " + sortedList);
 
         // the second set should have 1 at lastMod[1] and the last 2 at lastMod[0]
-        assertTrue(datesAreEqual(lastMod[1], ((EntryMetaData) (sortedList.get(0))).getLastModifiedDate()));
-        assertTrue(datesAreEqual(lastMod[0], ((EntryMetaData) (sortedList.get(1))).getLastModifiedDate()));
-        assertTrue(datesAreEqual(lastMod[0], ((EntryMetaData) (sortedList.get(2))).getLastModifiedDate()));
+        assertTrue(datesAreEqual(lastMod[1], ((EntryMetaData) (sortedList.get(0))).getUpdatedDate()));
+        assertTrue(datesAreEqual(lastMod[0], ((EntryMetaData) (sortedList.get(1))).getUpdatedDate()));
+        assertTrue(datesAreEqual(lastMod[0], ((EntryMetaData) (sortedList.get(2))).getUpdatedDate()));
 
         // DELETE the rest 
         for (int ii = (numRecs / 2 - 1); ii < numRecs; ii++) {
@@ -277,7 +278,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
             String propId = "" + (propIdSeed + ii);
             entryIn.setEntryId(propId);
 
-            entryIn.setLastModifiedDate(lastMod[(ii % 3)]);
+            entryIn.setUpdatedDate(lastMod[(ii % 3)]);
             entryIn.setPublishedDate(lastMod[(ii % 3)]);
 
             //int okay = entriesDAO.insertEntry(entryIn, true );
@@ -311,26 +312,26 @@ public class PageEntriesDAOTest extends DAOTestCase {
         LatencyUtil.accountForLatency();
 
         // simulate a first page (delim=0) 
-        List sortedList = entriesDAO.selectFeedPage(lastMod[1], 0, 3,
+        List sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, 0, -1, 3,
                                                     null, new BaseFeedDescriptor(workspace, null), null);
         log.debug("List= " + sortedList);
 
         // this first set should all be at lastMod[1]
         for (Object obj : sortedList) {
             EntryMetaData entry1 = (EntryMetaData) obj;
-            assertTrue(datesAreEqual(lastMod[1], entry1.getLastModifiedDate()));
+            assertTrue(datesAreEqual(lastMod[1], entry1.getUpdatedDate()));
         }
 
         // get second page
-        int pageDelim = getPageDelim(sortedList);
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], pageDelim, 3,
+        int startIndex = getLastIndex(sortedList);
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, startIndex, -1, 3,
                                                null, new BaseFeedDescriptor(workspace, null), null);
         log.debug("List= " + sortedList);
 
         // this second set should also all be at lastMod[1]
         for (Object obj : sortedList) {
             EntryMetaData entry1 = (EntryMetaData) obj;
-            assertTrue(datesAreEqual(lastMod[1], entry1.getLastModifiedDate()));
+            assertTrue(datesAreEqual(lastMod[1], entry1.getUpdatedDate()));
         }
 
         // DELETE some -- using the "real" deleteEntry, which is really an update in disguise
@@ -364,17 +365,17 @@ public class PageEntriesDAOTest extends DAOTestCase {
         // get page -- there couold either be 1 left at lastMod[1] and 2 at lastMod[0]
         // OR it is possible that we just deleted the remaining one at lastMod[1], 
         // so we have 3 at lastMod[0]  (it arbitrarilly depends on the sort)
-        pageDelim = getPageDelim(sortedList);
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], pageDelim, 3,
+        startIndex = getLastIndex(sortedList);
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, startIndex, -1, 3,
                                                null, new BaseFeedDescriptor(workspace, null), null);
         log.debug("List= " + sortedList);
 
         int foundL1 = 0;
         int foundL0 = 0;
         for (int ii = 0; ii < sortedList.size(); ii++) {
-            if (datesAreEqual(lastMod[1], ((EntryMetaData) (sortedList.get(ii))).getLastModifiedDate())) {
+            if (datesAreEqual(lastMod[1], ((EntryMetaData) (sortedList.get(ii))).getUpdatedDate())) {
                 foundL1++;
-            } else if (datesAreEqual(lastMod[0], ((EntryMetaData) (sortedList.get(ii))).getLastModifiedDate())) {
+            } else if (datesAreEqual(lastMod[0], ((EntryMetaData) (sortedList.get(ii))).getUpdatedDate())) {
                 foundL0++;
             } else {
                 fail("it had to be either L1 or L2");
@@ -383,15 +384,15 @@ public class PageEntriesDAOTest extends DAOTestCase {
         assertTrue((foundL1 == 1 && foundL0 == 2) || (foundL0 == 3));
 
         // get page -- there should just be one left at lastMod[0]
-        pageDelim = getPageDelim(sortedList);
-        sortedList = entriesDAO.selectFeedPage(lastMod[1], pageDelim, 3,
+        startIndex = getLastIndex(sortedList);
+        sortedList = entriesDAO.selectFeedPage(lastMod[1], AtomServerConstants.FAR_FUTURE_DATE, startIndex, -1, 3,
                                                null, new BaseFeedDescriptor(workspace, null), null);
         log.debug("List= " + sortedList);
 
         // should have 1 at lastMod[0] and the last "deleted", or all deleted
 
         if (foundL1 == 1) {
-            assertTrue(datesAreEqual(lastMod[0], ((EntryMetaData) (sortedList.get(0))).getLastModifiedDate()));
+            assertTrue(datesAreEqual(lastMod[0], ((EntryMetaData) (sortedList.get(0))).getUpdatedDate()));
         } else {
             assertEquals(true, ((EntryMetaData) (sortedList.get(0))).getDeleted());
         }
