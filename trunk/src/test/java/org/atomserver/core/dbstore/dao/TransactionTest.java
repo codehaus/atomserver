@@ -3,8 +3,8 @@ package org.atomserver.core.dbstore.dao;
 import org.apache.commons.lang.mutable.MutableLong;
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.BaseFeedDescriptor;
+import org.atomserver.core.etc.AtomServerConstants;
 import org.atomserver.core.dbstore.DBBasedAtomService;
-import org.atomserver.uri.QueryParam;
 import org.atomserver.uri.URIHandler;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
@@ -149,7 +149,7 @@ public class TransactionTest extends DAOTestCase {
         final EntryMetaData entryMetaData = entriesDAO.selectEntry(entryIn);
         entryMetaData.setRevision(URIHandler.REVISION_OVERRIDE);
 
-        final int pageDelim = (int) entryMetaData.getLastModifiedSeqNum();
+        final int startIndex = (int) entryMetaData.getUpdateTimestamp();
 
         Executors.newSingleThreadExecutor().submit(
                 new Runnable() {
@@ -159,7 +159,7 @@ public class TransactionTest extends DAOTestCase {
                                 entriesDAO.updateEntry(entryMetaData, false);
 
                                 List<EntryMetaData> list = entriesDAO.selectFeedPage(
-                                        new Date(0L), pageDelim, 10, entryIn.getLocale().toString(),
+                                        new Date(0L), AtomServerConstants.FAR_FUTURE_DATE, startIndex, -1, 10, entryIn.getLocale().toString(),
                                         new BaseFeedDescriptor(entryIn.getWorkspace(), entryIn.getCollection()),
                                         null);
                                 idWithinTransaction.setValue(list.get(0).getEntryStoreId());
@@ -198,7 +198,7 @@ public class TransactionTest extends DAOTestCase {
         t[0].await(3, TimeUnit.SECONDS);
 
         List<EntryMetaData> list = entriesDAO.selectFeedPage(
-                null, pageDelim, 1, entryIn.getLocale().toString(),
+                null, AtomServerConstants.FAR_FUTURE_DATE, startIndex, -1, 1, entryIn.getLocale().toString(),
                 new BaseFeedDescriptor(entryIn.getWorkspace(), entryIn.getCollection()),
                 null);
         assertTrue(list.isEmpty());
@@ -211,7 +211,7 @@ public class TransactionTest extends DAOTestCase {
         t[2].await(3, TimeUnit.SECONDS);
 
         list = entriesDAO.selectFeedPage(
-                new Date(0L), pageDelim, 10, entryIn.getLocale().toString(),
+                new Date(0L), AtomServerConstants.FAR_FUTURE_DATE, startIndex, -1, 10, entryIn.getLocale().toString(),
                 new BaseFeedDescriptor(entryIn.getWorkspace(), entryIn.getCollection()),
                 null);
 

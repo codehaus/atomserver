@@ -420,10 +420,9 @@ public class URIHandler
     }
 
 
-    private BooleanExpression<AtomCategory> decodeCategoryExpression(
-            String categoriesString,
-            Iterator<String> iterator,
-            TermDictionary<AtomCategory> dictionary) {
+    private BooleanExpression<AtomCategory> decodeCategoryExpression( String categoriesString,
+                                                                      Iterator<String> iterator,
+                                                                      TermDictionary<AtomCategory> dictionary) {
         if (!iterator.hasNext()) {
             String msg = MessageFormat.format(
                     "The Category Query [{0}] was malformed", categoriesString);

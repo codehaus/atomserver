@@ -21,7 +21,7 @@ pageTracker._trackPageview();
 <h1><img src="images/atom-logo.gif" alt="logo"> AtomServer, Getting
 Started</h1>
 <span style="font-style: italic;">Chris Berry, Bryon Jacob.
-Updated 08/15/08</span><br>
+Updated 11/2/08</span><br>
 <div class="content"><br>
 This
 document describes some specific details about getting started with
@@ -747,6 +747,10 @@ and that you're ready to install the AtomServer database. Furthermore,
 let's assume
 that you have created the conventional Postgresql admin user; "<span
  style="font-family: monospace;">postgres</span>".<br>
+<br>
+NOTE: we are using postgres 8.3.X. This process will NOT work with an
+earlier version of postgres (some of the postgres-specific SQL in
+postgres_ddl will not be recognized). <br>
 <br>
 1) You'll need to create a user on your computer named "<span
  style="font-family: monospace;">atomserver</span>". The scripts below

@@ -249,7 +249,7 @@ public class FeedDBSTestCase extends DBSTestCase {
         MockRequestContext request = new MockRequestContext(serviceContext, "GET", lastEntryIRI.toString());
         EntryTarget lastEntryTarget = widgetURIHelper.getEntryTarget(request, true);
         EntryMetaData lastEntryMetaData = entriesDao.selectEntry(lastEntryTarget);
-        long endIndexEntry = lastEntryMetaData.getLastModifiedSeqNum();
+        long endIndexEntry = lastEntryMetaData.getUpdateTimestamp();
         
         log.debug( "&&&&&&&&&&&&&&&&&&& feedUpdated, endIndex= " + endIndex + ", " + endIndexEntry );
         assertEquals( endIndex, endIndexEntry );
@@ -319,15 +319,15 @@ public class FeedDBSTestCase extends DBSTestCase {
         int totalEntries = 0;
         if ( checkTotalResults( wspace ) )
             totalEntries = Integer.parseInt(feed.getSimpleExtension(OpenSearchConstants.TOTAL_RESULTS));
-        int startPageDelim = Integer.parseInt(feed.getSimpleExtension(OpenSearchConstants.START_INDEX));
-        int endingPageDelim = Integer.parseInt(feed.getSimpleExtension(AtomServerConstants.END_INDEX));
+        int startIndex = Integer.parseInt(feed.getSimpleExtension(OpenSearchConstants.START_INDEX));
+        int endIndex = Integer.parseInt(feed.getSimpleExtension(AtomServerConstants.END_INDEX));
         int pageSize = Integer.parseInt(feed.getSimpleExtension(OpenSearchConstants.ITEMS_PER_PAGE));
-        log.debug("(totalEntries, startPageDelim, endingPageDelim, pageSize)= " + totalEntries
-                  + " " + startPageDelim + " " + endingPageDelim + " " + pageSize + " ");
+        log.debug("(totalEntries, startIndex, endIndex, pageSize)= " + totalEntries
+                  + " " + startIndex + " " + endIndex + " " + pageSize + " ");
 
         if ( checkTotalResults( wspace ) )
             assertEquals(totalEntries, startCount);
-        assertTrue(endingPageDelim > 0);
+        assertTrue(endIndex > 0);
         assertEquals(pageSize, pgSize);
 
         IRI next = FeedPagingHelper.getNext(feed);
@@ -371,11 +371,11 @@ public class FeedDBSTestCase extends DBSTestCase {
             assertEquals(numpages, knt);
     }
 
-    protected int getPageUsingEndIndex( String wspace, int pgSize, int startPageDelim, int endPageDelim, String collection )  throws Exception {
+    protected int getPageUsingEndIndex( String wspace, int pgSize, int startIndex, int endIndex, String collection )  throws Exception {
 
-        log.debug("pgSize, startPageDelim, endPageDelim = " + pgSize + " " + startPageDelim + " " + endPageDelim);
+        log.debug("pgSize, startIndex, endIndex = " + pgSize + " " + startIndex + " " + endIndex);
 
-        ClientResponse response = clientGet( wspace + "/" + collection + "?max-results=" + pgSize + "&start-index=" + startPageDelim);
+        ClientResponse response = clientGet( wspace + "/" + collection + "?max-results=" + pgSize + "&start-index=" + startIndex);
         Feed feed = (Feed) response.getDocument().getRoot();
 
         int totalEntriesResp = 0;
@@ -383,21 +383,21 @@ public class FeedDBSTestCase extends DBSTestCase {
             totalEntriesResp = Integer.parseInt(feed.getSimpleExtension(OpenSearchConstants.TOTAL_RESULTS));
 
         int pageSizeResp = Integer.parseInt(feed.getSimpleExtension(OpenSearchConstants.ITEMS_PER_PAGE));
-        int startPageDelimResp = Integer.parseInt(feed.getSimpleExtension(OpenSearchConstants.START_INDEX));
+        int startIndexResp = Integer.parseInt(feed.getSimpleExtension(OpenSearchConstants.START_INDEX));
 
-        int endPageDelimResp = Integer.parseInt(feed.getSimpleExtension(AtomServerConstants.END_INDEX));
-        log.debug("(totalEntriesResp, endPageDelimResp, pageSizeResp)= " + totalEntriesResp
-                  + " " + endPageDelimResp + " " + pageSizeResp + " ");
+        int endIndexResp = Integer.parseInt(feed.getSimpleExtension(AtomServerConstants.END_INDEX));
+        log.debug("(totalEntriesResp, endIndexResp, pageSizeResp)= " + totalEntriesResp
+                  + " " + endIndexResp + " " + pageSizeResp + " ");
 
         verifyEndIndex( wspace, feed );
 
         if ( checkTotalResults( wspace ) )
             assertEquals(totalEntriesResp, startCount);
-        assertTrue(endPageDelimResp > startPageDelim);
+        assertTrue(endIndexResp > startIndex);
         assertEquals(pageSizeResp, pgSize);
         response.release();
 
-        return endPageDelimResp;
+        return endIndexResp;
     }
 
     protected IRI getPageUsingNext(String wspace, int pgSize, IRI pageToGet, boolean isMTtest) throws Exception {

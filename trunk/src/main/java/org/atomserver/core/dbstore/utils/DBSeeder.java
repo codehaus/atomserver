@@ -155,7 +155,7 @@ public class DBSeeder extends DBTool {
         }
     }
 
-    public void seedWidgets() throws AtomServerException {
+    public int seedWidgets() throws AtomServerException {
         try {
             Locale en = new Locale("en");
 
@@ -198,6 +198,7 @@ public class DBSeeder extends DBTool {
         } catch (Exception ee) {
             throw new AtomServerException("Unknown Exception when seeding the DB", ee);
         }
+        return 10;
     }
 
     public void insertWidget(BaseEntryDescriptor entryDescriptor) throws Exception {
@@ -266,13 +267,14 @@ public class DBSeeder extends DBTool {
     }
 
 
-    public void seedEntriesClearingFirst() throws AtomServerException {
+    public int seedEntriesClearingFirst() throws AtomServerException {
         clearDB();
         try { Thread.sleep(SLEEP_TIME); }
         catch (InterruptedException ee) {/*NOOP*/}
-        seedWidgets();
+        int numWidgets = seedWidgets();
         try { Thread.sleep(SLEEP_TIME); }
         catch (InterruptedException ee) {/*NOOP*/}
+        return numWidgets;
     }
 
 }

@@ -35,10 +35,10 @@ public class EntryMetaData extends BaseEntryDescriptor {
 
     private Long entryStoreId = null;
 
-    private Date lastModifiedDate = null;
+    private Date updatedDate = null;
     private Date publishedDate = null;
 
-    private long lastModifiedSeqNum = 0L;
+    private long updateTimestamp = 0L;
 
     private boolean deleted = false;
 
@@ -52,18 +52,18 @@ public class EntryMetaData extends BaseEntryDescriptor {
 
     /**
      * Constructs a new EntryMetaData.
-     * @param workspace      the workspace for the entry
+     * @param workspace    the workspace for the entry
      * @param collection   the collection for the entry.
      * @param locale       the locale for the entry.
      * @param entryId      the id for the entry.
-     * @param lastModified the last modified time for the entry.
+     * @param updatedDate  the last modified time for the entry.
      */
     public EntryMetaData(String workspace,
                          String collection,
                          Locale locale,
                          String entryId,
-                         long lastModified) {
-        this(workspace, collection, locale, entryId, lastModified, true);
+                         long updatedDate) {
+        this(workspace, collection, locale, entryId, updatedDate, true);
     }
 
     /**
@@ -72,16 +72,16 @@ public class EntryMetaData extends BaseEntryDescriptor {
      * @param collection     the collection for the entry.
      * @param locale         the locale for the entry.
      * @param entryId        the id for the entry.
-     * @param lastModified   the last modified time for the entry (as a long).
+     * @param updatedDate   the last modified time for the entry (as a long).
      * @param isNewlyCreated true iff the entry is new.
      */
     public EntryMetaData(String workspace,
                          String collection,
                          Locale locale,
                          String entryId,
-                         long lastModified,
+                         long updatedDate,
                          boolean isNewlyCreated) {
-        this( workspace, collection, locale, entryId, (new Date(lastModified)), isNewlyCreated);
+        this( workspace, collection, locale, entryId, (new Date(updatedDate)), isNewlyCreated);
     }
 
     /**
@@ -90,21 +90,21 @@ public class EntryMetaData extends BaseEntryDescriptor {
      * @param collection     the collection for the entry.
      * @param locale         the locale for the entry.
      * @param entryId        the id for the entry.
-     * @param lastModified   the last modified time for the entry (as a Date).
+     * @param updatedDate   the last modified time for the entry (as a Date).
      * @param isNewlyCreated true iff the entry is new.
      */
     public EntryMetaData(String workspace,
                          String collection,
                          Locale locale,
                          String entryId,
-                         Date lastModified,
+                         Date updatedDate,
                          boolean isNewlyCreated) {
         setWorkspace(workspace);
         setCollection(collection);
         setLocale(locale);
         setEntryId(entryId);
 
-        this.lastModifiedDate = lastModified;
+        this.updatedDate = updatedDate;
         this.isNewlyCreated = isNewlyCreated;
 
         decodeLocale(locale);
@@ -177,14 +177,14 @@ public class EntryMetaData extends BaseEntryDescriptor {
     public String getCountry() { return country; }
     public void setCountry(String country) { this.country = country; }
 
-    public Date getLastModifiedDate() { return lastModifiedDate; }
-    public void setLastModifiedDate(Date lastModifiedDate) { this.lastModifiedDate = lastModifiedDate; }
+    public Date getUpdatedDate() { return updatedDate; }
+    public void setUpdatedDate(Date updatedDate) { this.updatedDate = updatedDate; }
 
     public Date getPublishedDate() { return publishedDate; }
     public void setPublishedDate(Date publishedDate) { this.publishedDate = publishedDate; }
 
-    public long getLastModifiedSeqNum() { return lastModifiedSeqNum; }
-    public void setLastModifiedSeqNum(long lastModifiedSeqNum) { this.lastModifiedSeqNum = lastModifiedSeqNum; }
+    public long getUpdateTimestamp() { return updateTimestamp; }
+    public void setUpdateTimestamp(long updateTimestamp) { this.updateTimestamp = updateTimestamp; }
 
     public boolean getDeleted() { return deleted; }
     public void setDeleted(boolean deleted) { this.deleted = deleted; }
@@ -201,13 +201,13 @@ public class EntryMetaData extends BaseEntryDescriptor {
         clone.setLocale( getLocale() );
         clone.setRevision( getRevision() );
 
-        clone.setLastModifiedDate( getLastModifiedDate() );
+        clone.setUpdatedDate( getUpdatedDate() );
         clone.setPublishedDate( getPublishedDate() );
         clone.setNewlyCreated( isNewlyCreated() );
         clone.setDeleted( getDeleted() );
         clone.setCategories( getCategories() );
 
-        clone.setLastModifiedSeqNum( getLastModifiedSeqNum() );
+        clone.setUpdateTimestamp( getUpdateTimestamp() );
 
         return clone;
     }
@@ -226,10 +226,10 @@ public class EntryMetaData extends BaseEntryDescriptor {
             .append(" ").append(country)
             .append(" ").append(getRevision())
             .append(" ").append(deleted)
-            .append(" <").append(lastModifiedDate).append(">")
+            .append(" <").append(updatedDate).append(">")
             .append(" <").append(publishedDate).append(">")
             .append(" ").append(isNewlyCreated)
-            .append(" ").append(lastModifiedSeqNum)
+            .append(" ").append(updateTimestamp)
             .append("]").toString();
     }
 }

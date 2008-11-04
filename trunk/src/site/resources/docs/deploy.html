@@ -22,7 +22,7 @@ pageTracker._trackPageview();
 <span style="font-weight: bold;"></span>Deploying AtomServer<br>
 </h1>
 <div class="content"><span style="font-style: italic;"><br>
-Chris Berry, Bryon Jacob. Updated 07/07/08 </span><br>
+Chris Berry, Bryon Jacob. Updated 11/2/08 </span><br>
 <br>
 This
 document describes specific details about deploying AtomServer.
@@ -35,7 +35,13 @@ Basically you have three options;<br>
     <li><a href="#tomcat">Configuring Tomcat</a><br>
     </li>
   </ul>
-  <li><a href="#Jar">Embed AtomServer as a Jar within your webapp.</a> </li>
+  <li><a href="#Jar">Embed AtomServer as a Jar within your webapp.</a></li>
+</ul>
+You should also take a look at these;<br>
+<ul>
+  <li><a href="#reqdvars">Required variables when starting up
+AtomServer.</a><br>
+  </li>
 </ul>
 <hr style="width: 100%; height: 2px;">
 <h2><a name="standalone"></a>Standalone AtomServer<br>
@@ -63,7 +69,8 @@ To deploy AtomServer as a War you will mostly just <br>
 <ol>
   <li>Download the War (available at our maven repository) </li>
   <li>Drop it into your Servlet Engine of choice. </li>
-  <li>Set the required AtomServer System properties. Somehow passing
+  <li><span style="font-style: italic;">Set the required AtomServer
+System properties.</span> Somehow passing
 them through your Servlet Engine's start script.</li>
   <li>Start it up.</li>
 </ol>
@@ -80,16 +87,40 @@ myenv.properties from our demo server.
 <ol>
   <li>Download the AtomServer tar.gz (available <a
  href="http://atomserver.codehaus.org/downloads.html">here</a>)</li>
-  <li>Un-tar it. Lets assume that you did this at ~/work/atomserver.</li>
-  <li> In your shell, export ATOMSERVER_HOME="~/work/atomserver"
-(Obviously if you are a Windows person you will need all the BAT
-equivalents).</li>
-  <li>Copy the atomserver War (located at $ATOMSERVER_HOME/webapps) to
-$CATALINA_HOME/webapps. Renaming it to atomserver.war as you do.<br>
+  <li>Un-tar it. Lets assume that you did this at ~/work/atomserver.
+    <div style="margin-left: 40px;"><br>
+    <div id="codebox"><span style="font-family: monospace;">&nbsp;cd
+~/work<br>
+&nbsp;tar -zxvf atomserver-X.X-install.tar<br>
+    </span> </div>
+    <span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+    <div style="margin-left: 40px;"><br>
+    </div>
+  </li>
+  <li>In your shell, export the ATOMSERVER_HOME environment variable.
+Obviously if you are a Windows person you will need all the BAT
+equivalents. NOTE: you will probably want to put this in your ~/.bashrc
+or ~/.bash_profile)<br>
+    <div style="margin-left: 40px;"><br>
+    <div id="codebox"><span style="font-family: monospace;">export
+ATOMSERVER_HOME=~/work/atomserver <br>
+    </span> </div>
+    <span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+    <br>
+  </li>
+  <li>Copy the atomserver War (now located at $ATOMSERVER_HOME/webapps)
+to
+$CATALINA_HOME/webapps. Renaming it to atomserver.war as you do. <br>
     <div style="margin-left: 40px;"><br>
     <div id="codebox"><span style="font-family: monospace;">cp
-$ATOMSERVER_HOME/webapps/atomserver-2.0.2.war
-$CALATINA_HOME/webapps/atomserver.war<br>
+$ATOMSERVER_HOME/webapps/atomserver-X.X.war
+$CATALINA_HOME/webapps/atomserver.war<br>
     </span> </div>
     <span style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span><span
@@ -98,7 +129,7 @@ $CALATINA_HOME/webapps/atomserver.war<br>
   </li>
   <li>
     <p id="rfc.section.7.1.p.2">If you do <span
- style="font-style: italic;">not</span> already have&nbsp; a
+ style="font-style: italic;">not</span> already have a
 $CATALINA_HOME/bin/setenv.sh, copy our tomcat-setenv.sh to
 $CATALINA_HOME/bin/setenv.sh. If you do already have a
 $CATALINA_HOME/bin/setenv.sh, you will need to merge the contents of
@@ -106,33 +137,92 @@ our tomcat-setenv.sh with it. Note that the Tomcat startup script
 (catalina.sh) already calls out to this script
 ($CATALINA_HOME/bin/setenv.sh)
 if it is there. This is Tomcat's convenience mechanism for setting up
-application specific environments. <br>
-    </p>
+application specific environments. (NOTE: be sure that your new
+$CATALINA_HOME/bin/setenv.sh has the proper permissions for whatever
+user is to run Tomcat). The bottom line here is that <span
+ style="font-style: italic;">AtomServer <span
+ style="font-weight: bold;">requires</span> that certain variables be
+passed into it as it starts up</span>, and these required variables are
+set for you in setenv.sh) </p>
     <div style="margin-left: 40px;">
     <div id="codebox"><span style="font-family: monospace;">cp </span><span
  style="font-family: monospace;">$ATOMSERVER_HOME/bin/tomcat-setenv.sh </span><span
- style="font-family: monospace;">$CALATINA_HOME/bin/setenv.sh</span> </div>
+ style="font-family: monospace;">$CATALINA_HOME/bin/setenv.sh</span> </div>
     <span style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span></div>
   </li>
   <li>
-    <p id="rfc.section.7.1.p.2">Start Tomcat. ($<span
- style="font-family: monospace;">$CALATINA_HOME/bin/startup.sh)</span></p>
+    <p id="rfc.section.7.1.p.2">Start Tomcat. ($ <span
+ style="font-family: monospace;">$CATALINA_HOME/bin/startup.sh)</span></p>
   </li>
 </ol>
 NOTES:<br>
 <ul>
   <li>The logs from AtomServer will end up in $ATOMSERVER_HOME/logs</li>
+  <li>Make certain that <span style="font-family: monospace;">$ATOMSERVER_HOME
+    </span>has the proper permissions for whatever user is to run
+Tomcat.</li>
   <li><span style="font-style: italic;">All of your configuration lives
 outside of AtomServer</span>. This is an extremely important point. You
 can update AtomServer without touching your configuration specifics.</li>
   <li>I've shown the simplest case above. You may wish to set all of
 this up using $CATALINA_BASE, in which case the procedure would change
-somewhat. But the basic steps outlined above will hold.<br>
-  </li>
+somewhat. But the basic steps outlined above will hold.</li>
 </ul>
+Our tomcat-setenv.sh looks like this<a name="tomcat-setenv"></a><br>
+<div style="margin-left: 40px;"><br>
+<div id="codebox"><span style="font-family: monospace;">#!/bin/sh<br>
+<br>
+if [ -z "$ATOMSERVER_HOME" ]; then<br>
+&nbsp;&nbsp;&nbsp; echo "You MUST set ATOMSERVER_HOME"<br>
+&nbsp;&nbsp;&nbsp; exit 1<br>
+fi<br>
+<br>
+</span><span style="font-family: monospace;"># ----- AtomServer
+specific arguments<br>
+#<br>
+</span><span style="font-family: monospace;">ATOMSERVER_ARGS="-Datomserver.home=$ATOMSERVER_HOME"<br>
+ATOMSERVER_ARGS="-Datomserver.data.dir=$ATOMSERVER_HOME/data
+$ATOMSERVER_ARGS"<br>
+ATOMSERVER_ARGS="-Datomserver.conf.dir=$ATOMSERVER_HOME/conf
+$ATOMSERVER_ARGS"<br>
+ATOMSERVER_ARGS="-Datomserver.ops.conf.dir=$ATOMSERVER_HOME/conf
+$ATOMSERVER_ARGS"<br>
+<br>
+ATOMSERVER_ARGS="-Datomserver.env=myenv $ATOMSERVER_ARGS"<br>
+ATOMSERVER_ARGS="-Datomserver.port=8080 $ATOMSERVER_ARGS"<br>
+ATOMSERVER_ARGS="-Datomserver.http.port=8080 $ATOMSERVER_ARGS"<br>
+ATOMSERVER_ARGS="-Datomserver.http.host=0.0.0.0 $ATOMSERVER_ARGS"<br>
+ATOMSERVER_ARGS="-Datomserver.jmxhttp.hostname=0.0.0.0 $ATOMSERVER_ARGS"<br>
+ATOMSERVER_ARGS="-Datomserver.jmxhttp.port=50505 $ATOMSERVER_ARGS"<br>
+<br>
+ATOMSERVER_ARGS="-Datomserver.servlet.context=atomserver
+$ATOMSERVER_ARGS"<br>
+ATOMSERVER_ARGS="-Datomserver.servlet.mapping=v1 $ATOMSERVER_ARGS"<br>
+<br>
+export ATOMSERVER_ARGS="$ATOMSERVER_ARGS"<br>
+<br>
+# ----- log4j specific arguments<br>
+#&nbsp; NOTE: log4j ONLY takes System vars for substitution in
+log4j.properties<br>
+#<br>
+LOG4J_ARGS="-Droot.loglevel=DEBUG -Droot.appender=StdoutFile"<br>
+LOG4J_ARGS="-Datomserver.loglevel=DEBUG
+-Datomserver.logdir=$ATOMSERVER_HOME/logs $LOG4J_ARGS"<br>
+LOG4J_ARGS="-Datomserver.logfilename=atomserver $LOG4J_ARGS"<br>
+<br>
+export LOG4J_ARGS="$LOG4J_ARGS"<br>
+<br>
+#---------------------------<br>
+export CATALINA_OPTS="$ATOMSERVER_ARGS $LOG4J_ARGS"<br>
+</span> </div>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+<br>
 <hr style="width: 100%; height: 2px;">
 <h2><a name="Jar"></a>Deploying AtomServer as a Jar within your webapp.</h2>
 Sometimes you may want to embed AtomServer within your project's
@@ -458,6 +548,149 @@ org.atomserver.utils.conf.ExtendedWebContext<br>
  style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span><span
  style="font-family: monospace;"></span></div>
+<br>
+<br>
+<hr style="width: 100%; height: 2px;">
+<h2><a name="reqdvars"></a>Required Variables to start AtomServer<br>
+</h2>
+AtomServer requires certain variables be defined at startup. As you
+see above, these variables are passed into AtomServer in each of the
+deployment techniques outlined in this document. In fact, you can see a
+bash script which sets these variables <a href="#tomcat-setenv">here</a>.<br>
+<br>
+The variables required
+by AtomServer at startup are as follows;&nbsp; <br>
+<br>
+<table style="text-align: left; width: 1104px; height: 463px;"
+ border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;">atomserver.env</span></td>
+      <td style="vertical-align: top;">The AtomServer environment.
+Tells AtomServer which "env" properties file to load. <span
+ style="font-style: italic;">This variable is critical</span>. This
+file is located on the Classpath as; "/env/${env}.properties". I.e. if
+"env=foo", the file should be; ".../env/foo.properties"<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">atomserver.data.dir</span></td>
+      <td style="vertical-align: top;">The AtomServer data directory;
+the directory where Entry files (XML) will be written when using
+file-based storage. (e.g. $ATOMSERVER_HOME/data)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">atomserver.conf.dir</span></td>
+      <td style="vertical-align: top;">The optional configuration
+directory. This is another location where AtomServer looks for "env"
+files, Spring extension files, etc. This directory is put onto the
+Classpath, including ${atomserver.conf.dir}/classes and all JARs in
+${atomserver.conf.dir}/lib.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">atomserver.ops.conf.dir</span></td>
+      <td style="vertical-align: top;">The optional Operations
+configuration directory. This is another directory where AtomServer
+looks for "env" files, Spring extension files, etc. It allows a
+separate location where you can put configuration files that may
+require specila protection for Operations. </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">atomserver.home</span></td>
+      <td style="vertical-align: top;">The root of the atomserver
+install. In other words, the root of the expanded AtomServer tarball.
+(e.g. $ATOMSERVER_HOME)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">atomserver.port</span></td>
+      <td style="vertical-align: top;">The HTTP port to use for
+AtomServer (This variable will eventually be removed.)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">atomserver.http.port</span></td>
+      <td style="vertical-align: top;">The HTTP port to use for
+AtomServer (e.g. 8080) </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">atomserver.http.host</span></td>
+      <td style="vertical-align: top;">The HTTP host to use for
+AtomServer (e.g. 0.0.0.0) </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">atomserver.jmxhttp.hostname</span></td>
+      <td style="vertical-align: top;">The JMX HTTP port to use for
+AtomServer (e.g. 9080) </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">atomserver.jmxhttp.hostname</span></td>
+      <td style="vertical-align: top;">The JMX HTTP host to use for
+AtomServer (e.g. 0.0.0.0) </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">atomserver.servlet.context</span></td>
+      <td style="vertical-align: top;">The base Servlet context (e.g.
+"atomserver" in http://localhost:8080/atomserver)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">atomserver.servlet.mapping</span></td>
+      <td style="vertical-align: top;">The base Servlet mapping (e.g
+"v1" in http://localhost:8080/atomserver/v1) </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">root.loglevel<br>
+      </span></td>
+      <td style="vertical-align: top;">The root logging level for
+log4j. (e.g. WARN)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">root.appender</span></td>
+      <td style="vertical-align: top;">The root appender for log4j
+(should be either StdoutFile or Stdout<span
+ style="font-family: monospace;">)</span> </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">atomserver.loglevel</span></td>
+      <td style="vertical-align: top;">The logging level for
+AtomServer. (e.g. INFO) </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">atomserver.logdir</span></td>
+      <td style="vertical-align: top;">The directory to log into. (e.g.
+$ATOMSERVER_HOME/logs)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">atomserver.logfilename</span></td>
+      <td style="vertical-align: top;">The base name for AtomServer log
+files. (e.g. "atomserver" will result in atomserver.stdout.log, etc.)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
 <br>
 <br>
 </div>

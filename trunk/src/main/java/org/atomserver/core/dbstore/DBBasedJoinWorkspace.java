@@ -33,6 +33,7 @@ import static org.atomserver.core.etc.AtomServerConstants.WORKSPACE;
 import static org.atomserver.core.etc.AtomServerConstants.COLLECTION;
 import static org.atomserver.core.etc.AtomServerConstants.LOCALE;
 import org.atomserver.exceptions.AtomServerException;
+import org.atomserver.exceptions.BadRequestException;
 import org.atomserver.uri.EntryTarget;
 import org.atomserver.uri.FeedTarget;
 
@@ -76,25 +77,38 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
             protected long getEntries(Abdera abdera,
                                       IRI iri,
                                       FeedTarget feedTarget,
-                                      long ifModifiedSinceLong,
+                                      Date updatedMin,
+                                      Date updatedMax,
                                       Feed feed) throws AtomServerException {
 
                 EntryType entryType = (feedTarget.getEntryTypeParam() != null) ?
                                       feedTarget.getEntryTypeParam() :
                                       EntryType.link;
                 return internalGetEntries(abdera, iri, feedTarget,
-                                          ifModifiedSinceLong, feed, entryType,
+                                          updatedMin, updatedMax, feed, entryType,
                                           calculatePageSize(feedTarget, entryType));
             }
 
             private long internalGetEntries(Abdera abdera, IRI iri, FeedTarget feedTarget,
-                                            long ifModifiedSinceLong, Feed feed,
+                                            Date updatedMin, Date updatedMax, Feed feed,
                                             EntryType entryType, int pageSize) {
+
+                int startIndex = feedTarget.getStartIndexParam();
+                int endIndex = feedTarget.getEndIndexParam();
+
+                if ( endIndex != -1 && endIndex < startIndex ) {
+                    String msg = "endIndex parameter (" + endIndex + ") is less than the startIndex (" + startIndex +")";
+                    log.error(msg);
+                    throw new BadRequestException(msg);
+                }
+
                 List<AggregateEntryMetaData> list;
                 list = getEntriesDAO().selectAggregateEntriesByPage(feedTarget,
-                                                                    new Date(ifModifiedSinceLong),
+                                                                    updatedMin,
+                                                                    updatedMax,
                                                                     feedTarget.getLocaleParam(),
-                                                                    feedTarget.getPageDelimParam(),
+                                                                    startIndex,
+                                                                    endIndex,
                                                                     pageSize + 1,
                                                                     feedTarget.getCategoriesQuery(),
                                                                     joinWorkspaces);
@@ -105,8 +119,8 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
 
                 Collections.sort(list, new Comparator<AggregateEntryMetaData>() {
                     public int compare(AggregateEntryMetaData a, AggregateEntryMetaData b) {
-                        return a.getLastModifiedSeqNum() < b.getLastModifiedSeqNum() ? -1 :
-                               a.getLastModifiedSeqNum() > b.getLastModifiedSeqNum() ? 1 :
+                        return a.getUpdateTimestamp() < b.getUpdateTimestamp() ? -1 :
+                               a.getUpdateTimestamp() > b.getUpdateTimestamp() ? 1 :
                                0;
                     }
                 });
@@ -115,17 +129,17 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
 
                 // if there are more than should fit on one page, and the last two are the same
                 // seqnum, then we have to specially handle things.
-                long lastSeqnumOnPage = list.get(list.size() - 1).getLastModifiedSeqNum();
+                long lastSeqnumOnPage = list.get(list.size() - 1).getUpdateTimestamp();
 
-                if (!resultsFitOnOnePage && lastSeqnumOnPage == list.get(list.size() - 2).getLastModifiedSeqNum()) {
-                    long firstSeqnumOnPage = list.get(0).getLastModifiedSeqNum();
+                if (!resultsFitOnOnePage && lastSeqnumOnPage == list.get(list.size() - 2).getUpdateTimestamp()) {
+                    long firstSeqnumOnPage = list.get(0).getUpdateTimestamp();
 
                     if (lastSeqnumOnPage != firstSeqnumOnPage) {
-                        while (list.get(list.size() - 1).getLastModifiedSeqNum() == lastSeqnumOnPage) {
+                        while (list.get(list.size() - 1).getUpdateTimestamp() == lastSeqnumOnPage) {
                             list.remove(list.size() - 1);
                         }
                     } else {
-                        return internalGetEntries(abdera, iri, feedTarget, ifModifiedSinceLong, feed, entryType,
+                        return internalGetEntries(abdera, iri, feedTarget, updatedMin, updatedMax, feed, entryType,
                                                   pageSize * 2);
                     }
                 }
@@ -134,7 +148,7 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
                                           list, feedTarget.getWorkspace(), feedTarget.getCollection(),
                                           feedTarget.getLocaleParam(),
                                           list.size(), resultsFitOnOnePage, pageSize,
-                                          feedTarget.getPageDelimParam(), 0 /*total entries*/);
+                                          feedTarget.getStartIndexParam(), 0 /*total entries*/);
             }
 
             //~~~~~~~~~~~~~~~~~~~~~~

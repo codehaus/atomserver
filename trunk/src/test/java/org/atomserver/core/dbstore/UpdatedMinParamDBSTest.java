@@ -30,12 +30,12 @@ import java.util.TimeZone;
 import java.text.SimpleDateFormat;
 
 /**
- * test the lastMod parameter.
+ * test the updated-min parameter.
  */
-public class LastModParamDBSTest extends ParamDBSTestCase {
+public class UpdatedMinParamDBSTest extends ParamDBSTestCase {
 
     public static Test suite()
-    { return new TestSuite( LastModParamDBSTest.class ); }
+    { return new TestSuite( UpdatedMinParamDBSTest.class ); }
 
     // -------------------------------------------------------
     public void setUp() throws Exception
@@ -50,25 +50,23 @@ public class LastModParamDBSTest extends ParamDBSTestCase {
     // --------------------
     //       tests
     //---------------------
-    public void testVarious() throws Exception {
-
-        // testBadDate
+    public void testBadDate() throws Exception {
         String now = "BadDate";
         ClientResponse response= clientGet( "widgets/acme?updated-min=" + now, null, 400 );
         response.release();
+    }
 
-        //--------------------------
-        // testReadFeedSinceEmpty
+    public void testReadFeedSinceEmpty() throws Exception {
         Thread.sleep( 1000 );
         long lnow = (entriesDao.selectSysDate()).getTime();
-        now = AtomDate.format( new Date( lnow ) );
-        response= clientGet( "widgets/acme?updated-min=" + now, null, 304 );
+        String now = AtomDate.format( new Date( lnow ) );
+        ClientResponse response= clientGet( "widgets/acme?updated-min=" + now, null, 304 );
         response.release();
+    }
 
-        //--------------------------
-        // testWithTimeZonePlus
+    public void testWithTimeZonePlus() throws Exception {
         // we want to make sure that the "+/-" goes thru the URL 2003-12-13T18:30:02+01:00
-        lnow = (entriesDao.selectSysDate()).getTime();
+        long lnow = (entriesDao.selectSysDate()).getTime();
         AtomDate adate = new AtomDate( new Date( lnow - 2000 ) );
         Date date = adate.getDate();
         log.debug( "+++++++++++++++ date= " + date );
@@ -87,31 +85,31 @@ public class LastModParamDBSTest extends ParamDBSTestCase {
 
         String ddd2 = ddd + "-01:00"; 
         log.debug( "+++++++++++++++ ddd2= " + ddd2 );
-        response= clientGet( "widgets/acme?updated-min=" + ddd2, null, 200 );
+        ClientResponse response= clientGet( "widgets/acme?updated-min=" + ddd2, null, 200 );
         response.release();
 
         ddd2 = ddd + "+06:00"; 
         log.debug( "+++++++++++++++ ddd2= " + ddd2 );
         response= clientGet( "widgets/acme?updated-min=" + ddd2, null, 200 );
         response.release();
+    }
 
-        //--------------------------
-        // testWithFutureTime
-        response= clientGet( "widgets/acme?updated-min=2027-12-02T23:59:59.000Z", null, 304 );
+    public void testWithFutureTime() throws Exception {
+        ClientResponse response= clientGet( "widgets/acme?updated-min=2027-12-02T23:59:59.000Z", null, 304 );
         response.release();
+    }
 
-        //--------------------------
-        // testReadFeedSince
+    public void testReadFeedSince() throws Exception {
         // Now get the feed using the query param
         Thread.sleep( 2000 );
 
         Date nowdate = entriesDao.selectSysDate();
-        lnow = nowdate.getTime();
+        long lnow = nowdate.getTime();
         String sdate = AtomDate.format( new Date( lnow - 50 ) );
 
         createWidget("widgets", "acme", "23456", "en", createWidgetXMLFileString( "23456"));
 
-        response= clientGet( "widgets/acme?updated-min=" + sdate, null, 200 );
+        ClientResponse response= clientGet( "widgets/acme?updated-min=" + sdate, null, 200 );
 
         Feed feed = (Feed) response.getDocument().getRoot();
         log.debug( "SIZE=" + feed.getEntries().size() );
@@ -125,26 +123,26 @@ public class LastModParamDBSTest extends ParamDBSTestCase {
         log.debug( "SIZE=" + feed.getEntries().size() );
         assertEquals("Testing feed length", 1, feed.getEntries().size());
         response.release();
+    }
 
-        //----------------------
-        //  testGetEntrySincePasses
-        lnow = (entriesDao.selectSysDate()).getTime();
-        sdate = AtomDate.format( new Date( lnow - 10000 ) );
+    public void testGetEntrySincePasses() throws Exception {
+        long lnow = (entriesDao.selectSysDate()).getTime();
+        String sdate = AtomDate.format( new Date( lnow - 10000 ) );
 
-        response= clientGet( "widgets/acme/" + stdPropId + ".en.xml?updated-min=" + sdate, null, 200 );
+        ClientResponse response= clientGet( "widgets/acme/" + stdPropId + ".en.xml?updated-min=" + sdate, null, 200 );
 
         Document<Entry> doc = response.getDocument();
         Entry entry = doc.getRoot();
         assertTrue( entry.getContent().indexOf( "id=\"" + stdPropId + "\"" ) != -1 );
         response.release();
+    }
 
-        //----------------------
-        // testGetEntrySinceFails
+    public void testGetEntrySinceFails() throws Exception {
         Thread.sleep( 1000 );
-        lnow = (entriesDao.selectSysDate()).getTime();
-        sdate = AtomDate.format( new Date( lnow ) );
+        long lnow = (entriesDao.selectSysDate()).getTime();
+        String sdate = AtomDate.format( new Date( lnow ) );
 
-        response= clientGet( "widgets/acme/" + stdPropId + ".en.xml?updated-min=" + sdate, null, 304 );
+        ClientResponse response= clientGet( "widgets/acme/" + stdPropId + ".en.xml?updated-min=" + sdate, null, 304 );
         response.release();
     }
 

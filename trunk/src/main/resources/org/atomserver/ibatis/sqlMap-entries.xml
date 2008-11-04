@@ -47,9 +47,15 @@
             ON searchCategories.EntryStoreId = entry.EntryStoreId
         <isNotNull property="categoryFilterSql">AND ($categoryFilterSql$)</isNotNull>
         </isNotNull>
-         WHERE UpdateDate >= #lastModifiedDate#
-           AND UpdateTimestamp > #lastModifiedSeqNum#
+         WHERE UpdateDate >= #updatedMin#
+        <isNotNull property="updatedMax">
+            <![CDATA[ AND UpdateDate < #updatedMax# ]]>
+        </isNotNull>
+           AND UpdateTimestamp > #startIndex#
         <isNotNull property="latencySeconds">
+        <isNotEqual property="endIndex" compareValue="-1">
+           <![CDATA[ AND UpdateTimestamp <= #endIndex# ]]>
+        </isNotEqual>
            AND (
             <isEqual property="dbType" compareValue="hsql">
              DATEDIFF('ss', UpdateDate, NOW()) >= $latencySeconds$
@@ -189,7 +195,7 @@
     <select id="selectEntriesByLastModified" parameterClass="map" resultMap="entryResult">
         <!-- SELECT the entries that were last modified since the given time -->
         <include refid="SELECT_EntryStore_JOIN_EntryCategory"/>
-        WHERE UpdateDate >= #lastModifiedDate#
+        WHERE UpdateDate >= #updatedMin#
           AND entry.Workspace = #workspace#
         <isNotNull property="collection">
           AND entry.Collection=#collection#
@@ -200,7 +206,7 @@
     <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
     <select id="selectEntriesByLastModifiedSeqNum" parameterClass="map" resultMap="entryResult">
         <include refid="SELECT_EntryStore_JOIN_EntryCategory"/>
-        WHERE UpdateDate >= #lastModifiedDate#
+        WHERE UpdateDate >= #updatedMin#
           AND entry.Workspace = #workspace#
         <isNotNull property="collection">
           AND entry.Collection=#collection#
@@ -220,7 +226,7 @@
     <select id="countEntriesByLastModified" parameterClass="map" resultClass="int">
         <![CDATA[
         SELECT COUNT(*) as entrycount FROM EntryStore
-         WHERE UpdateDate >= #lastModifiedDate#
+         WHERE UpdateDate >= #updatedMin#
            AND Workspace = #workspace#
         ]]>
         <isNotNull property="collection">

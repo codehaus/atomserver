@@ -62,15 +62,19 @@ abstract public class AbstractAtomCollection implements AtomCollection {
      * @param abdera
      * @param iri
      * @param feedTarget      The FeedTarget, which was decoded from the URI
-     * @param ifModifiedSince The ifModifiedSince Date (as a long) determined using either the Header or a Query param.
+     * @param updatedMin      The minimum update Date determined using either the Header or a Query param.
+     * @param updatedMax      The maximum update Date determined using a Query param.
      * @param feed            The Feed to which to add Entries
-     * @return The latest lastModified Date (as a long) for an Entry in this Feed. Used to set the <updated> element in the Feed
+     * @return The last update Date (as a long) for an Entry in this Feed.
+     * Used to set the <updated> element in the Feed
      * @throws AtomServerException
      */
+
     abstract protected long getEntries(Abdera abdera,
                                        IRI iri,
                                        FeedTarget feedTarget,
-                                       long ifModifiedSince,
+                                       Date updatedMin,
+                                       Date updatedMax,
                                        Feed feed) throws AtomServerException;
 
     /**
@@ -183,7 +187,6 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         return ((AbstractAtomService)parentAtomWorkspace.getParentAtomService()).getCategoriesHandler();
     }
 
-    // FIXME:: javadoc
     protected EntryTarget getEntryTarget(RequestContext request) {
         return getURIHandler().getEntryTarget(request, true);
     }
@@ -412,21 +415,29 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         Abdera abdera = request.getServiceContext().getAbdera();
         FeedTarget feedTarget = getURIHandler().getFeedTarget(request);
 
-        long ifModifiedSince = getIfModifiedSince(feedTarget, request);
+        Date updatedMin = getUpdatedMin(feedTarget, request);
+        Date updatedMax = feedTarget.getUpdatedMaxParam();
+
+        if ( updatedMax != null && updatedMin.after( updatedMax) ) {
+            String msg = "updated-min (" + updatedMin + ") is after updated-max (" + updatedMax + ")";
+            log.error(msg);
+            throw new BadRequestException(msg);
+        }
 
         Feed feed = AtomServer.getFactory(abdera).newFeed();
 
-        long lastModified = getEntries(request.getServiceContext().getAbdera(),
-                                       request.getUri(),
-                                       feedTarget,
-                                       ifModifiedSince,
-                                       feed);
-        if (lastModified != 0L) {
+        long lastUpdated = getEntries(request.getServiceContext().getAbdera(),
+                                      request.getUri(),
+                                      feedTarget,
+                                      updatedMin,
+                                      updatedMax,
+                                      feed);
+        if (lastUpdated != 0L) {
             try {
                 String collection = feedTarget.getCollection();
                 feed.addAuthor("AtomServer APP Service");
                 feed.setTitle(collection + " entries");
-                feed.setUpdated(new java.util.Date(lastModified));
+                feed.setUpdated(new java.util.Date(lastUpdated));
                 feed.setId("tag:atomserver.org,2008:v1:" + collection);
 
             } catch (IRISyntaxException e) {
@@ -452,12 +463,16 @@ abstract public class AbstractAtomCollection implements AtomCollection {
 
         EntryMetaData entryMetaData = getEntry(entryTarget);
 
-        long thisLastModified =
-                (entryMetaData.getLastModifiedDate() != null) ? entryMetaData.getLastModifiedDate().getTime() : 0L;
+        Date thisLastUpdated = (entryMetaData.getUpdatedDate() != null)
+                               ? entryMetaData.getUpdatedDate() : AtomServerConstants.ZERO_DATE;
 
-        long ifModifiedSince = getIfModifiedSince(entryTarget, request);
+        Date updatedMin = getUpdatedMin(entryTarget, request);
+        Date updatedMax = (entryTarget.getUpdatedMaxParam() != null ) 
+                          ? entryTarget.getUpdatedMaxParam() : AtomServerConstants.FAR_FUTURE_DATE;
+
         Entry entry = null;
-        if (thisLastModified > ifModifiedSince) {
+        if ( ( thisLastUpdated.after( updatedMin ) || thisLastUpdated.equals( updatedMin ) )
+             && thisLastUpdated.before( updatedMax ) ) {
             EntryType entryType =
                     (entryTarget.getEntryTypeParam() != null) ? entryTarget.getEntryTypeParam() : EntryType.full;
             entry = newEntry(abdera, entryMetaData, entryType);
@@ -920,19 +935,15 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~
-    protected long getIfModifiedSince(URITarget uriTarget,
-                                      RequestContext request)
-            throws BadRequestException {
-
+    protected Date getUpdatedMin(URITarget uriTarget, RequestContext request) {
         java.util.Date ifModifiedSinceDate = uriTarget.getUpdatedMinParam();
 
         // The URL Query param takes precedence, if it is provided
         if (ifModifiedSinceDate == null) {
             ifModifiedSinceDate = request.getIfModifiedSince();
         }
-        return (ifModifiedSinceDate == null) ? 0L : ifModifiedSinceDate.getTime();
+        return (ifModifiedSinceDate == null) ? AtomServerConstants.ZERO_DATE : ifModifiedSinceDate;
     }
-
 
     //~~~~~~~~~~~~~~~~~~~~~~
     protected Entry newEntry(Abdera abdera, EntryMetaData entryMetaData, EntryType entryType)
@@ -942,7 +953,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         try {
             Entry entry = newEntryWithCommonContentOnly(abdera, entryMetaData);
 
-            java.util.Date updated = entryMetaData.getLastModifiedDate();
+            java.util.Date updated = entryMetaData.getUpdatedDate();
             java.util.Date published = entryMetaData.getPublishedDate();
 
             entry.setUpdated(updated);
@@ -1009,7 +1020,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         if (entryDescriptor instanceof EntryMetaData) {
             EntryMetaData entryMetaData = (EntryMetaData) entryDescriptor;
             entry.addSimpleExtension(AtomServerConstants.UPDATE_INDEX,
-                                     String.valueOf(entryMetaData.getLastModifiedSeqNum()));
+                                     String.valueOf(entryMetaData.getUpdateTimestamp()));
             if (entryMetaData.getRevision() >= 0) {
                 entry.addSimpleExtension(AtomServerConstants.REVISION,
                                      String.valueOf(entryMetaData.getRevision()));

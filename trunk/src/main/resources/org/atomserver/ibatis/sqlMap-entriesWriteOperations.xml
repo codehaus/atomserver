@@ -89,7 +89,7 @@
          INSERT INTO EntryStore
          (Workspace, Collection, LanCode, CountryCode, EntryId, UpdateDate, CreateDate, UpdateSeqNum, DeleteFlag, RevisionNum)
          VALUES
-         (#workspace#, #collection#, #language#, #country#, #entryId#, #lastModifiedDate#, #publishedDate#, 0, #deleted#, #revision#)
+         (#workspace#, #collection#, #language#, #country#, #entryId#, #updatedDate#, #publishedDate#, 0, #deleted#, #revision#)
      </insert>
 
     <insert id="insertEntrySeedingDB-postgres" parameterClass="map">
@@ -100,14 +100,14 @@
           INSERT INTO EntryStore
          (EntryStoreId, Workspace, Collection, LanCode, CountryCode, EntryId, UpdateDate, CreateDate, UpdateSeqNum, DeleteFlag, RevisionNum)
          VALUES
-         (#entryStoreId#, #workspace#, #collection#, #language#, #country#, #entryId#, #lastModifiedDate#, #publishedDate#, 0, #deleted#, #revision#)
+         (#entryStoreId#, #workspace#, #collection#, #language#, #country#, #entryId#, #updatedDate#, #publishedDate#, 0, #deleted#, #revision#)
      </insert>
 
     <insert id="insertEntrySeedingDB-hsql" parameterClass="map">
           INSERT INTO EntryStore
          (EntryStoreId, Workspace, Collection, LanCode, CountryCode, EntryId, UpdateDate, CreateDate, UpdateSeqNum, DeleteFlag, RevisionNum, UpdateTimestamp)
          VALUES
-         (#entryStoreId#, #workspace#, #collection#, #language#, #country#, #entryId#, #lastModifiedDate#, #publishedDate#, 0, #deleted#, #revision#,
+         (#entryStoreId#, #workspace#, #collection#, #language#, #country#, #entryId#, #updatedDate#, #publishedDate#, 0, #deleted#, #revision#,
           NEXT VALUE FOR entrystore_updatetimestamp_seq)
 
         <selectKey resultClass="int" keyProperty="entryStoreId" type="post">
@@ -154,11 +154,11 @@
             <isNotNull prepend="," property="publishedDate">
                 CreateDate=#publishedDate#
             </isNotNull>
-            <isNull prepend="," property="lastModifiedDate">
+            <isNull prepend="," property="updatedDate">
                 UpdateDate=${db.getdate.func}
             </isNull>
-            <isNotNull prepend="," property="lastModifiedDate">
-                UpdateDate=#lastModifiedDate#
+            <isNotNull prepend="," property="updatedDate">
+                UpdateDate=#updatedDate#
             </isNotNull>
             <isEqual prepend="," property="dbType" compareValue="postgres">
                UpdateTimestamp=nextval('entrystore_updatetimestamp_seq'::regclass)
