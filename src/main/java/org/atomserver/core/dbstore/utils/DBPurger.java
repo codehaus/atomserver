@@ -71,6 +71,8 @@ public class DBPurger extends DBTool {
         try {
             getInstance().purge(workspace, collection);
         } catch( Exception ee ) {
+            System.out.println( "Exception = " + ee.getClass().getName() + " message= " + ee.getMessage() );
+            ee.printStackTrace();
             System.out.println( "Could NOT purge " + workspace + " " + collection );
             System.exit(123);
         }

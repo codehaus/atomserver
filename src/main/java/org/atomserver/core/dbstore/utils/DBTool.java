@@ -23,13 +23,17 @@ public class DBTool {
     }
 
     public static ApplicationContext getToolContext() {
+
         String[] configs = {
                 "/org/atomserver/spring/propertyConfigurerBeans.xml",
                 "/org/atomserver/spring/logBeans.xml",
                 "/org/atomserver/spring/storageBeans.xml",
+                "/org/atomserver/spring/abderaBeans.xml",
                 "/org/atomserver/spring/databaseBeans.xml",
-                "/org/atomserver/spring/dbtools/dbtools.xml"
+                "/org/atomserver/spring/dbtools/dbtools.xml",
+                "/org/atomserver/spring/ext/*.xml"
         };
+
         ClassPathXmlApplicationContext springFactory =
                 new ClassPathXmlApplicationContext(configs, false);
         springFactory.setClassLoader(

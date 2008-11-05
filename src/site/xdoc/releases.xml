@@ -11,9 +11,12 @@
             <ul>
                 <li>Add updated-max and end-index query parameters, which allows one to
                 query for Feeds or Entries within a bounded range -- updated-min to updated-max
-                (inclusive to exclusive) or start-index to end-index (inclusive to exclusive).
+                (inclusive to exclusive) or start-index to end-index (exclusive to inclusive).
                 Check out <a href="docs/protocol_reference.html">this AtomServer documentation</a>. 
                 for further info</li>
+                <li>Fixed the DBPurger so that it instantiates abderaBeans, and includes Spring Beans
+                from "/org/atomserver/spring/ext/*.xml". This allows you to properly override
+                Spring Bean definitions</li>
             </ul>
         </section>
 
