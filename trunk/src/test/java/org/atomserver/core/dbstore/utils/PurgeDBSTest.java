@@ -97,7 +97,7 @@ public class PurgeDBSTest extends FeedDBSTestCase {
         int widgetsFinalCount = entriesDao.getTotalCount(widgetsServiceDesc);
         log.debug( "widgetsFinalCount = " + widgetsFinalCount);
         assertEquals(widgetsStartCount, widgetsFinalCount);
-        
+
         // purge the dummy workspace
         DBPurger.getInstance(getSpringFactory()).purge(DUMMY, null);
 
@@ -118,5 +118,4 @@ public class PurgeDBSTest extends FeedDBSTestCase {
         assertFalse( ompahDir.exists() );
         assertFalse( lumpahDir.exists() );
     }
-
 }
