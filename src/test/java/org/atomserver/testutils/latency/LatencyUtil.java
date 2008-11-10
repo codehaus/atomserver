@@ -21,17 +21,20 @@ public class LatencyUtil {
         log.debug("LATENCY::last wrote at " + lastWrote);
     }
 
-    public static void accountForLatency()  {
+    public static void accountForLatency() {
 
         int latency = getDbLatency();
-        long wait = lastWrote + latency - System.currentTimeMillis();
 
-        if (wait > 0) {
-            log.debug("LATENCY::need to account for latency - sleeping for " + wait + " ms");
-            try {
-                Thread.sleep(Math.min(accountForLatency, wait));
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+        if (latency > 0) {
+            long wait = lastWrote + latency - System.currentTimeMillis();
+
+            if (wait > 0) {
+                log.debug("LATENCY::need to account for latency - sleeping for " + wait + " ms");
+                try {
+                    Thread.sleep(Math.min(accountForLatency, wait));
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
     }
@@ -41,10 +44,14 @@ public class LatencyUtil {
             String latencyInSecs = ConfigurationAwareClassLoader.getENV().getProperty( "db.latency.seconds" );
             if ( latencyInSecs != null ) {
                 try {
-                    accountForLatency = (Integer.parseInt( latencyInSecs ) * 1000) + 100;
+                    accountForLatency = (Integer.parseInt( latencyInSecs ) * 1000);
+                    if ( accountForLatency != 0 ) {
+                        accountForLatency += 100;
+                    }
                 } catch ( NumberFormatException ee ) { /* do nothing */ }
             }
-            if ( accountForLatency < ACCOUNT_FOR_LATENCY_DEFAULT ) {
+            if ( accountForLatency == -1
+                 || (accountForLatency > 0 && accountForLatency < ACCOUNT_FOR_LATENCY_DEFAULT )) {
                 accountForLatency = ACCOUNT_FOR_LATENCY_DEFAULT;
             }
             log.debug( "ACCOUNT_FOR_LATENCY = " + accountForLatency );
