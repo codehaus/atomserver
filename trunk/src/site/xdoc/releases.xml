@@ -7,6 +7,12 @@
     </properties>
 
     <body>
+        <section name="Release 2.1.5-SNAPSHOT (??/??/08)">
+            <ul>
+                <li>Fix bug in Feed paging with endIndex set and latency=0 </li>
+            </ul>
+        </section>
+
         <section name="Release 2.1.4 (11/10/08)">
             <ul>
                 <li>Add updated-max and end-index query parameters, which allows one to
