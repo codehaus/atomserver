@@ -77,10 +77,11 @@ public class RelaxNGValidator implements ContentValidator {
                     return validationDriver;
                 } catch (Exception e) {
                     log.error("exception loading schema", e);
-                    return null;
+                    throw new RuntimeException("exception loading schema", e);
                 }
             }
         };
+        validationDriver.get();
     }
 
     private static final SinglePropertyMap ERROR_HANDLER_PROPERTY_MAP =
