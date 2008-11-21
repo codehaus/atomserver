@@ -181,6 +181,8 @@ public class EntryCategoriesHandler
         return categoryList;
     }
 
+    /* used only by obliterateEntry
+    */
     public void deleteEntryCategories(EntryDescriptor entryQuery){
         entryCategoriesDAO.deleteEntryCategories(entryQuery);
     }
@@ -194,6 +196,10 @@ public class EntryCategoriesHandler
     }
 
     public void insertEntryCategoryBatch(List<EntryCategory> entryCatList) {
+        for( EntryCategory category: entryCatList ){
+            verifyEntryCategory( category );
+        }
+
         entryCategoriesDAO.insertEntryCategoryBatch(entryCatList);
 
         if (isLoggingAllCategoryEvents) {
@@ -202,6 +208,9 @@ public class EntryCategoriesHandler
     }
 
     public void deleteEntryCategoryBatch(List<EntryCategory> entryCategoryList) {
+        for( EntryCategory category: entryCategoryList ){
+            verifyEntryCategory( category );
+        }
         entryCategoriesDAO.deleteEntryCategoryBatch(entryCategoryList);
     }    
 
@@ -479,7 +488,7 @@ public class EntryCategoriesHandler
             } else {
                 String workspace = descriptor.getWorkspace();
                 if (workspace == null || workspace.trim().equals("")) {
-                    String msg = "A Category MUST be defined for a workspace. The Category [" + category +
+                    String msg = "A Category MUST be defined within a workspace. The Category [" + category +
                                  "] was not properly formatted";
                     log.error(msg);
                     throw new BadRequestException(msg);
@@ -488,7 +497,7 @@ public class EntryCategoriesHandler
 
                 String collection = descriptor.getCollection();
                 if (collection == null || collection.trim().equals("")) {
-                    String msg = "A Category MUST be defined for a collection. The Category [" + category +
+                    String msg = "A Category MUST be defined within a collection. The Category [" + category +
                                  "] was not properly formatted";
                     log.error(msg);
                     throw new BadRequestException(msg);
@@ -507,44 +516,17 @@ public class EntryCategoriesHandler
                 entryIn.setLocale(descriptor.getLocale());
             }
 
-            String scheme = category.getScheme().toString();
-            if (scheme == null || scheme.trim().equals("")) {
-                String msg = "A Category MUST have a scheme attached. The Category [" + category +
-                             "] was not properly formatted";
-                log.error(msg);
-                throw new BadRequestException(msg);
+            if ( ! StringUtils.isEmpty(category.getScheme().toString()) ) {
+                entryIn.setScheme(category.getScheme().toString().trim());
             }
-            if ( scheme.length() > schemeSize ) {
-                String msg = "A Category SCHEME must NOT be longer than " +  schemeSize +
-                             "characters. The Category [" + category + "] was not properly formatted";
-                log.error(msg);
-                throw new BadRequestException(msg);
-            }
-            entryIn.setScheme(scheme.trim());
 
-            String term = category.getTerm();
-            if (term == null || term.trim().equals("")) {
-                String msg = "A Category MUST have a term attached. The Category [" + category +
-                             "] was not properly formatted";
-                log.error(msg);
-                throw new BadRequestException(msg);
+            if ( ! StringUtils.isEmpty(category.getTerm()) ) {
+                entryIn.setTerm(category.getTerm().trim());
             }
-            if ( term.length() > termSize ) {
-                String msg = "A Category TERM must NOT be longer than " +  termSize +
-                             "characters. The Category [" + category + "] was not properly formatted";
-                log.error(msg);
-                throw new BadRequestException(msg);
-            }
-            entryIn.setTerm(term.trim());
 
-            String label = category.getLabel();
-            if ( ! StringUtils.isEmpty( label ) && label.length() > labelSize ) {
-                String msg = "A Category LABEL must NOT be longer than " +  labelSize +
-                             "characters. The Category [" + category + "] was not properly formatted";
-                log.error(msg);
-                throw new BadRequestException(msg);
+            if ( ! StringUtils.isEmpty(category.getLabel()) ) {
+                entryIn.setLabel(category.getLabel().trim());
             }
-            entryIn.setLabel(category.getLabel());
 
             if (log.isTraceEnabled()) {
                 log.trace("EntryCategoriesContentStorage:: entryIn:: [" + entryIn + "]");
@@ -552,6 +534,45 @@ public class EntryCategoriesHandler
             entryCatList.add(entryIn);
         }
         return entryCatList;
+    }
+
+    private void verifyEntryCategory( EntryCategory category ) {
+
+        String scheme = category.getScheme();
+        if (scheme == null || scheme.trim().equals("")) {
+            String msg = "A Category MUST have a scheme attached. The Category [" + category +
+                         "] was not properly formatted";
+            log.error(msg);
+            throw new BadRequestException(msg);
+        }
+        if (scheme.length() > schemeSize) {
+            String msg = "A Category SCHEME must NOT be longer than " + schemeSize +
+                         "characters. The Category [" + category + "] was not properly formatted";
+            log.error(msg);
+            throw new BadRequestException(msg);
+        }
+
+        String term = category.getTerm();
+        if (term == null || term.trim().equals("")) {
+            String msg = "A Category MUST have a term attached. The Category [" + category +
+                         "] was not properly formatted";
+            log.error(msg);
+            throw new BadRequestException(msg);
+        }
+        if (term.length() > termSize) {
+            String msg = "A Category TERM must NOT be longer than " + termSize +
+                         "characters. The Category [" + category + "] was not properly formatted";
+            log.error(msg);
+            throw new BadRequestException(msg);
+        }
+
+        String label = category.getLabel();
+        if (!StringUtils.isEmpty(label) && label.length() > labelSize) {
+            String msg = "A Category LABEL must NOT be longer than " + labelSize +
+                         "characters. The Category [" + category + "] was not properly formatted";
+            log.error(msg);
+            throw new BadRequestException(msg);
+        }
     }
 
     //>>>>>>>>>>>>>>>>>>>>>>>>>>
