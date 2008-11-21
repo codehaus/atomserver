@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<property xmlns="http://schemas.atomserver.org/widgets/v1/rev0" systemId="acme" id="9998" inNetwork="false">
+    <colors>
+        <color isDefault="true">teal</color>
+    </colors>
+    <contact>
+        <contactId>8178</contactId>
+        <displayName>Wilma Flintstone</displayName>
+        <hasEmail>true</hasEmail>
+    </contact>
+</property>
