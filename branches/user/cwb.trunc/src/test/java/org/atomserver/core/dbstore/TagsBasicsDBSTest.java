@@ -61,11 +61,18 @@ public class TagsBasicsDBSTest extends CRUDDBSTestCase {
        
         // Note this is a 301 Moved Permanently -- so the Client will redirect
         //  based on the Location Header....
-        ClientResponse response = clientGetWithFullURL( fullURL, 200 );               
+        ClientResponse response = clientGetWithFullURL( fullURL, 200 );
+
+        // make sure we got a Feed back
+        Feed feed = (Feed) response.getDocument().getRoot();
+        assertNotNull( feed );
+        assertTrue( feed.getEntries().size() > 0 );
+
+        response.release();
     }
 
     public void testEntryWithCategories() throws Exception {
-        /*  PUT:: 
+        /*  PUT::
        <entry xmlns="http://www.w3.org/2005/Atom">
          <id>tags:widgets/acme/4.en.xml</id>
          <content type="xhtml">
@@ -83,7 +90,7 @@ public class TagsBasicsDBSTest extends CRUDDBSTestCase {
            </div>
          </content>
        </entry>
-       
+
           THE CORRESPONDING ENTRY NOW RETURNS ::
        <?xml version='1.0' encoding='UTF-8'?>
          <entry xmlns="http://www.w3.org/2005/Atom">
@@ -113,20 +120,18 @@ public class TagsBasicsDBSTest extends CRUDDBSTestCase {
         String urlPath = "tags:widgets/acme/4.en.xml/*" ;
         String fullURL = getServerURL() + urlPath;
         String id = urlPath;
-        
+
         Categories categories = getFactory().newCategories();
 
         int numCats = 8;
-        for ( int ii=0; ii < numCats; ii++ ) { 
+        for ( int ii=0; ii < numCats; ii++ ) {
             Category category = getFactory().newCategory();
             category.setScheme( "urn:widgets/foo" );
             category.setTerm( "testutils:" + ii );
             categories.addCategory( category );
         }
-        StringWriter stringWriter = new StringWriter();
-        categories.writeTo( stringWriter ); 
-        String categoriesXML = stringWriter.toString();
-        log.debug( "Categories= " + categoriesXML );
+
+        String categoriesXML = getCategoriesXML( categories );
 
         //INSERT
         String editURI = update(id, fullURL, categoriesXML );
@@ -134,7 +139,7 @@ public class TagsBasicsDBSTest extends CRUDDBSTestCase {
         // Now let's GET the corresponding "widgets" Entry
         urlPath = "widgets/acme/4.en.xml" ;
         fullURL = getServerURL() + urlPath;
-       
+
         ClientResponse response = clientGetWithFullURL( fullURL, 200 );
         assertEquals(200, response.getStatus());
 
@@ -146,7 +151,7 @@ public class TagsBasicsDBSTest extends CRUDDBSTestCase {
 
         // verify that the Categories appear in the Entry
         List<Category> entryCategories = entryOut.getCategories();
-        assertNotNull( entryCategories ); 
+        assertNotNull( entryCategories );
         assertEquals( numCats, entryCategories.size() );
 
         response.release();
@@ -166,7 +171,7 @@ public class TagsBasicsDBSTest extends CRUDDBSTestCase {
 
         // verify that the Categories appear in the Entry
         entryCategories = entryOut.getCategories();
-        assertNotNull( entryCategories ); 
+        assertNotNull( entryCategories );
         assertEquals( 0, entryCategories.size() );
 
         response.release();
@@ -178,6 +183,84 @@ public class TagsBasicsDBSTest extends CRUDDBSTestCase {
                 widgetURIHelper.getEntryTarget(new MockRequestContext(serviceContext, "GET", entryIRI.toString()), true);
         EntryMetaData metaData = entriesDAO.selectEntry(entryTarget);
         assertFalse( metaData.getDeleted() );
+    }
+
+    public void testTooLarge() throws Exception {
+
+        // First let's add a bunch of Categories for the Entry
+        // Create a standard APP Categories doc
+        //  which is the Content for this "tags:widgets" Entry
+        String urlPath = "tags:widgets/acme/4.en.xml/*" ;
+        String fullURL = getServerURL() + urlPath;
+        String id = urlPath;
+
+        Categories categories = getFactory().newCategories();
+        Category category = getFactory().newCategory();
+
+        EntryCategoriesHandler catHandler =
+                (EntryCategoriesHandler) getSpringFactory().getBean("org.atomserver-entryCategoriesHandler");
+
+        int schemeSize = catHandler.getSchemeSize();
+        assertTrue( schemeSize  > 0);
+        
+        String scheme = "urn:widgets/foo";
+        for ( int ii=0; ii < schemeSize+10; ii++ )  {
+            scheme += "X";
+        }
+        category.setScheme( scheme );
+        category.setTerm( "test:1" );
+        categories.addCategory( category );
+
+        String categoriesXML = getCategoriesXML( categories );
+
+        //INSERT
+        String editURI = update(id, fullURL, categoriesXML, true, 400 );
+        assertNull( editURI );
+
+        //--------------
+        int termSize = catHandler.getTermSize();
+        assertTrue( termSize  > 0);
+
+        String term = "term";
+        for ( int ii=0; ii < termSize+10; ii++ )  {
+            term += "X";
+        }
+        category.setScheme( "urn:widgets/foo" );
+        category.setTerm( term );
+        categories.addCategory( category );
+
+        categoriesXML = getCategoriesXML( categories );
+
+        //INSERT
+        editURI = update(id, fullURL, categoriesXML, true, 400 );
+        assertNull( editURI );
+
+        //--------------
+        int labelSize = catHandler.getLabelSize();
+        assertTrue( labelSize  > 0);
+
+        String label = "label";
+        for ( int ii=0; ii < labelSize+10; ii++ )  {
+            label += "X";
+        }
+        category.setScheme( "urn:widgets/foo" );
+        category.setTerm( "term" );
+        category.setLabel( label );
+        categories.addCategory( category );
+
+        categoriesXML = getCategoriesXML( categories );
+        
+        //INSERT
+        editURI = update(id, fullURL, categoriesXML, true, 400 );
+        assertNull( editURI );
+    }
+
+    private String getCategoriesXML( Categories categories ) throws Exception {
+        StringWriter stringWriter = new StringWriter();
+        categories.writeTo( stringWriter );
+        String categoriesXML = stringWriter.toString();
+        log.debug( "Categories= " + categoriesXML );
+        return categoriesXML;
     }
 
     //========================================
@@ -201,10 +284,7 @@ public class TagsBasicsDBSTest extends CRUDDBSTestCase {
             category.setTerm( terms4[ii] );
             categories.addCategory( category );
         }
-        StringWriter stringWriter = new StringWriter();
-        categories.writeTo( stringWriter ); 
-        String categoriesXML4 = stringWriter.toString();
-        log.debug( "Categories= " + categoriesXML4 );
+        String categoriesXML4 = getCategoriesXML( categories );
 
         //INSERT
         String editURI4 = insert(id, fullURL, categoriesXML4, false );
@@ -225,11 +305,8 @@ public class TagsBasicsDBSTest extends CRUDDBSTestCase {
             category.setTerm( terms2797[ii] );
             categories.addCategory( category );
         }
-        stringWriter = new StringWriter();
-        categories.writeTo( stringWriter ); 
-        String categoriesXML2797 = stringWriter.toString();
-        log.debug( "Categories= " + categoriesXML2797 );
-
+        String categoriesXML2797 = getCategoriesXML( categories );
+        
         //INSERT
         String editURI2797 = insert(id, fullURL, categoriesXML2797, false );
 

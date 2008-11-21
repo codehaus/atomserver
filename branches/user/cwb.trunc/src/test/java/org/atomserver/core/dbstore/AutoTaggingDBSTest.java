@@ -76,6 +76,11 @@ public class AutoTaggingDBSTest extends CRUDAtomServerTestCase {
         }
     }
 
+    public void testTooLarge() throws Exception {
+
+    }
+
+
     /*
     SCHEME TERM = [urn:foo.colors green]
     SCHEME TERM = [urn:foo.colors purple]
