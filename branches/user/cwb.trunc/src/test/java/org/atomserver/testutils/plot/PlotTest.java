@@ -108,6 +108,7 @@ public class PlotTest  extends TestCase {
         assertNotNull( csvFile );
 
         PerfDataSet perfDataSet = csvReader.readCSVFile( csvFile );
+        assertNotNull( perfDataSet );
 
         XYDataset xyDataSet = null;
         if ( numPointsInAvg == DONT_USE_NUM_POINTS )
@@ -220,7 +221,7 @@ public class PlotTest  extends TestCase {
         String csvFile = System.getProperty("csvfile");
         assertNotNull("you must provide a CSV file ( -Dcsvfile=FILENAME )", csvFile);
         String title = System.getProperty("title");
-        assertNotNull("you must provide a title ( -Dtitle=FILENAME )", title);
+        assertNotNull("you must provide a title ( -Dtitle=TITLE )", title);
 
         createPlot(methodNamesToPlot, width, height, csvFile, title,
                    false, "avgresp.png", " - Average Response Times", "Average Response (sec)");
@@ -229,21 +230,24 @@ public class PlotTest  extends TestCase {
     }
 
     private void createPlot(List<String> methodNamesToPlot, int width, int height, String csvFile, String title,
-                            boolean plotTPM, String filename, String titleSuffix, String yAxis) 
+                            boolean plotTPM, String filename, String titleSuffix, String yAxis)
             throws Exception {
         XYDataset dataset = readDataSet(csvFile, false, methodNamesToPlot, null,
                                         true, 8, plotTPM);
         File pngFile = new File(new File(csvFile).getParentFile(), filename);
+
+        boolean useDataPointMarkers = true;
+
         new PerfPlotter(dataset, width, height,
-                                              title + titleSuffix,
-                                              "Time (sec) normalized",
-                                              yAxis,
-                                              pngFile.getAbsolutePath(),
-                                              true);
+                        title + titleSuffix,
+                        "Time (sec) normalized",
+                        yAxis,
+                        pngFile.getAbsolutePath(),
+                        useDataPointMarkers );
     }
 
 
-    public void XXtest2_0Plot() throws Exception {
+    public void XXtestPlot() throws Exception {
         boolean computeMovingAverage = true;
         boolean useDataPointMarkers = false;
 

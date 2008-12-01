@@ -18,6 +18,7 @@
                     overrides that of the local application</li>
                 <li>Added an optional time to live (TTL) to AtomServerIsAliveHandler, which caches the AliveStatus
                     for an some Spring-configured TTL. Default is no expiration (0L). </li>
+                <li>Make DB latency setting controllable via JMX</li>
             </ul>
         </section>
 
