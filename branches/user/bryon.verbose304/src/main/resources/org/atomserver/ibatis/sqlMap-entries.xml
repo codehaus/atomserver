@@ -234,5 +234,17 @@
         </isNotNull>
     </select>
 
+    <select id="selectMaxIndex" parameterClass="map" resultClass="long">
+        SELECT MAX(
+        <isEqual property="dbType" compareValue="sqlserver">
+            CONVERT(BIGINT, entry.UpdateTimestamp)
+        </isEqual>
+        <isNotEqual property="dbType" compareValue="sqlserver">
+            entry.UpdateTimestamp
+        </isNotEqual>
+             ) AS UpdateTimestamp
+          FROM EntryStore entry
+    </select>
+
 </sqlMap>
 

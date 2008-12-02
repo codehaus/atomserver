@@ -52,6 +52,16 @@
     </servlet>
 
     <servlet>
+        <servlet-name>atomserverV2</servlet-name>
+        <servlet-class>org.atomserver.server.servlet.AtomServerServlet</servlet-class>
+        <init-param>
+            <param-name>serviceContextBeanName</param-name>
+            <param-value>org.atomserver-serviceContext.v2</param-value>
+        </init-param>
+        <load-on-startup>2</load-on-startup>
+    </servlet>
+
+    <servlet>
         <servlet-name>bshservlet</servlet-name>
         <servlet-class>bsh.servlet.BshServlet</servlet-class>
     </servlet>
@@ -65,6 +75,10 @@
     <servlet-mapping>
         <servlet-name>atomserver</servlet-name>
         <url-pattern>/v1/*</url-pattern>  
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>atomserverV2</servlet-name>
+        <url-pattern>/v2/*</url-pattern>  
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>bshservlet</servlet-name>

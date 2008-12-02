@@ -29,6 +29,10 @@ public class FileBasedAtomService extends AbstractAtomService {
 
     FileBasedContentStorage contentStorage;
 
+    public long getMaxIndex() {
+        return -1;
+    }
+
     public void setContentStorage(FileBasedContentStorage contentStorage) {
         this.contentStorage = contentStorage;
     }

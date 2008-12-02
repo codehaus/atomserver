@@ -26,6 +26,7 @@ import org.atomserver.uri.URIHandler;
  * between an AtomService and the corresponding concept of a Service in the Atom protocol.
  * It is the container for Service information associated with one or more Workspaces.
  * An AtomService MUST contain one or more AtomWorkspaces.
+ *
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
@@ -34,6 +35,7 @@ public interface AtomService {
      * Return the number of visible workspaces. A visible workspace is one that is visible to a client
      * when they ask for a service document. In some cases, AtomServer maintains virtual workspaces,
      * which are not presented to the end user.
+     *
      * @return the number of visible workspaces
      */
     int getNumberOfVisibleWorkspaces();
@@ -43,6 +45,7 @@ public interface AtomService {
      * This method is expected to behave differently, depending on the request URL
      * <p/>If the request URL is for the "base Service URL" (e.g. /), then all <b>visible</b> Workspaces will be returned
      * <p/>If the request URL is for a specific Workspace  (e.g. /foo), then only that Workspace is returned.
+     *
      * @param request The Abdera RequestContext
      * @return List of all Workspaces.
      * @throws AtomServerException
@@ -52,12 +55,14 @@ public interface AtomService {
 
     /**
      * Returns the base URI for this AtomService
+     *
      * @return The base URI for this AtomService
      */
     String getServiceBaseUri();
 
     /**
      * Returns the AtomWorkspace associated with the name; workspace
+     *
      * @param workspace The name of the workspace
      * @return The AtomWorkspace associated with the name; workspace
      */
@@ -65,12 +70,14 @@ public interface AtomService {
 
     /**
      * The URIHandler associated with this AtomService. The UriHandler is wired up in the IOC container.
+     *
      * @return The URIHandler associated with this AtomService
      */
     URIHandler getURIHandler();
 
     /**
      * Set the URIHandler for this AtomService. Probably, the UriHandler is wired up in the IOC container.
+     *
      * @param uriHandler The URIHandler associated with this AtomService
      */
     void setUriHandler(URIHandler uriHandler);
@@ -78,9 +85,10 @@ public interface AtomService {
     /**
      * Verify that the workspace and collection that have been decoded from the IRI are valid. Workspaces
      * must already be defined. Collections may be created on the fly.
-     * @param workspace The workspace name. May not be null
-     * @param collection The Collection name. May not be null.
-     * @param iri The decoded IRI.
+     *
+     * @param workspace               The workspace name. May not be null
+     * @param collection              The Collection name. May not be null.
+     * @param iri                     The decoded IRI.
      * @param checkIfCollectionExists Check if the Collection actually exists?
      */
     void verifyURIMatchesStorage(String workspace,
@@ -90,13 +98,15 @@ public interface AtomService {
 
     /**
      * Return the maximum number of link aggregate entries in a given page
-     * @return  the maximum number of link aggregate entries in a given page
+     *
+     * @return the maximum number of link aggregate entries in a given page
      */
     int getMaxLinkAggregateEntriesPerPage();
 
     /**
      * Return the maximum number of full aggregate entries in a given page
-     * @return  the maximum number of full aggregate entries in a given page
+     *
+     * @return the maximum number of full aggregate entries in a given page
      */
     int getMaxFullAggregateEntriesPerPage();
 
@@ -104,8 +114,16 @@ public interface AtomService {
      * Return the VirtualWorkspaceHandler which corresponds to a given Id.
      * Typically, these Ids can be found as constants in the VirtualWorkspaceHandler interface.
      * And the VirtualWorkspaceHandlers are wired into the AtomService using the IOC system.
-     * @param id  the Id of the VirtualWorkspaceHandler to return.
-     * @return  the corresponding VirtualWorkspaceHandler
+     *
+     * @param id the Id of the VirtualWorkspaceHandler to return.
+     * @return the corresponding VirtualWorkspaceHandler
      */
-    public VirtualWorkspaceHandler getVirtualWorkspaceHandler( String id );
+    public VirtualWorkspaceHandler getVirtualWorkspaceHandler(String id);
+
+    /**
+     * get the highest index number in the store.
+     *
+     * @return the highest index number in the store
+     */
+    public long getMaxIndex();
 }

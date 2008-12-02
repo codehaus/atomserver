@@ -28,6 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.atomserver.AtomServer;
 import org.atomserver.ContentStorage;
 import org.atomserver.DelegatingProvider;
+import org.atomserver.AtomServerWrapper;
 import org.atomserver.testutils.client.JettyWebAppTestCase;
 import org.atomserver.testutils.latency.LatencyUtil;
 import org.atomserver.uri.URIHandler;
@@ -130,7 +131,11 @@ abstract public class AtomServerTestCase extends JettyWebAppTestCase {
         String storeName = getStoreName();
         store = (AbstractAtomService)( springContext.getBean( storeName ) );
         provider = (DelegatingProvider)(springContext.getBean("org.atomserver-atomServer"));
-        ((AtomServer)provider.getCurrentProvider()).setService( store );
+        if (provider.getCurrentProvider() instanceof AtomServerWrapper) {
+            ((AtomServerWrapper)provider.getCurrentProvider()).getAtomServer().setService(store);
+        } else {
+            ((AtomServer)provider.getCurrentProvider()).setService( store );
+        }
 
         contentStorage = (ContentStorage) springContext.getBean("org.atomserver-contentStorage");
     }
