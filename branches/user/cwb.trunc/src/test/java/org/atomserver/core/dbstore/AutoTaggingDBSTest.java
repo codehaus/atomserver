@@ -45,7 +45,7 @@ public class AutoTaggingDBSTest extends CRUDAtomServerTestCase {
         <color isDefault="true">blue</color>
     </colors>
     */
-    public void XXXtestXPathAutoTagging() throws Exception {
+    public void testXPathAutoTagging() throws Exception {
         try {                                      
             publishAndTestVersion(
                     "/testwidget.xml", "dummy/acme/167370.xml", 0,
