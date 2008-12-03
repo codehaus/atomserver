@@ -253,10 +253,11 @@ public class TestingAtomServer {
                 appContext);
 
         // load and init the service context
-        String contextName = context.getInitParameter("serviceContextBeanName");
+        String contextName = "v1".equals(atomserverServletMapping) ?
+                             ServiceContext.class.getName() :
+                             "org.atomserver-serviceContext.v2";
         final ServiceContext serviceContext =
-                (ServiceContext) appContext.getBean(
-                        contextName == null ? ServiceContext.class.getName() : contextName);
+                (ServiceContext) appContext.getBean(contextName);
         serviceContext.init(new Abdera(), Collections.EMPTY_MAP);
 
         // create a new AtomServerServlet - but override the createServiceContext method

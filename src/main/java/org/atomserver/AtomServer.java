@@ -44,8 +44,11 @@ import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.io.StringWriter;
+import java.io.IOException;
 
 /**
  * AtomServer - This class is the true entry point for an AtomServer web application - the AbderaServlet
@@ -116,6 +119,9 @@ public class AtomServer extends AbstractProvider {
         this.atomService = atomService;
     }
 
+    protected AtomService getAtomService() {
+        return atomService;
+    }
 
     /**
      * Set the optional Performance log. If present a logger will log performance statistics
@@ -722,6 +728,13 @@ public class AtomServer extends AbstractProvider {
 
         error.addExtension(link);
         return error;
+    }
+
+    protected ResponseContext servererror(Abdera abdera,
+                                          RequestContext requestContext,
+                                          String s,
+                                          Throwable throwable) {
+        return super.servererror(abdera, requestContext, s, throwable);
     }
 
     //====================================

@@ -27,10 +27,8 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import javax.xml.namespace.NamespaceContext;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
+import javax.xml.namespace.QName;
+import javax.xml.xpath.*;
 import java.io.StringReader;
 import java.text.MessageFormat;
 import java.util.*;

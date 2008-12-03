@@ -801,6 +801,10 @@ public class EntriesDAOiBatisImpl
                 paramMap().param("internalId", internalId));
     }
 
+    public long selectMaxIndex() {
+        return (Long) getSqlMapClientTemplate().queryForObject("selectMaxIndex", paramMap());
+    }
+
     public void acquireLock() throws AtomServerException {
         if (latencySeconds <= 0) {
             log.debug("ACQUIRING LOCK");

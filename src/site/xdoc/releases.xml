@@ -20,6 +20,8 @@
                     for an some Spring-configured TTL. Default is no expiration (0L). </li>
                 <li>Make DB latency setting controllable via JMX</li>
                 <li>Make default max number of Entries in an Aggregate Feed; 1000 link and 50 full</li>
+                <li>Added "v2" AtomServer - expose possibly backwards-incompatible API changes at a different URI</li>
+                <li><b>v2 only</b> changed behavior of "NOT MODIFIED" for feed to return an empty feed document instead of a 304</li>
             </ul>
         </section>
 
