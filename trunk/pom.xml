@@ -142,8 +142,8 @@
         <!-- log4j properties -->
         <rootAppender>Stdout</rootAppender>
 
-        <rootLogLevel>DEBUG</rootLogLevel>
-        <logLevel>DEBUG</logLevel>
+        <rootLogLevel>WARN</rootLogLevel>
+        <logLevel>WARN</logLevel>
         <logDir>${basedir}/target</logDir>
         <logFileNamePrefix>atomserver</logFileNamePrefix>
 
