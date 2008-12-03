@@ -7,7 +7,7 @@
     </properties>
 
     <body>
-        <section name="Release 2.1.5-SNAPSHOT (??/??/08)">
+        <section name="Release 2.1.5 (12/3/08)">
             <ul>
                 <li>Fix bug in Feed paging when endIndex is set and latency=0 </li>
                 <li>Added error handling for truncation of Category attributes (scheme, term, label)
