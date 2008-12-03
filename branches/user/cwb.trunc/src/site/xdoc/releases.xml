@@ -10,8 +10,8 @@
         <section name="Release 2.1.5-SNAPSHOT (??/??/08)">
             <ul>
                 <li>Fix bug in Feed paging when endIndex is set and latency=0 </li>
-                <li>Added truncation of Category attributes (scheme, term, label) to the size prescribed for the
-                    database columns. This defaults to 120 for all,
+                <li>Added error handling for truncation of Category attributes (scheme, term, label)
+                    to the size prescribed for the database columns. This defaults to 120 for all,
                     but is configurable in the EntryCategoriesHandler </li>
                 <li>Moved log4j.properties from the Classpath base (the log4j default) to the org/atomserver.
                     This fixes a problem when using the AtomServer JAR where AtomServer's log4j sometimes
