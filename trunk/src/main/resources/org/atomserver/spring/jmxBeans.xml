@@ -43,10 +43,6 @@
                 <entry key="org.atomserver.beans:type=StatsTracker,name=StatsTracker"
                        value-ref="org.atomserver-statsTracker"/>
 
-                <!--
-                <entry key="org.atomserver.beans:type=FileBasedContentStorage,name=FBContentStorage"
-                       value-ref="org.atomserver-contentStorage"/>
-                       -->
                 <entry key="org.atomserver.beans:type=ContentStorage,name=ContentStorage"
                        value-ref="org.atomserver-contentStorage"/>
 
@@ -59,6 +55,8 @@
                 <entry key="org.atomserver.beans:type=ThrottledAtomServerThreadPool,name=ThrottledAtomServerThreadPool"
                        value-ref="org.atomserver-taskExecutor" />
 
+                <entry key="org.atomserver.beans:type=EntriesDAO,name=EntriesDAO"
+                       value-ref="org.atomserver-entriesDAO" />
 
                 <!-- The key name is used as the ObjectName of the MBean -->
                 <!-- NOTE: this key name MUST match the code in HttpAdaptorMgr.java -->

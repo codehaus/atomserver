@@ -24,6 +24,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.ContentStorage;
+import org.atomserver.core.dbstore.AtomServerIsAliveHandler;
 import org.atomserver.core.dbstore.dao.AbstractDAOiBatisImpl;
 import org.atomserver.core.filestore.FileBasedContentStorage;
 import org.atomserver.testutils.client.JettyWebAppTestCase;
@@ -113,7 +114,35 @@ public class AliveServletTest extends JettyWebAppTestCase {
         callAlivePage( "ERROR", 503 );
         assertTrue( isAliveHandler.isAlive().isError() );
         AbstractDAOiBatisImpl.setTestingForceFailure( false );
-    }   
+    }
+
+    public void testTTL() throws Exception {
+        // set a 5s TTL
+        ((AtomServerIsAliveHandler)isAliveHandler).setTimeToLiveInMillis( 5000 );
+
+        // get the first page, which will start the clock
+        callAlivePage( "OK", 200 );
+        assertEquals( "OK", isAliveHandler.getAliveState() );
+        assertTrue( isAliveHandler.isAlive().isOkay() );
+
+        // set it to fail
+        AbstractDAOiBatisImpl.setTestingForceFailure( true );
+
+        // we shoudl still get OK
+        for ( int ii=0; ii < 2; ii ++ ) {
+            Thread.sleep(1000);
+            callAlivePage( "OK", 200 );
+            assertEquals( "OK", isAliveHandler.getAliveState() );
+            assertTrue( isAliveHandler.isAlive().isOkay() );
+        }
+
+        // now wait for the TTL, and we should see the error
+        Thread.sleep(3500);
+        callAlivePage( "ERROR", 503 );
+        assertTrue( isAliveHandler.isAlive().isError() );
+
+        AbstractDAOiBatisImpl.setTestingForceFailure( false );
+    }
 
     private void callAlivePage( String returnText, int statusExpected ) throws Exception {
         log.debug ( "checking for " + returnText );

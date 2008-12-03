@@ -56,6 +56,9 @@ abstract public class AbstractAtomService implements AtomService {
 
     static private final Log log = LogFactory.getLog(AbstractAtomService.class);
 
+    static public final int DEFAULT_MAX_AGGREGATE_LINK_ENTRIES_PER_PAGE = 1000;
+    static public final int DEFAULT_MAX_AGGREGATE_FULL_ENTRIES_PER_PAGE = 50;
+
     protected URIHandler uriHandler = null;
     protected java.util.Map<String, AtomWorkspace> workspaces = null;
     protected AtomServerPerformanceLog perflog;
@@ -64,6 +67,9 @@ abstract public class AbstractAtomService implements AtomService {
             new HashMap<String, VirtualWorkspaceHandler>();
 
     protected ServiceContext serviceContext;
+
+    private int maxLinkAggregateEntriesPerPage = DEFAULT_MAX_AGGREGATE_LINK_ENTRIES_PER_PAGE;
+    private int maxFullAggregateEntriesPerPage = DEFAULT_MAX_AGGREGATE_FULL_ENTRIES_PER_PAGE;
 
     /**
      * {@inheritDoc}
@@ -275,9 +281,6 @@ abstract public class AbstractAtomService implements AtomService {
             throw new BadRequestException(msg);
         }
     }
-
-    private int maxLinkAggregateEntriesPerPage = WorkspaceOptions.DEFAULT_MAX_LINK_ENTRIES_PER_PAGE;
-    private int maxFullAggregateEntriesPerPage = WorkspaceOptions.DEFAULT_MAX_FULL_ENTRIES_PER_PAGE;
 
     public int getMaxLinkAggregateEntriesPerPage() {
         return maxLinkAggregateEntriesPerPage;
