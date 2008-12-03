@@ -70,6 +70,10 @@ public class DBBasedAtomService extends AbstractAtomService {
         return transactionTemplate;
     }
 
+    public long getMaxIndex() {
+        return this.entriesDAO.selectMaxIndex();
+    }
+
     @ManagedAttribute
     public int getObliterateThreshold() {
         return obliterateThreshold;

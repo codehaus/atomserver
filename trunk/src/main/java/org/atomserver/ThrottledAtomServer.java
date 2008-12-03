@@ -18,6 +18,8 @@ package org.atomserver;
 import org.apache.abdera.Abdera;
 import org.apache.abdera.protocol.server.RequestContext;
 import org.apache.abdera.protocol.server.ResponseContext;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.atomserver.utils.thread.ManagedThreadPoolTaskExecutor;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
@@ -47,7 +49,9 @@ import java.util.concurrent.*;
  * read load from write load, and thus, to always provide some database capacity for GETs.
  */
 @ManagedResource(description = "Throttled AtomServer")
-public class ThrottledAtomServer extends AtomServer {
+public class ThrottledAtomServer extends AtomServerWrapper {
+
+    private static final Log logger = LogFactory.getLog(ThrottledAtomServer.class);
 
     private Executor threadPool;
     private long taskTimeout;
@@ -90,7 +94,7 @@ public class ThrottledAtomServer extends AtomServer {
         Callable<ResponseContext> callableTask =
                 new Callable<ResponseContext>() {
                     public ResponseContext call() {
-                        return ThrottledAtomServer.super.createEntry(request);
+                        return getAtomServer().createEntry(request);
                     }
                 };
         return executePooledTask(request, callableTask);
@@ -108,7 +112,7 @@ public class ThrottledAtomServer extends AtomServer {
         Callable<ResponseContext> callableTask =
                 new Callable<ResponseContext>() {
                     public ResponseContext call() {
-                        return ThrottledAtomServer.super.updateEntry(request);
+                        return getAtomServer().updateEntry(request);
                     }
                 };
         return executePooledTask(request, callableTask);
@@ -126,7 +130,7 @@ public class ThrottledAtomServer extends AtomServer {
         Callable<ResponseContext> callableTask =
                 new Callable<ResponseContext>() {
                     public ResponseContext call() {
-                        return ThrottledAtomServer.super.deleteEntry(request);
+                        return getAtomServer().deleteEntry(request);
                     }
                 };
         return executePooledTask(request, callableTask);
@@ -165,22 +169,26 @@ public class ThrottledAtomServer extends AtomServer {
 
                 logger.error("InterruptedException in executePooledTask: Cause= " + e.getCause() +
                              " Message= " + e.getMessage(), e);
-                return this.servererror(abdera, request, "InterruptedException occurred:: " + e.getCause(), e);
+                return getAtomServer().servererror(abdera, request,
+                                                   "InterruptedException occurred:: " + e.getCause(), e);
             } catch (ExecutionException e) {
                 // ExecutionException - if the computation threw an exception
                 // Because all Exception handling is done in the super class; AtomServer, we should never get this
                 logger.error("ExecutionException in executePooledTask: Cause= " + e.getCause() +
                              " Message= " + e.getMessage(), e);
-                return this.servererror(abdera, request, "ExecutionException occurred:: " + e.getCause(), e);
+                return getAtomServer().servererror(abdera, request,
+                                                   "ExecutionException occurred:: " + e.getCause(), e);
             } catch (TimeoutException e) {
                 //  TimeoutException - if the wait timed out
                 logger.error("TimeoutException in executePooledTask: Cause= " + e.getCause() +
                              " Message= " + e.getMessage(), e);
-                return this.servererror(abdera, request, "TimeoutException occurred:: " + e.getCause(), e);
+                return getAtomServer().servererror(abdera, request,
+                                                   "TimeoutException occurred:: " + e.getCause(), e);
             } catch (Exception e) {
                 logger.error("Unknown Exception in executePooledTask: Cause= " + e.getCause() +
                              " Message= " + e.getMessage(), e);
-                return this.servererror(abdera, request, "Unknown Exception occurred:: " + e.getCause(), e);
+                return getAtomServer().servererror(abdera, request,
+                                                   "Unknown Exception occurred:: " + e.getCause(), e);
 
             } finally {
                 // Best practice is to cancel tasks whose result is no longer needed

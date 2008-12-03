@@ -73,7 +73,10 @@ public class FileBasedBlogService implements AtomService {
 
     public VirtualWorkspaceHandler getVirtualWorkspaceHandler( String id ){
         return null;
-    }    
+    }
+
+    public long getMaxIndex()
+    { return -1; }
 
     public int getNumberOfWorkspaces()
     { return 1; }
