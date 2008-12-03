@@ -656,7 +656,7 @@
 
                     <forkMode>once</forkMode>
 
-                    <argLine>-Dlog4j.configuration=log4j.properties</argLine>
+                    <argLine>-Dlog4j.configuration=org/atomserver/log4j.properties</argLine>
                     <reportFormat>plain</reportFormat>
                     <trimStackTrace>false</trimStackTrace>
                     <includes>
@@ -715,7 +715,7 @@
                         <!-- log4j ONLY looks at System properties .... sigh -->
                         <property>
                             <name>log4j.configuration</name>
-                            <value>log4j.properties</value>
+                            <value>org/atomserver/log4j.properties</value>
                         </property>
                         <property>
                             <name>log4j.debug</name>
@@ -903,6 +903,11 @@
                         </systemProperty>
 
                         <!-- log4j ONLY looks at System properties .... sigh -->
+                        <systemProperty>
+                            <name>log4j.configuration</name>
+                            <value>org/atomserver/log4j.properties</value>
+                        </systemProperty>
+
                         <systemProperty>
                             <name>root.appender</name>
                             <value>${rootAppender}</value>

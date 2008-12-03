@@ -62,17 +62,34 @@ public class AutoTaggingDBSTest extends CRUDAtomServerTestCase {
                     Arrays.asList("pink", "red", "DEFAULT:red"),
                     true, "acmeBRYON", "23450");
         } finally {
-            EntriesDAO entriesDAO = (EntriesDAO) getSpringFactory().getBean("org.atomserver-entriesDAO");
+            obliterateTestEntry();
+        }
+    }
+   
+    public void testTooLarge() throws Exception {
+        try {
+            // insert the Entry
+            String urlPath = "dummy/acme/167370.xml";
+            String fileName = "/testwidget3.xml";
+            String xml = IOUtils.toString(getClass().getResourceAsStream(fileName));
+            insert(urlPath, getServerURL() + urlPath, xml, false, 400, false);
+        } finally {
+            obliterateTestEntry();
+        }
+    }
 
-            for (String id : Arrays.asList("167370", "2222", "23450")) {
-                IRI entryIRI = IRI.create(
-                        "http://localhost:8080/"
-                        + widgetURIHelper.constructURIString("dummy", "acme", id, null));
+    private void obliterateTestEntry() throws Exception {
+        EntriesDAO entriesDAO = (EntriesDAO) getSpringFactory().getBean("org.atomserver-entriesDAO");
 
-                EntryTarget entryTarget =
-                        widgetURIHelper.getEntryTarget(new MockRequestContext(serviceContext, "GET", entryIRI.toString()), true);
-                entriesDAO.obliterateEntry(entryTarget);
-            }
+        for (String id : Arrays.asList("167370", "2222", "23450")) {
+            IRI entryIRI = IRI.create(
+                    "http://localhost:8080/"
+                    + widgetURIHelper.constructURIString("dummy", "acme", id, null));
+
+            EntryTarget entryTarget =
+                    widgetURIHelper.getEntryTarget(new MockRequestContext(serviceContext,
+                                                                          "GET", entryIRI.toString()), true);
+            entriesDAO.obliterateEntry(entryTarget);
         }
     }
 

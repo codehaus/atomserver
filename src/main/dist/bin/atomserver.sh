@@ -424,7 +424,7 @@ ATOMSERVER_ARGS="-Dseed.database.with.pets=$SEED_DATABASE_WITH_PETS $ATOMSERVER_
 # ----- log4j specific arguments
 #  NOTE: log4j ONLY takes System vars for substitution in log4j.properties
 #
-LOG4J_ARGS=""
+LOG4J_ARGS="-Dlog4j.configuration=org/atomserver/log4j.properties"
 LOG4J_ARGS="-Droot.loglevel=$ROOT_LOG_LEVEL $LOG4J_ARGS"
 LOG4J_ARGS="-Droot.appender=$ROOT_APPENDER  $LOG4J_ARGS"
 LOG4J_ARGS="-Datomserver.loglevel=$ATOMSERVER_LOG_LEVEL $LOG4J_ARGS"

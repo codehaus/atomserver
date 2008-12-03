@@ -108,6 +108,7 @@ public class PlotTest  extends TestCase {
         assertNotNull( csvFile );
 
         PerfDataSet perfDataSet = csvReader.readCSVFile( csvFile );
+        assertNotNull( perfDataSet );
 
         XYDataset xyDataSet = null;
         if ( numPointsInAvg == DONT_USE_NUM_POINTS )
@@ -220,7 +221,7 @@ public class PlotTest  extends TestCase {
         String csvFile = System.getProperty("csvfile");
         assertNotNull("you must provide a CSV file ( -Dcsvfile=FILENAME )", csvFile);
         String title = System.getProperty("title");
-        assertNotNull("you must provide a title ( -Dtitle=FILENAME )", title);
+        assertNotNull("you must provide a title ( -Dtitle=TITLE )", title);
 
         createPlot(methodNamesToPlot, width, height, csvFile, title,
                    false, "avgresp.png", " - Average Response Times", "Average Response (sec)");
@@ -229,39 +230,45 @@ public class PlotTest  extends TestCase {
     }
 
     private void createPlot(List<String> methodNamesToPlot, int width, int height, String csvFile, String title,
-                            boolean plotTPM, String filename, String titleSuffix, String yAxis) 
+                            boolean plotTPM, String filename, String titleSuffix, String yAxis)
             throws Exception {
         XYDataset dataset = readDataSet(csvFile, false, methodNamesToPlot, null,
                                         true, 8, plotTPM);
         File pngFile = new File(new File(csvFile).getParentFile(), filename);
+
+        //boolean useDataPointMarkers = true;
+        boolean useDataPointMarkers = false;
+
         new PerfPlotter(dataset, width, height,
-                                              title + titleSuffix,
-                                              "Time (sec) normalized",
-                                              yAxis,
-                                              pngFile.getAbsolutePath(),
-                                              true);
+                        title + titleSuffix,
+                        "Time (sec) normalized",
+                        yAxis,
+                        pngFile.getAbsolutePath(),
+                        useDataPointMarkers );
     }
 
 
-    public void XXtest2_0Plot() throws Exception {
+    public void XXXtestPlot() throws Exception {
+
         boolean computeMovingAverage = true;
         boolean useDataPointMarkers = false;
 
-        //boolean plotTPM = false;
-        boolean plotTPM = true;
+        boolean plotTPM = false;
+        //boolean plotTPM = true;
 
         ArrayList<String> methodNamesToPlot = new ArrayList<String>();
 
-        /*
         String methodName = "Atom.methods";
         methodNamesToPlot.add( "GET.entry" );
         methodNamesToPlot.add( "PUT.entry" );
         methodNamesToPlot.add( "DELETE.entry" );
         methodNamesToPlot.add( "GET.feed" );
+
+        /*
+        String methodName = "GET.feed";
+        methodNamesToPlot.add( methodName );
         */
 
-        String methodName = "PUT.entry";
-        methodNamesToPlot.add( methodName );
        /*
        methodNamesToPlot.add( "DB.selectEntry" );
        methodNamesToPlot.add( "DB.updateEntry" );
@@ -279,11 +286,14 @@ public class PlotTest  extends TestCase {
 
         //int width = 700;
         //int hieght = 500;
-        int width = 700;
-        int hieght = 700;
+        //int width = 700;
+        //int hieght = 700;
+        int width = 1200;
+        int hieght = 1000;
 
-        String csvFile =  USER_DIR + "/0622-60users-PUT_ONLY-normal.perf.csv";
-        String csvFile2 =  USER_DIR + "/0622-60users-PUT_ONLY-throttled.perf.csv";
+        String csvFile =  USER_DIR + "/hcdata.perf.100full.3hr.ALL2.20users.csv";
+        String csvFile2 =  USER_DIR + "/hcdata.perf.50full.3hr.ALL2.20users.csv";
+        String csvFile3 =  USER_DIR + "/hcdata.perf.25full.3hr.ALL2.20users.csv";
         int numPointsInAvg = 8;
 
         String plotName = "AvgResp";
@@ -295,11 +305,17 @@ public class PlotTest  extends TestCase {
 
         ArrayList<XYDataset> xyDatasetList = new ArrayList<XYDataset>();
         XYDataset xyDataSet = readDataSet( csvFile, false, methodNamesToPlot,
-                                           "Normal",
+                                           "100 entries/full",
                                            computeMovingAverage, numPointsInAvg, plotTPM );
         xyDatasetList.add( xyDataSet );
+
         xyDataSet = readDataSet( csvFile2, false, methodNamesToPlot,
-                                 "Throttled",
+                                 "50 entries/full",
+                                 computeMovingAverage, numPointsInAvg, plotTPM );
+        xyDatasetList.add( xyDataSet );
+
+        xyDataSet = readDataSet( csvFile3, false, methodNamesToPlot,
+                                 "25 entries/full",
                                  computeMovingAverage, numPointsInAvg, plotTPM );
         xyDatasetList.add( xyDataSet );
 
@@ -307,12 +323,12 @@ public class PlotTest  extends TestCase {
 
         //------------
         String movingAvgFileAdd = ( computeMovingAverage ) ? "-MoveAvg" : "" ;
-        String pngFile = "./target/" + "0622-20-60users-normal-vs-throttled-" +
+        String pngFile = "./target/" + "1127-25-100full-214-20users-ALL2-" +
                          methodName + "-" + plotName + movingAvgFileAdd + ".png";
         String movingAvgTitleAdd = ( computeMovingAverage ) ? "- Moving Average " : "" ;
 
-        String title = methodName + " - PUT_ONLY - 60 Users - " + yAxis  + movingAvgTitleAdd +
-                       "- normal vs. throttled - (06/22/08)";
+        String title = methodName + " - 25 to 100 Entries per Full Feed - " + yAxis  + movingAvgTitleAdd +
+                       "- (11/29/08)";
         PerfPlotter plotter = new PerfPlotter( combinedDataset, width, hieght, title,
                                                "Time (sec) normalized",
                                                yAxis,
