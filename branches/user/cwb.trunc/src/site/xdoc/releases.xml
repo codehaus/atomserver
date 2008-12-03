@@ -19,6 +19,7 @@
                 <li>Added an optional time to live (TTL) to AtomServerIsAliveHandler, which caches the AliveStatus
                     for an some Spring-configured TTL. Default is no expiration (0L). </li>
                 <li>Make DB latency setting controllable via JMX</li>
+                <li>Make default max number of Entries in an Aggregate Feed; 1000 link and 50 full</li>
             </ul>
         </section>
 
