@@ -26,11 +26,14 @@ import org.atomserver.ServiceDescriptor;
 import org.atomserver.core.AggregateEntryMetaData;
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.exceptions.AtomServerException;
+import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
 import org.atomserver.utils.locale.LocaleUtils;
 import org.atomserver.utils.logic.BooleanExpression;
 import org.atomserver.utils.perf.AutomaticStopWatch;
 import org.atomserver.utils.perf.StopWatch;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.jmx.export.annotation.ManagedAttribute;
+import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.orm.ibatis.SqlMapClientCallback;
 
 import java.sql.SQLException;
@@ -40,17 +43,19 @@ import java.util.*;
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
+@ManagedResource(description = "EntriesDAO")
 public class EntriesDAOiBatisImpl
         extends AbstractDAOiBatisImpl
         implements EntriesDAO {
 
+    public static final int UNDEFINED = -1;
     public static final long UNDEFINED_SEQNUM = -1L;
     public static final Date ZERO_DATE = new Date(0L);
 
     private ContentDAO contentDAO;
     private EntryCategoriesDAO entryCategoriesDAO;
     private EntryCategoryLogEventDAO entryCategoryLogEventDAO;
-    private int latencySeconds = -1;
+    private int latencySeconds = UNDEFINED;
 
     public void setContentDAO(ContentDAO contentDAO) {
         this.contentDAO = contentDAO;
@@ -64,11 +69,36 @@ public class EntriesDAOiBatisImpl
         this.entryCategoryLogEventDAO = entryCategoryLogEventDAO;
     }
 
+    @ManagedAttribute
     public int getLatencySeconds() {
         return latencySeconds;
     }
 
+    @ManagedAttribute
     public void setLatencySeconds(int latencySeconds) {
+        // this will be true if we are setting this for the second time through JMX
+        if ( this.latencySeconds != UNDEFINED ) {
+            // protect against a wacky value coming in through JMX
+            int sqlTimeout = UNDEFINED;
+            String sqlTimeoutStr = ConfigurationAwareClassLoader.getENV().getProperty( "db.timeout.sql.stmts" );
+            if ( sqlTimeoutStr != null ) {
+                try {
+                    sqlTimeout = Integer.parseInt( sqlTimeoutStr );
+                } catch ( NumberFormatException ee ) {
+                    log.error( "setLatencySeconds; NumberFormatException:: ", ee );
+                }
+                sqlTimeout = sqlTimeout/1000;
+            } else {
+                log.error( "db.timeout.sql.stmts is NULL " );
+            }
+
+            if ( ! (latencySeconds < 0 || ((sqlTimeout != UNDEFINED) && (latencySeconds < sqlTimeout))) ) {
+                this.latencySeconds = latencySeconds;
+            } else {
+                log.error( "The latency provided (" + latencySeconds + ") is less that sqlTimeout (" +
+                           sqlTimeout + ")" );
+            }
+        }
         this.latencySeconds = latencySeconds;
     }
 

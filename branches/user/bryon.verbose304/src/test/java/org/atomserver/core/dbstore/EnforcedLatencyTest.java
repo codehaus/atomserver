@@ -44,6 +44,8 @@ public class EnforcedLatencyTest extends DBSTestCase {
 
     public void testRaceCondition() throws Exception {
 
+        assertEquals( LATENCY_SECONDS, ((EntriesDAOiBatisImpl) entriesDao).getLatencySeconds() );
+
         for (String entryId : Arrays.asList("1", "2", "3", "4")) {
             createWidget(WIDGETS, ACME, entryId, US.toString(),
                          createWidgetXMLFileString(entryId));
@@ -122,7 +124,6 @@ public class EnforcedLatencyTest extends DBSTestCase {
                     }
                 });
 
-
         Callable<Object> writer1 = new Callable<Object>() {
             public Object call() throws Exception {
                 timeLine.tick();
@@ -181,7 +182,9 @@ public class EnforcedLatencyTest extends DBSTestCase {
 
         Executors.newFixedThreadPool(2).invokeAll(Arrays.asList(writer1, writer2));
 
-        Thread.sleep(GAP);
+        // this test needed more tiem to complete, when run in the entire test suite.
+        Thread.sleep(GAP * 3);
+
         checkpoints.add(new CheckPoint(updateIndex, feedUrl));
 
         for (CheckPoint checkPoint : checkpoints) {
@@ -192,6 +195,8 @@ public class EnforcedLatencyTest extends DBSTestCase {
                                    e.getSimpleExtension(AtomServerConstants.UPDATE_INDEX));
             }
         }
+        
+        assertEquals( 6, checkpoints.size() );
 
         checkpoints.get(0).doAssert(Arrays.asList("3", "4"),
                                     Arrays.asList("3", "4"));

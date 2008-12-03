@@ -27,8 +27,6 @@ import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 
-import java.util.Date;
-
 /**
  * AtomServerIsAliveHandler - The isAliveHandler specific to AtomServer.
  * This class is accessed by the AliveSerlet to determine if the AtomServer
@@ -53,7 +51,10 @@ public class AtomServerIsAliveHandler implements IsAliveHandler {
     private ContentStorage contentStorage = null;
     
     private AliveStatus aliveStatus = AliveStatus.OK_STATUS;
-    
+
+    private long lastExpireTime = 0L;
+    private long timeToLive = 0L;
+
     public void setAtomServerDAO( AtomServerDAO atomServerDao) {
         this.atomServerDao = atomServerDao;
     }
@@ -109,28 +110,48 @@ public class AtomServerIsAliveHandler implements IsAliveHandler {
      */    
     public synchronized AliveStatus isAlive() {
         // the state stays DOWN until it is set from the outside (via JMX)...
-        if ( ! aliveStatus.isDown() ) { 
-            String errorMsg = null; 
-            
-            // Test the database
-            try {
-                atomServerDao.testAvailability();
-            } catch ( Exception ee ) {
-                errorMsg = "Database Problem. Cause:: " + ee.getMessage() ;
-            }
-            
-            // Test NFS
-            try {
-                contentStorage.testAvailability();
-            } catch ( Exception ee ) {
-                errorMsg = "NFS Problem. Cause:: " + ee.getMessage() ;
-            }
+        if ( ! aliveStatus.isDown() ) {
 
-            if ( errorMsg == null ) 
-                aliveStatus = AliveStatus.OK_STATUS;
-            else 
-                aliveStatus = new AliveStatus( AliveStatus.State.ERROR, errorMsg );
+            if ( isExpired() ) {
+                String errorMsg = null;
+
+                // Test the database
+                try {
+                    atomServerDao.testAvailability();
+                } catch (Exception ee) {
+                    errorMsg = "Database Problem. Cause:: " + ee.getMessage();
+                }
+
+                // Test NFS
+                try {
+                    contentStorage.testAvailability();
+                } catch (Exception ee) {
+                    errorMsg = "NFS Problem. Cause:: " + ee.getMessage();
+                }
+
+                if (errorMsg == null) {
+                    aliveStatus = AliveStatus.OK_STATUS;
+                } else {
+                    aliveStatus = new AliveStatus(AliveStatus.State.ERROR, errorMsg);
+                }
+            }
         }
         return aliveStatus; 
     }
+
+    public void setTimeToLiveInMillis( long timeToLive ){
+        this.timeToLive = timeToLive;
+    }
+
+    private boolean isExpired() {
+        if ( timeToLive > 0L ) {
+            long currentTime = System.currentTimeMillis();
+            if ( (currentTime - lastExpireTime) > timeToLive ) {
+                 lastExpireTime = currentTime;
+                 return true;
+            }
+            return false;
+        }
+        return true;
+     }
 }
