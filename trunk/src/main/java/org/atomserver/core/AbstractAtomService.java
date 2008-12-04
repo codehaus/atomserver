@@ -57,7 +57,7 @@ abstract public class AbstractAtomService implements AtomService {
     static private final Log log = LogFactory.getLog(AbstractAtomService.class);
 
     static public final int DEFAULT_MAX_AGGREGATE_LINK_ENTRIES_PER_PAGE = 1000;
-    static public final int DEFAULT_MAX_AGGREGATE_FULL_ENTRIES_PER_PAGE = 50;
+    static public final int DEFAULT_MAX_AGGREGATE_FULL_ENTRIES_PER_PAGE = 100;
 
     protected URIHandler uriHandler = null;
     protected java.util.Map<String, AtomWorkspace> workspaces = null;
