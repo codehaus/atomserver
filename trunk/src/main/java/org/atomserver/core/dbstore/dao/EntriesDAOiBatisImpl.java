@@ -516,39 +516,48 @@ public class EntriesDAOiBatisImpl
         return map.get(entryDescriptor.getEntryId());
     }
 
-    public List<AggregateEntryMetaData> selectAggregateEntriesByPage( FeedDescriptor feed,
-                                                                      Date updatedMin,
-                                                                      Date updatedMax,
-                                                                      Locale locale,
-                                                                      int startIndex,
-                                                                      int endIndex,
-                                                                      int pageSize,
-                                                                      Collection<BooleanExpression<AtomCategory>> categoriesQuery,
-                                                                      List<String> joinWorkspaces) {
+    public List<AggregateEntryMetaData> selectAggregateEntriesByPage(FeedDescriptor feed,
+                                                                     Date updatedMin,
+                                                                     Date updatedMax,
+                                                                     Locale locale,
+                                                                     int startIndex,
+                                                                     int endIndex,
+                                                                     int pageSize,
+                                                                     Collection<BooleanExpression<AtomCategory>> categoriesQuery,
+                                                                     List<String> joinWorkspaces) {
 
-        ParamMap paramMap = prepareParamMapForSelectEntries(updatedMin, updatedMax,
-                                                            startIndex, endIndex, pageSize,
-                                                            locale == null ? null : locale.toString(), feed);
+        StopWatch stopWatch = new AutomaticStopWatch();
+        try {
+            ParamMap paramMap = prepareParamMapForSelectEntries(updatedMin, updatedMax,
+                                                                startIndex, endIndex, pageSize,
+                                                                locale == null ? null : locale.toString(), feed);
 
-        if (joinWorkspaces != null && !joinWorkspaces.isEmpty()) {
-            paramMap.param("joinWorkspaces", joinWorkspaces);
+            if (joinWorkspaces != null && !joinWorkspaces.isEmpty()) {
+                paramMap.param("joinWorkspaces", joinWorkspaces);
+            }
+
+            if (categoriesQuery != null) {
+                paramMap.param("categoryFilterSql",
+                               CategoryQueryGenerator.generateCategoryFilter(categoriesQuery));
+                paramMap.param("categoryQuerySql",
+                               CategoryQueryGenerator.generateCategorySearch(categoriesQuery));
+            }
+
+            if (latencySeconds > 0) {
+                paramMap.param("latencySeconds", latencySeconds);
+            }
+
+            List entries = getSqlMapClientTemplate().queryForList("selectAggregateEntries", paramMap);
+            Map<String, AggregateEntryMetaData> map =
+                    AggregateEntryMetaData.aggregate(feed.getWorkspace(), feed.getCollection(), locale, entries);
+            return new ArrayList(map.values());
+        } finally {
+            if (perflog != null) {
+                perflog.log("DB.selectAggregateEntriesByPage",
+                            perflog.getPerfLogFeedString(locale == null ? null : locale.toString(),
+                                                         feed.getWorkspace(), feed.getCollection()), stopWatch);
+            }
         }
-
-        if (categoriesQuery != null) {
-            paramMap.param("categoryFilterSql",
-                           CategoryQueryGenerator.generateCategoryFilter(categoriesQuery));
-            paramMap.param("categoryQuerySql",
-                           CategoryQueryGenerator.generateCategorySearch(categoriesQuery));
-        }
-
-        if (latencySeconds > 0) {
-            paramMap.param("latencySeconds", latencySeconds);
-        }
-
-        List entries = getSqlMapClientTemplate().queryForList("selectAggregateEntries", paramMap);
-        Map<String, AggregateEntryMetaData> map =
-                AggregateEntryMetaData.aggregate(feed.getWorkspace(), feed.getCollection(), locale, entries);
-        return new ArrayList(map.values());
     }
 
     public List<EntryMetaData> selectFeedPage(Date updatedMin,
@@ -580,7 +589,8 @@ public class EntriesDAOiBatisImpl
         }
         finally {
             if (perflog != null) {
-                perflog.log("DB.selectFeedPage", perflog.getPerfLogFeedString(locale, feed.getWorkspace(), feed.getCollection()), stopWatch);
+                perflog.log("DB.selectFeedPage",
+                            perflog.getPerfLogFeedString(locale, feed.getWorkspace(), feed.getCollection()), stopWatch);
             }
         }
     }
