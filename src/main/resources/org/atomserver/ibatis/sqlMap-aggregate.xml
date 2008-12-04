@@ -35,8 +35,6 @@
                 from the minTimestamp.-->
             ON recentlyChangedEntries.Scheme = #collection#
         <isNotNull property="startIndex">
-          JOIN EntryStore entryStore
-            ON recentlyChangedEntries.EntryStoreId = entryStore.EntryStoreId
            AND recentlyChangedEntries.UpdateTimestamp > #startIndex#
             <isNotEqual property="endIndex" compareValue="-1">
                <![CDATA[ AND recentlyChangedEntries.UpdateTimestamp <= #endIndex# ]]>
@@ -53,13 +51,13 @@
         <isNotNull property="latencySeconds">
            AND (
             <isEqual property="dbType" compareValue="hsql">
-             DATEDIFF('ss', entryStore.UpdateDate, NOW()) >= $latencySeconds$
+             DATEDIFF('ss', recentlyChangedEntries.UpdateDate, NOW()) >= $latencySeconds$
             </isEqual>
             <isEqual property="dbType" compareValue="sqlserver">
-             DATEADD(s, -1 * $latencySeconds$, GETDATE()) >= entryStore.UpdateDate
+             DATEADD(s, -1 * $latencySeconds$, GETDATE()) >= recentlyChangedEntries.UpdateDate
             </isEqual>
             <isEqual property="dbType" compareValue="postgres">
-             NOW() - interval '$latencySeconds$ seconds' >= entryStore.UpdateDate
+             NOW() - interval '$latencySeconds$ seconds' >= recentlyChangedEntries.UpdateDate
             </isEqual>
             )
         </isNotNull>
