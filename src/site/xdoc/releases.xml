@@ -7,6 +7,15 @@
     </properties>
 
     <body>
+
+        <section name="Release 2.1.6 (12/3/08)">
+            <ul>
+                <li>Changed aggregate feeds query to reflect column being added to view.
+                    Removed an unnesessary join.</li>
+                <li>Make default max number of Entries in an Aggregate Feed; 1000 link and 100 full</li>
+            </ul>
+        </section>
+
         <section name="Release 2.1.5 (12/3/08)">
             <ul>
                 <li>Fix bug in Feed paging when endIndex is set and latency=0 </li>
