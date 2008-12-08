@@ -15,6 +15,9 @@
                 <li>Make default max number of Entries in an Aggregate Feed; 1000 link and 100 full</li>
                 <li>Add perf logging around aggregate feed DB query</li>
                 <li>Upgrade to iBatis 2.3.4</li>
+                <li>Add a separate database SQL query timeout for the Aggregate Feeds SELECT statement.
+                    This is controlled by the new property named db.timeout.aggfeeds in the env properties files.
+                    The default is set to 100 secinds. You may override this property in your env file</li>
             </ul>
         </section>
 

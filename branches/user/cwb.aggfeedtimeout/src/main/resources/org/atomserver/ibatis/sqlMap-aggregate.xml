@@ -120,7 +120,7 @@
         <include refid="paginationSuffix"/>
     </sql>
 
-    <select id="selectAggregateEntries" parameterClass="map" resultMap="entryResult">
+    <sql id="SELECT-selectAggregateEntries-full-query" >
         SELECT entries.EntryStoreId AS EntryStoreId,
                entries.Workspace AS Workspace,
                entries.Collection AS Collection,
@@ -176,12 +176,29 @@
              together (because it is possible for two aggregates to have the same UpdateTimestamp
              -->
          ORDER BY aggregateEntryIds.UpdateTimestamp, aggregateEntryIds.AggregateEntryId
-    </select>
+    </sql>
 
     <select id="countModifiedAggregateEntries" parameterClass="map" resultClass="int">
         SELECT COUNT(AggregateEntryId) AS entryCount
           FROM (<include refid="SELECT_modifiedAggregateEntries"/>)
     </select>
+
+    <!-- timeout is in secs, 0 == unlimited -->
+    <select id="selectAggregateEntries-sqlserver" parameterClass="map" resultMap="entryResult"
+            timeout="${db.timeout.aggfeeds}" >
+        <include refid="SELECT-selectAggregateEntries-full-query"/>
+    </select>
+
+    <select id="selectAggregateEntries-hsql" parameterClass="map" resultMap="entryResult"
+            timeout="300" >
+        <include refid="SELECT-selectAggregateEntries-full-query"/>
+    </select>
+
+    <!-- Postgres does not implement setQueryTimeout in it's JDBC driver -->
+    <select id="selectAggregateEntries-postgres" parameterClass="map" resultMap="entryResult" >
+        <include refid="SELECT-selectAggregateEntries-full-query"/>
+    </select>
+
     
 </sqlMap>
 
