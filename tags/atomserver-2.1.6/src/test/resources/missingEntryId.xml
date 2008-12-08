@@ -1,0 +1,8 @@
+<entry xmlns="http://www.w3.org/2005/Atom">
+  <!-- missing id element --> 
+  <content type="xhtml">
+    <div xmlns="http://www.w3.org/1999/xhtml">
+      <somexml>blah</somexml>
+    </div>
+  </content>
+</entry>
