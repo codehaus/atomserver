@@ -190,7 +190,7 @@
     </select>
 
     <select id="selectAggregateEntries-hsql" parameterClass="map" resultMap="entryResult"
-            timeout="300" >
+            timeout="${db.timeout.aggfeeds}" >
         <include refid="SELECT-selectAggregateEntries-full-query"/>
     </select>
 
