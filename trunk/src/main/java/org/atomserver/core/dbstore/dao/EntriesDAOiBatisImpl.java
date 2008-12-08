@@ -510,7 +510,7 @@ public class EntriesDAOiBatisImpl
                 AggregateEntryMetaData.aggregate(entryDescriptor.getWorkspace(),
                                                  entryDescriptor.getCollection(),
                                                  entryDescriptor.getLocale(),
-                                                 getSqlMapClientTemplate().queryForList("selectAggregateEntries",
+                                                 getSqlMapClientTemplate().queryForList("selectAggregateEntries-" + getDatabaseType(),
                                                                                         paramMap));
 
         return map.get(entryDescriptor.getEntryId());
@@ -547,7 +547,9 @@ public class EntriesDAOiBatisImpl
                 paramMap.param("latencySeconds", latencySeconds);
             }
 
-            List entries = getSqlMapClientTemplate().queryForList("selectAggregateEntries", paramMap);
+            List entries = getSqlMapClientTemplate().queryForList("selectAggregateEntries-" + getDatabaseType(),
+                                                                  paramMap);
+
             Map<String, AggregateEntryMetaData> map =
                     AggregateEntryMetaData.aggregate(feed.getWorkspace(), feed.getCollection(), locale, entries);
             return new ArrayList(map.values());
