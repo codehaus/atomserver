@@ -16,12 +16,13 @@
 
 package org.atomserver.utils.perf;
 
-import java.util.*;
-import junit.framework.*;
-
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.atomserver.utils.perf.SimpleStopWatch;
+
+import java.util.Date;
 
 public class SimpleStopWatchTest
     extends TestCase 
@@ -44,7 +45,7 @@ public class SimpleStopWatchTest
         double dElapse = ((double)elapse)/1000.0;
         double dIncr = ((double)incr)/1000.0;
         double check = dElapse - (dIncr * tol) ;
-        log.debug( "Check Elaspsed time= " + check + 
+        log.debug( "Check Elaspsed time= " + check +
                       " elapse= " + elapse + 
                       " (I*tol)= " + (dIncr * tol) );
         return check;

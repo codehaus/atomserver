@@ -8,6 +8,14 @@
 
     <body>
 
+        <section name="Release 2.1.7 (1/??/09)">
+            <ul>
+                <li>Fixed a bug in Aggregate Feeds where different localized entries with
+                    the same workspace/collection/entryId would not show up in an Aggregate </li>
+                <li>Moved most of the log statements in the StopWatches to trace level</li>
+            </ul>
+        </section>
+        
         <section name="Release 2.1.6 (12/3/08)">
             <ul>
                 <li>Changed aggregate feeds query to reflect column being added to view.

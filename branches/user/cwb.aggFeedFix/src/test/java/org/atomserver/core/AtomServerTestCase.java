@@ -18,6 +18,7 @@
 package org.atomserver.core;
 
 import org.apache.abdera.Abdera;
+import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.factory.Factory;
 import org.apache.abdera.protocol.client.AbderaClient;
 import org.apache.abdera.protocol.client.ClientResponse;
@@ -29,9 +30,12 @@ import org.atomserver.AtomServer;
 import org.atomserver.ContentStorage;
 import org.atomserver.DelegatingProvider;
 import org.atomserver.AtomServerWrapper;
+import org.atomserver.utils.locale.LocaleUtils;
 import org.atomserver.testutils.client.JettyWebAppTestCase;
+import org.atomserver.testutils.client.MockRequestContext;
 import org.atomserver.testutils.latency.LatencyUtil;
 import org.atomserver.uri.URIHandler;
+import org.atomserver.uri.EntryTarget;
 import org.springframework.context.ApplicationContext;
 
 import java.io.File;
@@ -109,6 +113,16 @@ abstract public class AtomServerTestCase extends JettyWebAppTestCase {
         }
     }
 
+    protected EntryTarget getEntryTarget( String workspace, String collection, String entryId, String locale ){
+        IRI iri = IRI.create("http://localhost:8080/"
+                             + widgetURIHelper.constructURIString(workspace, collection, entryId,
+                                                                  LocaleUtils.toLocale(locale)));
+        EntryTarget entryTarget =
+                widgetURIHelper.getEntryTarget(new MockRequestContext(serviceContext, "GET", iri.toString()), true);
+        return entryTarget;
+    }
+
+
     protected String getBaseURI() {
         return baseURI;
     }
@@ -172,14 +186,14 @@ abstract public class AtomServerTestCase extends JettyWebAppTestCase {
         RequestOptions options = client.getDefaultRequestOptions();
         options.setHeader("Connection", "close");
 
-        log.debug( ">>>>>>>>>>>>>>>>> " + options.getHeader("Accept-Charset") );
+        log.debug( "Accept-Charset= " + options.getHeader("Accept-Charset") );
 
         if ( ifModifiedDate != null ) {
-            log.debug( ">>>>>>>>>>>>>>>>> ifModifiedDate = " + ifModifiedDate );
+            log.debug( "ifModifiedDate = " + ifModifiedDate );
             options.setIfModifiedSince( ifModifiedDate );
 
             Date ddd = options.getIfModifiedSince();
-            log.debug( ">>>>>>>>>>>>>>>>> ddd = " + ddd );
+            log.debug( "IfModifiedSince = " + ddd );
         }
 
         log.debug( "Calling Abdera Client using GET on [" + url + "]" );
