@@ -18,8 +18,10 @@
 package org.atomserver.core;
 
 import org.apache.abdera.Abdera;
-import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.factory.Factory;
+import org.apache.abdera.i18n.iri.IRI;
+import org.apache.abdera.model.Entry;
+import org.apache.abdera.model.Feed;
 import org.apache.abdera.protocol.client.AbderaClient;
 import org.apache.abdera.protocol.client.ClientResponse;
 import org.apache.abdera.protocol.client.RequestOptions;
@@ -27,15 +29,15 @@ import org.apache.abdera.protocol.server.ServiceContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.AtomServer;
+import org.atomserver.AtomServerWrapper;
 import org.atomserver.ContentStorage;
 import org.atomserver.DelegatingProvider;
-import org.atomserver.AtomServerWrapper;
-import org.atomserver.utils.locale.LocaleUtils;
 import org.atomserver.testutils.client.JettyWebAppTestCase;
 import org.atomserver.testutils.client.MockRequestContext;
 import org.atomserver.testutils.latency.LatencyUtil;
-import org.atomserver.uri.URIHandler;
 import org.atomserver.uri.EntryTarget;
+import org.atomserver.uri.URIHandler;
+import org.atomserver.utils.locale.LocaleUtils;
 import org.springframework.context.ApplicationContext;
 
 import java.io.File;
@@ -214,5 +216,18 @@ abstract public class AtomServerTestCase extends JettyWebAppTestCase {
         assertTrue(matcher.matches());
         return Integer.parseInt(matcher.group(1));
     }
+
+    protected void printFeed( Feed feed ) throws Exception {
+        java.io.StringWriter stringWriter = new java.io.StringWriter();
+        feed.writeTo( abdera.getWriterFactory().getWriter("PrettyXML"), stringWriter );
+        log.debug( "FEED = \n" + stringWriter.toString() );
+    }
+
+    protected void printEntry( Entry entry ) throws Exception {
+        java.io.StringWriter stringWriter = new java.io.StringWriter();
+        entry.writeTo( abdera.getWriterFactory().getWriter("PrettyXML"), stringWriter );
+        log.debug( "FEED = \n" + stringWriter.toString() );
+    }
+
 
 }

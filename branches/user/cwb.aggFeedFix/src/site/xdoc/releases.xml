@@ -12,6 +12,9 @@
             <ul>
                 <li>Fixed a bug in Aggregate Feeds where different localized entries with
                     the same workspace/collection/entryId would not show up in an Aggregate </li>
+                <li>Fixed a bug where multiple XML deletion elements were produced
+                    when multiple deletes occured</li>
+                <li>Upgrade to commons-lang 2.4</li>
                 <li>Moved most of the log statements in the StopWatches to trace level</li>
             </ul>
         </section>

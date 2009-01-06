@@ -110,12 +110,6 @@ public class AggregateFeedsLocaleTest extends DBSTestCase {
        }
     }
 
-    private void printFeed( Feed feed ) throws Exception {
-        java.io.StringWriter stringWriter = new java.io.StringWriter();
-        feed.writeTo( abdera.getWriterFactory().getWriter("PrettyXML"), stringWriter );
-        log.trace( "AGG FEED = \n" + stringWriter.toString() );
-    }
-
     private static String createBoo(int id) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<boo xmlns='http://schemas.atomserver.org/aggregate-tests2'>");
