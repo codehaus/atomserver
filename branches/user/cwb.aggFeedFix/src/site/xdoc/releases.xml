@@ -16,6 +16,9 @@
                     when multiple deletes occured</li>
                 <li>Upgrade to commons-lang 2.4</li>
                 <li>Moved most of the log statements in the StopWatches to trace level</li>
+                <li>Added a constructor to TestingAtomServer that allows one to be created
+                    which does not erase the HSQL database so that more than one TestingAtomServer
+                    can be used simultaneously</li>
             </ul>
         </section>
         
