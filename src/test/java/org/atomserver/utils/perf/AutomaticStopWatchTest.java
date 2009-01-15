@@ -19,11 +19,8 @@ package org.atomserver.utils.perf;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import org.atomserver.utils.perf.AutomaticStopWatch;
 
 
 public class AutomaticStopWatchTest

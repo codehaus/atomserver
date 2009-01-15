@@ -85,8 +85,8 @@ public class SimpleStopWatch implements StopWatch {
         long elapsed = getElapsedInMillis();
         double secs = (double) (elapsed) / 1000.0;
 
-        if (log.isDebugEnabled()) {
-            log.debug("getElapsed:: secs = " + secs);
+        if (log.isTraceEnabled()) {
+            log.trace("getElapsed:: secs = " + secs);
         }
         return secs;
     }
@@ -105,8 +105,8 @@ public class SimpleStopWatch implements StopWatch {
         }
 
         long elapsed = lastTime - mStart;
-        if (log.isDebugEnabled()) {
-            log.debug("getElapsedInMillis:: elapsed= " + elapsed +
+        if (log.isTraceEnabled()) {
+            log.trace("getElapsedInMillis:: elapsed= " + elapsed +
                       " mStart= " + mStart + " lastTime= " + lastTime);
         }
 

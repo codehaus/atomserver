@@ -16,11 +16,11 @@
 
 package org.atomserver.utils.perf;
 
-import junit.framework.*;
-
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.atomserver.utils.perf.AccumulatingStopWatch;
 
 /**
  */
@@ -45,7 +45,7 @@ public class AccumulatingStopWatchTest
         double dElapse = ((double)elapse)/1000.0;
         double dIncr = ((double)incr)/1000.0;
         double check = dElapse - (dIncr * tol) ;
-        log.debug( "Check Elaspsed time= " + check + 
+        log.debug( "Check Elaspsed time= " + check +
                       " elapse= " + elapse + 
                       " (I*tol)= " + (dIncr * tol) );
         return check;
