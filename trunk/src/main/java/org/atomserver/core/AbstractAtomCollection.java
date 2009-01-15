@@ -1100,6 +1100,8 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     }
 
     /**
+     * Adds an XML deletion element around the content
+     * like that shown below
      * <pre>
      * <deletion xmlns="http://schemas.atomserver.org/atomserver/v1/rev0"
      *         collection="acme" id="12345" locale="en" workspace="widgets">
@@ -1109,6 +1111,22 @@ abstract public class AbstractAtomCollection implements AtomCollection {
      */
     private String createDeletedEntryXML(EntryDescriptor descriptor) {
 
+        // we need to know if the deletion tag has already been applied.
+        //  there are other ways to do this, but nothing as transparent as this
+        //  e.g we could do a SELECT first in the DAO to see if the deleted flag
+        //      had been set, and then add this info to the EntryMetaData
+        // and because verbose Deletions are the norm, this is not really expensive.
+        String content = getContentStorage().getContent(descriptor);
+        if (log.isTraceEnabled()) {
+            log.trace("content= " + content);
+        }
+        if (content != null) {
+            content = content.replaceFirst("<[?].*[?]>", "");
+            if ( content.startsWith( "<deletion" ) ) {
+                return content;
+            }
+        }
+
         XML xml = XML.element("deletion", AtomServerConstants.SCHEMAS_NAMESPACE)
                 .attr("collection", descriptor.getCollection())
                 .attr("id", descriptor.getEntryId());
@@ -1116,22 +1134,11 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         if (descriptor.getLocale() != null) {
             xml.attr("locale", descriptor.getLocale().toString());
         }
-
         xml.attr("workspace", descriptor.getWorkspace());
 
         if (isVerboseDeletions()) {
-            String content = getContentStorage().getContent(descriptor);
-            if (log.isTraceEnabled()) {
-                log.trace("content= " + content);
-            }
-
-            if (content != null) {
-                content = content.replaceFirst("<[?].*[?]>", "");
-            }
-
             xml.add(content);
         }
-
         return xml.toString();
     }
 

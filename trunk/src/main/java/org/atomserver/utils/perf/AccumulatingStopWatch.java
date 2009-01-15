@@ -74,8 +74,8 @@ public class AccumulatingStopWatch
         }
 
         double secs = (double) (mElapsed) / 1000.0;
-        if (log.isDebugEnabled()) {
-            log.debug("getElapsed:: elapsed= " + mElapsed + " secs = " + secs);
+        if (log.isTraceEnabled()) {
+            log.trace("getElapsed:: elapsed= " + mElapsed + " secs = " + secs);
         }
         return secs;
     }
@@ -93,8 +93,8 @@ public class AccumulatingStopWatch
      * @return Value for property 'numIntervals'.
      */
     public int getNumIntervals() {
-        if (log.isDebugEnabled()) {
-            log.debug("getIntervals= " + mIntervals);
+        if (log.isTraceEnabled()) {
+            log.trace("getIntervals= " + mIntervals);
         }
         return mIntervals;
     }
@@ -112,8 +112,8 @@ public class AccumulatingStopWatch
         double elapsed = getElapsed();
         double avg = elapsed / ((double) mIntervals);
 
-        if (log.isDebugEnabled()) {
-            log.debug("getAverageTime= " + avg);
+        if (log.isTraceEnabled()) {
+            log.trace("getAverageTime= " + avg);
         }
         return avg;
     }

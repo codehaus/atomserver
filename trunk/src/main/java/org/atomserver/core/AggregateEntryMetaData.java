@@ -16,6 +16,7 @@
 
 package org.atomserver.core;
 
+
 import java.util.*;
 
 /**
@@ -29,7 +30,11 @@ public class AggregateEntryMetaData extends EntryMetaData {
                     int[] comparisons = new int[] {
                             a.getWorkspace().compareTo(b.getWorkspace()),
                             a.getCollection().compareTo(b.getCollection()),
-                            a.getEntryId().compareTo(b.getEntryId())
+                            a.getEntryId().compareTo(b.getEntryId()),
+                            (( a.getLocale() != null && b.getLocale() != null )
+                            ? ( (a.getLocale().toString()).compareTo( b.getLocale().toString() ))
+                            : ( a.getLocale() == null && b.getLocale() == null )
+                            ? 0 : 1)
                     };
                     for (int comparison : comparisons) {
                         if (comparison != 0) return comparison;

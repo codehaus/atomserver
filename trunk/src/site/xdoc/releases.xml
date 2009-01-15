@@ -8,6 +8,20 @@
 
     <body>
 
+        <section name="Release 2.1.7 (1/??/09)">
+            <ul>
+                <li>Fixed a bug in Aggregate Feeds where different localized entries with
+                    the same workspace/collection/entryId would not show up in an Aggregate </li>
+                <li>Fixed a bug where multiple XML deletion elements were produced
+                    when multiple deletes occured</li>
+                <li>Upgrade to commons-lang 2.4</li>
+                <li>Moved most of the log statements in the StopWatches to trace level</li>
+                <li>Added a constructor to TestingAtomServer that allows one to be created
+                    which does not erase the HSQL database so that more than one TestingAtomServer
+                    can be used simultaneously</li>
+            </ul>
+        </section>
+        
         <section name="Release 2.1.6 (12/3/08)">
             <ul>
                 <li>Changed aggregate feeds query to reflect column being added to view.

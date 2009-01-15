@@ -64,8 +64,14 @@ public class TestingAtomServer {
     private int port;
 
     public TestingAtomServer() {
+        this( true );
+    }
+
+    public TestingAtomServer( boolean resetDB ) {
         // reset this value, so that each time we NEW a TestingAtomServer, we get a new DB
-        HsqlBootstrapper.setHasBootstrapped(false);
+        if ( resetDB ){
+            HsqlBootstrapper.setHasBootstrapped(false);
+        }
     }
 
     public int start(String atomserverServletContext, String atomserverServletMapping) throws Exception {

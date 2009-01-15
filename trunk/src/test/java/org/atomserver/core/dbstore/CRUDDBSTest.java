@@ -19,13 +19,13 @@ package org.atomserver.core.dbstore;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-
-import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Document;
+import org.apache.abdera.model.Entry;
 import org.apache.abdera.protocol.client.ClientResponse;
-import org.atomserver.uri.EntryTarget;
-import org.atomserver.testutils.client.MockRequestContext;
+import org.apache.commons.lang.StringUtils;
 import org.atomserver.core.filestore.FileBasedContentStorage;
+import org.atomserver.testutils.client.MockRequestContext;
+import org.atomserver.uri.EntryTarget;
 
 import java.io.File;
 
@@ -88,5 +88,43 @@ public class CRUDDBSTest extends CRUDDBSTestCase {
     public void testDeleteNonExistent() throws Exception {
         String fullURL = getServerURL() + "widgets/acme/678901234.en.xml";
         delete( fullURL, 404 );
+    }
+
+    public void testMultipleDeletions() throws Exception {
+        String fullURL = getServerURL() + getURLPath();
+        String id = getURLPath();
+
+        // INSERT
+        String editURI = insert(id, fullURL, getFileXMLInsert(), false, false );
+
+        // DELETE
+        editURI = delete(editURI);
+
+        // SELECT
+        selectAndCheckDeletion( fullURL );
+
+        // DELETE again
+        editURI = delete(editURI);
+
+        // SELECT
+        selectAndCheckDeletion( fullURL );
+        
+        // DELETE again
+        editURI = delete(editURI);
+
+        // SELECT
+        selectAndCheckDeletion( fullURL );
+    }
+
+    private void selectAndCheckDeletion( String url ){
+        ClientResponse response = clientGetWithFullURL(url, 200);
+        Document<Entry> doc = response.getDocument();
+        Entry entry = doc.getRoot();
+        String content = entry.getContent();
+        assertFalse( StringUtils.isEmpty(content) );
+        int count = StringUtils.countMatches( content, "<deletion xmlns");
+        log.debug( "Count= " + count + "\nContent= \n" + content );
+        assertEquals( 1, count );
+        response.release();
     }
 }

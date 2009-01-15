@@ -18,10 +18,7 @@
 package org.atomserver.core;
 
 import org.apache.abdera.i18n.iri.IRI;
-import org.apache.abdera.model.Document;
-import org.apache.abdera.model.Entry;
-import org.apache.abdera.model.ExtensibleElement;
-import org.apache.abdera.model.Link;
+import org.apache.abdera.model.*;
 import org.apache.abdera.protocol.client.AbderaClient;
 import org.apache.abdera.protocol.client.ClientResponse;
 import org.apache.abdera.protocol.client.RequestOptions;
