@@ -8,7 +8,7 @@
 
     <body>
 
-        <section name="Release 2.1.7 (1/??/09)">
+        <section name="Release 2.1.7 (1/18/09)">
             <ul>
                 <li>Fixed a bug in Aggregate Feeds where different localized entries with
                     the same workspace/collection/entryId would not show up in an Aggregate </li>
