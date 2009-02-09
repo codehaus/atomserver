@@ -18,6 +18,7 @@
 package org.atomserver.core;
 
 import org.apache.abdera.Abdera;
+import org.apache.abdera.ext.history.FeedPagingHelper;
 import org.apache.abdera.factory.Factory;
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.i18n.iri.IRISyntaxException;
@@ -37,6 +38,7 @@ import org.atomserver.uri.*;
 import org.atomserver.utils.perf.AutomaticStopWatch;
 import org.atomserver.utils.perf.StopWatch;
 import org.atomserver.utils.xml.XML;
+import org.atomserver.utils.*;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -418,13 +420,27 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         Date updatedMin = getUpdatedMin(feedTarget, request);
         Date updatedMax = feedTarget.getUpdatedMaxParam();
 
-        if ( updatedMax != null && updatedMin.after( updatedMax) ) {
+        if (updatedMax != null && updatedMin.after(updatedMax)) {
             String msg = "updated-min (" + updatedMin + ") is after updated-max (" + updatedMax + ")";
             log.error(msg);
             throw new BadRequestException(msg);
         }
 
         Feed feed = AtomServer.getFactory(abdera).newFeed();
+        try {
+            feed.addAuthor("AtomServer APP Service");
+            feed.setTitle(feedTarget.getCollection() + " entries");
+            feed.setId("tag:atomserver.org,2008:v1:" + feedTarget.getCollection());
+        } catch (IRISyntaxException e) {
+            throw new BadRequestException(e);
+        }
+
+        boolean scrollOnUnmodified = request.getParameter("scroll-on-unmodified") != null;
+
+        long maxIndex = 0L;
+        if (scrollOnUnmodified) {
+            maxIndex = getParentAtomWorkspace().getParentAtomService().getMaxIndex();
+        }
 
         long lastUpdated = getEntries(request.getServiceContext().getAbdera(),
                                       request.getUri(),
@@ -433,19 +449,18 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                                       updatedMax,
                                       feed);
         if (lastUpdated != 0L) {
-            try {
-                String collection = feedTarget.getCollection();
-                feed.addAuthor("AtomServer APP Service");
-                feed.setTitle(collection + " entries");
-                feed.setUpdated(new java.util.Date(lastUpdated));
-                feed.setId("tag:atomserver.org,2008:v1:" + collection);
-
-            } catch (IRISyntaxException e) {
-                throw new BadRequestException(e);
-            }
+            feed.setUpdated(new java.util.Date(lastUpdated));
             return feed;
         } else {
-            // AtomServer will interpret null as "NOT MODIFIED"
+            if (scrollOnUnmodified) {
+                feed.addSimpleExtension(AtomServerConstants.END_INDEX, Long.toString(maxIndex));
+                EntryType entryType = (feedTarget.getEntryTypeParam() != null) ?
+                                      feedTarget.getEntryTypeParam() :
+                                      EntryType.link;
+                addPagingLinks(feed, request.getUri(), maxIndex,
+                               calculatePageSize(feedTarget, entryType), feedTarget);
+                return feed;
+            }
             return null;
         }
     }
@@ -1140,6 +1155,84 @@ abstract public class AbstractAtomCollection implements AtomCollection {
             xml.add(content);
         }
         return xml.toString();
+    }
+
+    protected int calculatePageSize( URITarget feedURIData, EntryType entryType ) {
+        int pageSize = feedURIData.getMaxResultsParam();
+
+        // we must throttle the max results per page to avoid monster requests
+        int maxEntriesPerPage = ( entryType == EntryType.link ) ? getMaxLinkEntriesPerPage() : getMaxFullEntriesPerPage();
+        if (log.isTraceEnabled()) {
+            log.trace("getEntries:: entryType= " + entryType + " " + maxEntriesPerPage );
+        }
+
+        if ( pageSize > maxEntriesPerPage )
+            log.info("Resetting pagesize(" + pageSize + ") to  MAX_RESULTS_PER_PAGE (" + maxEntriesPerPage + ")");
+
+        if ( pageSize == 0 || pageSize > maxEntriesPerPage ) {
+            pageSize = maxEntriesPerPage;
+        }
+        return pageSize;
+    }
+
+    // We do NOT write "previous" link, because we do not have any way to know the starting index
+    // for the previous page.
+    protected void addPagingLinks(Feed feed, IRI iri, long endIndex,
+                                int pageSize, URITarget uriTarget ) {
+        String nextURI = iri.getPath() + "?" +
+                         QueryParam.startIndex.getParamName() + "=" + endIndex +
+                         "&" + QueryParam.maxResults.getParamName() + "=" + pageSize;
+
+        Locale locale = uriTarget.getLocaleParam();
+        if ( locale != null ) {
+            nextURI += "&" + QueryParam.locale.getParamName() + "=" + locale.toString();
+        }
+        EntryType entryType = uriTarget.getEntryTypeParam();
+        if ( entryType != null ) {
+            nextURI += "&" + QueryParam.entryType.getParamName() + "=" + entryType.toString();
+        }
+
+        // NOTE: we do NOT add the updated-min param because, by definition, we have already satisfied that
+        //       condition on the first page of this page set. (i.e. we're past that point)
+        //       And passing along start-index ensures this.
+        Date updatedMax = uriTarget.getUpdatedMaxParam();
+        if ( updatedMax != null ) {
+            nextURI += "&" + QueryParam.updatedMax.getParamName() + "=" + org.atomserver.utils.AtomDate.format( updatedMax );
+        }
+        int endIndexMax = uriTarget.getEndIndexParam();
+        if ( endIndexMax != -1 ) {
+            nextURI += "&" + QueryParam.endIndex.getParamName() + "=" + endIndexMax;
+        }
+
+        FeedPagingHelper.setNext(feed, nextURI);
+    }
+
+    protected void addFeedSelfLink(Abdera abdera, Feed feed, IRI iri, int startIndex, int pageSize) {
+        String selfURI = iri.getPath();
+        selfURI += "?" + QueryParam.maxResults.getParamName() + "=" + pageSize;
+        if ( startIndex != 0 ) {
+            selfURI += "&" + QueryParam.startIndex.getParamName() + "=" + startIndex;
+        }
+
+        addLinkToEntry(AtomServer.getFactory( abdera ), feed, selfURI, "self");
+    }
+
+    protected void addFeedEntries(Abdera abdera, Feed feed, List list, int pageSize, EntryType entryType) {
+        // Note: pageSize is actually one larger than it really is,
+        //   (So that we can figure out when the final page is the same as the real pageSize)
+        int knt = 0;
+        for (Object obj : list) {
+            if ( knt < pageSize ) {
+                EntryMetaData entryMetaData = (EntryMetaData) obj;
+                if (log.isDebugEnabled()) {
+                    log.debug("addFeedEntries ADD:: " + entryMetaData );
+                }
+
+                Entry entry = newEntry( abdera, entryMetaData, entryType );
+                feed.addEntry(entry);
+            }
+            knt++;
+        }
     }
 
 

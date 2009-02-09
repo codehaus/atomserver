@@ -137,8 +137,8 @@ public class TagsFeedEntriesCategoriesDBSTest extends DBSTestCase {
             java.util.List<Category> catList = entry.getCategories("urn:widgets.foo");
             assertNotNull( catList );
             for (Category c : catList) {
-                System.out.println("BRYON:: c.getScheme() = " + c.getScheme());
-                System.out.println("BRYON:: c.getTerm() = " + c.getTerm());
+                System.out.println("c.getScheme() = " + c.getScheme());
+                System.out.println("c.getTerm() = " + c.getTerm());
             }
             assertEquals( 1, catList.size() );
             assertEquals( catList.get( 0 ).getTerm(), "test0" );                
