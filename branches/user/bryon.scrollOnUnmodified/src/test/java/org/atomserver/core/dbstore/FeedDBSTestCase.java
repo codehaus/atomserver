@@ -377,10 +377,6 @@ public class FeedDBSTestCase extends DBSTestCase {
         Feed feed = clientResponse.<Feed>getDocument().getRoot();
         long endIndex = Long.parseLong(feed.getSimpleExtension(AtomServerConstants.END_INDEX));
         assertTrue(endIndex > 0);
-        String finalNextLink = FeedPagingHelper.getNext(feed).toString();
-        assertTrue(finalNextLink.contains("start-index=" + endIndex));
-        assertTrue(finalNextLink.contains("max-results=" + pgSize));
-        assertTrue(feed.getEntries().isEmpty());
         
         if ( !isMTtest )
             assertEquals(numpages, knt);
