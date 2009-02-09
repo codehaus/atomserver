@@ -362,11 +362,26 @@ public class FeedDBSTestCase extends DBSTestCase {
         log.debug("numpages = " + numpages);
 
         int knt = 0;
-        IRI next = new IRI( getServerURL() + wspace + "/" + collection + "?max-results=" + pgSize);
+        IRI iri = new IRI(getServerURL() + wspace + "/" + collection + "?max-results=" + pgSize);
+        IRI next = iri;
         while (next != null) {
             next = getPageUsingNext(wspace, pgSize, next, isMTtest );
             knt++;
         }
+        // check that reading past the end gives a 304
+        clientGetWithFullURL(iri.toString() + "&start-index=10000000", 304);
+        // check that with the "scroll-on-unmodified" param, we get back an empty feed with the
+        // appropriate paging fields set.
+        ClientResponse clientResponse =
+                clientGetWithFullURL(iri.toString() + "&start-index=10000000&scroll-on-unmodified", 200);
+        Feed feed = clientResponse.<Feed>getDocument().getRoot();
+        long endIndex = Long.parseLong(feed.getSimpleExtension(AtomServerConstants.END_INDEX));
+        assertTrue(endIndex > 0);
+        String finalNextLink = FeedPagingHelper.getNext(feed).toString();
+        assertTrue(finalNextLink.contains("start-index=" + endIndex));
+        assertTrue(finalNextLink.contains("max-results=" + pgSize));
+        assertTrue(feed.getEntries().isEmpty());
+        
         if ( !isMTtest )
             assertEquals(numpages, knt);
     }

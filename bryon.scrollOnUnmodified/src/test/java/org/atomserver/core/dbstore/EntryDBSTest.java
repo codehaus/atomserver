@@ -21,6 +21,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Entry;
+import org.apache.abdera.model.Feed;
 import org.apache.abdera.protocol.client.ClientResponse;
 import org.apache.abdera.protocol.error.Error;
 

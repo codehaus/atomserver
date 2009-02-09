@@ -18,11 +18,9 @@
 package org.atomserver.core.dbstore;
 
 import org.apache.abdera.Abdera;
-import org.apache.abdera.ext.history.FeedPagingHelper;
 import org.apache.abdera.ext.opensearch.OpenSearchConstants;
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.model.Category;
-import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
 import org.apache.abdera.protocol.server.RequestContext;
 import org.apache.commons.lang.StringUtils;
@@ -37,7 +35,6 @@ import org.atomserver.exceptions.BadRequestException;
 import org.atomserver.exceptions.EntryNotFoundException;
 import org.atomserver.exceptions.OptimisticConcurrencyException;
 import org.atomserver.uri.*;
-import org.atomserver.utils.AtomDate;
 import org.atomserver.utils.collections.MultiHashMap;
 import org.atomserver.utils.collections.MultiMap;
 import org.atomserver.utils.logic.BooleanExpression;
@@ -572,84 +569,6 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
 
     private void addAtomServerFeedElements(Feed feed, int endIndex ) {
         feed.addSimpleExtension(AtomServerConstants.END_INDEX, Integer.toString(endIndex));
-    }
-
-    // We do NOT write "previous" link, because we do not have any way to know the starting index
-    // for the previous page.
-    private void addPagingLinks(Feed feed, IRI iri, int endIndex,
-                                int pageSize, URITarget uriTarget ) {
-        String nextURI = iri.getPath() + "?" +
-                         QueryParam.startIndex.getParamName() + "=" + endIndex +
-                         "&" + QueryParam.maxResults.getParamName() + "=" + pageSize;
-
-        Locale locale = uriTarget.getLocaleParam();
-        if ( locale != null ) {
-            nextURI += "&" + QueryParam.locale.getParamName() + "=" + locale.toString();
-        }
-        EntryType entryType = uriTarget.getEntryTypeParam();
-        if ( entryType != null ) {
-            nextURI += "&" + QueryParam.entryType.getParamName() + "=" + entryType.toString();
-        }
-
-        // NOTE: we do NOT add the updated-min param because, by definition, we have already satisfied that
-        //       condition on the first page of this page set. (i.e. we're past that point)
-        //       And passing along start-index ensures this.
-        Date updatedMax = uriTarget.getUpdatedMaxParam();
-        if ( updatedMax != null ) {
-            nextURI += "&" + QueryParam.updatedMax.getParamName() + "=" + AtomDate.format( updatedMax );
-        }
-        int endIndexMax = uriTarget.getEndIndexParam();
-        if ( endIndexMax != -1 ) {
-            nextURI += "&" + QueryParam.endIndex.getParamName() + "=" + endIndexMax;
-        }
-
-        FeedPagingHelper.setNext(feed, nextURI);
-    }
-
-    private void addFeedSelfLink(Abdera abdera, Feed feed, IRI iri, int startIndex, int pageSize) {
-        String selfURI = iri.getPath();
-        selfURI += "?" + QueryParam.maxResults.getParamName() + "=" + pageSize;
-        if ( startIndex != 0 ) {
-            selfURI += "&" + QueryParam.startIndex.getParamName() + "=" + startIndex;
-        }
-
-        addLinkToEntry(AtomServer.getFactory( abdera ), feed, selfURI, "self");
-    }
-
-    private void addFeedEntries(Abdera abdera, Feed feed, List list, int pageSize, EntryType entryType) {
-        // Note: pageSize is actually one larger than it really is,
-        //   (So that we can figure out when the final page is the same as the real pageSize)
-        int knt = 0;
-        for (Object obj : list) {
-            if ( knt < pageSize ) {
-                EntryMetaData entryMetaData = (EntryMetaData) obj;
-                if (log.isDebugEnabled()) {
-                    log.debug("addFeedEntries ADD:: " + entryMetaData );
-                }
-
-                Entry entry = newEntry( abdera, entryMetaData, entryType );
-                feed.addEntry(entry);
-            }
-            knt++;
-        }
-    }
-
-    protected int calculatePageSize( URITarget feedURIData, EntryType entryType ) {
-        int pageSize = feedURIData.getMaxResultsParam();
-
-        // we must throttle the max results per page to avoid monster requests
-        int maxEntriesPerPage = ( entryType == EntryType.link ) ? getMaxLinkEntriesPerPage() : getMaxFullEntriesPerPage();
-        if (log.isTraceEnabled()) {
-            log.trace("getEntries:: entryType= " + entryType + " " + maxEntriesPerPage );
-        }
-
-        if ( pageSize > maxEntriesPerPage )
-            log.info("Resetting pagesize(" + pageSize + ") to  MAX_RESULTS_PER_PAGE (" + maxEntriesPerPage + ")");
-
-        if ( pageSize == 0 || pageSize > maxEntriesPerPage ) {
-            pageSize = maxEntriesPerPage;
-        }
-        return pageSize;
     }
 
 
