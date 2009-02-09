@@ -435,10 +435,8 @@ abstract public class AbstractAtomCollection implements AtomCollection {
             throw new BadRequestException(e);
         }
 
-        boolean scrollOnUnmodified = request.getParameter("scroll-on-unmodified") != null;
-
         long maxIndex = 0L;
-        if (scrollOnUnmodified) {
+        if (feedTarget.getScrollOnUnmodified()) {
             maxIndex = getParentAtomWorkspace().getParentAtomService().getMaxIndex();
         }
 
@@ -452,13 +450,8 @@ abstract public class AbstractAtomCollection implements AtomCollection {
             feed.setUpdated(new java.util.Date(lastUpdated));
             return feed;
         } else {
-            if (scrollOnUnmodified) {
+            if (feedTarget.getScrollOnUnmodified()) {
                 feed.addSimpleExtension(AtomServerConstants.END_INDEX, Long.toString(maxIndex));
-                EntryType entryType = (feedTarget.getEntryTypeParam() != null) ?
-                                      feedTarget.getEntryTypeParam() :
-                                      EntryType.link;
-                addPagingLinks(feed, request.getUri(), maxIndex,
-                               calculatePageSize(feedTarget, entryType), feedTarget);
                 return feed;
             }
             return null;

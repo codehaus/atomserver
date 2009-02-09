@@ -34,6 +34,7 @@ public class FeedTarget extends URITarget implements FeedDescriptor {
     private final Set<BooleanExpression<AtomCategory>> categoriesQuery;
     private final String workspace;
     private final String collection;
+    private final Boolean scrollOnUnmodified;
 
     public FeedTarget(RequestContext requestContext,
                       final String workspace,
@@ -43,6 +44,7 @@ public class FeedTarget extends URITarget implements FeedDescriptor {
         this.categoriesQuery = categoriesQuery;
         this.workspace = workspace;
         this.collection = collection;
+        this.scrollOnUnmodified = requestContext.getParameter("scroll-on-unmodified") != null;
     }
 
     public String getWorkspace() {
@@ -51,6 +53,10 @@ public class FeedTarget extends URITarget implements FeedDescriptor {
 
     public String getCollection() {
         return collection;
+    }
+
+    public Boolean getScrollOnUnmodified() {
+        return scrollOnUnmodified;
     }
 
     public Set<BooleanExpression<AtomCategory>> getCategoriesQuery() {
