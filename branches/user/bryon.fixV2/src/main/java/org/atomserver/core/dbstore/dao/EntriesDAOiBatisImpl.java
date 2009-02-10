@@ -814,7 +814,11 @@ public class EntriesDAOiBatisImpl
     }
 
     public long selectMaxIndex() {
-        return (Long) getSqlMapClientTemplate().queryForObject("selectMaxIndex", paramMap());
+        ParamMap paramMap = paramMap();
+        if (latencySeconds > 0) {
+            paramMap.param("latencySeconds", latencySeconds);
+        }
+        return (Long) getSqlMapClientTemplate().queryForObject("selectMaxIndex", paramMap);
     }
 
     public void acquireLock() throws AtomServerException {
