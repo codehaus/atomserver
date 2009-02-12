@@ -31,7 +31,11 @@ public class AtomServerV2 extends AtomServer {
     public ResponseContext getFeed(RequestContext request) {
         URIHandler uriHandler = getAtomService().getURIHandler();
         FeedTarget feedTarget = uriHandler.getFeedTarget(request);
-        long maxIndex = getAtomService().getMaxIndex();
+        long maxIndex = getAtomService().getMaxIndex(feedTarget.getUpdatedMaxParam());
+        if (feedTarget.getEndIndexParam() > 0 && feedTarget.getEndIndexParam() < maxIndex) {
+            maxIndex = feedTarget.getEndIndexParam();
+        }
+
         ResponseContext responseContext = super.getFeed(request);
         if (responseContext.getStatus() == 304) {
             String collection = feedTarget.getCollection();

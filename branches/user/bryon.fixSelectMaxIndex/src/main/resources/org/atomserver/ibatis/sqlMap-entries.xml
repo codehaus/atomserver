@@ -256,7 +256,15 @@
              NOW() - interval '$latencySeconds$ seconds' >= UpdateDate
             </isEqual>
             )
+            <isNotNull property="updatedMax">
+                <![CDATA[ AND UpdateDate < #updatedMax# ]]>
+            </isNotNull>
         </isNotNull>
+        <isNull property="latencySeconds">
+            <isNotNull property="updatedMax">
+                <![CDATA[ WHERE UpdateDate < #updatedMax# ]]>
+            </isNotNull>
+        </isNull>
     </select>
 
 </sqlMap>

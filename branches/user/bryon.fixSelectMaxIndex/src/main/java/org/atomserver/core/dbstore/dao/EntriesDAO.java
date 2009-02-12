@@ -139,5 +139,5 @@ public interface EntriesDAO
 
     void acquireLock() throws AtomServerException;
 
-    long selectMaxIndex();
+    long selectMaxIndex(Date updatedMax);
 }
