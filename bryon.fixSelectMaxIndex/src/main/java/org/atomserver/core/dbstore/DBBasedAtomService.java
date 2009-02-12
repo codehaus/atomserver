@@ -34,6 +34,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
 import java.util.Set;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -70,8 +71,8 @@ public class DBBasedAtomService extends AbstractAtomService {
         return transactionTemplate;
     }
 
-    public long getMaxIndex() {
-        return this.entriesDAO.selectMaxIndex();
+    public long getMaxIndex(Date updatedMax) {
+        return this.entriesDAO.selectMaxIndex(updatedMax);
     }
 
     @ManagedAttribute

@@ -29,10 +29,7 @@ import org.atomserver.uri.URIHandler;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class FileBasedBlogService implements AtomService {
 
@@ -75,7 +72,7 @@ public class FileBasedBlogService implements AtomService {
         return null;
     }
 
-    public long getMaxIndex()
+    public long getMaxIndex(Date updatedMax)
     { return -1; }
 
     public int getNumberOfWorkspaces()

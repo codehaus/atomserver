@@ -813,10 +813,13 @@ public class EntriesDAOiBatisImpl
                 paramMap().param("internalId", internalId));
     }
 
-    public long selectMaxIndex() {
+    public long selectMaxIndex(Date updatedMax) {
         ParamMap paramMap = paramMap();
         if (latencySeconds > 0) {
             paramMap.param("latencySeconds", latencySeconds);
+        }
+        if (updatedMax != null) {
+            paramMap.param("updatedMax", updatedMax);
         }
         return (Long) getSqlMapClientTemplate().queryForObject("selectMaxIndex", paramMap);
     }
