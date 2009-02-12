@@ -244,6 +244,19 @@
         </isNotEqual>
              ) AS UpdateTimestamp
           FROM EntryStore entry
+        <isNotNull property="latencySeconds">
+         WHERE (
+            <isEqual property="dbType" compareValue="hsql">
+             DATEDIFF('ss', UpdateDate, NOW()) >= $latencySeconds$
+            </isEqual>
+            <isEqual property="dbType" compareValue="sqlserver">
+             DATEADD(s, -1 * $latencySeconds$, GETDATE()) >= UpdateDate
+            </isEqual>
+            <isEqual property="dbType" compareValue="postgres">
+             NOW() - interval '$latencySeconds$ seconds' >= UpdateDate
+            </isEqual>
+            )
+        </isNotNull>
     </select>
 
 </sqlMap>
