@@ -21,6 +21,8 @@ import org.apache.abdera.protocol.server.RequestContext;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.uri.URIHandler;
 
+import java.util.Date;
+
 /**
  * AtomService - This is the root of an AtomServer implementation. There is a direct correllation
  * between an AtomService and the corresponding concept of a Service in the Atom protocol.
@@ -123,7 +125,8 @@ public interface AtomService {
     /**
      * get the highest index number in the store.
      *
+     * @param updatedMax the latest date up to which to retrieve the highest index number
      * @return the highest index number in the store
      */
-    public long getMaxIndex();
+    public long getMaxIndex(Date updatedMax);
 }
