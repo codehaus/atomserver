@@ -21,6 +21,8 @@ import org.atomserver.core.AbstractAtomService;
 import org.atomserver.AtomWorkspace;
 import org.atomserver.AtomService;
 
+import java.util.Date;
+
 /**
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
@@ -29,7 +31,7 @@ public class FileBasedAtomService extends AbstractAtomService {
 
     FileBasedContentStorage contentStorage;
 
-    public long getMaxIndex() {
+    public long getMaxIndex(Date updatedMax) {
         return -1;
     }
 
