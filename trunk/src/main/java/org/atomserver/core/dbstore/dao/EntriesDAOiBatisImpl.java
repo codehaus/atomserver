@@ -821,7 +821,8 @@ public class EntriesDAOiBatisImpl
         if (updatedMax != null) {
             paramMap.param("updatedMax", updatedMax);
         }
-        return (Long) getSqlMapClientTemplate().queryForObject("selectMaxIndex", paramMap);
+        Long retVal = (Long) getSqlMapClientTemplate().queryForObject("selectMaxIndex", paramMap);
+        return (retVal == null) ? 0L : retVal;
     }
 
     public void acquireLock() throws AtomServerException {
