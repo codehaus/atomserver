@@ -9,10 +9,10 @@ Download Project Artifacts
   <All release versions of AtomServer are available from the maven repository at:>
   <<{{http://repository.codehaus.org/org/atomserver/atomserver/}}>>
 
-  * <<2.1.7>>
+  * <<2.1.8>>
 
-     * {{{http://repository.codehaus.org/org/atomserver/atomserver/2.1.7/atomserver-2.1.7-install.tar.gz}installer}}
-       ({{{http://repository.codehaus.org/org/atomserver/atomserver/2.1.7/atomserver-2.1.7-install.tar.gz.md5}MD5}})
+     * {{{http://repository.codehaus.org/org/atomserver/atomserver/2.1.8/atomserver-2.1.8-install.tar.gz}installer}}
+       ({{{http://repository.codehaus.org/org/atomserver/atomserver/2.1.8/atomserver-2.1.8-install.tar.gz.md5}MD5}})
 
   []
 

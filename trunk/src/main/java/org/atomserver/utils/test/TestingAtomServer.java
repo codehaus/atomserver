@@ -60,8 +60,15 @@ import java.util.Properties;
  * </pre>
  */
 public class TestingAtomServer {
+
+    private GenericWebApplicationContext appContext;
+
     private Server httpServer;
     private int port;
+
+    private String springBeansLocation = null;
+    private ManagedSet workspaceSet = new ManagedSet();
+
 
     public TestingAtomServer() {
         this( true );
@@ -116,8 +123,9 @@ public class TestingAtomServer {
         }
     }
 
-    private String springBeansLocation = null;
-    private ManagedSet workspaceSet = new ManagedSet();
+    public WebApplicationContext getAppContext() {
+        return appContext;
+    }
 
     /**
      * set the location on the classpath of a spring XML file to load.
@@ -216,7 +224,8 @@ public class TestingAtomServer {
 
         // our Spring application context will start off by loading the basic built-in bean
         // definitions
-        final GenericWebApplicationContext appContext = new GenericWebApplicationContext();
+        appContext = new GenericWebApplicationContext();
+
         XmlBeanDefinitionReader xmlReader = new XmlBeanDefinitionReader(appContext);
         xmlReader.loadBeanDefinitions(new ClassPathResource("org/atomserver/spring/propertyConfigurerBeans.xml"));
         xmlReader.loadBeanDefinitions(new ClassPathResource("org/atomserver/spring/databaseBeans.xml"));
@@ -279,6 +288,4 @@ public class TestingAtomServer {
         // ready to be started
         return server;
     }
-
-
 }

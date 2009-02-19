@@ -8,6 +8,13 @@
 
     <body>
 
+        <section name="Release 2.1.8 (2/21/09)">
+            <ul>
+                <li>Various DAO fixes related to the "v2" API. In particular, fixes related to the updated-max.</li>
+                <li>Made the Spring Application Context available in TestingStomServer. </li>
+           </ul>
+        </section>
+
         <section name="Release 2.1.7 (1/18/09)">
             <ul>
                 <li>Fixed a bug in Aggregate Feeds where different localized entries with
