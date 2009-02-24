@@ -192,7 +192,7 @@
 
         <property name="virtualWorkspaceHandlers" ref="org.atomserver-virtualWorkspaceHandlers"/>
 
-        <property name="serviceContext" ref="org.apache.abdera.protocol.server.ServiceContext"/>
+        <property name="serviceContext" ref="org.atomserver-serviceContext.v2"/>
 
         <property name="transactionTemplate">
             <bean class="org.springframework.transaction.support.TransactionTemplate">
