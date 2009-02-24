@@ -17,6 +17,8 @@ package org.atomserver.utils.test;
 
 import org.apache.abdera.Abdera;
 import org.apache.abdera.protocol.server.ServiceContext;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.atomserver.core.WorkspaceOptions;
 import org.atomserver.core.autotaggers.XPathAutoTagger;
 import org.atomserver.core.dbstore.DBBasedContentStorage;
@@ -60,6 +62,7 @@ import java.util.Properties;
  * </pre>
  */
 public class TestingAtomServer {
+    private static final Log log = LogFactory.getLog(TestingAtomServer.class);
 
     private GenericWebApplicationContext appContext;
 
@@ -210,6 +213,12 @@ public class TestingAtomServer {
     }
 
     private Server createServer(int port, String atomserverServletContext, String atomserverServletMapping) {
+        log.warn( "TestingAtomServer.createServer() :: Argument atomserverServletMapping is no longer required, "
+                  + " and is deprecated");
+        return createServer(port, atomserverServletContext );
+    }
+
+    private Server createServer(int port, String atomserverServletContext) {
         // set up the server and the atomserver web application context
         Server server = new Server(port);
         Context context = new Context(server, "/" + atomserverServletContext,
@@ -220,7 +229,9 @@ public class TestingAtomServer {
         Properties properties = (Properties) System.getProperties().clone();
         System.setProperty("atomserver.env", "asdev-hsql-mem");
         System.setProperty("atomserver.servlet.context", atomserverServletContext);
-        System.setProperty("atomserver.servlet.mapping", atomserverServletMapping);
+
+        // TODO: this should be removed
+        System.setProperty("atomserver.servlet.mapping", "v1");
 
         // our Spring application context will start off by loading the basic built-in bean
         // definitions
@@ -267,12 +278,8 @@ public class TestingAtomServer {
                 WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE,
                 appContext);
 
-        // load and init the service context
-        String contextName = "v1".equals(atomserverServletMapping) ?
-                             ServiceContext.class.getName() :
-                             "org.atomserver-serviceContext.v2";
-        final ServiceContext serviceContext =
-                (ServiceContext) appContext.getBean(contextName);
+        // load and init the service context for v1
+        final ServiceContext serviceContext = (ServiceContext) appContext.getBean(ServiceContext.class.getName());
         serviceContext.init(new Abdera(), Collections.EMPTY_MAP);
 
         // create a new AtomServerServlet - but override the createServiceContext method
@@ -282,8 +289,20 @@ public class TestingAtomServer {
             }
         };
 
-        // register the servlet
-        context.addServlet(new ServletHolder(servlet), "/" + atomserverServletMapping + "/*");
+        // load and init the service context for v2
+        final ServiceContext serviceContextV2 = (ServiceContext) appContext.getBean("org.atomserver-serviceContext.v2");
+        serviceContextV2.init(new Abdera(), Collections.EMPTY_MAP);
+
+        // create a new AtomServerServlet - but override the createServiceContext method
+        AtomServerServlet servletV2 = new AtomServerServlet() {
+            protected ServiceContext createServiceContext() {
+                return serviceContextV2;
+            }
+        };
+
+        // register the servlets
+        context.addServlet(new ServletHolder(servlet), "/v1/*");
+        context.addServlet(new ServletHolder(servletV2), "/v2/*");
 
         // ready to be started
         return server;
