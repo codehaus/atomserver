@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<document url="http://java-build.wvrgroup.internal:/opt/sites/atomserver/releases.html">
+<document url="http://atomserver.codehaus.org/releases.html">
 
     <properties>
         <title>Release Notes</title>
@@ -8,10 +8,13 @@
 
     <body>
 
-        <section name="Release 2.1.8 (2/21/09)">
+        <section name="Release 2.1.8 (2/26/09)">
             <ul>
-                <li>Various DAO fixes related to the "v2" API. In particular, fixes related to the updated-max.</li>
-                <li>Made the Spring Application Context available in TestingStomServer. </li>
+                <li>Various fixes related to the "v2" API,primarilly in the DAO. In particular, fixes related to the updated-max.</li>
+                <li>TestingAtomServer now makes the Spring Application Context available. </li>
+                <li>TestingAtomServer now spins up both the V1 and the V2 Servlets</li>
+                <li>Increase the VARCHAR size of EntryStore.EntryId in the postgres DDL from 32 to 36</li>
+                <li>Made Spring ApplicationContext available to subclasses in AtomServerServlet</li>
            </ul>
         </section>
 
