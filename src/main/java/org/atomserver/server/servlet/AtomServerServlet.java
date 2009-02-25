@@ -85,4 +85,8 @@ public class AtomServerServlet
         sc.init(getAbdera(), getProperties(getServletConfig()));
         return sc;
     }
+
+    protected ApplicationContext getApplicationContext() {
+        return appContext;
+    }
 }
