@@ -39,10 +39,14 @@ public class StripingAutoTagger extends BaseAutoTagger {
         this.label = label;
     }
 
+    public String getStripeBasis(EntryMetaData entry, String content) {
+        return entry.getEntryId();
+    }
+
     public void tag(EntryMetaData entry, String content) {
         // compute what the stripe term SHOULD be
         String stripeTerm =
-                ShardedPathGenerator.computeShard(entry.getEntryId(), numStripes, radix);
+                ShardedPathGenerator.computeShard(getStripeBasis(entry, content), numStripes, radix);
 
         // select the current set of categories, and check anything in the stripe scheme to see
         // whether it matches the correct term.  if there is already a category with the proper
