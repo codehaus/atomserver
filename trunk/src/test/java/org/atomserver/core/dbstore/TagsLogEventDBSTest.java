@@ -137,7 +137,10 @@ public class TagsLogEventDBSTest extends CRUDDBSTestCase {
         log.debug("====> logEvents = " + logEvents);
         assertNotNull(logEvents);
         assertTrue(logEvents.size() == numCats);
-        Date lastDate = new Date();
+
+        //Date lastDate = new Date();
+        Date lastDate = entryCategoriesDAO.selectSysDate();
+
         for( EntryCategoryLogEvent event : logEvents ) {
             assertTrue( (event.getCreateDate().compareTo(lastDate) <= 0) );
             lastDate= event.getCreateDate();
@@ -148,7 +151,10 @@ public class TagsLogEventDBSTest extends CRUDDBSTestCase {
         log.debug("====> logEvents = " + logEvents);
         assertNotNull(logEvents);
         assertTrue(logEvents.size() == numCats);
-        lastDate = new Date();
+
+        //lastDate = new Date();
+        lastDate = entryCategoriesDAO.selectSysDate();
+
         for( EntryCategoryLogEvent event : logEvents ) {
             assertTrue( (event.getCreateDate().compareTo(lastDate) <= 0) );
             lastDate= event.getCreateDate();
