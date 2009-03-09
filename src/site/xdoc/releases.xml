@@ -8,7 +8,7 @@
 
     <body>
 
-        <section name="Release 2.1.9 3/??/09)">
+        <section name="Release 2.1.9 (3/9/09)">
             <ul>
                 <li>Modify StripingAutoTagger so that it is more easily extendable</li>
            </ul>
