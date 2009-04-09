@@ -52,6 +52,9 @@ public class BasicTest extends BaseAtomServerTestCase {
             Entry entry =
                     root().path(collectionPath()).path(String.valueOf(id))
                             .type(MediaType.APPLICATION_XML).entity(widgetEntry).put(Entry.class);
+            StringWriter stringWriter = new StringWriter();
+            entry.writeTo(stringWriter);
+            log.debug(String.format("wrote entry : %s", stringWriter.toString()));
         }
     }
 

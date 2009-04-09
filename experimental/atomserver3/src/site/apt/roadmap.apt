@@ -1,0 +1,175 @@
+
+
+                ---------------------
+                AtomServer v3 Roadmap
+                ---------------------
+                     Bryon Jacob
+                ---------------------
+                     2009-04-09
+
+AtomServer v3 Roadmap
+
+    AtomServer v3 will represent a major breaking point from the previous reasons.  It is a
+    ground-up rewrite of the underlying implementation.  From the user's point of view, every
+    attempt will be made to make the new version as backwards-compatible with previous versions
+    as possible, while rolling in changes that are based on lessons learned, a philosophical
+    shift about what AtomServer <<IS>> (or at least, what it SHOULD BE), and the goal of increased
+    compliance with the Atom and AtomPub specs.  From the administration and configuration point
+    of view, it will be an entirely new world, but hopefully a world that all will agree is much
+    better than the previous.
+
+
+* I. Major Objectives
+
+    There are several high-level themes that are driving AtomServer v3.  These are derived from
+    our two years of experience with previous versions of AtomServer in a high-traffic production
+    environment.
+
+** 1.  Performance Improvements
+
+    We've spent a huge amount of effort performance testing the exisitng service, and tweaking it
+    to improve performance.  It meets our needs now, but we can see the limits of it's ability to
+    scale, and a ground-up rewrite of at least some parts of the system is needed to bring the
+    performance metrics that we need to an acceptable level.
+
+    In particular, Aggregate Feeds - which were originally conceived as an afterthought to the
+    system's overall design - have proven to be an incredibly useful feature of the system, and
+    the current implementation just won't support acceptable performance for Aggregate Feeds.
+
+** 2.  Spec Compliance
+
+    AtomServer has some noticeable gaps with respect to the Atom specs.  There are several
+    reasons for this:
+
+    *   In many cases, we were making design decisions before the spec had actually weighed in on
+        a particular issue, and so we were forced to make a decision "ahead of the curve"
+
+    *   In some cases, the fledgling spec disagreed with Google's GData specification, and we
+        thought that the Google Way was more appropriate to our problem than the spec's
+
+    *   In some cases, we decided in the interest of time to implement something in a non-spec
+        compliant way, with the intention of "coming back later" to rectify the situation
+
+    *   In some cases, we just screwed up
+
+    []
+
+    In any case, with the next release of AtomServer, we have the goal of providing a
+    spec-compliant method of accessing all of AtomServer's functionality (we may also provide
+    parallel non-spec variants of these operations, for simplicity and/or
+    backwards-compatibility), and of explicitly documenting any place where the released version
+    does deviate from the spec.  From AtomServer v3 on, it will be considered a bug if the server
+    deviates from the Atom specs, and all such issues will be resolved by either rectifying the
+    deviation, or by explicitly listing the deviation in the documentation, so that users can
+    easily determine whether the level of compliance with the Atom specifications is adequate for
+    their needs.
+
+** 3.  Increased ease of administration / configuration
+
+    AtomServer has, up until now, relied on Spring for its configuration, which is burdensome to
+    users, who have often had to treat AtomServer as more of an "application framework" rather
+    than the "out of the box Atom Store" that was promised.  AtomServer v3 will be configured
+    dynamically, through a REST API, using the APP standard document types (Service, Workspace,
+    Collection) and a small set of custom extensions to deal with AtomServer-specific
+    configuration parameters.  There will also be an easy-to-use Administration UI that uses the
+    REST API.
+
+** 4.  Philosophical shift to AtomServer as an "Atom-Oriented Database"
+
+    Apart from the Performance Improvements, all of the Objectives can really be grouped as part
+    of a philosophical shift in how we view AtomServer - AtomServer should be, fundamentally, a
+    highly scalable, out of the box, standalone Atom Store.  It should be treated the same way as
+    one might treat a relational database - in particular:
+
+    *   It should be simple to set up and administer - you should be able to get a basic server
+        working in less than ten minutes, and you should be able to expand that configuration to
+        meet expanding needs.
+
+    *   You should trust it - there should be extremely little debugging of the AtomServer itself
+        needed.  You wouldn't expect to have to debug the internals of MySQL in order to use it as
+        your RDBMS solution.
+
+    *   It should be a stand-alone application - you should be able to run, use, and understand it
+        without having to write any code, or even to know what the underlying technologies are.
+        It should be <<extensible>> via writing custom Java code, but all of the main
+        functionality of the system should be completely accessible without having to do so.
+
+    []
+
+* II. New Features
+
+    (this is very incomplete - just checking in a version of the doc with formatting in place)
+
+    [[1]] <<ETags>>\
+            Previous versions of AtomServer used a <<revision>> query parameter to handle
+            Optimistic Concurrency with publishes.  The specs specify that we should use <<ETags>>
+            for this instead.  AtomServer v3 will AT LEAST support ETags, but may support the
+            revision parameter for backwards compatibility as well.
+
+    [[2]] <<Feed Paging>>\
+            AtomServer has used the paging mechanism specified by the GData specification, which
+            violates the way that Feed Paging is specified by the Atom specs.  We believe that the
+            GData version is superior for most applications, but will support the spec-compliant
+            version of feed paging for better interoperability with clients.
+
+    [[3]] <<Feed Push>>\
+            Clients will be able to register a URL to which entries will be "pushed" as they are
+            published, rather than having to poll the collection URL.
+    
+
+* III. Full REST API for AtomServer v3 APP (Atom Publishing Protocol) service
+
+    (this is very incomplete - just checking in a version of the doc with formatting in place)
+
+    [[1]] <<ROOT URL>> (<<<http://my.atomserver/app>>>)
+
+        [[1]] <GET>\
+                An HTTP GET against the ROOT URL of a running AtomServer should return the
+                AtomServer home page.
+
+        [[2]] <POST>\
+                An HTTP POST against the ROOT URL should contain a SERVICE DOCUMENT as the request
+                entity.
+
+    [[2]] <<SERVICE URL>> (<<<http://my.atomserver/app/\{SERVICE\}>>>)
+
+        [[1]] <GET>\
+                An HTTP GET against a SERVICE URL should return the SERVICE DOCUMENT that
+                describes that Service.
+
+
+* IV. Internal Design Decisions
+
+    (this is very incomplete - just checking in a version of the doc with formatting in place)
+    
+    [[1]] No Relational DB
+
+
+* Uncategorized Thoughts
+
+    This document is going to take a while to coalesce to the final version - and organizing the
+    document into the above outline format is time-consuming.  As ideas are created relating to
+    AtomServer v3, I plan to first capture them in this list in a "raw", uncategorized fashion,
+    and then move the items up into their proper place in focused editing sessions, as time
+    permits.  I would ask that anyone who reads this doc and finds it lacking first look through
+    the below list to see if the item you're looking for is there before contacting me with your
+    addition.  If it's not there, let me know and I'll add it (or just add it yourself if you are
+    a developer with access to our source control) - and of course if you'd like to spend some
+    time editing this document and putting any of the data into its "final resting place" up
+    above, it will be greatly appreciated.
+
+    *   "Named Queues" - server managed queues of entries from a given feed
+
+    *   Entry Filters (as opposed to AutoTaggers)
+    
+    *   RESTful configuration documentation
+
+    *   document the AtomServer extensions
+
+    *   put links to the relevant Atom Specs, and to the GData paper that started it all
+
+    *   Describe how Aggregate Feeds will be improved
+
+    *   User Management
+
+    *   Content Storage API - 2PC

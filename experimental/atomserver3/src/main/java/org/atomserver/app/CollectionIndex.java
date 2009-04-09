@@ -35,7 +35,7 @@ public interface CollectionIndex<E extends EntryNode> {
 
     /**
      * build an iterator, starting just after the given timestamp, of entries that match the given CategoryQuery.
-     *
+     * TODO: make sure to support maxTimestamp
      * @param categoryQuery the CategoryQuery by which to filter entries (null returns all entries)
      * @param timestamp     the timestamp just before the beginning of the requested iterator
      * @return an iterator of EntryNodes that match the given CategoryQuery, starting after the given timestamp

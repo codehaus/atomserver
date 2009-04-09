@@ -2,6 +2,7 @@ package org.atomserver.app;
 
 import org.apache.abdera.model.*;
 import org.apache.abdera.model.Collection;
+import org.apache.log4j.Logger;
 import org.atomserver.AtomServerConstants;
 import org.atomserver.categories.CategoryQuery;
 import org.atomserver.categories.CategoryQueryParseException;
@@ -16,6 +17,8 @@ import static java.lang.String.format;
 import java.util.*;
 
 public class APPCollection extends BaseResource<Collection, APPWorkspace> {
+
+    private static final Logger log = Logger.getLogger(APPCollection.class);
 
     public APPCollection(APPWorkspace workspace,
                          String name,
@@ -150,6 +153,8 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
 
     public Entry putEntry(String entryId, Entry entry) {
 
+        log.debug(String.format("PUTting entry %s", entryId));
+
         getEntryFilterChain().doChain(entry);
 
         // putting an entry consists of the following steps:
@@ -175,7 +180,8 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
         Entry newEntry = AbderaMarshaller.factory().newEntry();
         newEntry.setId(getFullEntryId(entryId));
 
-        getService().lock.writeLock().lock();
+        log.debug(String.format("acquiring service %s write lock", getService().getName()));
+        getService().lock.writeLock().lock(); // TODO: timeouts
 
         try {
             try {
@@ -205,6 +211,7 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
 
                 contentTxn.commit();
 
+                log.debug(String.format("successfully PUT entry %s", entryId));
                 return newEntry;
             } catch (WebApplicationException e) {
                 contentTxn.abort();
@@ -216,6 +223,7 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
 
         } finally {
             getService().lock.writeLock().unlock();
+            log.debug(String.format("released service %s write lock", getService().getName()));
         }
     }
 

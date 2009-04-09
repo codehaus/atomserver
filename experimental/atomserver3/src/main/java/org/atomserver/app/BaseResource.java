@@ -2,6 +2,7 @@ package org.atomserver.app;
 
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.ExtensibleElement;
+import org.apache.log4j.Logger;
 import org.atomserver.AtomServerConstants;
 import org.atomserver.ext.Filter;
 import org.atomserver.filter.EntryFilter;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public abstract class BaseResource<S extends ExtensibleElement, P extends ContainerResource> {
+    private static final Logger log = Logger.getLogger(BaseResource.class);
 
     public abstract S getStaticRepresentation();
 
