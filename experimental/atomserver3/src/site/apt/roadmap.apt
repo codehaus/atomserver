@@ -121,21 +121,273 @@ AtomServer v3 Roadmap
 
     (this is very incomplete - just checking in a version of the doc with formatting in place)
 
-    [[1]] <<ROOT URL>> (<<<http://my.atomserver/app>>>)
+** References
+
+    The following documents are extremely important to the design of AtomServer, and will be
+    referenced heavily by the rest of this document.
+
+    * {{{http://tools.ietf.org/html/rfc4287}RFC 4287}} -
+            <<The Atom Syndication Format>>\
+        This document defines the basics of Atom, including XML Schemas for the basic elements
+        of Atom (Feeds and Entries).
+
+    * {{{http://tools.ietf.org/html/rfc5023}RFC 5023}} -
+            <<The Atom Publishing Protocol>>\
+        This document describes a protocol for an Atom-enabled server.  It extends the concepts
+        defined in RFC 4287 with definitions for elements to describe the metadata of a system,
+        allowing for automatic discovery of Atom data and a standardized interface for
+        interacting with an Atom-enabled server.
+
+    * {{{http://tools.ietf.org/html/rfc5005}RFC 5005}} -
+            <<Feed Paging and Archiving>>\
+        This document describes a method for "paginating" an Atom Feed from a an Atom-enabled
+        server.
+
+    * {{{http://tools.ietf.org/html/rfc2616}RFC 2616}} -
+            <<Hypertext Transfer Protocol -- HTTP/1.1>>\
+        This document defines the HTTP protocol itself.
+
+    * {{{http://code.google.com/apis/gdata/docs/2.0/reference.html}GData}} -
+            <<Google Data APIs -- Protocol Reference>>\
+        This document describes the implementation of Google's GData service, which provides an
+        Atom-oriented API to access data from Google's Data Services.  This document was the
+        original inspiration for the design of AtomServer, and many ideas in AtomServer are
+        borrowed from concepts in this document.
+
+** Data Organization
+
+    The Atom Publishing Protocol Spec ({{{http://tools.ietf.org/html/rfc5023}RFC 5023}}) defines
+    {{{http://tools.ietf.org/html/rfc5023#section-8}Service Documents}}, which can be used to
+    describe the metadata of an Atom-Enabled server.  The spec specifies that the root of a
+    service document is an element of the type
+    {{{http://tools.ietf.org/html/rfc5023#section-8.3.1}app:service}}.  Such elements can contain
+    {{{http://tools.ietf.org/html/rfc5023#section-8.3.2}app:workspace}} elements, which can in
+    turn contain {{{http://tools.ietf.org/html/rfc5023#section-8.3.3}app:collection}} elements
+    (among other data elements).
+
+    The specification is intentionally vague about HOW the discovery of this metadata is to occur.
+    Implementors are to define their own mechanism by which these Service Documents can be
+    retrieved to allow for discovery.  In addition, the specification specifically does not
+    specify any particular meaning to be attached to Workspaces or Collections, and allows for
+    servers to include the same Collection within multiple Workspaces, if that makes sense in the
+    organization of that server.
+
+    AtomServer implements a specific mechanism for organizing data that is conformant to the
+    structure set forth in the spec.  As an implementor of the spec, we are forced to choose an
+    option in places where the spec remains agnostic, and so we have opted for a simple,
+    hierarchical organization of data within the Atom Pub framework:
+
+    [Entry] Entries are the actual Atom Entries that are to be stored within AtomServer.
+
+    [Collection] Collections are the lowest-level organization of Atom Entries - a Collection
+    logically contains zero or more Entries.
+
+    [Workspace] Workspaces are the next level up in the hierarchy - a Workspace logically
+    contains zero or more Collections.
+
+    [Service] Services are the highest level in the hierarchy - a Service logically contains one
+    or more Workspaces.
+
+    []
+
+    Whereas the Atom Pub spec allows server implementors to include the same Collection in
+    multiple Workspaces, AtomServer does NOT allow this - the organization is a strict hierarchy.
+    This hierarchical layout allows for simple, easy to construct URLs for each of these
+    components - relative to the root of AtomServer's APP interface, the URLs for each of these
+    components is:
+
+    [Service]       <<<\{SERVICE NAME\}>>>
+
+    [Workspace]     <<<\{SERVICE NAME\}/\{WORKSPACE NAME\}>>>
+
+    [Collection]    <<<\{SERVICE NAME\}/\{WORKSPACE NAME\}/\{COLLECTION NAME\}>>>
+
+    [Entry]         <<<\{SERVICE NAME\}/\{WORKSPACE NAME\}/\{COLLECTION NAME\}/\{ENTRY NAME\}>>>
+
+    []
+
+** AtomServer Extensions
+
+    AtomServer defines a number of Atom Extensions (additional XML elements that can be included
+    with Atom and AtomPub documents that have special meaning to AtomServer).
+
+    All AtomServer elements will be in the XML namespace <<<http://atomserver.org/AtomServer>>>,
+    which is represented here with the namespace prefix <<<as:>>>.
+
+*** {as:name}
+
+---
+    name = element as:name { text }
+---
+
+*** {as:name}
+
+---
+    aggregate = element as:aggregate {
+        attribute collection { text },
+        attribute entryId { text }
+    }
+---
+
+** API
+
+    [[1]] <<ROOT URL>>
+            (<<<http://my.atomserver/>>>)
+
+        The ROOT URL to the server should be the entry point to AtomServer's web-based GUI.  As
+        such, it is only barely part of the RESTful API of the service, but is included for
+        completeness.
 
         [[1]] <GET>\
-                An HTTP GET against the ROOT URL of a running AtomServer should return the
-                AtomServer home page.
+                An HTTP GET against the ROOT URL of a running AtomServer should return an HTML
+                document representing the entry point to the AtomServer web-based GUI.
+
+    [[2]] <<APP ROOT URL>>
+            (<<<http://my.atomserver/app>>>)
+
+        The APP ROOT URL represents the root of the server, as far as interacting with the server
+        through the Atom Publishing Protocol (APP) is concerned.  This URL is used for discovery
+        (inspection of the contents of the server) as well as for installing new Services into the
+        server.
+
+        [[1]] <GET>\
+                An HTTP GET against the APP ROOT URL of a running AtomServer should return an
+                ATOM FEED containing the SERVICE DOCUMENTS of the services installed in the server.
+
+            [[1]] An HTTP 200 OK response should be returned.
+
+            [[2]] The response will have a Content-Type of "application/atom+xml"
+
+            [[3]] The response body will be an XML 1.0 document, whose root element will be an
+                    {{{http://tools.ietf.org/html/rfc4287#section-4.1.1}atom:feed}} element.
+
+                [[1]] The {{{http://tools.ietf.org/html/rfc4287#section-4.2.1}atom:author}}
+                        element will contain the text "AtomServer v3".
+
+                [[2]] The {{{http://tools.ietf.org/html/rfc4287#section-4.2.6}atom:id}} element
+                        will contain the APP ROOT URL for the server as the universally unique
+                        identifier.
+
+                [[3]] The {{{http://tools.ietf.org/html/rfc4287#section-4.2.14}atom:title}}
+                        element will contain the text "AtomServer v3 Service Documents Feed".
+
+                [[4]] The {{{http://tools.ietf.org/html/rfc4287#section-4.2.15}atom:updated}}
+                        will contain the latest updated date of any of the services present in the
+                        Service Document Feed.
+
+                [[5]] There will be an
+                        {{{http://tools.ietf.org/html/rfc4287#section-4.2.7}atom:link}} element
+                        with the <<rel>> attribute set to "self", and the <<href>> attribute set
+                        to the APP ROOT URL for the server.
+
+                [[6]] There will be one
+                        {{{http://tools.ietf.org/html/rfc4287#section-4.1.2}atom:entry}} element
+                        for each Service that exists within the server.
+
+                    [[1]] The {{{http://tools.ietf.org/html/rfc4287#section-4.2.6}atom:id}}
+                            element will contain the SERVICE URL for the Service in question.
+
+                    [[2]] The {{{http://tools.ietf.org/html/rfc4287#section-4.2.14}atom:title}}
+                            will contain the title of the Service.
+
+                    [[3]] The {{{http://tools.ietf.org/html/rfc4287#section-4.2.15}atom:updated}}
+                            element will contain the latest updated date of any of the workspaces
+                            within the service.
+
+                    [[4]] There will be an
+                            {{{http://tools.ietf.org/html/rfc4287#section-4.1.3}atom:content}}
+                            child element, with the <<type>> attribute set to
+                            "application/atomsvc+xml" and the <<src>> element set to the SERVICE
+                            URL for the Service.  This content element will be empty.
+
+                    [[5]] Because we provide out-of-line content, we are required to provide an
+                            {{{http://tools.ietf.org/html/rfc4287#section-4.2.13}atom:summary}}
+                            child element.  The <<type>> attribute for this element will be set
+                            to "text", and the contents will be "Service Document for the
+                            \{SERVICE NAME\} Service".
 
         [[2]] <POST>\
                 An HTTP POST against the ROOT URL should contain a SERVICE DOCUMENT as the request
                 entity.
 
-    [[2]] <<SERVICE URL>> (<<<http://my.atomserver/app/\{SERVICE\}>>>)
+            [[1]] If the request contains no body, an HTTP 400 BAD REQUEST should be returned,
+                    with an appropriate error message.
+
+            [[2]] The Server prefers a Content-Type of "application/atomsvc+xml", but will also
+                    accept content types of "application/atom+xml", "application/xml", or
+                    "text/xml".  If no Content-Type header is provided at all, the server will
+                    assume that the body contains XML and proceed.  If any other Content-Type is
+                    provided, an HTTP 415 UNSUPPORTED MEDIA TYPE should be returned with an
+                    appropriate error message.
+
+            [[3]] If the request body is not well-formed XML, or is not a valid
+                    {{{http://tools.ietf.org/html/rfc5023#section-8}Service Document}}, an HTTP
+                    400 BAD REQUEST should be returned with an appropriate error message.
+
+            [[4]] If the request is otherwise valid, the server should look for an {{as:name}}
+                    element within the SERVICE DOCUMENT and use that as the SERVICE NAME.  If no
+                    {{as:name}} element is present, then the Server will take the
+                    {{{http://tools.ietf.org/html/rfc4287#section-4.2.14}atom:title}} element and
+                    convert it to a SERVICE NAME by stripping all characters that are not valid in
+                    a NAME.
+
+                [[1]] If there is already a Service with the SERVICE NAME, an HTTP 409 CONFLICT
+                        response should be returned with an appropriate error message.
+
+                [[2]] If there is no other Service with the SERVICE NAME, a new Service is added
+                        to the Server, registered under the SERVICE NAME, and defined by the
+                        SERVICE DOCUMENT that was parsed from the request body.
+
+                    [[1]] The SERVICE DOCUMENT must contain one or more
+                            {{{http://tools.ietf.org/html/rfc5023#section-8.3.2}app:workspace}}
+                            elements (this is verified by the requirement above that the document
+                            be a valid
+                            {{{http://tools.ietf.org/html/rfc5023#section-8}Service Document}}).
+                            Any workspaces specified are created within the service.  If there is
+                            any error creating any part of the service, including creating any of
+                            the workspaces, the entire request fails, an HTTP 400 BAD REQUEST with
+                            an appropriate error message is returned, and the Service is NOT
+                            added to the server.
+
+                    [[2]] If the service is successfully added to the server, an HTTP 201 CREATED
+                            is returned from the server, and everything else about the request is
+                            exactly identical to what is returned from an HTTP GET against the
+                            newly created Service's SERVICE URL.
+
+    [[3]] <<SERVICE URL>>
+            (<<<http://my.atomserver/app/\{SERVICE\}>>>)
 
         [[1]] <GET>\
                 An HTTP GET against a SERVICE URL should return the SERVICE DOCUMENT that
                 describes that Service.
+
+    [[4]] <<WORKSPACE URL>>
+            (<<<http://my.atomserver/app/\{SERVICE\}/\{WORKSPACE\}>>>)
+
+        [[1]] <GET>\
+                An HTTP GET against a WORKSPACE URL should return the WORKSPACE DOCUMENT that
+                describes the Workspace.
+
+    [[5]] <<COLLECTION URL>>
+            (<<<http://my.atomserver/app/\{SERVICE\}/\{WORKSPACE\}/\{COLLECTION\}>>>)
+
+        [[1]] <GET>\
+                An HTTP GET against a COLLECTION URL should return a FEED PAGE of documents in
+                that COLLECTION.
+
+    [[6]] <<CATEGORIZED COLLECTION URL>>
+            (<<<http://my.atomserver/app/\{SERVICE\}/\{WORKSPACE\}/\{COLLECTION\}/-/\{CATEGORY QUERY\}>>>)
+
+        [[1]] <GET>\
+                An HTTP GET against a CATEGORIZED COLLECTION URL should return a FEED PAGE of
+                documents in that COLLECTION, filtered by the CATEGORY QUERY.
+
+    [[7]] <<ENTRY URL>>
+            (<<<http://my.atomserver/app/\{SERVICE\}/\{WORKSPACE\}/\{COLLECTION\}/\{ENTRY_ID\}>>>)
+
+        [[1]] <GET>\
+                An HTTP GET against a COLLECTION URL should return a FEED PAGE of documents in
+                that COLLECTION.
 
 
 * IV. Internal Design Decisions
