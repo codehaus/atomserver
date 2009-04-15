@@ -178,7 +178,7 @@
             <plugin>
                 <groupId>org.terracotta.maven.plugins</groupId>
                 <artifactId>tc-maven-plugin</artifactId>
-                <version>1.3.0-SNAPSHOT</version>
+                <version>AS_1.3.0-SNAPSHOT</version>
 
                 <configuration>
                     <config>${basedir}/tc-config.xml</config>

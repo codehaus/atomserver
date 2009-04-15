@@ -1,0 +1,15 @@
+NOTE:
+
+We are temporarily using a custom version of the tc-maven-plugin, due to a bug in the
+released versions that causes the maven lifecycle to be forked, and the unit tests run,
+many times during a build.  Before you can run the AtomServer build, you must:
+
+1)  unzip the tc-maven-plugin.tgz tarball
+2)  cd into the tc-maven-plugin project directory
+3)  run "mvn install" to build the custom version and install it into your local repo
+
+after that, the AtomServer build will work properly.  As soon as we can get official 
+resolution from the Terracotta folks, we will remove the custom source and re-set the 
+plugin version in the AtomServer POM to an official released version.
+
+ - Bryon
