@@ -1,12 +1,12 @@
 <tc:tc-config xmlns:tc="http://www.terracotta.org/config">
 
     <servers>
-        <server name="localhost" host="localhost">
+        <server name="tc-main" host="localhost">
             <dso-port>9510</dso-port>
             <jmx-port>9520</jmx-port>
-            <data>target/terracotta/server/data</data>
-            <logs>target/terracotta/server/logs</logs>
-            <statistics>target/terracotta/server/statistics</statistics>
+            <data>%(tc.home)/server/data</data>
+            <logs>%(tc.home)/server/logs</logs>
+            <statistics>%(tc.home)/server/statistics</statistics>
             <dso>
                 <persistence>
                     <mode>permanent-store</mode>
@@ -16,8 +16,8 @@
     </servers>
 
     <clients>
-        <logs>target/terracotta/clients/%(tc.nodeName)-logs</logs>
-        <statistics>target/terracotta/clients/%(tc.nodeName)</statistics>
+        <logs>%(tc.home)/clients/%(tc.nodeName)-logs</logs>
+        <statistics>%(tc.home)/clients/%(tc.nodeName)</statistics>
         <modules>
             <module group-id="org.compass-project" name="compass" version="2.1.2"/>
         </modules>

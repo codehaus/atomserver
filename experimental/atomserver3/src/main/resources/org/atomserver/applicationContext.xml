@@ -12,6 +12,9 @@
         <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE"/>
     </bean>
 
+    <!--TODO: complete JMX integration-->
+    <context:mbean-export/>
+
 </beans>
 
 

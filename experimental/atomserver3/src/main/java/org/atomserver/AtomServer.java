@@ -4,6 +4,7 @@ import com.sun.jersey.api.container.ContainerFactory;
 import com.sun.jersey.api.core.PackagesResourceConfig;
 import com.sun.jersey.api.core.ResourceConfig;
 import com.sun.jersey.spi.spring.container.SpringComponentProviderFactory;
+import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import org.springframework.beans.BeansException;
@@ -11,15 +12,17 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.io.File;
 import static java.lang.String.format;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
+import java.util.concurrent.CountDownLatch;
 
 @Component(AtomServer.BEAN_NAME)
+@ManagedResource(objectName = "bean:name=AtomServer")
 public class AtomServer implements ApplicationContextAware {
     public static final String BEAN_NAME = "org.atomserver.AtomServer";
 
@@ -61,20 +64,41 @@ public class AtomServer implements ApplicationContextAware {
 
     public static void main(String[] args) {
         try {
-            
-            AtomServer server = AtomServer.create();
+
+            final AtomServer server = AtomServer.create();
             server.start();
 
-            // TODO: just a stupid way to keep the server open for now...  need to replace with real start/stop
-            File lockfile = new File("/tmp/lockfile");
-            lockfile.delete();
-            while (!lockfile.exists()) {
-                System.out.println("waiting for lockfile...");
-                Thread.sleep(15000);
-            }
+            final CountDownLatch latch = new CountDownLatch(1);
 
+            // TODO: re-do this
+            // This is basically a low-rent way to "stop" the server.  I'm trying to figure out
+            // what is the best way to STOP a "server" process cleanly - I'm thinking that the
+            // answer is JMX, which is what I will move to next, but that takes a little more
+            // work than this, so I'm keeping it simple until I come up with a definitely better
+            // solution
+            HttpServer manage = HttpServer.create(new InetSocketAddress(8042), 0);
+            manage.createContext(
+                    "/",
+                    new HttpHandler() {
+                        public void handle(HttpExchange httpExchange) throws IOException {
+                            httpExchange.getResponseHeaders().set("Content-Type", "text/plain");
+                            httpExchange.sendResponseHeaders(200, 0L);
+                            httpExchange.getResponseBody().write("stopping...".getBytes());
+                            httpExchange.getResponseBody().flush();
+                            httpExchange.close();
+                            latch.countDown();
+                        }
+                    });
+
+            manage.start();
+            latch.await();
+            System.out.println("stopping AtomServer...");
             server.stop();
+            System.out.println("stopping management thread...");
+            manage.stop(2);
 
+            System.exit(0);
+            
         } catch (Exception e) {
             e.printStackTrace();
         }
