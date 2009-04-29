@@ -1,8 +1,11 @@
+# declare local variables, and set default values
 declare ATOMSERVER_HOME=$(cd `dirname $0`/..; pwd)
 declare LIB_DIR=$ATOMSERVER_HOME/lib
 declare TC_HOST=localhost
+declare TC_HOME=$ATOMSERVER_HOME/terracotta
 declare STANDALONE=false
 
+# set up the classpath
 declare CP="$LIB_DIR/atomserver.jar"
 for jarfile in `ls -1 $LIB_DIR/3rdparty`; do CP="$CP:$LIB_DIR/3rdparty/$jarfile" ; done
 
@@ -17,7 +20,10 @@ startEmbeddedTerracotta() {
         -XX:MaxTenuringThreshold=15 \
         -XX:+HeapDumpOnOutOfMemoryError \
         -Dcom.sun.management.jmxremote \
+        -Dtc.config=$ATOMSERVER_HOME/bin/tc-config.xml \
+        -Dcom.tc.l1.modules.repositories=$ATOMSERVER_HOME/tc-modules \
         -Dtc.host=$TC_HOST \
+        -Dtc.home=$TC_HOME/dso-server \
         -cp $CP \
         com.tc.server.TCServerMain &
 }
@@ -41,6 +47,7 @@ startAtomServer() {
         -Dtc.config=$ATOMSERVER_HOME/bin/tc-config.xml \
         -Dcom.tc.l1.modules.repositories=$ATOMSERVER_HOME/tc-modules \
         -Dtc.host=$TC_HOST \
+        -Dtc.home=$TC_HOME/atomserver \
         -cp $CP \
         org.atomserver.AtomServer
 
@@ -73,6 +80,11 @@ while [ $# -gt 0 ]; do
         shift
         ;;
 
+    -tc-home )
+        TC_HOME=$2
+        shift
+        ;;
+
     # anything else is unknown, and we should fail
     * )
         echo unknown option: $1
@@ -83,5 +95,14 @@ while [ $# -gt 0 ]; do
   shift
 done
 
+# TODO: trap Ctrl-C and handle it 
+
+if [ ! -e $TC_HOME/dso-server ]; then
+    mkdir -p $TC_HOME/dso-server
+fi
+
+if [ ! -e $TC_HOME/atomserver ]; then
+    mkdir -p $TC_HOME/atomserver
+fi
 
 startAtomServer

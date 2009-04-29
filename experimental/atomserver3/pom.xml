@@ -223,8 +223,7 @@
                                 <parallel>
                                     <sequential>
                                         <echo>starting Terracotta server</echo>
-                                        <java classname="com.tc.server.TCServerMain"
-                                              fork="true">
+                                        <java classname="com.tc.server.TCServerMain" fork="true">
                                             <jvmarg value="-Xms512m"/>
                                             <jvmarg value="-Xmx512m"/>
                                             <jvmarg value="-XX:NewRatio=3"/>
@@ -238,7 +237,6 @@
                                         </java>
                                     </sequential>
                                     <sequential>
-                                        <sleep seconds="20"/>
                                         <echo>starting AtomServer</echo>
                                         <java classname="org.atomserver.AtomServer" fork="true">
                                             <jvmarg value="-Xms512m"/>
@@ -253,7 +251,7 @@
                                     </sequential>
                                     <sequential>
                                         <waitfor>
-                                            <http url="http://localhost:8000/"/>
+                                            <http url="http://localhost:8000/app"/>
                                         </waitfor>
                                         <echo>running tests</echo>
 
@@ -273,7 +271,7 @@
                                         <!--stop AtomServer-->
                                         <get src="http://localhost:8042/" dest="STOP" ignoreerrors="yes"/>
                                         <!--sleep to let it die-->
-                                        <sleep seconds="10"/>
+                                        <sleep seconds="5"/>
                                         <!--stop TC server-->
                                         <java classname="com.tc.admin.TCStop" fork="true">
                                             <classpath refid="maven.test.classpath"/>

@@ -1,5 +1,8 @@
 <tc:tc-config xmlns:tc="http://www.terracotta.org/config">
 
+    <!-- TODO: the tc.home variable, what are the ramifications of that on the DSO server? -->
+    <!-- TODO: refactor AtomServer to be a TIM, so the application config is distinct from servers -->
+
     <servers>
         <server name="tc-main" host="localhost">
             <dso-port>9510</dso-port>

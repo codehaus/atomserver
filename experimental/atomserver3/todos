@@ -1,0 +1,4 @@
+todo: make the AtomServer port configurable
+todo: move the integration test output somewhere more reasonable
+todo: Al asked a good question - can we make the integration test output part of our reporting on the site?
+todo: make sure we resolve the "production" versus "development" modes for Terracotta - we should be enforcing config via production mode.  

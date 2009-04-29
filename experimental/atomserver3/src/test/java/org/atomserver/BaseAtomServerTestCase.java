@@ -20,8 +20,9 @@ public class BaseAtomServerTestCase {
 
     private static AtomServer server;
     private static WebResource root;
+    // TODO: this isn't quite the right name for this constant, with the /app - fix it.
     private static final String ROOT_URL =
-            System.getProperty("atomserver.test.url", "http://localhost:8000");
+            System.getProperty("atomserver.test.url", "http://localhost:8000/app");
     private static final boolean TC =
             Boolean.valueOf(System.getProperty("atomserver.test.tc", "false"));
 

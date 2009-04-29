@@ -47,7 +47,7 @@ public class AtomServer implements ApplicationContextAware {
         }
         httpServer.setExecutor(Executors.newCachedThreadPool());
         httpServer.createContext(
-                "/", ContainerFactory.createContainer(HttpHandler.class, resourceConfig, factory));
+                "/app", ContainerFactory.createContainer(HttpHandler.class, resourceConfig, factory));
 
         httpServer.start();
     }
