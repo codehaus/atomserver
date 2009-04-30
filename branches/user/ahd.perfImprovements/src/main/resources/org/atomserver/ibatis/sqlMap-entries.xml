@@ -32,12 +32,7 @@
                entry.EntryId AS EntryId,
                entry.UpdateDate AS UpdateDate,
                entry.CreateDate AS CreateDate,
-           <isEqual property="dbType" compareValue="sqlserver">
-               CONVERT(BIGINT, UpdateTimestamp) AS UpdateTimestamp,
-           </isEqual>
-           <isNotEqual property="dbType" compareValue="sqlserver">
-               entry.UpdateTimestamp AS UpdateTimestamp,
-           </isNotEqual>
+               CAST(UpdateTimestamp AS BIGINT) AS UpdateTimestamp,
                entry.DeleteFlag AS DeleteFlag,
                entry.RevisionNum AS RevisionNum
           FROM EntryStore entry
@@ -51,9 +46,9 @@
         <isNotNull property="updatedMax">
             <![CDATA[ AND UpdateDate < #updatedMax# ]]>
         </isNotNull>
-           AND UpdateTimestamp > #startIndex#
+           AND UpdateTimestamp > CAST(#startIndex# AS <include refid="timestampType"/>)
         <isNotEqual property="endIndex" compareValue="-1">
-           <![CDATA[ AND UpdateTimestamp <= #endIndex# ]]>
+            AND UpdateTimestamp &lt;= CAST(#endIndex# AS <include refid="timestampType"/>)
         </isNotEqual>
         <isNotNull property="latencySeconds">
            AND (
@@ -132,7 +127,7 @@
                entry.EntryId AS EntryId,
                entry.UpdateDate AS UpdateDate,
                entry.CreateDate AS CreateDate,
-               <include refid="timestampColumn" />,
+               CAST(entry.UpdateTimestamp AS BIGINT) AS UpdateTimestamp,
                entry.DeleteFlag AS DeleteFlag,
                entry.RevisionNum AS RevisionNum,
                cat.Scheme AS Scheme,
@@ -235,14 +230,7 @@
     </select>
 
     <select id="selectMaxIndex" parameterClass="map" resultClass="long">
-        SELECT MAX(
-        <isEqual property="dbType" compareValue="sqlserver">
-            CONVERT(BIGINT, entry.UpdateTimestamp)
-        </isEqual>
-        <isNotEqual property="dbType" compareValue="sqlserver">
-            entry.UpdateTimestamp
-        </isNotEqual>
-             ) AS UpdateTimestamp
+        SELECT CAST(MAX(entry.UpdateTimestamp) AS BIGINT) AS UpdateTimestamp
           FROM EntryStore entry
         <isNotNull property="latencySeconds">
          WHERE (
