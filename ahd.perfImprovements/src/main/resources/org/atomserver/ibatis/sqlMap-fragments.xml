@@ -103,11 +103,9 @@
         </dynamic>
     </sql>
 
-    <sql id="timestampColumn">
-        <isEqual property="dbType" compareValue="sqlserver">
-            CONVERT(BIGINT, UpdateTimestamp) AS
-        </isEqual>
-        UpdateTimestamp
+    <sql id="timestampType">
+        <isEqual property="dbType" compareValue="sqlserver">TIMESTAMP</isEqual>
+        <isNotEqual property="dbType" compareValue="sqlserver">BIGINT</isNotEqual>
     </sql>
 
     <sql id="updateLock_Table">

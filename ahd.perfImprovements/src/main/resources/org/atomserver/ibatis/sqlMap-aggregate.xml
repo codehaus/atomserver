@@ -35,9 +35,9 @@
                 from the minTimestamp.-->
             ON recentlyChangedEntries.Scheme = #collection#
         <isNotNull property="startIndex">
-           AND recentlyChangedEntries.UpdateTimestamp > #startIndex#
+           AND recentlyChangedEntries.UpdateTimestamp > CAST(#startIndex# AS <include refid="timestampType"/>)
             <isNotEqual property="endIndex" compareValue="-1">
-               <![CDATA[ AND recentlyChangedEntries.UpdateTimestamp <= #endIndex# ]]>
+               AND recentlyChangedEntries.UpdateTimestamp &lt;= CAST(#endIndex# AS <include refid="timestampType"/>)
             </isNotEqual>
         </isNotNull>
 
@@ -129,12 +129,7 @@
                entries.EntryId AS EntryId,
                entries.UpdateDate AS UpdateDate,
                entries.CreateDate AS CreateDate,
-             <isEqual property="dbType" compareValue="sqlserver">
-               CONVERT(BIGINT, entries.UpdateTimestamp) AS UpdateTimestamp,
-             </isEqual>
-             <isNotEqual property="dbType" compareValue="sqlserver">
-               entries.UpdateTimestamp AS UpdateTimestamp,
-             </isNotEqual>
+               CAST(entries.UpdateTimestamp AS BIGINT) AS UpdateTimestamp,
                entries.DeleteFlag AS DeleteFlag,
                entries.RevisionNum AS RevisionNum,
                categories.Scheme AS Scheme,
