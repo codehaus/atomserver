@@ -102,9 +102,9 @@
                 <![CDATA[
                 entriesDAO = context.getBean("org.atomserver-entriesDAO");
                 if (entriesDAO.latencySeconds > 0 &&
-                    entriesDAO.latencySeconds <= ${db.timeout.sql.stmts}) {
+                    entriesDAO.latencySeconds <= ${db.timeout.txn.put}) {
                     reject("ERROR: latencySeconds set to " + entriesDAO.latencySeconds +
-                           ", but transaction timeout is ${db.timeout.sql.stmts}.");
+                           ", but transaction timeout is ${db.timeout.txn.put}.");
                 }
                 ]]>
             </value>
