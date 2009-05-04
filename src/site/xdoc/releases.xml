@@ -8,6 +8,16 @@
 
     <body>
 
+        <section name="Release 2.1.10 (5/4/09)">
+            <ul>
+                <li>Modified queries in SQL Server to cast parameters to the TIMESTAMP data type when necessary, which
+                    vastly improves performance in many cases.</li>
+                <li>Fixed latency check to ensure that the feed latency is always greater than the transaction timeout,
+                    not the sql statement timeout. This allows you to set the sql statement timeout to very large
+                    values if necessary.</li>
+           </ul>
+        </section>
+
         <section name="Release 2.1.9 (3/9/09)">
             <ul>
                 <li>Modify StripingAutoTagger so that it is more easily extendable</li>
