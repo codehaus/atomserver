@@ -79,24 +79,24 @@ public class EntriesDAOiBatisImpl
         // this will be true if we are setting this for the second time through JMX
         if ( this.latencySeconds != UNDEFINED ) {
             // protect against a wacky value coming in through JMX
-            int sqlTimeout = UNDEFINED;
-            String sqlTimeoutStr = ConfigurationAwareClassLoader.getENV().getProperty( "db.timeout.sql.stmts" );
-            if ( sqlTimeoutStr != null ) {
+            int txnTimeout = UNDEFINED;
+            String txnTimeoutStr = ConfigurationAwareClassLoader.getENV().getProperty( "db.timeout.txn.put" );
+            if ( txnTimeoutStr != null ) {
                 try {
-                    sqlTimeout = Integer.parseInt( sqlTimeoutStr );
+                    txnTimeout = Integer.parseInt( txnTimeoutStr );
                 } catch ( NumberFormatException ee ) {
                     log.error( "setLatencySeconds; NumberFormatException:: ", ee );
                 }
-                sqlTimeout = sqlTimeout/1000;
+                txnTimeout = txnTimeout/1000;
             } else {
-                log.error( "db.timeout.sql.stmts is NULL " );
+                log.error( "db.timeout.txn.put is NULL " );
             }
 
-            if ( ! (latencySeconds < 0 || ((sqlTimeout != UNDEFINED) && (latencySeconds < sqlTimeout))) ) {
+            if ( ! (latencySeconds < 0 || ((txnTimeout != UNDEFINED) && (latencySeconds < txnTimeout))) ) {
                 this.latencySeconds = latencySeconds;
             } else {
-                log.error( "The latency provided (" + latencySeconds + ") is less that sqlTimeout (" +
-                           sqlTimeout + ")" );
+                log.error( "The latency provided (" + latencySeconds + ") is less than txnTimeout (" +
+                           txnTimeout + ")" );
             }
         }
         this.latencySeconds = latencySeconds;
