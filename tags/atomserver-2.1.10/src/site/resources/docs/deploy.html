@@ -1,0 +1,698 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <link rel="StyleSheet" href="css/style.css" type="text/css">
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <meta name="verify-v1"
+ content="sRQSq4VA5FRMhwzFB4U3I9AtgLMtIWTdpVVO6jg1az4=">
+  <title>Deploying AtomServer</title>
+  <script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+  </script>
+  <script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-4603527-2");
+pageTracker._initData();
+pageTracker._trackPageview();
+  </script>
+</head>
+<body class="maincontent">
+<h1><img src="images/atom-logo.gif" alt="logo">&nbsp;
+<span style="font-weight: bold;"></span>Deploying AtomServer<br>
+</h1>
+<div class="content"><span style="font-style: italic;"><br>
+Chris Berry, Bryon Jacob. Updated 11/2/08 </span><br>
+<br>
+This
+document describes specific details about deploying AtomServer.
+Basically you have three options;<br>
+<ul>
+  <li><a href="#standalone">Standalone AtomServer</a>. <br>
+  </li>
+  <li><a href="#war">Deploy AtomServer as a War.</a></li>
+  <ul>
+    <li><a href="#tomcat">Configuring Tomcat</a><br>
+    </li>
+  </ul>
+  <li><a href="#Jar">Embed AtomServer as a Jar within your webapp.</a></li>
+</ul>
+You should also take a look at these;<br>
+<ul>
+  <li><a href="#reqdvars">Required variables when starting up
+AtomServer.</a><br>
+  </li>
+</ul>
+<hr style="width: 100%; height: 2px;">
+<h2><a name="standalone"></a>Standalone AtomServer<br>
+</h2>
+This is the easiest way to deploy AtomServer.&nbsp; Simply:<br>
+<ol>
+  <li>Download the tar.gz (available <a
+ href="http://atomserver.codehaus.org/downloads.html">here)</a></li>
+  <li>Un-tar it (at, say, ATOMSERVER_HOME)<br>
+  </li>
+  <li>Start it up. ($ATOMSERVER_HOME/bin/atomserver.sh)<br>
+  </li>
+</ol>
+The tarball comes with an embedded Jetty Servlet Engine, the
+recommended project structure, example configuration files, and example
+workspace data. <br>
+<br>
+Using the standalone AtomServer is explained in detail in <a
+ href="getting_started.html">the Getting Started document</a>, so we
+won't repeat that information here.<br>
+<br>
+<hr style="width: 100%; height: 2px;">
+<h2><a name="war"></a>Deploying AtomServer as a War.</h2>
+To deploy AtomServer as a War you will mostly just <br>
+<ol>
+  <li>Download the War (available at our maven repository) </li>
+  <li>Drop it into your Servlet Engine of choice. </li>
+  <li><span style="font-style: italic;">Set the required AtomServer
+System properties.</span> Somehow passing
+them through your Servlet Engine's start script.</li>
+  <li>Start it up.</li>
+</ol>
+<h3><a name="tomcat"></a>Configuring Tomcat.</h3>
+Let's use Tomcat as a example. And to simplify the following
+discussion, lets start from
+the downloaded tar.gz. This is simpler because the
+tarball comes with a proper configuration, so we can avoid having to
+explain that as well. The directory structure and files laid down by
+the tarball are
+explained in detail by <a href="getting_started.html">the Getting
+Started document</a>. You will be starting up with the provided;
+myenv.properties from our demo server.
+<ol>
+  <li>Download the AtomServer tar.gz (available <a
+ href="http://atomserver.codehaus.org/downloads.html">here</a>)</li>
+  <li>Un-tar it. Lets assume that you did this at ~/work/atomserver.
+    <div style="margin-left: 40px;"><br>
+    <div id="codebox"><span style="font-family: monospace;">&nbsp;cd
+~/work<br>
+&nbsp;tar -zxvf atomserver-X.X-install.tar<br>
+    </span> </div>
+    <span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+    <div style="margin-left: 40px;"><br>
+    </div>
+  </li>
+  <li>In your shell, export the ATOMSERVER_HOME environment variable.
+Obviously if you are a Windows person you will need all the BAT
+equivalents. NOTE: you will probably want to put this in your ~/.bashrc
+or ~/.bash_profile)<br>
+    <div style="margin-left: 40px;"><br>
+    <div id="codebox"><span style="font-family: monospace;">export
+ATOMSERVER_HOME=~/work/atomserver <br>
+    </span> </div>
+    <span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+    <br>
+  </li>
+  <li>Copy the atomserver War (now located at $ATOMSERVER_HOME/webapps)
+to
+$CATALINA_HOME/webapps. Renaming it to atomserver.war as you do. <br>
+    <div style="margin-left: 40px;"><br>
+    <div id="codebox"><span style="font-family: monospace;">cp
+$ATOMSERVER_HOME/webapps/atomserver-X.X.war
+$CATALINA_HOME/webapps/atomserver.war<br>
+    </span> </div>
+    <span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+  </li>
+  <li>
+    <p id="rfc.section.7.1.p.2">If you do <span
+ style="font-style: italic;">not</span> already have a
+$CATALINA_HOME/bin/setenv.sh, copy our tomcat-setenv.sh to
+$CATALINA_HOME/bin/setenv.sh. If you do already have a
+$CATALINA_HOME/bin/setenv.sh, you will need to merge the contents of
+our tomcat-setenv.sh with it. Note that the Tomcat startup script
+(catalina.sh) already calls out to this script
+($CATALINA_HOME/bin/setenv.sh)
+if it is there. This is Tomcat's convenience mechanism for setting up
+application specific environments. (NOTE: be sure that your new
+$CATALINA_HOME/bin/setenv.sh has the proper permissions for whatever
+user is to run Tomcat). The bottom line here is that <span
+ style="font-style: italic;">AtomServer <span
+ style="font-weight: bold;">requires</span> that certain variables be
+passed into it as it starts up</span>, and these required variables are
+set for you in setenv.sh) </p>
+    <div style="margin-left: 40px;">
+    <div id="codebox"><span style="font-family: monospace;">cp </span><span
+ style="font-family: monospace;">$ATOMSERVER_HOME/bin/tomcat-setenv.sh </span><span
+ style="font-family: monospace;">$CATALINA_HOME/bin/setenv.sh</span> </div>
+    <span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+  </li>
+  <li>
+    <p id="rfc.section.7.1.p.2">Start Tomcat. ($ <span
+ style="font-family: monospace;">$CATALINA_HOME/bin/startup.sh)</span></p>
+  </li>
+</ol>
+NOTES:<br>
+<ul>
+  <li>The logs from AtomServer will end up in $ATOMSERVER_HOME/logs</li>
+  <li>Make certain that <span style="font-family: monospace;">$ATOMSERVER_HOME
+    </span>has the proper permissions for whatever user is to run
+Tomcat.</li>
+  <li><span style="font-style: italic;">All of your configuration lives
+outside of AtomServer</span>. This is an extremely important point. You
+can update AtomServer without touching your configuration specifics.</li>
+  <li>I've shown the simplest case above. You may wish to set all of
+this up using $CATALINA_BASE, in which case the procedure would change
+somewhat. But the basic steps outlined above will hold.</li>
+</ul>
+Our tomcat-setenv.sh looks like this<a name="tomcat-setenv"></a><br>
+<div style="margin-left: 40px;"><br>
+<div id="codebox"><span style="font-family: monospace;">#!/bin/sh<br>
+<br>
+if [ -z "$ATOMSERVER_HOME" ]; then<br>
+&nbsp;&nbsp;&nbsp; echo "You MUST set ATOMSERVER_HOME"<br>
+&nbsp;&nbsp;&nbsp; exit 1<br>
+fi<br>
+<br>
+</span><span style="font-family: monospace;"># ----- AtomServer
+specific arguments<br>
+#<br>
+</span><span style="font-family: monospace;">ATOMSERVER_ARGS="-Datomserver.home=$ATOMSERVER_HOME"<br>
+ATOMSERVER_ARGS="-Datomserver.data.dir=$ATOMSERVER_HOME/data
+$ATOMSERVER_ARGS"<br>
+ATOMSERVER_ARGS="-Datomserver.conf.dir=$ATOMSERVER_HOME/conf
+$ATOMSERVER_ARGS"<br>
+ATOMSERVER_ARGS="-Datomserver.ops.conf.dir=$ATOMSERVER_HOME/conf
+$ATOMSERVER_ARGS"<br>
+<br>
+ATOMSERVER_ARGS="-Datomserver.env=myenv $ATOMSERVER_ARGS"<br>
+ATOMSERVER_ARGS="-Datomserver.port=8080 $ATOMSERVER_ARGS"<br>
+ATOMSERVER_ARGS="-Datomserver.http.port=8080 $ATOMSERVER_ARGS"<br>
+ATOMSERVER_ARGS="-Datomserver.http.host=0.0.0.0 $ATOMSERVER_ARGS"<br>
+ATOMSERVER_ARGS="-Datomserver.jmxhttp.hostname=0.0.0.0 $ATOMSERVER_ARGS"<br>
+ATOMSERVER_ARGS="-Datomserver.jmxhttp.port=50505 $ATOMSERVER_ARGS"<br>
+<br>
+ATOMSERVER_ARGS="-Datomserver.servlet.context=atomserver
+$ATOMSERVER_ARGS"<br>
+ATOMSERVER_ARGS="-Datomserver.servlet.mapping=v1 $ATOMSERVER_ARGS"<br>
+<br>
+export ATOMSERVER_ARGS="$ATOMSERVER_ARGS"<br>
+<br>
+# ----- log4j specific arguments<br>
+#&nbsp; NOTE: log4j ONLY takes System vars for substitution in
+log4j.properties<br>
+#<br>
+LOG4J_ARGS="-Droot.loglevel=DEBUG -Droot.appender=StdoutFile"<br>
+LOG4J_ARGS="-Datomserver.loglevel=DEBUG
+-Datomserver.logdir=$ATOMSERVER_HOME/logs $LOG4J_ARGS"<br>
+LOG4J_ARGS="-Datomserver.logfilename=atomserver $LOG4J_ARGS"<br>
+<br>
+export LOG4J_ARGS="$LOG4J_ARGS"<br>
+<br>
+#---------------------------<br>
+export CATALINA_OPTS="$ATOMSERVER_ARGS $LOG4J_ARGS"<br>
+</span> </div>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+<br>
+<hr style="width: 100%; height: 2px;">
+<h2><a name="Jar"></a>Deploying AtomServer as a Jar within your webapp.</h2>
+Sometimes you may want to embed AtomServer within your project's
+webapp, rather than deploy the standard AtomServer War. We make this
+scenario possible too. In this case, your project would produce a War
+itself, which most likely deploys an AtomServer servlet within. One
+important reason to embed AtomServer as a Jar is that IDEs can handle
+Jars dependencies easily, but War dependencies (e.g. Maven War
+overlays) really confuse them. (Thus, we use this strategy a lot at our
+day job.)<br>
+<br>
+Here is how you wire this up with Maven. In your POM, add the following
+dependency (note the required; <span style="font-family: monospace;">&lt;classifier&gt;classes&lt;/classifier&gt;)</span>
+<div style="margin-left: 40px;"><br>
+<div id="codebox"><span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;dependency&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;groupId&gt;org.atomserver&lt;/groupId&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;artifactId&gt;atomserver&lt;/artifactId&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;version&gt;2.0.2&lt;/version&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;classifier&gt;classes&lt;/classifier&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;type&gt;jar&lt;/type&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/dependency&gt;<br>
+</span> </div>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+<p id="rfc.section.7.1.p.2">Next, in your POM, to make things easier,
+you will want to add a &lt;properties&gt; section.<br>
+</p>
+<div style="margin-left: 40px;">
+<div id="codebox"><span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;
+&lt;properties&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;!-- designate the
+general Spring properties file --&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;mySvcEnv&gt;dev&lt;/mySvcEnv&gt;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;!-- the filestore
+location --&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;mySvcDataDir&gt;file:target/var&lt;/mySvcDataDir&gt;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;mySvcConfDir&gt;${basedir}/src/main/dist/server/conf&lt;/mySvcConfDir&gt;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;!-- the Servlet setup:
+/mySvc/v1 --&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;mySvcServletContext&gt;inquiry_store&lt;/mySvcServletContext&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;mySvcServletMapping&gt;v1&lt;/mySvcServletMapping&gt;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;!-- JMX (jmxBeans.xml)
+--&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;mySvcJMXHttpPort&gt;50505&lt;/mySvcJMXHttpPort&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;mySvcJMXHttpHost&gt;0.0.0.0&lt;/mySvcJMXHttpHost&gt;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;!-- log4j properties
+--&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;rootAppender&gt;Stdout&lt;/rootAppender&gt;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;rootLogLevel&gt;DEBUG&lt;/rootLogLevel&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;mySvcLogLevel&gt;DEBUG&lt;/mySvcLogLevel&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;mySvcLogDir&gt;${basedir}/target&lt;/mySvcLogDir&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;mySvcLogFileNamePrefix&gt;inquiry_store&lt;/mySvcLogFileNamePrefix&gt;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;!-- used by
+jettyBeans.xml and jetty:run --&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;mySvcPort&gt;60080&lt;/mySvcPort&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;/properties&gt;<br>
+</span> </div>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+<br>
+Finally, in your POM,&nbsp; you will need to add something like the
+following to your test plugin, your jetty plugin, and anywhere you need
+System properties:<br>
+<br>
+<div style="margin-left: 40px;">
+<div id="codebox"><span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;plugin&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;artifactId&gt;maven-surefire-plugin&lt;/artifactId&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;version&gt;2.3&lt;/version&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;inherited&gt;true&lt;/inherited&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;configuration&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;forkMode&gt;once&lt;/forkMode&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;reportFormat&gt;plain&lt;/reportFormat&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;trimStackTrace&gt;false&lt;/trimStackTrace&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;includes&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;include&gt;**/*Test.java&lt;/include&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/includes&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;systemProperties&gt;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;!-- used to determine which {atomserver.env}.properties <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+file to load off the CLASSPATH--&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;name&gt;atomserver.env&lt;/name&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;value&gt;${mySvcEnv}&lt;/value&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;name&gt;atomserver.conf.dir&lt;/name&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;value&gt;${mySvcConfDir}&lt;/value&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;name&gt;atomserver.data.dir&lt;/name&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;value&gt;${mySvcDataDir}&lt;/value&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;name&gt;atomserver.servlet.context&lt;/name&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;value&gt;${mySvcServletContext}&lt;/value&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;name&gt;atomserver.servlet.mapping&lt;/name&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;value&gt;${mySvcServletMapping}&lt;/value&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;name&gt;atomserver.jmxhttp.port&lt;/name&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;value&gt;${mySvcJMXHttpPort}&lt;/value&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;name&gt;atomserver.jmxhttp.hostname&lt;/name&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;value&gt;${mySvcJMXHttpHost}&lt;/value&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;name&gt;atomserver.port&lt;/name&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;value&gt;${mySvcPort}&lt;/value&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/property&gt;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;!-- log4j ONLY looks at System properties --&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;name&gt;root.appender&lt;/name&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;value&gt;${rootAppender}&lt;/value&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;name&gt;root.loglevel&lt;/name&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;value&gt;${rootLogLevel}&lt;/value&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;name&gt;atomserver.loglevel&lt;/name&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;value&gt;${mySvcLogLevel}&lt;/value&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;name&gt;atomserver.logdir&lt;/name&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;value&gt;${mySvcLogDir}&lt;/value&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;name&gt;atomserver.logfilename&lt;/name&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;value&gt;${mySvcLogFileNamePrefix}&lt;/value&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/systemProperties&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/configuration&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/plugin&gt;<br>
+<br>
+</span> </div>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+<p id="rfc.section.7.1.p.2">And you will need to add something like
+this to your web.xml:<br>
+</p>
+<div style="margin-left: 40px;">
+<div id="codebox"><span style="font-family: monospace;">&lt;?xml
+version="1.0"?&gt;<br>
+<br>
+&lt;!DOCTYPE web-app<br>
+&nbsp;&nbsp;&nbsp; PUBLIC "-//Sun Microsystems, Inc.//DTD Web
+Application 2.3//EN"<br>
+&nbsp;&nbsp;&nbsp; "http://java.sun.com/dtd/web-app_2_3.dtd"&gt;<br>
+&nbsp;&nbsp;&nbsp; <br>
+&lt;web-app&gt;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; &lt;!-- Location of the Spring application context
+configuration files --&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;context-param&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;param-value&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+classpath:org/atomserver/spring/atomServerApplicationContext.xml,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+classpath:org/atomserver/spring/ext/*.xml,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+classpath:org/atomserver/spring/ext/${atomserver.env}/*.xml<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/param-value&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;/context-param&gt;<br>
+<br>
+&nbsp;&nbsp;&nbsp; &lt;context-param&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;param-name&gt;contextClass&lt;/param-name&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;param-value&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+org.atomserver.utils.conf.ExtendedWebContext<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/param-value&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;/context-param&gt;<br>
+<br>
+&nbsp;&nbsp;&nbsp; &lt;listener&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;listener-class&gt;org.springframework.web.context.ContextLoaderListener&lt;/listener-class&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;/listener&gt;<br>
+<br>
+&nbsp;&nbsp;&nbsp; &lt;servlet&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;servlet-name&gt;atomserver&lt;/servlet-name&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;servlet-class&gt;org.atomserver.server.servlet.AtomServerServlet&lt;/servlet-class&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;load-on-startup&gt;1&lt;/load-on-startup&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;/servlet&gt;<br>
+<br>
+&nbsp;&nbsp;&nbsp; &lt;!-- this MUST load after the SpringAbderaServlet
+--&gt; <br>
+&nbsp;&nbsp;&nbsp; &lt;servlet&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;servlet-name&gt;aliveservlet&lt;/servlet-name&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;servlet-class&gt;org.atomserver.utils.alive.AliveServlet&lt;/servlet-class&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;load-on-startup&gt;10&lt;/load-on-startup&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;/servlet&gt;<br>
+<br>
+&nbsp;&nbsp;&nbsp; &lt;servlet-mapping&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;servlet-name&gt;atomserver&lt;/servlet-name&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;url-pattern&gt;/v1/*&lt;/url-pattern&gt;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; &lt;/servlet-mapping&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;servlet-mapping&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;servlet-name&gt;aliveservlet&lt;/servlet-name&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;url-pattern&gt;/alive&lt;/url-pattern&gt;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; &lt;/servlet-mapping&gt;<br>
+&lt;/web-app&gt;<br>
+</span> </div>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+<br>
+<br>
+<hr style="width: 100%; height: 2px;">
+<h2><a name="reqdvars"></a>Required Variables to start AtomServer<br>
+</h2>
+AtomServer requires certain variables be defined at startup. As you
+see above, these variables are passed into AtomServer in each of the
+deployment techniques outlined in this document. In fact, you can see a
+bash script which sets these variables <a href="#tomcat-setenv">here</a>.<br>
+<br>
+The variables required
+by AtomServer at startup are as follows;&nbsp; <br>
+<br>
+<table style="text-align: left; width: 1104px; height: 463px;"
+ border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;">atomserver.env</span></td>
+      <td style="vertical-align: top;">The AtomServer environment.
+Tells AtomServer which "env" properties file to load. <span
+ style="font-style: italic;">This variable is critical</span>. This
+file is located on the Classpath as; "/env/${env}.properties". I.e. if
+"env=foo", the file should be; ".../env/foo.properties"<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">atomserver.data.dir</span></td>
+      <td style="vertical-align: top;">The AtomServer data directory;
+the directory where Entry files (XML) will be written when using
+file-based storage. (e.g. $ATOMSERVER_HOME/data)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">atomserver.conf.dir</span></td>
+      <td style="vertical-align: top;">The optional configuration
+directory. This is another location where AtomServer looks for "env"
+files, Spring extension files, etc. This directory is put onto the
+Classpath, including ${atomserver.conf.dir}/classes and all JARs in
+${atomserver.conf.dir}/lib.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">atomserver.ops.conf.dir</span></td>
+      <td style="vertical-align: top;">The optional Operations
+configuration directory. This is another directory where AtomServer
+looks for "env" files, Spring extension files, etc. It allows a
+separate location where you can put configuration files that may
+require specila protection for Operations. </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">atomserver.home</span></td>
+      <td style="vertical-align: top;">The root of the atomserver
+install. In other words, the root of the expanded AtomServer tarball.
+(e.g. $ATOMSERVER_HOME)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">atomserver.port</span></td>
+      <td style="vertical-align: top;">The HTTP port to use for
+AtomServer (This variable will eventually be removed.)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">atomserver.http.port</span></td>
+      <td style="vertical-align: top;">The HTTP port to use for
+AtomServer (e.g. 8080) </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">atomserver.http.host</span></td>
+      <td style="vertical-align: top;">The HTTP host to use for
+AtomServer (e.g. 0.0.0.0) </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">atomserver.jmxhttp.hostname</span></td>
+      <td style="vertical-align: top;">The JMX HTTP port to use for
+AtomServer (e.g. 9080) </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">atomserver.jmxhttp.hostname</span></td>
+      <td style="vertical-align: top;">The JMX HTTP host to use for
+AtomServer (e.g. 0.0.0.0) </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">atomserver.servlet.context</span></td>
+      <td style="vertical-align: top;">The base Servlet context (e.g.
+"atomserver" in http://localhost:8080/atomserver)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">atomserver.servlet.mapping</span></td>
+      <td style="vertical-align: top;">The base Servlet mapping (e.g
+"v1" in http://localhost:8080/atomserver/v1) </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">root.loglevel<br>
+      </span></td>
+      <td style="vertical-align: top;">The root logging level for
+log4j. (e.g. WARN)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">root.appender</span></td>
+      <td style="vertical-align: top;">The root appender for log4j
+(should be either StdoutFile or Stdout<span
+ style="font-family: monospace;">)</span> </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">atomserver.loglevel</span></td>
+      <td style="vertical-align: top;">The logging level for
+AtomServer. (e.g. INFO) </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">atomserver.logdir</span></td>
+      <td style="vertical-align: top;">The directory to log into. (e.g.
+$ATOMSERVER_HOME/logs)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">atomserver.logfilename</span></td>
+      <td style="vertical-align: top;">The base name for AtomServer log
+files. (e.g. "atomserver" will result in atomserver.stdout.log, etc.)<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+</div>
+</body>
+</html>
