@@ -24,13 +24,17 @@ import org.apache.abdera.model.Feed;
 import org.apache.abdera.protocol.client.AbderaClient;
 import org.apache.abdera.protocol.client.ClientResponse;
 import org.apache.abdera.protocol.client.RequestOptions;
-import org.apache.commons.lang.LocaleUtils;
 import org.apache.commons.io.FileUtils;
-import org.atomserver.core.*;
-import org.atomserver.core.etc.AtomServerConstants;
+import org.apache.commons.lang.LocaleUtils;
+import org.atomserver.core.AtomServerTestCase;
+import org.atomserver.core.BaseEntryDescriptor;
+import org.atomserver.core.BaseFeedDescriptor;
+import org.atomserver.core.BaseServiceDescriptor;
+import org.atomserver.core.dbstore.dao.ContentDAO;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
 import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
 import org.atomserver.core.dbstore.utils.DBSeeder;
+import org.atomserver.core.etc.AtomServerConstants;
 import org.atomserver.core.filestore.FileBasedContentStorage;
 import org.atomserver.testutils.client.MockRequestContext;
 import org.atomserver.testutils.latency.LatencyUtil;
@@ -38,8 +42,8 @@ import org.atomserver.uri.EntryTarget;
 import org.atomserver.uri.URIHandler;
 import org.springframework.context.ApplicationContext;
 
-import java.text.MessageFormat;
 import java.io.File;
+import java.text.MessageFormat;
 
 /**
  */
@@ -47,6 +51,8 @@ public class DBSTestCase extends AtomServerTestCase {
 
     protected EntriesDAO entriesDao = null;
     protected EntryCategoriesDAO entryCategoriesDAO = null;
+
+    protected ContentDAO contentDAO = null;
 
     protected int startCount = 0;
 
@@ -87,6 +93,8 @@ public class DBSTestCase extends AtomServerTestCase {
 
         entriesDao = (EntriesDAO) springContext.getBean("org.atomserver-entriesDAO");
         entryCategoriesDAO = (EntryCategoriesDAO) springContext.getBean("org.atomserver-entryCategoriesDAO");
+
+        contentDAO = (ContentDAO) springContext.getBean("org.atomserver-contentDAO");
 
         // we may need something in the DB to run these tests
         if ( requiresDBSeeding() ) {
