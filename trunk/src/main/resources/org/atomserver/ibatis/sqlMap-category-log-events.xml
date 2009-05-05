@@ -53,7 +53,7 @@
         JOIN EntryStore
         ON EntryCategoryLogEvent.EntryStoreId = EntryStore.EntryStoreId
           <isNotNull property="entryStoreId">
-              WHERE EntryStore.EntryStoreId = #entryStoreId#
+              WHERE EntryStore.EntryStoreId = CAST(#entryStoreId# AS int)
           </isNotNull>
           <isNull property="entryStoreId">
               WHERE EntryStore.EntryStoreId = (SELECT EntryStoreId FROM EntryStore
@@ -89,7 +89,7 @@
     <delete id="deleteEntryCategoryLogEventsBySchemeTerm" parameterClass="entryCategory" >
         DELETE FROM EntryCategoryLogEvent
           <isNotNull property="entryStoreId">
-              WHERE EntryStoreId = #entryStoreId#
+              WHERE EntryStoreId = CAST(#entryStoreId# AS int)
           </isNotNull>
           <isNull property="entryStoreId">
               WHERE EntryStoreId = (SELECT EntryStoreId FROM EntryStore
