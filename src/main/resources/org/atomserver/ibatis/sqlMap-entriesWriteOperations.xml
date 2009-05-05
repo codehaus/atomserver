@@ -129,9 +129,9 @@
                UpdateTimestamp= NEXT VALUE FOR entrystore_updatetimestamp_seq
             </isEqual>
          </dynamic>
-         WHERE EntryStoreId=#entryStoreId#
+         WHERE EntryStoreId = CAST(#entryStoreId# AS int)
         <isNotEqual property="revision" compareValue="-1">
-            AND RevisionNum=(#revision# - 1)
+            AND RevisionNum = (CAST(#revision# AS int) - 1)
         </isNotEqual>
     </update>
 
@@ -146,7 +146,7 @@
                 RevisionNum=RevisionNum + 1
             </isEqual>
             <isEqual prepend="," property="revision" compareValue="0">
-                RevisionNum=#revision#
+                RevisionNum = CAST(#revision# AS int)
             </isEqual>
             <isNull prepend="," property="publishedDate">
                 CreateDate=${db.getdate.func}
@@ -167,7 +167,7 @@
                 UpdateTimestamp= NEXT VALUE FOR entrystore_updatetimestamp_seq
             </isEqual>
         </dynamic>
-        WHERE EntryStoreId=#entryStoreId#
+        WHERE EntryStoreId = CAST(#entryStoreId# AS int)
         <isEqual property="deleted" compareValue="true">
             AND DeleteFlag = 0
         </isEqual>

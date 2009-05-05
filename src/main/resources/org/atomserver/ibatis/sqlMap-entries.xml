@@ -141,7 +141,7 @@
     <select id="selectEntryByInternalId" parameterClass="map" resultMap="entryResult">
         <!-- SELECT a single Entry when we already know its primary key -->
         <include refid="SELECT_EntryStore_JOIN_EntryCategory"/>
-        WHERE entry.EntryStoreId = #internalId#
+        WHERE entry.EntryStoreId = CAST(#internalId# AS int)
     </select>
 
     <select id="selectEntry" parameterClass="map" resultMap="entryResult">

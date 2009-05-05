@@ -24,13 +24,13 @@
     <select id="selectContent" parameterClass="map" resultClass="string">
         SELECT Content
           FROM EntryContent
-         WHERE EntryStoreId = #entryStoreId#
+         WHERE EntryStoreId = CAST(#entryStoreId# AS int)
     </select>
 
     <select id="selectContentExists" parameterClass="map" resultClass="int">
         SELECT COUNT(EntryStoreId)
           FROM EntryContent
-         WHERE EntryStoreId = #entryStoreId#
+         WHERE EntryStoreId = CAST(#entryStoreId# AS int)
     </select>
 
     <insert id="insertContent" parameterClass="map">
@@ -41,12 +41,12 @@
     <update id="updateContent" parameterClass="map">
         UPDATE EntryContent
            SET Content = #content#
-         WHERE EntryStoreId = #entryStoreId#
+         WHERE EntryStoreId = CAST(#entryStoreId# AS int)
     </update>
 
     <delete id="deleteContent" parameterClass="map">
         DELETE FROM EntryContent
-         WHERE EntryStoreId = #entryStoreId#
+         WHERE EntryStoreId = CAST(#entryStoreId# AS int)
     </delete>
 
     <!--
