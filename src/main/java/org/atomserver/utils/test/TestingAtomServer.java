@@ -97,6 +97,7 @@ public class TestingAtomServer {
                 this.httpServer.start();
                 return this.port;
             } catch (Exception e) {
+                e.printStackTrace();
                 System.out.println("Couldn't start port on " + i + ", trying next port");
             }
         }

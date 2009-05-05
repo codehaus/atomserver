@@ -48,7 +48,7 @@ public class FeedDBSTestCase extends DBSTestCase {
         validateStartCount();
     }
 
-    protected void validateStartCount() {
+    protected void validateStartCount() throws Exception {
         if ( startCount == 0 ) {
             startCount = NUM_RECS;
         }
