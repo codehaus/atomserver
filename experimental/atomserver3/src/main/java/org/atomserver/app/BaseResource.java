@@ -4,16 +4,16 @@ import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.ExtensibleElement;
 import org.apache.log4j.Logger;
 import org.atomserver.AtomServerConstants;
+import org.atomserver.AtomServer;
 import org.atomserver.ext.Filter;
 import org.atomserver.filter.EntryFilter;
 import org.atomserver.filter.EntryFilterChain;
 
+import javax.ws.rs.DELETE;
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.net.URI;
 
 public abstract class BaseResource<S extends ExtensibleElement, P extends ContainerResource> {
     private static final Logger log = Logger.getLogger(BaseResource.class);
@@ -27,12 +27,17 @@ public abstract class BaseResource<S extends ExtensibleElement, P extends Contai
 
     public final ReentrantReadWriteLock lock;
 
+    // TODO: I don't think this way of dealing with updated will work -- locks are acquired at the
+    // service level, but this extends to the ROOT.  
+    private Date updated;
+
     protected BaseResource(P parent,
                            String name) {
         this.parent = parent;
         this.name = name;
         entryFilters = new ArrayList<EntryFilter>();
         this.lock = new ReentrantReadWriteLock();
+        setUpdated(new Date());
     }
 
     public P getParent() {
@@ -43,9 +48,30 @@ public abstract class BaseResource<S extends ExtensibleElement, P extends Contai
         return name;
     }
 
+    @DELETE
+    public void delete() {
+        // TODO: deal with null parent (DELETE at ROOT is unavailable)
+        getParent().deleteChild(this);
+    }
+
     public String getPath() {
         return getParent() == null ? "/" :
                String.format("%s%s/", getParent().getPath(), getName());
+    }
+
+    public URI getUri() {
+        return URI.create(String.format("%s%s", AtomServer.getRootAppUri().toString(), getPath()));
+    }
+
+    public Date getUpdated() {
+        return updated;
+    }
+
+    public void setUpdated(Date updated) {
+        this.updated = updated;
+        if (getParent() != null) {
+            getParent().setUpdated(updated);
+        }
     }
 
     protected void setEntryFilters(List<EntryFilter> entryFilters) {
@@ -108,5 +134,4 @@ public abstract class BaseResource<S extends ExtensibleElement, P extends Contai
             setEntryFilters(entryFilters);
         }
     }
-    
 }

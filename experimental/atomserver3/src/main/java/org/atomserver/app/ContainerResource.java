@@ -11,6 +11,9 @@ import javax.ws.rs.core.Response;
 import java.util.Collection;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public abstract class ContainerResource<
         S extends ExtensibleElement,
@@ -30,12 +33,29 @@ public abstract class ContainerResource<
     }
 
     @POST
-    public CS postChild(CS childStaticRepresentation) {
+    public Response postChild(CS childStaticRepresentation) {
+        C child = createChild(childStaticRepresentation);
+
+        try {
+            URI childUri = new URI(child.getPath());
+            return Response.created(childUri).entity(child.getStaticRepresentation()).build();
+        } catch (URISyntaxException e) {
+            // TODO: what to do with this?
+            throw new WebApplicationException(e);
+        }
+    }
+
+    public C createChild(CS childStaticRepresentation) {
         String name = childStaticRepresentation.getSimpleExtension(AtomServerConstants.NAME);
         if (name == null) {
             throw new WebApplicationException(
                     Response.status(Response.Status.BAD_REQUEST)
-                            .entity("you must provide an <as:name> element.").build());
+                            .entity("You must provide an <as:name> element.").build());
+        }
+        if (!Pattern.compile("[a-zA-Z0-9-_]{1,32}").matcher(name).matches()) {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.BAD_REQUEST)
+                            .entity(String.format("Invalid name [%s] in <as:name> element.", name)).build());
         }
         C child;
         lock.writeLock().lock();
@@ -43,8 +63,8 @@ public abstract class ContainerResource<
             child = children.get(name);
             if (child != null) {
                 throw new WebApplicationException(
-                        Response.status(Response.Status.BAD_REQUEST)
-                                .entity(String.format("%s already exists in %s.",
+                        Response.status(Response.Status.CONFLICT)
+                                .entity(String.format("Duplicate error - %s already exists in %s.",
                                                       name, getPath())).build());
             }
             child = createChild(name, childStaticRepresentation);
@@ -53,7 +73,7 @@ public abstract class ContainerResource<
             lock.writeLock().unlock();
         }
 
-        return child.getStaticRepresentation();
+        return child;
     }
 
     @Path("/{name : [^\\$][^/]*}")
@@ -66,6 +86,15 @@ public abstract class ContainerResource<
                                                   name, getPath())).build());
         }
         return child;
+    }
+
+    protected void deleteChild(C child) {
+        lock.writeLock().lock();
+        try {
+            children.remove(child.getName());
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     protected Collection<String> getChildNames() {

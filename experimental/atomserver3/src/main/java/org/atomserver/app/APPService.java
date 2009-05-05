@@ -9,6 +9,7 @@ import org.atomserver.categories.CategoryQueryParseException;
 import org.atomserver.categories.CategoryQueryParser;
 
 import javax.ws.rs.*;
+import javax.ws.rs.core.Response;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -35,12 +36,18 @@ public class APPService extends ContainerResource<Service, Workspace, APPRoot, A
 
     @PUT
     public Service put(Service service) {
+        if (service.getWorkspaces().isEmpty()) {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.BAD_REQUEST).entity(
+                            "Invalid Service Document - services must contain at least one " +
+                            "workspace.").build());
+        }
         for (Workspace workspace : service.getWorkspaces()) {
             String name = workspace.getSimpleExtension(AtomServerConstants.NAME);
             try {
                 getChild(name).put(workspace);
             } catch (WebApplicationException e) {
-                postChild(workspace);
+                createChild(workspace);
             }
         }
         return getStaticRepresentation();

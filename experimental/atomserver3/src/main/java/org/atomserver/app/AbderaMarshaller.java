@@ -12,6 +12,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import static javax.ws.rs.core.MediaType.*;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
@@ -31,7 +32,7 @@ public class AbderaMarshaller implements MessageBodyWriter, MessageBodyReader {
                         MediaType mediaType, MultivaluedMap multivaluedMap,
                         OutputStream outputStream)
             throws IOException, WebApplicationException {
-        
+
         ((ExtensibleElement) o).writeTo(outputStream);
     }
 
@@ -43,8 +44,14 @@ public class AbderaMarshaller implements MessageBodyWriter, MessageBodyReader {
         // documents, we were getting a "stream is closed" exception while traversing the object.
         // by draining the stream to a byte array and parsing from the ByteArrayInputStream, we
         // ensure that won't happen.
-        return parser().parse(
-                new ByteArrayInputStream(IOUtils.toByteArray(inputStream))).getRoot();
+        byte[] bytes = IOUtils.toByteArray(inputStream);
+        if (bytes.length == 0) {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.BAD_REQUEST)
+                            .entity("Empty request body is not valid for this request.")
+                            .build());
+        }
+        return parser().parse(new ByteArrayInputStream(bytes)).getRoot();
     }
 
     public boolean isWriteable(Class aClass, Type type, Annotation[] annotations, MediaType mediaType) {

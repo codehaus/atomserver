@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import static java.lang.String.format;
-import java.net.InetSocketAddress;
+import java.net.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.CountDownLatch;
 
@@ -25,6 +25,19 @@ import java.util.concurrent.CountDownLatch;
 @ManagedResource(objectName = "bean:name=AtomServer")
 public class AtomServer implements ApplicationContextAware {
     public static final String BEAN_NAME = "org.atomserver.AtomServer";
+    public static final String APP_CONTEXT = "/app";
+    public static final int PORT = 8000;
+    public static final String HOSTNAME = computeHostname();
+    private static String computeHostname() {
+        String hostname;
+        try {
+            hostname = InetAddress.getLocalHost().getCanonicalHostName();
+        } catch (UnknownHostException e) {
+            hostname = "localhost";
+        }
+        return System.getProperty("org.atomserver.HOSTNAME", hostname);
+    }
+
 
     private HttpServer httpServer;
     private ApplicationContext applicationContext;
@@ -39,7 +52,7 @@ public class AtomServer implements ApplicationContextAware {
                 new SpringComponentProviderFactory(
                         resourceConfig,
                         (ConfigurableApplicationContext) applicationContext);
-        int port = 8000;
+        int port = PORT;
         try {
             httpServer = HttpServer.create(new InetSocketAddress(port), 0);
         } catch (IOException e) {
@@ -47,7 +60,8 @@ public class AtomServer implements ApplicationContextAware {
         }
         httpServer.setExecutor(Executors.newCachedThreadPool());
         httpServer.createContext(
-                "/app", ContainerFactory.createContainer(HttpHandler.class, resourceConfig, factory));
+                APP_CONTEXT,
+                ContainerFactory.createContainer(HttpHandler.class, resourceConfig, factory));
 
         httpServer.start();
     }
@@ -104,4 +118,12 @@ public class AtomServer implements ApplicationContextAware {
         }
     }
 
+
+    public static URI getRootUri() throws URISyntaxException {
+        return URI.create(String.format("http://%s:%s", HOSTNAME, PORT));
+    }
+
+    public static URI getRootAppUri() {
+        return URI.create(String.format("http://%s:%s%s", HOSTNAME, PORT, APP_CONTEXT));
+    }
 }

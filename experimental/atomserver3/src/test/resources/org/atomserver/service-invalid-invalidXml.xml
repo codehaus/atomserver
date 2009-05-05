@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- This service definition is not valid XML -->
+<service xmlns="http://www.w3.org/2007/app" xmlns:as="http://atomserver.org/3">
+    <as:name>invalid</as:name>
+</servic>e

@@ -220,7 +220,7 @@ AtomServer v3 Roadmap
     name = element as:name { text }
 ---
 
-*** {as:name}
+*** {as:aggregate}
 
 ---
     aggregate = element as:aggregate {
@@ -273,7 +273,12 @@ AtomServer v3 Roadmap
 
                 [[4]] The {{{http://tools.ietf.org/html/rfc4287#section-4.2.15}atom:updated}}
                         will contain the latest updated date of any of the services present in the
-                        Service Document Feed.
+                        Service Document Feed.  If there are no services in the Feed, this will
+                        represent the last time the server was edited - which will either be the
+                        time at which the server was first brought online, if there has never been
+                        any Service installed on this server, or the time at which the last
+                        Service was deleted, if there were previously Services installed on this
+                        server.
 
                 [[5]] There will be an
                         {{{http://tools.ietf.org/html/rfc4287#section-4.2.7}atom:link}} element
@@ -295,16 +300,24 @@ AtomServer v3 Roadmap
                             within the service.
 
                     [[4]] There will be an
+                            {{{http://tools.ietf.org/html/rfc4287#section-4.2.7}atom:link}}
+                            element with the <<rel>> attribute set to "alternate", and the
+                            <<href>> attribute set to the SERVICE URL for the Service.  This will
+                            be in lieu of having a
                             {{{http://tools.ietf.org/html/rfc4287#section-4.1.3}atom:content}}
-                            child element, with the <<type>> attribute set to
-                            "application/atomsvc+xml" and the <<src>> element set to the SERVICE
-                            URL for the Service.  This content element will be empty.
+                            element, as specified by the definition of
+                            {{{http://tools.ietf.org/html/rfc4287#section-4.1.2}atom:entry}}.
 
-                    [[5]] Because we provide out-of-line content, we are required to provide an
+                    [[5]] Because we provide out-of-line content, we provide an
                             {{{http://tools.ietf.org/html/rfc4287#section-4.2.13}atom:summary}}
                             child element.  The <<type>> attribute for this element will be set
                             to "text", and the contents will be "Service Document for the
                             \{SERVICE NAME\} Service".
+
+                    [[6]] The {{{http://tools.ietf.org/html/rfc4287#section-4.1.2}atom:entry}}
+                            elements will be sorted by their
+                            {{{http://tools.ietf.org/html/rfc4287#section-4.2.15}atom:updated}}
+                            child elements, with the newest first.
 
         [[2]] <POST>\
                 An HTTP POST against the ROOT URL should contain a SERVICE DOCUMENT as the request

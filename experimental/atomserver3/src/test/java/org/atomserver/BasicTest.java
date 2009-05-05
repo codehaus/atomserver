@@ -1,6 +1,7 @@
 package org.atomserver;
 
 import com.sun.jersey.api.client.UniformInterfaceException;
+import com.sun.jersey.api.client.ClientResponse;
 import org.apache.abdera.model.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
@@ -12,6 +13,7 @@ import org.atomserver.widgets.Widget;
 import static org.junit.Assert.*;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.AfterClass;
 import org.simpleframework.xml.core.Persister;
 
 import javax.ws.rs.core.MediaType;

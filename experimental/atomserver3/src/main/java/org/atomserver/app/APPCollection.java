@@ -13,6 +13,8 @@ import org.atomserver.util.ArraySet;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.Context;
 import static java.lang.String.format;
 import java.util.*;
 

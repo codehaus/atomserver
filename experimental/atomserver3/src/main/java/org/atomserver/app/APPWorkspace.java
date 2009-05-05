@@ -35,7 +35,7 @@ public class APPWorkspace extends ContainerResource<Workspace, Collection, APPSe
             try {
                 getChild(name).put(collection);
             } catch (WebApplicationException e) {
-                postChild(collection);
+                createChild(collection);
             }
         }
         return getStaticRepresentation();

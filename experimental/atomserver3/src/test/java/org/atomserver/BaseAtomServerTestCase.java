@@ -3,6 +3,10 @@ package org.atomserver;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
+import org.apache.abdera.model.Element;
+import org.apache.abdera.model.Feed;
+import org.apache.abdera.model.Entry;
+import org.apache.abdera.i18n.iri.IRI;
 import org.apache.log4j.Logger;
 import org.atomserver.app.AbderaMarshaller;
 import org.junit.AfterClass;
@@ -21,9 +25,9 @@ public class BaseAtomServerTestCase {
     private static AtomServer server;
     private static WebResource root;
     // TODO: this isn't quite the right name for this constant, with the /app - fix it.
-    private static final String ROOT_URL =
+    public static final String ROOT_URL =
             System.getProperty("atomserver.test.url", "http://localhost:8000/app");
-    private static final boolean TC =
+    public static final boolean TC =
             Boolean.valueOf(System.getProperty("atomserver.test.tc", "false"));
 
     @BeforeClass
@@ -62,15 +66,38 @@ public class BaseAtomServerTestCase {
 
     @AfterClass
     public static void tearDown() {
+        Feed serviceFeed = root.get(Feed.class);
+        for (Entry serviceEntry : serviceFeed.getEntries()) {
+            IRI serviceIri = serviceEntry.getLink("alternate").getHref();
+            log.debug(String.format("Deleting Service %s", serviceIri));
+            root.path(new IRI(ROOT_URL).relativize(serviceIri).toString()).delete();
+        }
         if (TC) {
+            // nothing to do - the TC server will be stopped externally
         } else {
             log.debug("stopping in-memory server at " + ROOT_URL);
             server.stop();
         }
     }
 
+    /**
+     * return the root WebResource for the server - all RESTful calls can be scoped within this.
+     *
+     * @return the root WebResource
+     */
     protected static WebResource root() {
         return root;
+    }
+
+    /**
+     * parse the XML resource at the given location into an Abdera Element.
+     *
+     * @param location the location in the classpath of the XML resource
+     * @return the parsed object
+     */
+    protected <T extends Element> T parse(String location) {
+        return (T) AbderaMarshaller.parser().parse(
+                getClass().getClassLoader().getResourceAsStream(location)).getRoot();
     }
 }
 

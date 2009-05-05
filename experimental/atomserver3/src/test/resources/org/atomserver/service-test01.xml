@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Service definition with no embedded Workspace definitions or configuration information -->
+<service xmlns="http://www.w3.org/2007/app" xmlns:as="http://atomserver.org/3">
+    <as:name>test01</as:name>
+    <workspace>
+        <as:name>test</as:name>
+    </workspace>
+</service>

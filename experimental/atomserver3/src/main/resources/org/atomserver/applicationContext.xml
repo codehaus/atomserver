@@ -13,7 +13,7 @@
     </bean>
 
     <!--TODO: complete JMX integration-->
-    <context:mbean-export/>
+    <context:mbean-export registration="replaceExisting"/>
 
 </beans>
 

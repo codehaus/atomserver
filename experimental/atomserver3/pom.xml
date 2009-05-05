@@ -173,6 +173,14 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.3.1</version>
+                <configuration>
+                    <systemProperties>
+                        <property>
+                            <name>org.atomserver.HOSTNAME</name>
+                            <value>localhost</value>
+                        </property>
+                    </systemProperties>
+                </configuration>
             </plugin>
 
             <plugin>
@@ -244,6 +252,7 @@
                                             <jvmarg value="-Xbootclasspath/p:target/dso-boot.jar"/>
                                             <jvmarg value="-Dtc.config=src/main/assembly/bin/tc-config.xml"/>
                                             <jvmarg value="-Dcom.tc.l1.modules.repositories=src/main/assembly/tc-modules"/>
+                                            <jvmarg value="-Dorg.atomserver.HOSTNAME=localhost"/>
                                             <jvmarg value="-Dtc.host=localhost"/>
                                             <jvmarg value="-Dtc.home=${project.build.directory}/terracotta"/>
                                             <classpath refid="maven.test.classpath"/>
@@ -255,13 +264,19 @@
                                         </waitfor>
                                         <echo>running tests</echo>
 
-                                        <junit printsummary="on" showoutput="on" fork="yes">
+                                        <mkdir dir="${project.build.directory}/integration-tests"/>
+
+                                        <junit printsummary="on" showoutput="on" fork="yes"
+                                               failureproperty="test.failure">
                                             <formatter type="plain"/>
                                             <classpath refid="maven.test.classpath"/>
                                             <sysproperty key="atomserver.test.tc" value="true"/>
-                                            <test name="org.atomserver.BasicTest"/>
+                                            <test name="org.atomserver.BasicTest"
+                                                  todir="${project.build.directory}/integration-tests"/>
+                                            <test name="org.atomserver.ServiceManagementTest"
+                                                  todir="${project.build.directory}/integration-tests"/>
                                             <!--
-                                                <batchtest>
+                                                <batchtest todir="${project.build.directory}">
                                                     <fileset dir="src/test/java">
                                                         <include name="**/*Test*.java"/>
                                                     </fileset>
@@ -276,6 +291,10 @@
                                         <java classname="com.tc.admin.TCStop" fork="true">
                                             <classpath refid="maven.test.classpath"/>
                                         </java>
+
+                                        <fail if="test.failure">
+                                            One or more integration tests failed, look in ${project.build.directory}/integration-tests for details.
+                                        </fail>
                                     </sequential>
                                 </parallel>
 
