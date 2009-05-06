@@ -3,12 +3,16 @@ package org.atomserver.app;
 import org.apache.abdera.model.*;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMNode;
+import org.apache.commons.lang.StringUtils;
 import org.atomserver.AtomServerConstants;
+import static org.atomserver.AtomServerConstants.APPLICATION_APP_XML;
 import org.atomserver.categories.CategoryQuery;
 import org.atomserver.categories.CategoryQueryParseException;
 import org.atomserver.categories.CategoryQueryParser;
 
 import javax.ws.rs.*;
+import static javax.ws.rs.core.MediaType.APPLICATION_XML;
+import static javax.ws.rs.core.MediaType.TEXT_XML;
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -25,6 +29,7 @@ public class APPService extends ContainerResource<Service, Workspace, APPRoot, A
     }
 
     @GET
+    @Produces({APPLICATION_APP_XML, APPLICATION_XML, TEXT_XML})
     public Service getStaticRepresentation() {
         Service service = AbderaMarshaller.factory().newService();
         service.addSimpleExtension(AtomServerConstants.NAME, getName());
@@ -55,15 +60,15 @@ public class APPService extends ContainerResource<Service, Workspace, APPRoot, A
 
     @GET
     @Path("/{join : \\$join}/{collection}")
-    public Feed aggregateFeed(@PathParam("collection") String collection) {
+    public Feed aggregateFeed(@PathParam("collection")String collection) {
         return categorizedAggregateFeed(collection, null);
     }
 
     @GET
     @Path("/{join : \\$join}/{collection}/-/" +
           "{categoryQuery : (AND|OR|NOT|\\([^\\)]+\\)[^\\/]+)(/(AND|OR|NOT|\\([^\\)]+\\)[^\\/]+))*}")
-    public Feed categorizedAggregateFeed(@PathParam("collection") String collection,
-                                         @PathParam("categoryQuery") String categoryQueryParam) {
+    public Feed categorizedAggregateFeed(@PathParam("collection")String collection,
+                                         @PathParam("categoryQuery")String categoryQueryParam) {
         System.out.println("APPService.aggregateFeed");
         Feed feed = AbderaMarshaller.factory().newFeed();
         CollectionIndex<AggregateEntryNode> collectionIndex = aggregateCollectionIndices.get(collection);
@@ -93,8 +98,8 @@ public class APPService extends ContainerResource<Service, Workspace, APPRoot, A
 
     @GET
     @Path("/{join : \\$join}/{collection}/{entryId}")
-    public Entry aggregateEntry(@PathParam("collection") String collection,
-                                @PathParam("entryId") String entryId) {
+    public Entry aggregateEntry(@PathParam("collection")String collection,
+                                @PathParam("entryId")String entryId) {
         CollectionIndex<AggregateEntryNode> collectionIndex =
                 aggregateCollectionIndices.get(collection);
 
@@ -119,6 +124,27 @@ public class APPService extends ContainerResource<Service, Workspace, APPRoot, A
     protected APPWorkspace createChild(String name,
                                        Workspace workspace) {
         return new APPWorkspace(this, name, workspace);
+    }
+
+    protected void validateChildStaticRepresentation(Workspace workspace) {
+        String name = workspace.getSimpleExtension(AtomServerConstants.NAME);
+        if (name != null) {
+            validateName(name);
+        }
+        if (workspace.getTitle() == null) {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.BAD_REQUEST).entity(
+                            "Workspaces require an <atom:title> element.").build());
+        }
+    }
+
+    protected String getChildName(Workspace workspace) {
+        String name = workspace.getSimpleExtension(AtomServerConstants.NAME);
+        return (name == null) ?
+               StringUtils.left(
+                       workspace.getTitle().replaceAll("\\s", "_")
+                               .replaceAll("[^a-zA-Z0-9-_]", ""), 32)
+               : name;
     }
 
     //---------

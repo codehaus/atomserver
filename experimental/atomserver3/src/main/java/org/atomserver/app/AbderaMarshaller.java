@@ -5,6 +5,7 @@ import org.apache.abdera.parser.Parser;
 import org.apache.abdera.parser.stax.FOMFactory;
 import org.apache.abdera.parser.stax.FOMParser;
 import org.apache.commons.io.IOUtils;
+import static org.atomserver.AtomServerConstants.APPLICATION_APP_XML;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
@@ -24,8 +25,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
 @Provider
-@Produces({APPLICATION_ATOM_XML, APPLICATION_XML, TEXT_XML})
-@Consumes({APPLICATION_ATOM_XML, APPLICATION_XML, TEXT_XML})
+@Produces({APPLICATION_ATOM_XML, APPLICATION_APP_XML, APPLICATION_XML, TEXT_XML})
+@Consumes({APPLICATION_ATOM_XML, APPLICATION_APP_XML, APPLICATION_XML, TEXT_XML})
 public class AbderaMarshaller implements MessageBodyWriter, MessageBodyReader {
 
     public void writeTo(Object o, Class aClass, Type type, Annotation[] annotations,

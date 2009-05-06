@@ -1,0 +1,106 @@
+
+                --------------------------
+                REST API - (2) SERVICE URL
+                --------------------------
+                    Bryon Jacob
+                -------------------
+                    2009-05-02
+
+
+(2) SERVICE URL (<<<http://my.atomserver/app/\{SERVICE NAME\}>>>)
+
+    A SERVICE URL is the root of a particular SERVICE within an instance of AtomServer.  The
+    URL is used for discovery about the contents and status of a SERVICE, to modify or delete a
+    SERVICE, and to install new WORKSPACES to the SERVICE.
+
+    [[1]] <GET>\
+        An HTTP GET against the SERVICE URL should return a SERVICE DOCUMENT describing the
+        SERVICE.
+
+        [[a]] If there is no SERVICE with the given URL, an HTTP 404 NOT FOUND should be returned,
+                with an appropriate error message.
+
+        [[b]] If there is a service with the given URL, an HTTP 200 OK should be returned.
+
+        [[c]] Successful response will have a Content-Type of "application/atomsvc+xml"
+
+        [[d]] The response body will be a SERVICE DOCUMENT, whose root element will be a valid
+                {{{http://tools.ietf.org/html/rfc5023#section-8.3.1}app:service}}
+                element that represents the meta-data for the requested SERVICE.
+
+        [[e]] The {{{http://tools.ietf.org/html/rfc5023#section-8.3.1}app:service}}
+                element should contain a NAME ELEMENT with the name of the Service.
+
+        [[f]] The {{{http://tools.ietf.org/html/rfc5023#section-8.3.1}app:service}}
+                element should contain one
+                {{{http://tools.ietf.org/html/rfc5023#section-8.3.2}app:workspace}}
+                element for each WORKSPACE that exists within the SERVICE.  The contents of each
+                element should be the same as is defined for a GET against the WORKSPACE URL for
+                that WORKSPACE.  The WORKSPACE ELEMENTS should be sorted in alphabetical order
+                by the WORKSPACEs' NAMES.
+
+    [[2]] <POST>\
+            An HTTP POST against a SERVICE URL should contain an XML 1.0 document with a single
+            {{{http://tools.ietf.org/html/rfc5023#section-8.3.2}app:workspace}} element as the
+            request entity.
+
+        [[a]] If there is no SERVICE with the given URL, an HTTP 404 NOT FOUND should be returned,
+                with an appropriate error message.
+
+        [[b]] If the request contains no body, an HTTP 400 BAD REQUEST should be returned,
+                with an appropriate error message.
+
+        [[c]] The Server prefers a Content-Type of "application/atomsvc+xml", but will also
+                accept content types of "application/atom+xml", "application/xml", or
+                "text/xml".  If no Content-Type header is provided at all, the server will
+                assume that the body contains XML and proceed.  If any other Content-Type is
+                provided, an HTTP 415 UNSUPPORTED MEDIA TYPE should be returned.
+
+        [[d]] If the request body is not well-formed XML, or if the root element is not a valid
+                {{{http://tools.ietf.org/html/rfc5023#section-8.3.2}app:workspace}} element, an
+                HTTP 400 BAD REQUEST should be returned with an appropriate error message.
+
+        [[e]] If the request is otherwise valid, the server should look for an {{as:name}}
+                element within the WORKSPACE ELEMENT and use that as the WORKSPACE's NAME.  Valid
+                names are ones that match the regular expression <<<[a-zA-Z0-9-_]\{1,32\}>>> If the
+                {{as:name}} element contains an invalid name, then the Server will return an HTTP
+                400 BAD REQUEST with an appropriate error message.  If there is no {{as:name}}
+                element, then the value of the
+                {{{http://tools.ietf.org/html/rfc4287#section-4.2.14}atom:title}}
+                element will be transformed into a NAME by first converting all whitespace
+                characters into underscores (_), then removing all characters that do not
+                match the regular expression <<<[a-zA-Z0-9-_]>>>, and finally by truncating the
+                result to 32 characters.
+
+        [[f]] If there is already a WORKSPACE with the given (or computed) NAME, an HTTP 409
+                CONFLICT response should be returned with an appropriate error message.
+
+        [[g]] If there is no other WORKSPACE with the NAME, then a new WORKSPACE is created within
+                the SERVICE, registered under the NAME, and defined as specified in the WORKSPACE
+                ELEMENT.
+
+        [[h]] If there is any error creating any part of the WORKSPACE, including creating any
+                contained COLLECTIONs, the entire request fails, an HTTP 400 BAD REQUEST with
+                an appropriate error message is returned, and the Service is NOT
+                added to the server.
+
+        [[i]] If the WORKSPACE is successfully added to the SERVICE, an HTTP 201 CREATED is
+                returned from the server.
+
+        [[j]] If the WORKSPACE is successfully added to the SERVICE, the content of the response
+                should be a WORKSPACE ELEMENT describing the newly added WORKSPACE.
+
+        [[k]] If the WORKSPACE is successfully added to the SERVICE, there should be a "Location"
+                response header that indicates the URL to the newly created WORKSPACE.
+
+    [[3]] <DELETE>\
+            An HTTP DELETE against a SERVICE URL deletes the referenced SERVICE from the server.
+
+        [[a]] If there is no SERVICE with the given URL, an HTTP 404 NOT FOUND should be returned,
+                with an appropriate error message.
+
+        [[b]] If there is a SERVICE referenced by the given URL, then the SERVICE (along with any
+                contained WORKSPACES) should be removed from the server.
+
+        [[c]] On a successful deletion, an HTTP 200 response should be sent, with an appropriate
+                status message.

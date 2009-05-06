@@ -6,13 +6,16 @@ import org.apache.abdera.model.Link;
 import org.apache.abdera.model.Service;
 import org.apache.abdera.i18n.iri.IRI;
 import org.atomserver.content.ContentStore;
+import org.atomserver.AtomServerConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import static javax.ws.rs.core.MediaType.*;
+import javax.ws.rs.core.Response;
 import java.util.Collection;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -94,6 +97,17 @@ public class APPRoot extends ContainerResource<Feed, Service, ContainerResource,
             feed.addEntry(entry);
         }
         return feed;
+    }
+
+    protected void validateChildStaticRepresentation(Service childStaticRepresentation) {
+        String name = childStaticRepresentation.getSimpleExtension(AtomServerConstants.NAME);
+        if (name == null) {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.BAD_REQUEST)
+                            .entity("You must provide an <as:name> element.").build());
+        }
+        validateName(name);
+        
     }
 
     protected APPService createChild(String name,

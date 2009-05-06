@@ -25,6 +25,9 @@ public abstract class ContainerResource<
     protected abstract C createChild(String name,
                                      CS staticRepresentation);
 
+    protected abstract void validateChildStaticRepresentation(CS childStaticRepresentation);
+
+
     private final SortedMap<String, C> children = new TreeMap<String, C>();
 
     protected ContainerResource(P parent,
@@ -37,7 +40,7 @@ public abstract class ContainerResource<
         C child = createChild(childStaticRepresentation);
 
         try {
-            URI childUri = new URI(child.getPath());
+            URI childUri = new URI(child.getName());
             return Response.created(childUri).entity(child.getStaticRepresentation()).build();
         } catch (URISyntaxException e) {
             // TODO: what to do with this?
@@ -45,18 +48,23 @@ public abstract class ContainerResource<
         }
     }
 
-    public C createChild(CS childStaticRepresentation) {
-        String name = childStaticRepresentation.getSimpleExtension(AtomServerConstants.NAME);
-        if (name == null) {
-            throw new WebApplicationException(
-                    Response.status(Response.Status.BAD_REQUEST)
-                            .entity("You must provide an <as:name> element.").build());
-        }
+    protected static void validateName(String name) {
         if (!Pattern.compile("[a-zA-Z0-9-_]{1,32}").matcher(name).matches()) {
             throw new WebApplicationException(
                     Response.status(Response.Status.BAD_REQUEST)
-                            .entity(String.format("Invalid name [%s] in <as:name> element.", name)).build());
+                            .entity(String.format(
+                                    "Invalid name [%s] in <as:name> element.", name)).build());
         }
+    }
+
+    protected String getChildName(CS childStaticRepresentation) {
+        return childStaticRepresentation.getSimpleExtension(AtomServerConstants.NAME);
+    }
+
+    public C createChild(CS childStaticRepresentation) {
+        validateChildStaticRepresentation(childStaticRepresentation);
+        String name = getChildName(childStaticRepresentation);
+
         C child;
         lock.writeLock().lock();
         try {

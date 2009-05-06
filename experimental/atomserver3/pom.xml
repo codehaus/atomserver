@@ -273,7 +273,7 @@
                                             <sysproperty key="atomserver.test.tc" value="true"/>
                                             <test name="org.atomserver.BasicTest"
                                                   todir="${project.build.directory}/integration-tests"/>
-                                            <test name="org.atomserver.ServiceManagementTest"
+                                            <test name="org.atomserver.ManagementApiTest"
                                                   todir="${project.build.directory}/integration-tests"/>
                                             <!--
                                                 <batchtest todir="${project.build.directory}">

@@ -12,6 +12,7 @@ import org.atomserver.app.AbderaMarshaller;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
+import org.junit.After;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -64,14 +65,18 @@ public class BaseAtomServerTestCase {
         root = client.resource(ROOT_URL);
     }
 
-    @AfterClass
-    public static void tearDown() {
+    @After
+    public void clearAllServices() {
         Feed serviceFeed = root.get(Feed.class);
         for (Entry serviceEntry : serviceFeed.getEntries()) {
             IRI serviceIri = serviceEntry.getLink("alternate").getHref();
             log.debug(String.format("Deleting Service %s", serviceIri));
             root.path(new IRI(ROOT_URL).relativize(serviceIri).toString()).delete();
         }
+    }
+
+    @AfterClass
+    public static void tearDown() {
         if (TC) {
             // nothing to do - the TC server will be stopped externally
         } else {

@@ -10,6 +10,7 @@ import org.atomserver.filter.EntryFilter;
 import org.atomserver.filter.EntryFilterChain;
 
 import javax.ws.rs.DELETE;
+import javax.ws.rs.core.Response;
 import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -49,9 +50,10 @@ public abstract class BaseResource<S extends ExtensibleElement, P extends Contai
     }
 
     @DELETE
-    public void delete() {
+    public Response delete() {
         // TODO: deal with null parent (DELETE at ROOT is unavailable)
         getParent().deleteChild(this);
+        return Response.ok(String.format("%s was deleted successfully.", getPath())).build();
     }
 
     public String getPath() {

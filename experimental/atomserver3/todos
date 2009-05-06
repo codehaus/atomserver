@@ -1,3 +1,4 @@
+todo: normalize the XML namespace for AtomServer extensions
 todo: make the AtomServer port configurable
 todo: move the integration test output somewhere more reasonable
 todo: Al asked a good question - can we make the integration test output part of our reporting on the site?

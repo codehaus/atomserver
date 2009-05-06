@@ -2,11 +2,14 @@ package org.atomserver.app;
 
 import org.apache.abdera.model.Collection;
 import org.apache.abdera.model.Workspace;
+import org.apache.abdera.model.Service;
+import org.apache.commons.lang.StringUtils;
 import org.atomserver.AtomServerConstants;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
 
 public class APPWorkspace extends ContainerResource<Workspace, Collection, APPService, APPCollection> {
 
@@ -18,6 +21,12 @@ public class APPWorkspace extends ContainerResource<Workspace, Collection, APPSe
     }
 
     @GET
+    public Service getServiceDocument() {
+        Service service = AbderaMarshaller.factory().newService();
+        service.addWorkspace(getStaticRepresentation());
+        return service;
+    }
+
     public Workspace getStaticRepresentation() {
         Workspace workspace = AbderaMarshaller.factory().newWorkspace();
         workspace.addSimpleExtension(AtomServerConstants.NAME, getName());
@@ -45,4 +54,26 @@ public class APPWorkspace extends ContainerResource<Workspace, Collection, APPSe
                                         Collection staticRepresentation) {
         return new APPCollection(this, name, staticRepresentation);
     }
+
+    protected void validateChildStaticRepresentation(Collection collection) {
+        String name = collection.getSimpleExtension(AtomServerConstants.NAME);
+        if (name != null) {
+            validateName(name);
+        }
+        if (collection.getTitle() == null) {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.BAD_REQUEST).entity(
+                            "Collections require an <atom:title> element.").build());
+        }
+    }
+
+    protected String getChildName(Collection collection) {
+        String name = collection.getSimpleExtension(AtomServerConstants.NAME);
+        return (name == null) ?
+               StringUtils.left(
+                       collection.getTitle().replaceAll("\\s", "_")
+                               .replaceAll("^[a-zA-Z0-9-_]", ""), 32)
+               : name;
+    }
+
 }

@@ -4,6 +4,7 @@ import javax.xml.namespace.QName;
 import static java.lang.String.format;
 
 public interface AtomServerConstants {
+
     public static final int MAJOR_VERSION = 3;
 
     public static final String NAMESPACE = format("http://atomserver.org/%d", MAJOR_VERSION);
@@ -55,4 +56,5 @@ public interface AtomServerConstants {
         public static final QName SCRIPT = new QName(NAMESPACE, "script", PREFIX);
     }
 
+    public static final String APPLICATION_APP_XML = "application/atomsvc+xml";           
 }
