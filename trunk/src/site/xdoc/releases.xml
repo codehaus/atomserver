@@ -8,6 +8,13 @@
 
     <body>
 
+        <section name="Release 2.1.11 (5/7/09)">
+            <ul>
+                <li>Modified queries in SQL Server to cast parameters to the INT data type when necessary, which
+                    vastly improves performance in many cases.</li>
+           </ul>
+        </section>
+
         <section name="Release 2.1.10 (5/4/09)">
             <ul>
                 <li>Modified queries in SQL Server to cast parameters to the TIMESTAMP data type when necessary, which
