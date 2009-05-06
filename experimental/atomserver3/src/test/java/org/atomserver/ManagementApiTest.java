@@ -3,12 +3,10 @@ package org.atomserver;
 import com.sun.jersey.api.client.ClientResponse;
 import static junit.framework.Assert.*;
 import org.apache.abdera.i18n.iri.IRI;
-import org.apache.abdera.model.Entry;
-import org.apache.abdera.model.Feed;
-import org.apache.abdera.model.Service;
-import org.apache.abdera.model.Workspace;
+import org.apache.abdera.model.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import static org.atomserver.AtomServerConstants.APPLICATION_APP_XML;
 import org.junit.Test;
 
 import javax.ws.rs.core.MediaType;
@@ -83,29 +81,329 @@ public class ManagementApiTest extends BaseAtomServerTestCase {
         postDuplicateWorkspaceDefinitionToService(test03, "org/atomserver/workspace-cars.xml");
         postDuplicateWorkspaceDefinitionToService(test03, "org/atomserver/workspace-birds.xml");
 
+        // test that the right thing happens when we delete a service
         testDeletingService(test03);
+    }
+
+    @Test
+    public void testWorkspaceUrl() throws Exception {
+        // create a service with a couple of workspaces to work with
+        String test03 = postServiceDefinition("org/atomserver/service-test03.xml")
+                .getSimpleExtension(AtomServerConstants.NAME);
+        checkServiceDocument(test03, "birds", "cars");
+
+        // check that everything works as expected against a non-existent workspace
+        testRetrievingNonexistentWorkspace(test03, "nosuchworkspace");
+        testPostingToNonexistentWorkspace(test03, "nosuchworkspace");
+        testDeletingNonexistentWorkspace(test03, "nosuchworkspace");
+
+        // check that the workspace documents look the way we'd expect
+        checkWorkspaceDocument(test03, "birds");
+        checkWorkspaceDocument(test03, "cars");
+
+        // test error conditions for posting collections to workspaces
+        testPostingNoEntityToWorkspace(test03, "birds");
+        testPostingWrongContentTypeToWorkspace(test03, "birds");
+        testPostingInvalidXmlToWorkspace(test03, "birds");
+        testPostingInvalidCollectionDefsToWorkspace(test03, "birds");
+        testPostingBadlyNamedCollectionToWorkspace(test03, "birds");
+
+        // post a few collections successfully
+        postCollectionDefinitionToWorkspace(test03, "birds",
+                                            "org/atomserver/collection-birds-hawks.xml");
+        postCollectionDefinitionToWorkspace(test03, "birds",
+                                            "org/atomserver/collection-birds-mythical.xml");
+
+        postCollectionDefinitionToWorkspace(test03, "cars",
+                                            "org/atomserver/collection-cars-trucks.xml");
+        postCollectionDefinitionToWorkspace(test03, "cars",
+                                            "org/atomserver/collection-cars-classic.xml");
+        postCollectionDefinitionToWorkspace(test03, "cars",
+                                            "org/atomserver/collection-cars-mythical.xml");
+
+        // check that the workspace documents look as expected
+        checkWorkspaceDocument(test03, "birds",
+                               "Mythical_Birds",
+                               "hawks");
+        checkWorkspaceDocument(test03, "cars",
+                               "Classic",
+                               "Mythical_Automobiles_and_Other_F",
+                               "trucks");
+
+        // try posting duplicates to verify that the right thing happens
+        postDuplicateCollectionDefinitionToService(test03, "birds",
+                                                   "org/atomserver/collection-birds-hawks.xml");
+        postDuplicateCollectionDefinitionToService(test03, "birds",
+                                                   "org/atomserver/collection-birds-mythical.xml");
+
+        // test that the right thing happens when deleting a workspace
+        testDeletingWorkspace(test03, "birds");
     }
 
     // ---------------------------------------------------------------
 
-    private void testDeletingService(String test03) {
-        ClientResponse response = root().path(test03).delete(ClientResponse.class);
+
+    private void testRetrievingNonexistentWorkspace(String serviceName, String workspaceName) {
+        ClientResponse response = root().path(serviceName).path(workspaceName)
+                .type(APPLICATION_APP_XML).get(ClientResponse.class);
+        assertEquals("req TODO",
+                     404,
+                     response.getStatus());
+        assertEquals("req TODO",
+                     workspaceName + " not found within /" + serviceName + "/.",
+                     response.getEntity(String.class));
+    }
+
+    private void testPostingToNonexistentWorkspace(String serviceName, String workspaceName) {
+        ClientResponse response = root().path(serviceName).path(workspaceName)
+                .type(APPLICATION_APP_XML).entity(parse("org/atomserver/collection-birds-hawks.xml"))
+                .post(ClientResponse.class);
+        assertEquals("req TODO",
+                     404,
+                     response.getStatus());
+        assertEquals("req TODO",
+                     workspaceName + " not found within /" + serviceName + "/.",
+                     response.getEntity(String.class));
+    }
+
+    private void testDeletingNonexistentWorkspace(String serviceName, String workspaceName) {
+        ClientResponse response = root().path(serviceName).path(workspaceName)
+                .delete(ClientResponse.class);
+        assertEquals("req TODO",
+                     404,
+                     response.getStatus());
+        assertEquals("req TODO",
+                     workspaceName + " not found within /" + serviceName + "/.",
+                     response.getEntity(String.class));
+    }
+
+    private void testPostingNoEntityToWorkspace(String serviceName, String workspaceName) {
+        ClientResponse response =
+                root().path(serviceName).path(workspaceName).type(MediaType.APPLICATION_ATOM_XML)
+                        .entity("")
+                        .post(ClientResponse.class);
+        assertEquals("req TODO",
+                     400,
+                     response.getStatus());
+        assertEquals("req TODO",
+                     "Empty request body is not valid for this request.",
+                     response.getEntity(String.class));
+    }
+
+    private void testPostingWrongContentTypeToWorkspace(String serviceName, String workspaceName) {
+        ClientResponse response = root().path(serviceName).path(workspaceName)
+                .type(MediaType.TEXT_PLAIN)
+                .entity(
+                        "<?xml version='1.0' encoding='UTF-8'?>\n" +
+                        "<collection xmlns=\"http://www.w3.org/2007/app\">\n" +
+                        "</collection>")
+                .post(ClientResponse.class);
+        assertEquals("req TODO",
+                     415,
+                     response.getStatus());
+    }
+
+    private void testPostingInvalidXmlToWorkspace(String serviceName,
+                                                  String workspaceName)
+            throws Exception {
+        String invalidXml = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(
+                "org/atomserver/collection-invalid-invalidXml.xml"));
+        ClientResponse response = root().path(serviceName).path(workspaceName)
+                .type(MediaType.APPLICATION_XML)
+                .entity(invalidXml)
+                .post(ClientResponse.class);
+        assertEquals("req TODO",
+                     400,
+                     response.getStatus());
+        assertEquals("req TODO",
+                     "Unable to parse a valid object from request entity.",
+                     response.getEntity(String.class));
+    }
+
+    private void testPostingInvalidCollectionDefsToWorkspace(String serviceName,
+                                                             String workspaceName)
+            throws Exception {
+        ClientResponse response = root().path(serviceName).path(workspaceName)
+                .type(MediaType.APPLICATION_XML)
+                .entity(
+                        IOUtils.toString(getClass().getClassLoader().getResourceAsStream(
+                                "org/atomserver/collection-invalid-empty.xml")))
+                .post(ClientResponse.class);
+        assertEquals("req TODO",
+                     400,
+                     response.getStatus());
+        assertEquals("req TODO",
+                     "Collections require an <atom:title> element.",
+                     response.getEntity(String.class));
+    }
+
+    private void testPostingBadlyNamedCollectionToWorkspace(String serviceName,
+                                                            String workspaceName)
+            throws Exception {
+        ClientResponse response = root().path(serviceName).path(workspaceName)
+                .type(MediaType.APPLICATION_XML)
+                .entity(IOUtils.toString(
+                        getClass().getClassLoader().getResourceAsStream(
+                                "org/atomserver/collection-invalid-invalidName.xml")))
+                .post(ClientResponse.class);
+        assertEquals("req TODO",
+                     400,
+                     response.getStatus());
+        assertEquals("req TODO",
+                     "Invalid name [#invalid] in <as:name> element.",
+                     response.getEntity(String.class));
+
+        response = root().path(serviceName).path(workspaceName)
+                .type(MediaType.APPLICATION_XML)
+                .entity(IOUtils.toString(
+                        getClass().getClassLoader().getResourceAsStream(
+                                "org/atomserver/collection-invalid-emptyName.xml")))
+                .post(ClientResponse.class);
+        assertEquals("req TODO",
+                     400,
+                     response.getStatus());
+        assertEquals("req TODO",
+                     "Invalid name [] in <as:name> element.",
+                     response.getEntity(String.class));
+    }
+
+    private void postCollectionDefinitionToWorkspace(String serviceName,
+                                                     String workspaceName,
+                                                     String location) throws Exception {
+        Collection collectionDocument = parse(location);
+        ClientResponse response =
+                root().path(serviceName).path(workspaceName).type(APPLICATION_APP_XML)
+                        .entity(collectionDocument).post(ClientResponse.class);
+        assertEquals("req TODO",
+                     201,
+                     response.getStatus());
+        assertNotNull("req TODO",
+                      response.getEntity(Collection.class));
+        String collectionName = collectionDocument.getSimpleExtension(AtomServerConstants.NAME);
+        if (collectionName == null) {
+            collectionName = StringUtils.left(
+                    collectionDocument.getTitle().replaceAll("\\s", "_")
+                            .replaceAll("[^a-zA-Z0-9-_]", ""), 32);
+        }
+        assertEquals("req TODO",
+                     ROOT_URL + "/" + serviceName + "/" + workspaceName + "/" + collectionName,
+                     response.getMetadata().get("Location").get(0));
+
+        response = root().path(serviceName).path(workspaceName)
+                .type(MediaType.APPLICATION_ATOM_XML).get(ClientResponse.class);
+        boolean foundIt = false;
+        for (Collection collection :
+                response.getEntity(Service.class).getWorkspaces().get(0).getCollections()) {
+            if (collection.getSimpleExtension(AtomServerConstants.NAME).equals(collectionName)) {
+                foundIt = true;
+                break;
+            }
+        }
+        assertTrue("req TODO",
+                   foundIt);
+    }
+
+    private void checkWorkspaceDocument(String serviceName,
+                                        String workspaceName,
+                                        String... expectedCollectionNames) {
+        ClientResponse response =
+                root().path(serviceName).path(workspaceName)
+                        .type(AtomServerConstants.APPLICATION_APP_XML).get(ClientResponse.class);
+        assertEquals("req TODO",
+                     200,
+                     response.getStatus());
+        assertEquals("req TODO",
+                     AtomServerConstants.APPLICATION_APP_XML,
+                     response.getMetadata().getFirst("Content-Type"));
+        Service service = response.getEntity(Service.class);
+        assertNotNull("req TODO",
+                      service);
+
+        assertEquals("req TODO",
+                     1,
+                     service.getWorkspaces().size());
+
+        Workspace workspace = service.getWorkspaces().get(0);
+
+        String name = workspace.getSimpleExtension(AtomServerConstants.NAME);
+        assertNotNull("req TODO",
+                      name);
+        assertEquals("req TODO",
+                     workspaceName,
+                     name);
+
+        Arrays.sort(expectedCollectionNames);
+        assertEquals("req TODO",
+                     expectedCollectionNames.length,
+                     workspace.getCollections().size());
+
+        for (int i = 0; i < expectedCollectionNames.length; i++) {
+            String expectedCollectionName = expectedCollectionNames[i];
+            Collection collection = workspace.getCollections().get(i);
+
+            assertEquals("req TODO",
+                         expectedCollectionName,
+                         collection.getSimpleExtension(AtomServerConstants.NAME));
+        }
+    }
+
+    private void postDuplicateCollectionDefinitionToService(String serviceName,
+                                                            String workspaceName,
+                                                            String location) {
+        Collection collectionDocument = parse(location);
+        ClientResponse response =
+                root().path(serviceName).path(workspaceName)
+                        .type(APPLICATION_APP_XML)
+                        .entity(collectionDocument).post(ClientResponse.class);
+        assertEquals("req TODO",
+                     409,
+                     response.getStatus());
+        String collectionName = collectionDocument.getSimpleExtension(AtomServerConstants.NAME);
+        if (collectionName == null) {
+            collectionName = StringUtils.left(
+                    collectionDocument.getTitle().replaceAll("\\s", "_")
+                            .replaceAll("[^a-zA-Z0-9-_]", ""), 32);
+        }
+        assertEquals("req TODO",
+                     "Duplicate error - " + collectionName + " already exists in /" +
+                     serviceName + "/" + workspaceName + "/.",
+                     response.getEntity(String.class));
+    }
+
+    private void testDeletingWorkspace(String serviceName,
+                                       String workspaceName) {
+        ClientResponse response = root().path(serviceName).path(workspaceName)
+                .delete(ClientResponse.class);
+        assertEquals("req TODO",
+                     200,
+                     response.getStatus());
+        assertEquals("req TODO",
+                     "/" + serviceName + "/" + workspaceName + "/ was deleted successfully.",
+                     response.getEntity(String.class));
+        assertEquals("req TODO",
+                     404,
+                     root().path(serviceName).path(workspaceName)
+                             .get(ClientResponse.class).getStatus());
+    }
+
+    private void testDeletingService(String serviceName) {
+        ClientResponse response = root().path(serviceName).delete(ClientResponse.class);
         assertEquals("req 2.3.c - successful DELETE on a Service should return an HTTP 200",
                      200,
                      response.getStatus());
         assertEquals("req 2.3.c - successful DELETE on a Service should return an appropriate " +
                      "status message",
-                     "/" + test03 + "/ was deleted successfully.",
+                     "/" + serviceName + "/ was deleted successfully.",
                      response.getEntity(String.class));
         assertEquals("req 2.3.b - after a DELETE, the service should be unavailable",
                      404,
-                     root().path(test03).get(ClientResponse.class).getStatus());
+                     root().path(serviceName).get(ClientResponse.class).getStatus());
     }
 
     private void postWorkspaceDefinitionToService(String serviceName, String location) {
         Workspace workspaceDocument = parse(location);
         ClientResponse response =
-                root().path(serviceName).type(AtomServerConstants.APPLICATION_APP_XML)
+                root().path(serviceName).type(APPLICATION_APP_XML)
                         .entity(workspaceDocument).post(ClientResponse.class);
         assertEquals("req 2.2.i - Successful POST of workspace should return HTTP 201",
                      201,
@@ -138,7 +436,7 @@ public class ManagementApiTest extends BaseAtomServerTestCase {
     private void postDuplicateWorkspaceDefinitionToService(String serviceName, String location) {
         Workspace workspaceDocument = parse(location);
         ClientResponse response =
-                root().path(serviceName).type(AtomServerConstants.APPLICATION_APP_XML)
+                root().path(serviceName).type(APPLICATION_APP_XML)
                         .entity(workspaceDocument).post(ClientResponse.class);
         assertEquals("req 2.2.f - Post of duplicate should produce an HTTP 409 CONFLICT",
                      409,
@@ -152,7 +450,7 @@ public class ManagementApiTest extends BaseAtomServerTestCase {
         assertEquals("req 2.2.f - Posting a duplicate workspace should produce an appropriate " +
                      "error message",
                      "Duplicate error - " + workspaceName + " already exists in /" +
-                     serviceName +  "/.",
+                     serviceName + "/.",
                      response.getEntity(String.class));
     }
 

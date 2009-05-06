@@ -1,7 +1,6 @@
 package org.atomserver;
 
 import com.sun.jersey.api.client.UniformInterfaceException;
-import com.sun.jersey.api.client.ClientResponse;
 import org.apache.abdera.model.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
@@ -11,9 +10,8 @@ import org.atomserver.test.EntryChecker;
 import org.atomserver.test.FeedFollower;
 import org.atomserver.widgets.Widget;
 import static org.junit.Assert.*;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.AfterClass;
 import org.simpleframework.xml.core.Persister;
 
 import javax.ws.rs.core.MediaType;
@@ -32,8 +30,8 @@ public class BasicTest extends BaseAtomServerTestCase {
 
     private static final Set<String> names = new HashSet<String>();
 
-    @BeforeClass
-    public static void setUpTestService() throws Exception {
+    @Before
+    public void setUpTestService() throws Exception {
         log.debug("BasicTest.setUpTestService");
         InputStream stream = BasicTest.class.getClassLoader().getResourceAsStream(
                 "org/atomserver/BasicTest.xml");
@@ -61,6 +59,14 @@ public class BasicTest extends BaseAtomServerTestCase {
     }
 
     @Test
+    public void testBasicFunctionality() throws Exception {
+        testFullFeed();
+        testCategorizedFeeds();
+        testEntryAccess();
+        testMissingEntry();
+        testFeedPullAfterMorePublishes();
+    }
+
     public void testFullFeed() throws Exception {
 
         final Set<String> allNames = new HashSet<String>(names);
@@ -77,7 +83,6 @@ public class BasicTest extends BaseAtomServerTestCase {
         assertTrue(allNames.isEmpty());
     }
 
-    @Test
     public void testCategorizedFeeds() throws Exception {
 
         FeedFollower follower = new FeedFollower(
@@ -124,7 +129,6 @@ public class BasicTest extends BaseAtomServerTestCase {
                 null));
     }
 
-    @Test
     public void testEntryAccess() throws Exception {
         int id = 17;
         Entry entry = root()
@@ -135,7 +139,6 @@ public class BasicTest extends BaseAtomServerTestCase {
         assertEquals(id, widget.getId());
     }
 
-    @Test
     public void testMissingEntry() throws Exception {
         int id = 175;
         String entryId =
@@ -150,7 +153,6 @@ public class BasicTest extends BaseAtomServerTestCase {
         }
     }
 
-    @Test
     public void testFeedPullAfterMorePublishes() throws Exception {
 
         final Set<String> allNames = new HashSet<String>(names);

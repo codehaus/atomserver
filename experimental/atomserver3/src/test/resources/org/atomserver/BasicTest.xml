@@ -1,10 +1,13 @@
 <service xmlns="http://www.w3.org/2007/app"
+         xmlns:atom="http://www.w3.org/2005/Atom"
          xmlns:as="http://atomserver.org/3">
     <as:name>test</as:name>
     <workspace>
         <as:name>widgets</as:name>
+        <atom:title>widgets</atom:title>
         <collection>
             <as:name>acme</as:name>
+            <atom:title>acme</atom:title>
             <as:filter class="org.atomserver.filter.XPathEntryFilter">
                 <script xmlns="http://atomserver.org/3/xpath">
                     <![CDATA[
