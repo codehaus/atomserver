@@ -88,59 +88,79 @@ public class ManagementApiTest extends BaseAtomServerTestCase {
     @Test
     public void testWorkspaceUrl() throws Exception {
         // create a service with a couple of workspaces to work with
-        String test03 = postServiceDefinition("org/atomserver/service-test03.xml")
-                .getSimpleExtension(AtomServerConstants.NAME);
-        checkServiceDocument(test03, "birds", "cars");
+        Service test03 = postServiceDefinition("org/atomserver/service-test03.xml");
+        String test03_name = test03.getSimpleExtension(AtomServerConstants.NAME);
+        String birdsTitle = getWorkspaceByName(test03, "birds").getTitle();
+        String carsTitle = getWorkspaceByName(test03, "cars").getTitle();
+        checkServiceDocument(test03_name, "birds", "cars");
 
         // check that everything works as expected against a non-existent workspace
-        testRetrievingNonexistentWorkspace(test03, "nosuchworkspace");
-        testPostingToNonexistentWorkspace(test03, "nosuchworkspace");
-        testDeletingNonexistentWorkspace(test03, "nosuchworkspace");
+        testRetrievingNonexistentWorkspace(test03_name, "nosuchworkspace");
+        testPostingToNonexistentWorkspace(test03_name, "nosuchworkspace");
+        testDeletingNonexistentWorkspace(test03_name, "nosuchworkspace");
 
         // check that the workspace documents look the way we'd expect
-        checkWorkspaceDocument(test03, "birds");
-        checkWorkspaceDocument(test03, "cars");
+        checkWorkspaceDocument(test03_name, "birds", birdsTitle);
+        checkWorkspaceDocument(test03_name, "cars", carsTitle);
 
         // test error conditions for posting collections to workspaces
-        testPostingNoEntityToWorkspace(test03, "birds");
-        testPostingWrongContentTypeToWorkspace(test03, "birds");
-        testPostingInvalidXmlToWorkspace(test03, "birds");
-        testPostingInvalidCollectionDefsToWorkspace(test03, "birds");
-        testPostingBadlyNamedCollectionToWorkspace(test03, "birds");
+        testPostingNoEntityToWorkspace(test03_name, "birds");
+        testPostingWrongContentTypeToWorkspace(test03_name, "birds");
+        testPostingInvalidXmlToWorkspace(test03_name, "birds");
+        testPostingInvalidCollectionDefsToWorkspace(test03_name, "birds");
+        testPostingBadlyNamedCollectionToWorkspace(test03_name, "birds");
 
         // post a few collections successfully
-        postCollectionDefinitionToWorkspace(test03, "birds",
+        postCollectionDefinitionToWorkspace(test03_name, "birds",
                                             "org/atomserver/collection-birds-hawks.xml");
-        postCollectionDefinitionToWorkspace(test03, "birds",
+        postCollectionDefinitionToWorkspace(test03_name, "birds",
                                             "org/atomserver/collection-birds-mythical.xml");
 
-        postCollectionDefinitionToWorkspace(test03, "cars",
+        postCollectionDefinitionToWorkspace(test03_name, "cars",
                                             "org/atomserver/collection-cars-trucks.xml");
-        postCollectionDefinitionToWorkspace(test03, "cars",
+        postCollectionDefinitionToWorkspace(test03_name, "cars",
                                             "org/atomserver/collection-cars-classic.xml");
-        postCollectionDefinitionToWorkspace(test03, "cars",
+        postCollectionDefinitionToWorkspace(test03_name, "cars",
                                             "org/atomserver/collection-cars-mythical.xml");
 
         // check that the workspace documents look as expected
-        checkWorkspaceDocument(test03, "birds",
+        checkWorkspaceDocument(test03_name, "birds", birdsTitle,
                                "Mythical_Birds",
                                "hawks");
-        checkWorkspaceDocument(test03, "cars",
+        checkWorkspaceDocument(test03_name, "cars", carsTitle,
                                "Classic",
                                "Mythical_Automobiles_and_Other_F",
                                "trucks");
 
         // try posting duplicates to verify that the right thing happens
-        postDuplicateCollectionDefinitionToService(test03, "birds",
+        postDuplicateCollectionDefinitionToService(test03_name, "birds",
                                                    "org/atomserver/collection-birds-hawks.xml");
-        postDuplicateCollectionDefinitionToService(test03, "birds",
+        postDuplicateCollectionDefinitionToService(test03_name, "birds",
                                                    "org/atomserver/collection-birds-mythical.xml");
 
         // test that the right thing happens when deleting a workspace
-        testDeletingWorkspace(test03, "birds");
+        testDeletingWorkspace(test03_name, "birds");
     }
 
     // ---------------------------------------------------------------
+
+    private static Workspace getWorkspaceByName(Service service, String workspaceName) {
+        for (Workspace workspace : service.getWorkspaces()) {
+            if (workspace.getSimpleExtension(AtomServerConstants.NAME).equals(workspaceName)) {
+                return workspace;
+            }
+        }
+        return null;
+    }
+
+    private static Collection getCollectionByName(Workspace workspace, String collectionName) {
+        for (Collection collection : workspace.getCollections()) {
+            if (collection.getSimpleExtension(AtomServerConstants.NAME).equals(collectionName)) {
+                return collection;
+            }
+        }
+        return null;
+    }
 
 
     private void testRetrievingNonexistentWorkspace(String serviceName, String workspaceName) {
@@ -305,6 +325,7 @@ public class ManagementApiTest extends BaseAtomServerTestCase {
 
     private void checkWorkspaceDocument(String serviceName,
                                         String workspaceName,
+                                        String expectedTitle,
                                         String... expectedCollectionNames) {
         ClientResponse response =
                 root().path(serviceName).path(workspaceName)
@@ -336,6 +357,10 @@ public class ManagementApiTest extends BaseAtomServerTestCase {
         assertEquals("req TODO",
                      expectedCollectionNames.length,
                      workspace.getCollections().size());
+
+        assertEquals("req TODO",
+                     expectedTitle,
+                     workspace.getTitle());
 
         for (int i = 0; i < expectedCollectionNames.length; i++) {
             String expectedCollectionName = expectedCollectionNames[i];

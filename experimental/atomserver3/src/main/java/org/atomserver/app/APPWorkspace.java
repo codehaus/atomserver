@@ -16,6 +16,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_XML;
 import static javax.ws.rs.core.MediaType.TEXT_XML;
 
 public class APPWorkspace extends ContainerResource<Workspace, Collection, APPService, APPCollection> {
+    private String title;
 
     public APPWorkspace(APPService service,
                         String name,
@@ -35,7 +36,7 @@ public class APPWorkspace extends ContainerResource<Workspace, Collection, APPSe
     public Workspace getStaticRepresentation() {
         Workspace workspace = AbderaMarshaller.factory().newWorkspace();
         workspace.addSimpleExtension(AtomServerConstants.NAME, getName());
-        workspace.setTitle(getPath());
+        workspace.setTitle(this.title);
         for (APPCollection collection : getChildren()) {
             workspace.addCollection(collection.getStaticRepresentation());
         }
@@ -52,6 +53,7 @@ public class APPWorkspace extends ContainerResource<Workspace, Collection, APPSe
                 createChild(collection);
             }
         }
+        this.title = workspace.getTitle();
         return getStaticRepresentation();
     }
 

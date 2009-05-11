@@ -20,6 +20,8 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
 
     private static final Logger log = Logger.getLogger(APPCollection.class);
 
+    private String title;
+
     public APPCollection(APPWorkspace workspace,
                          String name,
                          Collection collection) {
@@ -36,7 +38,7 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
     public Collection getStaticRepresentation() {
         Collection collection = AbderaMarshaller.factory().newCollection();
         collection.addSimpleExtension(AtomServerConstants.NAME, getName());
-        collection.setTitle(getPath());
+        collection.setTitle(this.title);
         return collection;
     }
 
@@ -92,6 +94,8 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
 
         extractEntryFilters(collection);
 
+        this.title = collection.getTitle();
+        
         return getStaticRepresentation();
     }
 
