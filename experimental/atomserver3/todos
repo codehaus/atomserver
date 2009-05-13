@@ -4,3 +4,4 @@ todo: move the integration test output somewhere more reasonable
 todo: Al asked a good question - can we make the integration test output part of our reporting on the site?
 todo: make sure we resolve the "production" versus "development" modes for Terracotta - we should be enforcing config via production mode.
 todo: responses don't seem to have <?xml version='1.0' encoding='UTF-8'?> declaration - why?
+todo: feed pull should have type application/atom+xml
