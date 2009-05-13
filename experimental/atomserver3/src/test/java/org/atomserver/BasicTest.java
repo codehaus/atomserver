@@ -1,18 +1,19 @@
 package org.atomserver;
 
 import com.sun.jersey.api.client.UniformInterfaceException;
-import org.apache.abdera.model.*;
+import org.apache.abdera.model.Collection;
+import org.apache.abdera.model.Entry;
+import org.apache.abdera.model.Service;
+import org.apache.abdera.model.Workspace;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-import org.atomserver.app.AbderaMarshaller;
+import org.atomserver.domain.Widget;
 import org.atomserver.ext.Status;
 import org.atomserver.test.EntryChecker;
 import org.atomserver.test.FeedFollower;
-import org.atomserver.widgets.Widget;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
-import org.simpleframework.xml.core.Persister;
 
 import javax.ws.rs.core.MediaType;
 import java.io.InputStream;
@@ -23,7 +24,6 @@ import java.util.UUID;
 
 public class BasicTest extends BaseAtomServerTestCase {
     private static final Logger log = Logger.getLogger(BasicTest.class);
-    private static final Persister PERSISTER = new Persister();
     private static String SERVICE;
     private static String WORKSPACE;
     private static String COLLECTION;
@@ -201,13 +201,5 @@ public class BasicTest extends BaseAtomServerTestCase {
 
     private static String collectionPath() {
         return String.format("%s/%s/%s", SERVICE, WORKSPACE, COLLECTION);
-    }
-
-    static Entry createWidgetEntry(int id, String color, String name) throws Exception {
-        Entry entry = AbderaMarshaller.factory().newEntry();
-        StringWriter stringWriter = new StringWriter();
-        PERSISTER.write(new Widget(id, color, name), stringWriter);
-        entry.setContent(stringWriter.toString(), Content.Type.XML);
-        return entry;
     }
 }

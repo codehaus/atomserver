@@ -210,7 +210,7 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
 
                 newEntry.setEdited(entryNode.getLastUpdated());
                 newEntry.setUpdated(entryNode.getLastUpdated());
-                newEntry.setContent(entry.getContent()); // TODO: deal with content...
+                newEntry.setContent(entry.getContent(), entry.getContentType()); // TODO: deal with content...
                 newEntry.addSimpleExtension(AtomServerConstants.ENTRY_ID, entryId);
 
                 contentTxn.commit();
@@ -293,6 +293,7 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
     }
 
     public Categories putCategories(String entryId, Categories categories) {
+        // TODO: update the categories
         return categories;
     }
 

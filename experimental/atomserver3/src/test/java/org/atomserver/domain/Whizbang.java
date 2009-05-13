@@ -1,4 +1,4 @@
-package org.atomserver.widgets;
+package org.atomserver.domain;
 
 import org.simpleframework.xml.Root;
 import org.simpleframework.xml.Namespace;
@@ -6,8 +6,8 @@ import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Attribute;
 
 @Root
-@Namespace(reference = "http://atomserver.org/widgets/1.0", prefix = "widgets")
-public class Widget {
+@Namespace(reference = "http://atomserver.org/whizbangs/1.0", prefix = "whizbangs")
+public class Whizbang {
     @Attribute
     private int id;
     @Element
@@ -15,10 +15,10 @@ public class Widget {
     @Element
     private String name;
 
-    public Widget() {
+    public Whizbang() {
     }
 
-    public Widget(int id, String color, String name) {
+    public Whizbang(int id, String color, String name) {
         this.id = id;
         this.color = color;
         this.name = name;

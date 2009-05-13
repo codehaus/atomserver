@@ -1,0 +1,25 @@
+<service xmlns="http://www.w3.org/2007/app"
+         xmlns:atom="http://www.w3.org/2005/Atom"
+         xmlns:as="http://atomserver.org/3">
+    <as:name>atomserver-test</as:name>
+    <workspace>
+        <as:name>widgets</as:name>
+        <atom:title>Widgets</atom:title>
+        <collection>
+            <as:name>acme</as:name>
+            <atom:title>ACME Widgets</atom:title>
+        </collection>
+        <collection>
+            <as:name>bigcorp</as:name>
+            <atom:title>BigCorp Widgets</atom:title>
+        </collection>
+    </workspace>
+    <workspace>
+        <as:name>whizbangs</as:name>
+        <atom:title>Whizbangs</atom:title>
+        <collection>
+            <as:name>all</as:name>
+            <atom:title>all Whizbangs</atom:title>
+        </collection>
+    </workspace>
+</service>
