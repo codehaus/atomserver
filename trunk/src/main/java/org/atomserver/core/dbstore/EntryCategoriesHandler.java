@@ -208,9 +208,7 @@ public class EntryCategoriesHandler
     }
 
     public void deleteEntryCategoryBatch(List<EntryCategory> entryCategoryList) {
-        for( EntryCategory category: entryCategoryList ){
-            verifyEntryCategory( category );
-        }
+        // NOTE: we need to be able to delete Categories that may be bad, so do NOT verify here
         entryCategoriesDAO.deleteEntryCategoryBatch(entryCategoryList);
     }    
 

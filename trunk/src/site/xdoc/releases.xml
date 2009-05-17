@@ -7,6 +7,12 @@
     </properties>
 
     <body>
+        <section name="Release 2.1.12 (5/19/09)">
+             <ul>
+                 <li>Removed scheme/term validation from deleteEntryCategoryBatch, 
+                     which enables us to auto-tag entries that may have existing invalid Categories</li>
+            </ul>
+         </section>
 
         <section name="Release 2.1.11 (5/7/09)">
             <ul>
