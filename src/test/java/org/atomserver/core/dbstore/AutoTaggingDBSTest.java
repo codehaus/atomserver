@@ -23,8 +23,13 @@ import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.protocol.client.ClientResponse;
 import org.apache.commons.io.IOUtils;
+import org.atomserver.EntryDescriptor;
+import org.atomserver.core.BaseEntryDescriptor;
 import org.atomserver.core.CRUDAtomServerTestCase;
+import org.atomserver.core.EntryMetaData;
+import org.atomserver.core.EntryCategory;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
+import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
 import org.atomserver.testutils.client.MockRequestContext;
 import org.atomserver.uri.EntryTarget;
 import org.atomserver.utils.ShardedPathGenerator;
@@ -61,6 +66,8 @@ public class AutoTaggingDBSTest extends CRUDAtomServerTestCase {
                     "/testwidget2.xml", "dummy/acme/23450.xml", 0,
                     Arrays.asList("pink", "red", "DEFAULT:red"),
                     true, "acmeBRYON", "23450");
+
+
         } finally {
             obliterateTestEntry();
         }
@@ -78,10 +85,58 @@ public class AutoTaggingDBSTest extends CRUDAtomServerTestCase {
         }
     }
 
+    public void testEmptyTerm() throws Exception {
+        try {
+            String urlPath = "dummy/acme/875421.xml";
+            String fileName = "/testwidget4.xml";
+            String xml = IOUtils.toString(getClass().getResourceAsStream(fileName));
+            insert(urlPath, getServerURL() + urlPath, xml, false, 400, false);
+        } finally {
+            obliterateTestEntry();
+        }
+    }
+
+    public void testDeleteEmptyTerm() throws Exception {
+        try {
+            // First insert this entry and get it auto-tagged
+            String urlPath = "dummy/acme/23450.xml";
+            String fileName = "/testwidget2.xml";
+            String xml = IOUtils.toString(getClass().getResourceAsStream(fileName));
+            insert(urlPath, getServerURL() + urlPath, xml, false, 201, false);
+
+            // Now insert an Category with an empty term in the DB
+            //  Note: we cannot get one in any other way
+            EntriesDAO entriesDAO = (EntriesDAO)getSpringFactory().getBean("org.atomserver-entriesDAO");
+            EntryCategoriesDAO entryCategoriesDAO =
+                    (EntryCategoriesDAO)getSpringFactory().getBean("org.atomserver-entryCategoriesDAO");
+
+            EntryDescriptor descriptor  = new BaseEntryDescriptor("dummy", "acme", "23450", null, 0);
+            EntryMetaData metaData = entriesDAO.selectEntry(descriptor);
+
+            EntryCategory entryIn = new EntryCategory();
+            entryIn.setEntryStoreId(metaData.getEntryStoreId());
+            entryIn.setScheme( "urn:foo.colors" );
+            entryIn.setTerm( "" );
+
+            int numRows = entryCategoriesDAO.insertEntryCategory(entryIn);
+            assertTrue(numRows > 0);
+
+            // Now publish again. This will auto-tag again, and prove that we can delete when empty terms are present
+            publishAndTestVersion(
+                    "/testwidget2.xml", "dummy/acme/23450.xml", 1,
+                    Arrays.asList("pink", "red", "DEFAULT:red"),
+                    false, "acmeBRYON", "23450");
+            
+        } finally {
+            obliterateTestEntry();
+        }
+    }
+
+
     private void obliterateTestEntry() throws Exception {
         EntriesDAO entriesDAO = (EntriesDAO) getSpringFactory().getBean("org.atomserver-entriesDAO");
 
-        for (String id : Arrays.asList("167370", "2222", "23450")) {
+        for (String id : Arrays.asList("167370", "2222", "23450", "875421")) {
             IRI entryIRI = IRI.create(
                     "http://localhost:8080/"
                     + widgetURIHelper.constructURIString("dummy", "acme", id, null));
