@@ -3,25 +3,19 @@ package org.atomserver;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
-import org.apache.abdera.model.Element;
-import org.apache.abdera.model.Feed;
-import org.apache.abdera.model.Entry;
-import org.apache.abdera.model.Content;
 import org.apache.abdera.i18n.iri.IRI;
+import org.apache.abdera.model.*;
 import org.apache.log4j.Logger;
 import org.atomserver.app.AbderaMarshaller;
 import org.atomserver.domain.Widget;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.After;
+import org.junit.*;
 import org.simpleframework.xml.core.Persister;
 
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Set;
-import java.io.StringWriter;
 
 @Ignore
 public class BaseAtomServerTestCase {
@@ -116,6 +110,18 @@ public class BaseAtomServerTestCase {
         PERSISTER.write(new Widget(id, color, name), stringWriter);
         entry.setContent(stringWriter.toString(), Content.Type.XML);
         return entry;
+    }
+
+    protected static void assertCategoriesEqual(String message,
+                                                Category expected,
+                                                Category category,
+                                                boolean ignoreNullLabel) {
+        Assert.assertEquals(message, expected.getScheme(), category.getScheme());
+        Assert.assertEquals(message, expected.getTerm(), category.getTerm());
+        Assert.assertTrue(message,
+                          expected.getLabel() == null ? category.getLabel() == null :
+                          ((ignoreNullLabel && category.getLabel() == null) ||
+                           expected.getLabel().equals(category.getLabel())));
     }
 
 }

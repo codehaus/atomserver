@@ -1,5 +1,6 @@
 package org.atomserver.content;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.stereotype.Component;
 
 import java.nio.channels.ReadableByteChannel;
@@ -19,6 +20,10 @@ public class DefaultContentStore implements ContentStore {
 
             public void abort() {
                 // do nothing...
+            }
+
+            public String etag() {
+                return DigestUtils.md5Hex(bytes);
             }
         };
     }

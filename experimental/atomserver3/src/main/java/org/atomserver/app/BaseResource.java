@@ -3,8 +3,8 @@ package org.atomserver.app;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.ExtensibleElement;
 import org.apache.log4j.Logger;
-import org.atomserver.AtomServerConstants;
 import org.atomserver.AtomServer;
+import org.atomserver.AtomServerConstants;
 import org.atomserver.ext.Filter;
 import org.atomserver.filter.EntryFilter;
 import org.atomserver.filter.EntryFilterChain;
@@ -12,9 +12,9 @@ import org.atomserver.filter.EntryFilterChain;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.core.Response;
 import java.lang.reflect.Constructor;
+import java.net.URI;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.net.URI;
 
 public abstract class BaseResource<S extends ExtensibleElement, P extends ContainerResource> {
     private static final Logger log = Logger.getLogger(BaseResource.class);

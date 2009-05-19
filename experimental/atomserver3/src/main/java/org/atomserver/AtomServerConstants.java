@@ -26,6 +26,7 @@ public interface AtomServerConstants {
     public static final QName FILTER = new QName(NAMESPACE, "filter", PREFIX);
     public static final QName STATUS = new QName(NAMESPACE, "status", PREFIX);
     public static final QName TIMESTAMP = new QName(NAMESPACE, "timestamp", PREFIX);
+    public static final QName ETAG = new QName(NAMESPACE, "etag", PREFIX);
 
     public interface Batch {
 

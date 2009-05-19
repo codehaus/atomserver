@@ -4,6 +4,7 @@ import org.apache.abdera.model.*;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMNode;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.atomserver.AtomServerConstants;
 import static org.atomserver.AtomServerConstants.APPLICATION_APP_XML;
 import org.atomserver.categories.CategoryQuery;
@@ -60,14 +61,14 @@ public class APPService extends ContainerResource<Service, Workspace, APPRoot, A
 
     @GET
     @Path("/{join : \\$join}/{collection}")
-    public Feed aggregateFeed(@PathParam("collection")String collection) {
+    public Response aggregateFeed(@PathParam("collection")String collection) {
         return categorizedAggregateFeed(collection, null);
     }
 
     @GET
     @Path("/{join : \\$join}/{collection}/-/" +
           "{categoryQuery : (AND|OR|NOT|\\([^\\)]+\\)[^\\/]+)(/(AND|OR|NOT|\\([^\\)]+\\)[^\\/]+))*}")
-    public Feed categorizedAggregateFeed(@PathParam("collection")String collection,
+    public Response categorizedAggregateFeed(@PathParam("collection")String collection,
                                          @PathParam("categoryQuery")String categoryQueryParam) {
         System.out.println("APPService.aggregateFeed");
         Feed feed = AbderaMarshaller.factory().newFeed();
@@ -86,18 +87,28 @@ public class APPService extends ContainerResource<Service, Workspace, APPRoot, A
             Iterator<AggregateEntryNode> entryIterator =
                     collectionIndex.buildIterator(categoryQuery, 0L);// TODO: timestamp parameter
             int countdown = 10; // TODO: maxResults parameter & check fencepost error on --
+            StringBuffer concatenatedEntryEtags = new StringBuffer();
             while (entryIterator.hasNext() && countdown-- > 0) {
-                feed.addEntry(aggregateEntry(collection, entryIterator.next().getEntryId()));
+                AggregateEntryNode aggregateEntryNode = entryIterator.next();
+                feed.addEntry(aggregateEntry(collection, aggregateEntryNode.getEntryId()));
+                concatenatedEntryEtags.append(aggregateEntryNode.getEtag());
             }
+            feed.addSimpleExtension(AtomServerConstants.ETAG,
+                                    DigestUtils.md5Hex(concatenatedEntryEtags.toString()));
         } finally {
             lock.readLock().unlock();
         }
 
-        return feed;
+        return APPResponses.feedResponse(feed);
     }
 
     @GET
     @Path("/{join : \\$join}/{collection}/{entryId}")
+    public Response getAggregateEntry(@PathParam("collection")String collection,
+                                @PathParam("entryId")String entryId) {
+        return APPResponses.entryResponse(aggregateEntry(collection, entryId));
+    }
+
     public Entry aggregateEntry(@PathParam("collection")String collection,
                                 @PathParam("entryId")String entryId) {
         CollectionIndex<AggregateEntryNode> collectionIndex =
@@ -105,7 +116,7 @@ public class APPService extends ContainerResource<Service, Workspace, APPRoot, A
 
         AggregateEntryNode aggregateEntryNode = collectionIndex.getEntry(entryId);
         Entry entry = AbderaMarshaller.factory().newEntry();
-        entry.setId(String.format("$join/%s/%s", collection, entryId));
+        entry.setId(String.format("%s/$join/%s/%s", getName(), collection, entryId));
         entry.setTitle(String.format("Aggregate Entry : %s", entry.getId()));
 
         Element aggregateContent =
@@ -115,6 +126,15 @@ public class APPService extends ContainerResource<Service, Workspace, APPRoot, A
             Entry memberEntry = entryNode.getCollection().convertToEntry(entryNode);
             ((OMElement) aggregateContent).addChild((OMNode) memberEntry);
         }
+        for (EntryCategory entryCategory : aggregateEntryNode.getCategories()) {
+            Category category = AbderaMarshaller.factory().newCategory();
+            category.setScheme(entryCategory.getCategory().getScheme());
+            category.setTerm(entryCategory.getCategory().getTerm());
+            category.setLabel(entryCategory.getLabel());
+            entry.addCategory(category);
+        }
+        entry.addSimpleExtension(AtomServerConstants.ETAG, aggregateEntryNode.getEtag());
+
         entry.setContent(aggregateContent);
 
         return entry;

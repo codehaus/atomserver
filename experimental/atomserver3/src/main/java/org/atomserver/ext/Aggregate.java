@@ -45,4 +45,12 @@ public class Aggregate extends ElementWrapper {
     public String toString() {
         return String.format("$join/%s/%s", getCollection(), getEntryId());
     }
+
+    public boolean equals(Object obj) {
+        return this == obj ||
+               (obj != null && Aggregate.class.equals(obj.getClass()) &&
+                getCollection().equals(((Aggregate) obj).getCollection()) &&
+                getEntryId().equals(((Aggregate) obj).getEntryId()));
+    }
+
 }

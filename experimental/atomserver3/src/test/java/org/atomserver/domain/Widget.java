@@ -47,4 +47,20 @@ public class Widget {
     public void setName(String name) {
         this.name = name;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        return (o != null && Widget.class.equals(o.getClass())) &&
+               id == ((Widget)o).id &&
+               color == null ? ((Widget)o).color == null : color.equals(((Widget)o).color) &&
+               name == null ? ((Widget)o).name == null : name.equals(((Widget)o).name);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id;
+        result = 8675309 * result + (color != null ? color.hashCode() : 0);
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        return result;
+    }
 }

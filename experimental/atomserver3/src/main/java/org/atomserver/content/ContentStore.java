@@ -14,5 +14,7 @@ public interface ContentStore {
         void commit();
 
         void abort();
+
+        String etag();
     }
 }

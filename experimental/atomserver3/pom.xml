@@ -275,6 +275,8 @@
                                                   todir="${project.build.directory}/integration-tests"/>
                                             <test name="org.atomserver.ManagementApiTest"
                                                   todir="${project.build.directory}/integration-tests"/>
+                                            <test name="org.atomserver.PublishTest"
+                                                  todir="${project.build.directory}/integration-tests"/>
                                             <!--
                                                 <batchtest todir="${project.build.directory}">
                                                     <fileset dir="src/test/java">

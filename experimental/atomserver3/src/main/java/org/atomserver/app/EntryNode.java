@@ -36,11 +36,19 @@ public interface EntryNode {
     Date getLastUpdated();
 
     /**
+     * getter for ETag.
+     *
+     * @return the etag for the entry content
+     */
+    String getEtag();
+
+    /**
      * update this EntryNode to have the given timestamp, lastUpdated, and categories.
      *
      * @param timestamp   the new timestamp value
      * @param lastUpdated the new lastUpdated value
      * @param categories  the new vategories value
+     * @param etag        the etag for the entry content
      */
-    void update(long timestamp, Date lastUpdated, Set<EntryCategory> categories);
+    void update(long timestamp, Date lastUpdated, Set<EntryCategory> categories, String etag);
 }

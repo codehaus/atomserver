@@ -24,7 +24,7 @@ public class AggregateNode {
     public boolean equals(Object obj) {
         return this == obj ||
                (obj != null && AggregateNode.class.equals(obj.getClass()) &&
-                getCollection().equals(((CategoryNode) obj).getScheme()) &&
-                getEntryId().equals(((CategoryNode) obj).getTerm()));
+                getCollection().equals(((AggregateNode) obj).getCollection()) &&
+                getEntryId().equals(((AggregateNode) obj).getEntryId()));
     }
 }
