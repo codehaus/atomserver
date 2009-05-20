@@ -57,5 +57,7 @@ public interface AtomServerConstants {
         public static final QName SCRIPT = new QName(NAMESPACE, "script", PREFIX);
     }
 
-    public static final String APPLICATION_APP_XML = "application/atomsvc+xml";           
+    public static final String APPLICATION_APP_XML = "application/atomsvc+xml";
+
+    public static final String OPTIMISTIC_CONCURRENCY_OVERRIDE = "*";
 }

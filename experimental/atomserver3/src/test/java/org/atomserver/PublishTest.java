@@ -4,12 +4,9 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
-import org.apache.abdera.model.Category;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
 import org.apache.log4j.Logger;
-import org.atomserver.app.AbderaMarshaller;
-import org.atomserver.ext.Aggregate;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,17 +14,6 @@ import javax.ws.rs.core.MediaType;
 
 public class PublishTest extends BaseAtomServerTestCase {
     private static final Logger log = Logger.getLogger(PublishTest.class);
-    private static final Category CATEGORY = AbderaMarshaller.factory().newCategory();
-    private static final Aggregate AGGREGATE = AbderaMarshaller.factory().newExtensionElement(AtomServerConstants.AGGREGATE);
-
-    static {
-        CATEGORY.setScheme("urn:test.scheme");
-        CATEGORY.setTerm("test.term");
-        CATEGORY.setLabel("test.label");
-
-        AGGREGATE.setCollection("test.agg");
-        AGGREGATE.setEntryId("myagg");
-    }
 
     @Before
     public void setupTestService() throws Exception {
@@ -44,8 +30,6 @@ public class PublishTest extends BaseAtomServerTestCase {
 
 
         Entry widgetEntry = createWidgetEntry(1234, "red", "red widget");
-        widgetEntry.addCategory(CATEGORY);
-        widgetEntry.addExtension(AGGREGATE);
 
         WebResource acme = root().path("atomserver-test").path("widgets").path("acme");
         WebResource categorized = acme.path("-").path("(urn:test.scheme)test.term");
@@ -151,6 +135,87 @@ public class PublishTest extends BaseAtomServerTestCase {
                               "atomserver-test/widgets/acme/1234",
                               responseEntry.getId().toString());
     }
+
+//    @Test
+    public void testOptimisticConcurrency() throws Exception {
+/*
+        ClientResponse response;
+
+        WebResource acme = root().path("atomserver-test").path("widgets").path("acme");
+
+        Entry initialVersion = createWidgetEntry(1234, "red", "red widget");
+
+        // POST THE ENTRY TO GET STARTED
+        response = acme
+                .accept(MediaType.APPLICATION_ATOM_XML)
+                .type(MediaType.APPLICATION_ATOM_XML)
+                .entity(initialVersion)
+                .post(ClientResponse.class);
+
+        assertEquals("POSTing an entry to a collection should return HTTP 201 (CREATED)",
+                     201,
+                     response.getStatus());
+        Entry responseEntry = response.getEntity(Entry.class);
+        String entryId = responseEntry.getSimpleExtension(AtomServerConstants.ENTRY_ID);
+        System.out.println("entryId = " + entryId);
+        String etag = responseEntry.getSimpleExtension(AtomServerConstants.ETAG);
+        System.out.println("etag = " + etag);
+
+        Entry updatedVersion = createWidgetEntry(1234, "blue", "blue widget");
+
+        response = acme.path(entryId)
+                .accept(MediaType.APPLICATION_ATOM_XML)
+                .type(MediaType.APPLICATION_ATOM_XML)
+                .entity(updatedVersion)
+                .put(ClientResponse.class);
+
+        assertEquals(200, response.getStatus());
+
+        responseEntry = response.getEntity(Entry.class);
+        entryId = responseEntry.getSimpleExtension(AtomServerConstants.ENTRY_ID);
+        System.out.println("entryId = " + entryId);
+        etag = responseEntry.getSimpleExtension(AtomServerConstants.ETAG);
+        System.out.println("etag = " + etag);
+ */
+
+
+        // This test should test out the various Optimistic Concurrency cases:
+        // -  ETags can be provided in either a header or an <as:etag/> element
+        // -  If BOTH methods of providing ETags are provided, they MUST match!
+        // -  If the ETag is omitted, the write fails
+        // -  If the Etag does not match, the write fails
+        // -  If the ETag is *, then Optimistic Concurrency is ignored for the request, and the
+        //    write succeeds
+        // -  If the Etag matches, then the write succeeds
+        //
+        // given all that, we need to check:
+        //
+        // PUBLISH WITH NO ETAG
+        //      publish should fail (409)
+        // PUBLISH WITH WRONG ETAG IN HEADER ONLY
+        //      publish should fail (409)
+        // PUBLISH WITH WRONG ETAG IN XML ONLY
+        //      publish should fail (409)
+        // PUBLISH WITH WRONG ETAG IN BOTH
+        //      publish should fail (409)
+        // PUBLISH WITH ONE RIGHT AND ONE WRONG (HEADER AND XML)
+        //      publish should fail (400)
+        // PUBLISH WITH RIGHT ETAG IN HEADER ONLY
+        //      publish should succeed
+        // PUBLISH WITH RIGHT ETAG IN XML ONLY
+        //      publish should succeed
+        // PUBLISH WITH RIGHT ETAG IN BOTH
+        //      publish should succeed
+        // PUBLISH WITH OVERRIDE IN HEADER ONLY
+        //      publish should succeed
+        // PUBLISH WITH OVERRIDE IN XML ONLY
+        //      publish should succeed
+        // PUBLISH WITH OVERRIDE IN BOTH (HEADER AND XML)
+        //      publish should succeed
+        // PUBLISH WITH OVERRIDE/ETAG MISMATCH
+        //      publish should fail (400).
+    }
+
 
     private void checkAggregatePresent(Entry entry) {
         assertEquals("expected our aggregate marker to be preserved",

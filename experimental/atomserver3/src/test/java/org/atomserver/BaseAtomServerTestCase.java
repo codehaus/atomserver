@@ -8,6 +8,7 @@ import org.apache.abdera.model.*;
 import org.apache.log4j.Logger;
 import org.atomserver.app.AbderaMarshaller;
 import org.atomserver.domain.Widget;
+import org.atomserver.ext.Aggregate;
 import org.junit.*;
 import org.simpleframework.xml.core.Persister;
 
@@ -104,11 +105,25 @@ public class BaseAtomServerTestCase {
                 getClass().getClassLoader().getResourceAsStream(location)).getRoot();
     }
 
+    public static final Category CATEGORY = AbderaMarshaller.factory().newCategory();
+    public static final Aggregate AGGREGATE = AbderaMarshaller.factory().newExtensionElement(AtomServerConstants.AGGREGATE);
+
+    static {
+        CATEGORY.setScheme("urn:test.scheme");
+        CATEGORY.setTerm("test.term");
+        CATEGORY.setLabel("test.label");
+
+        AGGREGATE.setCollection("test.agg");
+        AGGREGATE.setEntryId("myagg");
+    }
+
     protected static Entry createWidgetEntry(int id, String color, String name) throws Exception {
         Entry entry = AbderaMarshaller.factory().newEntry();
         StringWriter stringWriter = new StringWriter();
         PERSISTER.write(new Widget(id, color, name), stringWriter);
         entry.setContent(stringWriter.toString(), Content.Type.XML);
+        entry.addCategory(CATEGORY);
+        entry.addExtension(AGGREGATE);
         return entry;
     }
 
