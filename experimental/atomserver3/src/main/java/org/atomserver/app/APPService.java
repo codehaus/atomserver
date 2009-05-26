@@ -47,6 +47,9 @@ public class APPService extends ContainerResource<Service, Workspace, APPRoot, A
             throw new BadRequestException(
                     "Invalid Service Document - services must contain at least one workspace.");
         }
+
+        extractEntryFilters(service);
+
         for (Workspace workspace : service.getWorkspaces()) {
             String name = workspace.getSimpleExtension(AtomServerConstants.NAME);
             try {

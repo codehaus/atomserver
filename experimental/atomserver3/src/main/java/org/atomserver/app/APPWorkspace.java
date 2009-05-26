@@ -46,6 +46,9 @@ public class APPWorkspace extends ContainerResource<Workspace, Collection, APPSe
 
     @PUT
     public Workspace put(Workspace workspace) {
+
+        extractEntryFilters(workspace);
+
         for (Collection collection : workspace.getCollections()) {
             String name = workspace.getSimpleExtension(AtomServerConstants.NAME);
             try {
