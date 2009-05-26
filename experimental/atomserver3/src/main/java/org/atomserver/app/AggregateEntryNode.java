@@ -12,7 +12,7 @@ public class AggregateEntryNode implements EntryNode {
     private final Set<SimpleEntryNode> members = new HashSet<SimpleEntryNode>();
     private long timestamp;
     private Date lastUpdated;
-//    private String etag;
+
     private Set<EntryCategory> categories;
 
     public AggregateEntryNode(String entryId) {
@@ -40,7 +40,6 @@ public class AggregateEntryNode implements EntryNode {
     }
 
     public String getEtag() {
-//        return etag;
         // TODO: make sure that this is the way we want to handle aggregate ETags
         StringBuffer concatenatedEntryEtags = new StringBuffer();
         for (SimpleEntryNode entryNode : members) {
@@ -53,7 +52,6 @@ public class AggregateEntryNode implements EntryNode {
     public void update(long timestamp, Date lastUpdated, Set<EntryCategory> categories, String etag) {
         this.timestamp = timestamp;
         this.lastUpdated = lastUpdated;
-//        this.etag = etag;
         this.categories = categories == null ? Collections.EMPTY_SET : categories;
     }
 }

@@ -4,9 +4,9 @@ import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
 import org.apache.abdera.model.Link;
 import org.apache.abdera.model.Service;
-import org.apache.abdera.i18n.iri.IRI;
 import org.atomserver.content.ContentStore;
 import org.atomserver.AtomServerConstants;
+import org.atomserver.app.jaxrs.AbderaMarshaller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +16,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import static javax.ws.rs.core.MediaType.*;
 import javax.ws.rs.core.Response;
-import java.util.Collection;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.Comparator;

@@ -6,6 +6,7 @@ import org.apache.axiom.om.OMNode;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.atomserver.AtomServerConstants;
+import org.atomserver.app.jaxrs.AbderaMarshaller;
 import static org.atomserver.AtomServerConstants.APPLICATION_APP_XML;
 import org.atomserver.categories.CategoryQuery;
 import org.atomserver.categories.CategoryQueryParseException;

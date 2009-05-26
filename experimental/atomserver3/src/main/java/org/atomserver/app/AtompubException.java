@@ -1,6 +1,7 @@
 package org.atomserver.app;
 
 import org.atomserver.ext.Status;
+import org.atomserver.app.jaxrs.AbderaMarshaller;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;

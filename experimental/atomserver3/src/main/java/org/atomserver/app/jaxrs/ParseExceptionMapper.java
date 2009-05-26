@@ -1,4 +1,4 @@
-package org.atomserver.app;
+package org.atomserver.app.jaxrs;
 
 import org.apache.abdera.parser.ParseException;
 

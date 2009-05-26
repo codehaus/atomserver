@@ -6,7 +6,7 @@ import com.sun.jersey.api.client.config.DefaultClientConfig;
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.model.*;
 import org.apache.log4j.Logger;
-import org.atomserver.app.AbderaMarshaller;
+import org.atomserver.app.jaxrs.AbderaMarshaller;
 import org.atomserver.domain.Widget;
 import org.atomserver.ext.Aggregate;
 import org.junit.*;

@@ -23,6 +23,9 @@ public class PublishTest extends BaseAtomServerTestCase {
                 .post(ClientResponse.class);
     }
 
+
+
+
     @Test
     public void testEntryPublishingBasics() throws Exception {
         ClientResponse response;

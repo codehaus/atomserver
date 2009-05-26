@@ -5,6 +5,8 @@ import org.simpleframework.xml.Namespace;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Attribute;
 
+import java.util.Map;
+
 @Root
 @Namespace(reference = "http://atomserver.org/widgets/1.0", prefix = "widgets")
 public class Widget {

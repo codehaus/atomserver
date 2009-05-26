@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.atomserver.AtomServerConstants;
 import static org.atomserver.app.APPResponses.feedResponse;
+import org.atomserver.app.jaxrs.AbderaMarshaller;
 import org.atomserver.categories.CategoryQuery;
 import org.atomserver.categories.CategoryQueryParseException;
 import org.atomserver.categories.CategoryQueryParser;
@@ -293,7 +294,8 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
 
             aggregateEntryNode.update(entryNode.getTimestamp(),
                                       entryNode.getLastUpdated(),
-                                      new ArraySet(aggregateCategories), null);
+                                      new ArraySet(aggregateCategories),
+                                      null);
             index.updateEntryNodeIntoIndices(aggregateEntryNode);
         }
     }

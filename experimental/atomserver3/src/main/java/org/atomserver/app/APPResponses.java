@@ -15,15 +15,9 @@ public class APPResponses {
     }
 
     public static Response entryResponse(Entry entry, boolean created) {
-        Response.ResponseBuilder builder =
-                Response.status(created ? CREATED : OK)
-                        .entity(entry);
-        String etag = entry.getSimpleExtension(ETAG);
-        // TODO: the etag should never be null - we should verify that and remove this null check
-        if (etag != null) {
-            builder.tag(new EntityTag(etag));
-        }
-        return builder.build();
+        return Response.status(created ? CREATED : OK)
+                .entity(entry).tag(new EntityTag(entry.getSimpleExtension(ETAG)))
+                .build();
     }
 
     public static Response feedResponse(Feed feed) {

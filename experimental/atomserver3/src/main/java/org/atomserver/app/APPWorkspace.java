@@ -5,6 +5,7 @@ import org.apache.abdera.model.Workspace;
 import org.apache.abdera.model.Service;
 import org.apache.commons.lang.StringUtils;
 import org.atomserver.AtomServerConstants;
+import org.atomserver.app.jaxrs.AbderaMarshaller;
 import static org.atomserver.AtomServerConstants.APPLICATION_APP_XML;
 
 import javax.ws.rs.GET;
