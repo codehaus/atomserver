@@ -131,7 +131,8 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
 
     public Response postEntry(Entry entry) {
         // TODO: pluggable strategies for id generation
-        entry = updateEntry(UUID.randomUUID().toString().replaceAll("\\W", ""), entry);
+        // TODO: etag should not necessarily always be null here - we need to check for errors
+        entry = updateEntry(UUID.randomUUID().toString().replaceAll("\\W", ""), null, entry);
         return APPResponses.entryResponse(entry, entry.getPublished().equals(entry.getUpdated()));
 
     }
@@ -148,10 +149,12 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
 
     @PUT
     @Path("/{entryId : [^\\$][^/]*}")
-    public Response put(@PathParam("entryId") String entryId,
+    public Response put(@HeaderParam("ETag") String etagHeader,
+                        @PathParam("entryId") String entryId,
                         ExtensibleElement element) throws WebApplicationException {
+        String etag = extractEtag(etagHeader, element);
         if (element instanceof Entry) {
-            Entry entry = updateEntry(entryId, (Entry) element);
+            Entry entry = updateEntry(entryId, etag, (Entry) element);
             return APPResponses.entryResponse(entry, entry.getPublished().equals(entry.getUpdated()));
         } else if (element instanceof Categories) {
             return Response.status(Response.Status.OK)
@@ -162,7 +165,22 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
         }
     }
 
-    public Entry updateEntry(String entryId, Entry entry) {
+    private String extractEtag(String etagHeader, ExtensibleElement element) {
+        String etagXml = element.getSimpleExtension(AtomServerConstants.ETAG);
+        if (etagHeader == null) {
+            return etagXml;
+        } else if (etagXml == null || etagHeader.equals(etagXml)) {
+            return etagHeader;
+        } else {
+            throw new BadRequestException(
+                    format("Header ETag (%s) and XML Body Etag (%s) differ - please remove the " +
+                           "incorrect one and retry",
+                           etagHeader, etagXml));
+        }
+
+    }
+
+    public Entry updateEntry(String entryId, String etag, Entry entry) {
 
         log.debug(String.format("PUTting entry %s", entryId));
 
@@ -199,6 +217,17 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
         try {
             try {
                 SimpleEntryNode entryNode = collectionIndex.removeEntryNodeFromIndices(entryId);
+
+                if (!AtomServerConstants.OPTIMISTIC_CONCURRENCY_OVERRIDE.equals(etag) &&
+                    !(entryNode.getEtag() == null ?
+                      etag == null :
+                      entryNode.getEtag().equals(etag))) {
+
+                    throw new OptimisticConcurrencyException(
+                            format("Optimistic Concurrency Exception - provided ETag (%s) does " +
+                                   "not match previous ETag value of (%s)",
+                                   etag, entryNode.getEtag()));
+                }
 
                 entryNode.update(getService().timestamp.getAndIncrement(),
                                  new Date(),
@@ -238,6 +267,9 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
                 log.debug(String.format("successfully PUT entry %s", entryId));
                 return newEntry;
             } catch (WebApplicationException e) {
+                contentTxn.abort();
+                throw e;
+            } catch (AtompubException e) {
                 contentTxn.abort();
                 throw e;
             } catch (Exception e) {

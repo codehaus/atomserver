@@ -7,13 +7,16 @@ import static junit.framework.Assert.assertTrue;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
 import org.apache.log4j.Logger;
+import static org.atomserver.AtomServerConstants.OPTIMISTIC_CONCURRENCY_OVERRIDE;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.ws.rs.core.MediaType;
+import java.util.UUID;
 
 public class PublishTest extends BaseAtomServerTestCase {
     private static final Logger log = Logger.getLogger(PublishTest.class);
+    private static final String WRONG_ETAG = UUID.randomUUID().toString().replaceAll("\\W", "");
 
     @Before
     public void setupTestService() throws Exception {
@@ -22,8 +25,6 @@ public class PublishTest extends BaseAtomServerTestCase {
                 .entity(parse("org/atomserver/atomserver-test-service.xml"))
                 .post(ClientResponse.class);
     }
-
-
 
 
     @Test
@@ -44,6 +45,7 @@ public class PublishTest extends BaseAtomServerTestCase {
                         .type(MediaType.APPLICATION_ATOM_XML)
                         .accept(MediaType.APPLICATION_ATOM_XML)
                         .entity(widgetEntry)
+                        .header("ETag", OPTIMISTIC_CONCURRENCY_OVERRIDE)
                         .put(ClientResponse.class);
         assertEquals("initial publish of an entry should return an HTTP 201 (CREATED)",
                      201,
@@ -79,6 +81,7 @@ public class PublishTest extends BaseAtomServerTestCase {
                         .accept(MediaType.APPLICATION_ATOM_XML)
                         .type(MediaType.APPLICATION_ATOM_XML)
                         .entity(widgetEntry)
+                        .header("ETag", OPTIMISTIC_CONCURRENCY_OVERRIDE)
                         .put(ClientResponse.class);
         assertEquals("overwrite of an entry should return an HTTP 200 (OK)",
                      200,
@@ -109,6 +112,7 @@ public class PublishTest extends BaseAtomServerTestCase {
                         .accept(MediaType.APPLICATION_ATOM_XML)
                         .type(MediaType.APPLICATION_ATOM_XML)
                         .entity(widgetEntry)
+                        .header("ETag", OPTIMISTIC_CONCURRENCY_OVERRIDE)
                         .post(ClientResponse.class);
         assertEquals("POSTing an entry to a collection should return HTTP 201 (CREATED)",
                      201,
@@ -139,9 +143,9 @@ public class PublishTest extends BaseAtomServerTestCase {
                               responseEntry.getId().toString());
     }
 
-//    @Test
+    @Test
     public void testOptimisticConcurrency() throws Exception {
-/*
+
         ClientResponse response;
 
         WebResource acme = root().path("atomserver-test").path("widgets").path("acme");
@@ -153,6 +157,7 @@ public class PublishTest extends BaseAtomServerTestCase {
                 .accept(MediaType.APPLICATION_ATOM_XML)
                 .type(MediaType.APPLICATION_ATOM_XML)
                 .entity(initialVersion)
+                .header("ETag", OPTIMISTIC_CONCURRENCY_OVERRIDE)
                 .post(ClientResponse.class);
 
         assertEquals("POSTing an entry to a collection should return HTTP 201 (CREATED)",
@@ -160,27 +165,7 @@ public class PublishTest extends BaseAtomServerTestCase {
                      response.getStatus());
         Entry responseEntry = response.getEntity(Entry.class);
         String entryId = responseEntry.getSimpleExtension(AtomServerConstants.ENTRY_ID);
-        System.out.println("entryId = " + entryId);
         String etag = responseEntry.getSimpleExtension(AtomServerConstants.ETAG);
-        System.out.println("etag = " + etag);
-
-        Entry updatedVersion = createWidgetEntry(1234, "blue", "blue widget");
-
-        response = acme.path(entryId)
-                .accept(MediaType.APPLICATION_ATOM_XML)
-                .type(MediaType.APPLICATION_ATOM_XML)
-                .entity(updatedVersion)
-                .put(ClientResponse.class);
-
-        assertEquals(200, response.getStatus());
-
-        responseEntry = response.getEntity(Entry.class);
-        entryId = responseEntry.getSimpleExtension(AtomServerConstants.ENTRY_ID);
-        System.out.println("entryId = " + entryId);
-        etag = responseEntry.getSimpleExtension(AtomServerConstants.ETAG);
-        System.out.println("etag = " + etag);
- */
-
 
         // This test should test out the various Optimistic Concurrency cases:
         // -  ETags can be provided in either a header or an <as:etag/> element
@@ -195,28 +180,78 @@ public class PublishTest extends BaseAtomServerTestCase {
         //
         // PUBLISH WITH NO ETAG
         //      publish should fail (409)
+        etag = putNextEntry(acme, entryId, etag, null, null, 409);
         // PUBLISH WITH WRONG ETAG IN HEADER ONLY
         //      publish should fail (409)
+        etag = putNextEntry(acme, entryId, etag, WRONG_ETAG, null, 409);
         // PUBLISH WITH WRONG ETAG IN XML ONLY
         //      publish should fail (409)
+        etag = putNextEntry(acme, entryId, etag, null, WRONG_ETAG, 409);
         // PUBLISH WITH WRONG ETAG IN BOTH
         //      publish should fail (409)
+        etag = putNextEntry(acme, entryId, etag, WRONG_ETAG, WRONG_ETAG, 409);
         // PUBLISH WITH ONE RIGHT AND ONE WRONG (HEADER AND XML)
         //      publish should fail (400)
+        etag = putNextEntry(acme, entryId, etag, etag, WRONG_ETAG, 400);
         // PUBLISH WITH RIGHT ETAG IN HEADER ONLY
         //      publish should succeed
+        etag = putNextEntry(acme, entryId, etag, etag, null, 200);
         // PUBLISH WITH RIGHT ETAG IN XML ONLY
         //      publish should succeed
+        etag = putNextEntry(acme, entryId, etag, null, etag, 200);
         // PUBLISH WITH RIGHT ETAG IN BOTH
         //      publish should succeed
+        etag = putNextEntry(acme, entryId, etag, etag, etag, 200);
         // PUBLISH WITH OVERRIDE IN HEADER ONLY
         //      publish should succeed
+        etag = putNextEntry(acme, entryId, etag,
+                            OPTIMISTIC_CONCURRENCY_OVERRIDE, null, 200);
         // PUBLISH WITH OVERRIDE IN XML ONLY
         //      publish should succeed
+        etag = putNextEntry(acme, entryId, etag,
+                            null, OPTIMISTIC_CONCURRENCY_OVERRIDE, 200);
         // PUBLISH WITH OVERRIDE IN BOTH (HEADER AND XML)
         //      publish should succeed
+        etag = putNextEntry(acme, entryId, etag,
+                            OPTIMISTIC_CONCURRENCY_OVERRIDE, OPTIMISTIC_CONCURRENCY_OVERRIDE, 200);
         // PUBLISH WITH OVERRIDE/ETAG MISMATCH
         //      publish should fail (400).
+        etag = putNextEntry(acme, entryId, etag,
+                            etag, OPTIMISTIC_CONCURRENCY_OVERRIDE, 400);
+
+        // and finally, just make sure we can overwrite it one last time.
+        putNextEntry(acme, entryId, etag, etag, null, 200);
+    }
+
+    private String putNextEntry(WebResource acme,
+                                String entryId,
+                                String correctEtag,
+                                String headerEtag,
+                                String xmlEtag,
+                                int expectedStatus) throws Exception {
+        ClientResponse response;
+        Entry updatedVersion = createWidgetEntry(1234, "blue", UUID.randomUUID().toString());
+
+        WebResource.Builder builder = acme.path(entryId)
+                .accept(MediaType.APPLICATION_ATOM_XML)
+                .type(MediaType.APPLICATION_ATOM_XML)
+                .entity(updatedVersion);
+
+        if (headerEtag != null) {
+            builder.header("ETag", headerEtag);
+        }
+
+        if (xmlEtag != null) {
+            updatedVersion.addSimpleExtension(AtomServerConstants.ETAG, xmlEtag);
+        }
+
+        response = builder.put(ClientResponse.class);
+
+        assertEquals(expectedStatus, response.getStatus());
+
+        return 200 == expectedStatus ?
+               response.getEntity(Entry.class).getSimpleExtension(AtomServerConstants.ETAG) :
+               correctEtag;
     }
 
 

@@ -12,6 +12,7 @@ import org.atomserver.domain.Widget;
 import org.atomserver.ext.Status;
 import org.atomserver.test.EntryChecker;
 import org.atomserver.test.FeedFollower;
+import static org.atomserver.AtomServerConstants.OPTIMISTIC_CONCURRENCY_OVERRIDE;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,7 +53,10 @@ public class BasicTest extends BaseAtomServerTestCase {
             widgetEntry.addCategory("urn:div5", id % 5 == 0 ? "true" : "false", null);
             Entry entry =
                     root().path(collectionPath()).path(String.valueOf(id))
-                            .type(MediaType.APPLICATION_XML).entity(widgetEntry).put(Entry.class);
+                            .type(MediaType.APPLICATION_XML)
+                            .entity(widgetEntry)
+                            .header("ETag", OPTIMISTIC_CONCURRENCY_OVERRIDE)
+                            .put(Entry.class);
             StringWriter stringWriter = new StringWriter();
             entry.writeTo(stringWriter);
             log.debug(String.format("wrote entry : %s", stringWriter.toString()));
@@ -177,7 +181,9 @@ public class BasicTest extends BaseAtomServerTestCase {
             Entry widgetEntry = createWidgetEntry(id, colors[id % colors.length], name);
             widgetEntry.addCategory("urn:div5", id % 5 == 0 ? "true" : "false", null);
             root().path(collectionPath()).path(String.valueOf(id)).type(MediaType.APPLICATION_XML)
-                    .entity(widgetEntry).put(Entry.class);
+                    .entity(widgetEntry)
+                    .header("ETag", OPTIMISTIC_CONCURRENCY_OVERRIDE)
+                    .put(Entry.class);
         }
 
         assertEquals(20, follower.follow(
