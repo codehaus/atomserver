@@ -1,6 +1,7 @@
 package org.atomserver;
 
 import com.sun.jersey.api.client.UniformInterfaceException;
+import com.sun.jersey.api.client.ClientResponse;
 import org.apache.abdera.model.Collection;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Service;
@@ -147,9 +148,10 @@ public class BasicTest extends BaseAtomServerTestCase {
             root().path(entryId).accept(MediaType.APPLICATION_XML).get(Entry.class);
             fail("we expected an Exception");
         } catch (UniformInterfaceException e) {
-            Status status = e.getResponse().getEntity(Status.class);
-            assertEquals(404, status.getStatusCode());
-            assertEquals(String.format("%s NOT FOUND", entryId), status.getMessage());
+            ClientResponse response = e.getResponse();
+            assertEquals(404, response.getStatus());
+            assertEquals(String.format("%s NOT FOUND", entryId),
+                         response.getEntity(String.class));
         }
     }
 

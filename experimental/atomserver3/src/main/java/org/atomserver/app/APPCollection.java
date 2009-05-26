@@ -2,8 +2,8 @@ package org.atomserver.app;
 
 import org.apache.abdera.model.*;
 import org.apache.abdera.model.Collection;
-import org.apache.log4j.Logger;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.log4j.Logger;
 import org.atomserver.AtomServerConstants;
 import static org.atomserver.app.APPResponses.feedResponse;
 import org.atomserver.app.jaxrs.AbderaMarshaller;
@@ -115,10 +115,8 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
             // TODO: implement batching
             return Response.status(Response.Status.OK).entity(postBatch((Feed) element)).build();
         } else {
-            throw new WebApplicationException(
-                    Response.status(Response.Status.BAD_REQUEST)
-                            .entity(format("unknown entity type %s",
-                                           element.getClass().getSimpleName())).build());
+            throw new BadRequestException(
+                    format("unknown entity type %s", element.getClass().getSimpleName()));
         }
     }
 
@@ -143,8 +141,7 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
     public Response getEntry(@PathParam("entryId") String entryId) {
         SimpleEntryNode entryNode = collectionIndex.getEntry(entryId);
         if (entryNode == null) {
-            throw new AtompubException(404,
-                                       String.format("%s NOT FOUND", getFullEntryId(entryId)));
+            throw new NotFoundException(String.format("%s NOT FOUND", getFullEntryId(entryId)));
         }
         return APPResponses.entryResponse(convertToEntry(entryNode));
     }
@@ -160,10 +157,8 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
             return Response.status(Response.Status.OK)
                     .entity(putCategories(entryId, (Categories) element)).build();
         } else {
-            throw new WebApplicationException(
-                    Response.status(Response.Status.BAD_REQUEST)
-                            .entity(format("unknown entity type %s",
-                                           element.getClass().getSimpleName())).build());
+            throw new BadRequestException(
+                    format("unknown entity type %s", element.getClass().getSimpleName()));
         }
     }
 
@@ -183,7 +178,6 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
 
         // TODO: validate the <id> element (e.g. against the path)
 
-        
 
         ContentStore.Transaction contentTxn;
         try {
@@ -192,6 +186,7 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
                                                "text/plain",
                                                ContentUtils.toChannel(entry.getContent()));
         } catch (ContentStoreException e) {
+            // TODO: handle for real
             throw new WebApplicationException(e);
         }
 

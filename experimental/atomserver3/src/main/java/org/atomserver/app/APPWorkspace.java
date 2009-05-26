@@ -50,7 +50,7 @@ public class APPWorkspace extends ContainerResource<Workspace, Collection, APPSe
             String name = workspace.getSimpleExtension(AtomServerConstants.NAME);
             try {
                 getChild(name).put(collection);
-            } catch (WebApplicationException e) {
+            } catch (NotFoundException e) {
                 createChild(collection);
             }
         }
@@ -69,9 +69,7 @@ public class APPWorkspace extends ContainerResource<Workspace, Collection, APPSe
             validateName(name);
         }
         if (collection.getTitle() == null) {
-            throw new WebApplicationException(
-                    Response.status(Response.Status.BAD_REQUEST).entity(
-                            "Collections require an <atom:title> element.").build());
+            throw new BadRequestException("Collections require an <atom:title> element.");
         }
     }
 

@@ -44,16 +44,14 @@ public class APPService extends ContainerResource<Service, Workspace, APPRoot, A
     @PUT
     public Service put(Service service) {
         if (service.getWorkspaces().isEmpty()) {
-            throw new WebApplicationException(
-                    Response.status(Response.Status.BAD_REQUEST).entity(
-                            "Invalid Service Document - services must contain at least one " +
-                            "workspace.").build());
+            throw new BadRequestException(
+                    "Invalid Service Document - services must contain at least one workspace.");
         }
         for (Workspace workspace : service.getWorkspaces()) {
             String name = workspace.getSimpleExtension(AtomServerConstants.NAME);
             try {
                 getChild(name).put(workspace);
-            } catch (WebApplicationException e) {
+            } catch (NotFoundException e) {
                 createChild(workspace);
             }
         }
@@ -153,9 +151,7 @@ public class APPService extends ContainerResource<Service, Workspace, APPRoot, A
             validateName(name);
         }
         if (workspace.getTitle() == null) {
-            throw new WebApplicationException(
-                    Response.status(Response.Status.BAD_REQUEST).entity(
-                            "Workspaces require an <atom:title> element.").build());
+            throw new BadRequestException("Workspaces require an <atom:title> element.");
         }
     }
 

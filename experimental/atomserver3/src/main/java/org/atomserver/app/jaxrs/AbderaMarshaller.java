@@ -6,6 +6,7 @@ import org.apache.abdera.parser.stax.FOMFactory;
 import org.apache.abdera.parser.stax.FOMParser;
 import org.apache.commons.io.IOUtils;
 import static org.atomserver.AtomServerConstants.APPLICATION_APP_XML;
+import org.atomserver.app.BadRequestException;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
@@ -13,7 +14,6 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import static javax.ws.rs.core.MediaType.*;
 import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
@@ -47,10 +47,7 @@ public class AbderaMarshaller implements MessageBodyWriter, MessageBodyReader {
         // ensure that won't happen.
         byte[] bytes = IOUtils.toByteArray(inputStream);
         if (bytes.length == 0) {
-            throw new WebApplicationException(
-                    Response.status(Response.Status.BAD_REQUEST)
-                            .entity("Empty request body is not valid for this request.")
-                            .build());
+            throw new BadRequestException("Empty request body is not valid for this request.");
         }
         return parser().parse(new ByteArrayInputStream(bytes)).getRoot();
     }

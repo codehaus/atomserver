@@ -12,7 +12,6 @@ public class Status extends ExtensibleElementWrapper {
     private static final QName STATUS_CODE = new QName("code");
     private static final QName MESSAGE = new QName("message");
 
-
     public Status(Element element) {
         super(element);
     }

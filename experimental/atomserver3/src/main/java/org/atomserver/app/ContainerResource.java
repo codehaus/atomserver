@@ -8,12 +8,13 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
+import static java.lang.String.format;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 public abstract class ContainerResource<
         S extends ExtensibleElement,
@@ -21,19 +22,6 @@ public abstract class ContainerResource<
         P extends ContainerResource,
         C extends BaseResource<CS, ? extends ContainerResource>>
         extends BaseResource<S, P> {
-
-    protected abstract C createChild(String name,
-                                     CS staticRepresentation);
-
-    protected abstract void validateChildStaticRepresentation(CS childStaticRepresentation);
-
-
-    private final SortedMap<String, C> children = new TreeMap<String, C>();
-
-    protected ContainerResource(P parent,
-                                String name) {
-        super(parent, name);
-    }
 
     @POST
     public Response postChild(CS childStaticRepresentation) {
@@ -48,12 +36,34 @@ public abstract class ContainerResource<
         }
     }
 
+    @Path("/{name : [^\\$][^/]*}")
+    public C getChild(@PathParam("name") String name) {
+        C child = children.get(name);
+        if (child == null) {
+            throw new NotFoundException(
+                    format("%s not found within %s.", name, getPath()));
+        }
+        return child;
+    }
+
+
+    protected abstract C createChild(String name,
+                                     CS staticRepresentation);
+
+    protected abstract void validateChildStaticRepresentation(CS childStaticRepresentation);
+
+
+    private final SortedMap<String, C> children = new TreeMap<String, C>();
+
+    protected ContainerResource(P parent,
+                                String name) {
+        super(parent, name);
+    }
+
     protected static void validateName(String name) {
         if (!Pattern.compile("[a-zA-Z0-9-_]{1,32}").matcher(name).matches()) {
-            throw new WebApplicationException(
-                    Response.status(Response.Status.BAD_REQUEST)
-                            .entity(String.format(
-                                    "Invalid name [%s] in <as:name> element.", name)).build());
+            throw new BadRequestException(
+                    format("Invalid name [%s] in <as:name> element.", name));
         }
     }
 
@@ -70,10 +80,9 @@ public abstract class ContainerResource<
         try {
             child = children.get(name);
             if (child != null) {
-                throw new WebApplicationException(
-                        Response.status(Response.Status.CONFLICT)
-                                .entity(String.format("Duplicate error - %s already exists in %s.",
-                                                      name, getPath())).build());
+                throw new DuplicateException(
+                        format("Duplicate error - %s already exists in %s.",
+                               name, getPath()));
             }
             child = createChild(name, childStaticRepresentation);
             children.put(name, child);
@@ -81,18 +90,6 @@ public abstract class ContainerResource<
             lock.writeLock().unlock();
         }
 
-        return child;
-    }
-
-    @Path("/{name : [^\\$][^/]*}")
-    public C getChild(@PathParam("name")String name) {
-        C child = children.get(name);
-        if (child == null) {
-            throw new WebApplicationException(
-                    Response.status(Response.Status.NOT_FOUND)
-                            .entity(String.format("%s not found within %s.",
-                                                  name, getPath())).build());
-        }
         return child;
     }
 

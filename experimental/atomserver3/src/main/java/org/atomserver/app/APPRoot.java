@@ -101,9 +101,7 @@ public class APPRoot extends ContainerResource<Feed, Service, ContainerResource,
     protected void validateChildStaticRepresentation(Service childStaticRepresentation) {
         String name = childStaticRepresentation.getSimpleExtension(AtomServerConstants.NAME);
         if (name == null) {
-            throw new WebApplicationException(
-                    Response.status(Response.Status.BAD_REQUEST)
-                            .entity("You must provide an <as:name> element.").build());
+            throw new BadRequestException("You must provide an <as:name> element.");
         }
         validateName(name);
         

@@ -17,6 +17,15 @@ import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public abstract class BaseResource<S extends ExtensibleElement, P extends ContainerResource> {
+
+    @DELETE
+    public Response _delete() {
+        // TODO: deal with null parent (DELETE at ROOT is unavailable)
+        delete();
+        return Response.ok(String.format("%s was deleted successfully.", getPath())).build();
+    }
+
+
     private static final Logger log = Logger.getLogger(BaseResource.class);
 
     public abstract S getStaticRepresentation();
@@ -49,11 +58,8 @@ public abstract class BaseResource<S extends ExtensibleElement, P extends Contai
         return name;
     }
 
-    @DELETE
-    public Response delete() {
-        // TODO: deal with null parent (DELETE at ROOT is unavailable)
+    private void delete() {
         getParent().deleteChild(this);
-        return Response.ok(String.format("%s was deleted successfully.", getPath())).build();
     }
 
     public String getPath() {
