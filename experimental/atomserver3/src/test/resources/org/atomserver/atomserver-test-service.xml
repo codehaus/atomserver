@@ -13,6 +13,7 @@
             <as:name>bigcorp</as:name>
             <atom:title>BigCorp Widgets</atom:title>
         </collection>
+        <as:filter class="org.atomserver.test.TestingContentFilter"/>
     </workspace>
     <workspace>
         <as:name>whizbangs</as:name>

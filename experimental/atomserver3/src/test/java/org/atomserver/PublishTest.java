@@ -144,6 +144,102 @@ public class PublishTest extends BaseAtomServerTestCase {
     }
 
     @Test
+    public void testErrorConditions() throws Exception {
+
+        ClientResponse response;
+
+        WebResource acme = root().path("atomserver-test").path("widgets").path("acme");
+
+        response = acme
+                .accept(MediaType.APPLICATION_ATOM_XML)
+                .type(MediaType.APPLICATION_ATOM_XML)
+                .entity("")
+                .header("ETag", OPTIMISTIC_CONCURRENCY_OVERRIDE)
+                .post(ClientResponse.class);
+
+        assertEquals("expected a 400 BAD REQUEST when POSTing empty request body",
+                     400,
+                     response.getStatus());
+        assertEquals("expected an appropriate error message",
+                     "Empty request body is not valid for this request.",
+                     response.getEntity(String.class));
+
+        response = acme.path("1234")
+                .accept(MediaType.APPLICATION_ATOM_XML)
+                .type(MediaType.APPLICATION_ATOM_XML)
+                .entity("")
+                .header("ETag", OPTIMISTIC_CONCURRENCY_OVERRIDE)
+                .put(ClientResponse.class);
+
+        assertEquals("expected a 400 BAD REQUEST when PUTting empty request body",
+                     400,
+                     response.getStatus());
+        assertEquals("expected an appropriate error message",
+                     "Empty request body is not valid for this request.",
+                     response.getEntity(String.class));
+
+        response = acme
+                .accept(MediaType.APPLICATION_ATOM_XML)
+                .type(MediaType.APPLICATION_ATOM_XML)
+                .entity("<entry xmlns='http://www.w3.org/2005/Atom'></ent>")
+                .header("ETag", OPTIMISTIC_CONCURRENCY_OVERRIDE)
+                .post(ClientResponse.class);
+
+        assertEquals("expected a 400 BAD REQUEST when POSTing empty request body",
+                     400,
+                     response.getStatus());
+        assertEquals("expected an appropriate error message",
+                     "Unable to parse a valid object from request entity.",
+                     response.getEntity(String.class));
+
+        response = acme.path("1234")
+                .accept(MediaType.APPLICATION_ATOM_XML)
+                .type(MediaType.APPLICATION_ATOM_XML)
+                .entity("<entry xmlns='http://www.w3.org/2005/Atom'></ent>")
+                .header("ETag", OPTIMISTIC_CONCURRENCY_OVERRIDE)
+                .put(ClientResponse.class);
+
+        assertEquals("expected a 400 BAD REQUEST when PUTting empty request body",
+                     400,
+                     response.getStatus());
+        assertEquals("expected an appropriate error message",
+                     "Unable to parse a valid object from request entity.",
+                     response.getEntity(String.class));
+
+        response = acme
+                .accept(MediaType.APPLICATION_ATOM_XML)
+                .type(MediaType.APPLICATION_ATOM_XML)
+                .entity("<entry xmlns='http://www.w3.org/2005/Atom'>" +
+                        "<content type='text/plain'>INVALID</content>" +
+                        "</entry>")
+                .header("ETag", OPTIMISTIC_CONCURRENCY_OVERRIDE)
+                .post(ClientResponse.class);
+
+        assertEquals("expected a 400 BAD REQUEST when POSTing empty request body",
+                     400,
+                     response.getStatus());
+        assertEquals("expected an appropriate error message",
+                     "Invalid content!",
+                     response.getEntity(String.class));
+
+        response = acme.path("1234")
+                .accept(MediaType.APPLICATION_ATOM_XML)
+                .type(MediaType.APPLICATION_ATOM_XML)
+                .entity("<entry xmlns='http://www.w3.org/2005/Atom'>" +
+                        "<content type='text/plain'>INVALID</content>" +
+                        "</entry>")
+                .header("ETag", OPTIMISTIC_CONCURRENCY_OVERRIDE)
+                .put(ClientResponse.class);
+
+        assertEquals("expected a 400 BAD REQUEST when PUTting empty request body",
+                     400,
+                     response.getStatus());
+        assertEquals("expected an appropriate error message",
+                     "Invalid content!",
+                     response.getEntity(String.class));
+    }
+
+    @Test
     public void testOptimisticConcurrency() throws Exception {
 
         ClientResponse response;
