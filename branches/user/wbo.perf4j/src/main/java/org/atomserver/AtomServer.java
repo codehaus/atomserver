@@ -35,9 +35,10 @@ import org.atomserver.ext.batch.Status;
 import org.atomserver.uri.EntryTarget;
 import org.atomserver.uri.FeedTarget;
 import org.atomserver.utils.IOCLog;
-import org.atomserver.utils.perf.AutomaticStopWatch;
-import org.atomserver.utils.perf.PerformanceLog;
-import org.atomserver.utils.perf.StopWatch;
+//import org.atomserver.utils.perf.AutomaticStopWatch;
+//import org.atomserver.utils.perf.StopWatch;
+import org.perf4j.StopWatch;
+import org.perf4j.log4j.Log4JStopWatch;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -103,7 +104,6 @@ public class AtomServer extends AbstractProvider {
     //--------------
     private EntityTag service_etag = new EntityTag("service");
     private AtomService atomService;
-    private PerformanceLog perflog;
     private IOCLog errlog;
 
 
@@ -121,23 +121,6 @@ public class AtomServer extends AbstractProvider {
 
     protected AtomService getAtomService() {
         return atomService;
-    }
-
-    /**
-     * Set the optional Performance log. If present a logger will log performance statistics
-     * (i.e. start time, and elapsed time in milliseconds, along with some identifier) at
-     * several pertinent points within the AtomServer, including all methods in this class,
-     * as well as wrapping database access methods, etc. This method is meant to
-     * inject an PerformanceLog which has been configured externally in an IOC container like Spring.
-     * It is in this external configuration that you specify such details as the logger name, which, in turn,
-     * will define the actual name of the performance log file.
-     * @param perflog   Value to set
-     */
-    public void setPerformanceLog( PerformanceLog perflog ) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("AtomServer.setPerformanceLog: perflog= " + perflog);
-        }
-        this.perflog = perflog;
     }
 
     /**
@@ -169,7 +152,7 @@ public class AtomServer extends AbstractProvider {
      * as detailed above.
      */
     public ResponseContext getService(RequestContext request) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         if (logger.isInfoEnabled()) {
             logger.info("GET Service:: [ " + request.getUri() + " ]");
         }
@@ -237,9 +220,7 @@ public class AtomServer extends AbstractProvider {
             return handleTopLevelException(e, abdera, request);
         }
         finally {
-            if (perflog != null) {
-                perflog.log("GET.service", request.getUri().getPath(), stopWatch);
-            }
+            stopWatch.stop("GET.service", request.getUri().getPath());
         }
     }
 
@@ -254,7 +235,7 @@ public class AtomServer extends AbstractProvider {
      * as detailed above.
      */
     public ResponseContext getFeed(RequestContext request) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         if (logger.isInfoEnabled()) {
             logger.info("GET Feed:: [ " + request.getUri() + " ]");
         }
@@ -283,9 +264,7 @@ public class AtomServer extends AbstractProvider {
             return handleTopLevelException(e, abdera, request);
         }
         finally {
-            if (perflog != null) {
-                perflog.log("GET.feed", request.getUri().getPath(), stopWatch);
-            }
+            stopWatch.stop("GET.feed", request.getUri().getPath()) ;
         }
     }
 
@@ -300,7 +279,7 @@ public class AtomServer extends AbstractProvider {
      * as detailed above
      */
     public ResponseContext getEntry(RequestContext request) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         if (logger.isInfoEnabled()) {
             logger.info("GET Entry:: [ " + request.getUri() + " ]");
         }
@@ -329,9 +308,7 @@ public class AtomServer extends AbstractProvider {
             return handleTopLevelException(e, abdera, request);
         }
         finally {
-            if (perflog != null) {
-                perflog.log("GET.entry", request.getUri().getPath(), stopWatch);
-            }
+            stopWatch.stop("GET.entry", request.getUri().getPath()) ;
         }
     }
 
@@ -346,7 +323,7 @@ public class AtomServer extends AbstractProvider {
      * as detailed above. (201 indicates a successful creation)
      */
     public ResponseContext createEntry(RequestContext request) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         if (logger.isInfoEnabled()) {
             logger.info("POST Entry:: [ " + request.getUri() + " ]");
         }
@@ -354,9 +331,7 @@ public class AtomServer extends AbstractProvider {
         try {
             return handleSingleEntry(request, abdera);
         } finally {
-            if (perflog != null) {
-                perflog.log("POST.entry", request.getUri().getPath(), stopWatch);
-            }
+            stopWatch.stop("POST.entry", request.getUri().getPath());
         }
     }
 
@@ -373,7 +348,7 @@ public class AtomServer extends AbstractProvider {
      * as detailed above.
      */
     public ResponseContext deleteEntry(RequestContext request) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         if (logger.isInfoEnabled()) {
             logger.info("DELETE Entry:: [ " + request.getUri() + " ]");
         }
@@ -398,9 +373,7 @@ public class AtomServer extends AbstractProvider {
             return handleTopLevelException(e, abdera, request);
         }
         finally {
-            if (perflog != null) {
-                perflog.log("DELETE.entry", request.getUri().getPath(), stopWatch);
-            }
+            stopWatch.stop("DELETE.entry", request.getUri().getPath());
         }
     }
 
@@ -422,7 +395,7 @@ public class AtomServer extends AbstractProvider {
      * and otherwise, 200 for success.
      */
     public ResponseContext updateEntry(RequestContext request) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         if (logger.isInfoEnabled()) {
             logger.info("PUT Entry:: [ " + request.getUri() + " ]");
         }
@@ -440,9 +413,7 @@ public class AtomServer extends AbstractProvider {
                 return handleSingleEntry(request, abdera);
             }
         } finally {
-            if (perflog != null) {
-                perflog.log("PUT.entry", request.getUri().getPath(), stopWatch);
-            }
+            stopWatch.stop("PUT.entry", request.getUri().getPath());
         }
     }
 

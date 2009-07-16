@@ -194,8 +194,6 @@ public class TestingAtomServer {
             public TestWorkspaceConfigurer setXPathAutotaggerRules(String rules) {
                 RootBeanDefinition autotagger = new RootBeanDefinition(XPathAutoTagger.class);
                 MutablePropertyValues propertyValues = new MutablePropertyValues();
-                propertyValues.addPropertyValue("performanceLog",
-                                                new RuntimeBeanReference("org.atomserver-performanceLog"));
                 propertyValues.addPropertyValue("categoriesHandler",
                                                 new RuntimeBeanReference("org.atomserver-entryCategoriesHandler"));
                 propertyValues.addPropertyValue("script", rules);

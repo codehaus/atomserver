@@ -76,7 +76,6 @@
           depends-on="org.atomserver-propertyConfigurer"
           lazy-init="true" >
         <property name="service" ref="org.atomserver-atomService"/>
-        <property name="performanceLog" ref="org.atomserver-performanceLog"/>
         <property name="errorLog" ref="org.atomserver-errorLog"/>
     </bean>
 
@@ -95,7 +94,6 @@
           depends-on="org.atomserver-propertyConfigurer"
           lazy-init="true" >
         <property name="service" ref="org.atomserver-atomServiceV2"/>
-        <property name="performanceLog" ref="org.atomserver-performanceLog"/>
         <property name="errorLog" ref="org.atomserver-errorLog"/>
     </bean>
 
@@ -178,8 +176,6 @@
 
         <property name="uriHandler" ref="org.atomserver-uriHandler"/>
 
-        <property name="performanceLog" ref="org.atomserver-performanceLog"/>
-
         <property name="workspaces" ref="org.atomserver-workspaces"/>
     </bean>
 
@@ -206,8 +202,6 @@
         </property>
 
         <property name="uriHandler" ref="org.atomserver-uriHandlerV2"/>
-
-        <property name="performanceLog" ref="org.atomserver-performanceLog"/>
 
         <property name="workspaces" ref="org.atomserver-workspaces"/>
     </bean>
