@@ -19,16 +19,6 @@
      </layout>
   </appender>
 
-  <appender name="Perflog" class="org.apache.log4j.RollingFileAppender" >
-     <param name="File" value="${atomserver.logdir}/${atomserver.logfilename}.perf.log" />
-     <param name="Append" value="true" />
-     <param name="MaxFileSize"  value="20MB" />
-     <param name="MaxBackupIndex" value="10" />
-     <layout class="org.apache.log4j.PatternLayout">
-         <param name="ConversionPattern" value="%d{MM/dd/yy,HH:mm:ss:S},%m%n" />
-     </layout>
-  </appender>
-
   <appender name="Http500log" class="org.apache.log4j.RollingFileAppender" >
      <param name="File" value="${atomserver.logdir}/${atomserver.logfilename}.500errors.log" />
      <param name="Append" value="true" />
@@ -73,14 +63,6 @@
    <logger name="org.atomserver">
       <level value="${atomserver.loglevel}"/>
   </logger>
-
-<!-- replaced by perf4j -->
-<!--
-   <logger name="org.atomserver.perf" additivity="false">
-      <level value="INFO"/>
-      <appender-ref ref="Perflog"/>
-  </logger>
--->
 
    <logger name="org.atomserver.http500errors" additivity="false">
       <level value="INFO"/>
