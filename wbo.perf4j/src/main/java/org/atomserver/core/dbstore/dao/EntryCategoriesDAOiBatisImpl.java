@@ -21,10 +21,13 @@ import com.ibatis.sqlmap.client.SqlMapExecutor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.EntryDescriptor;
+import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryMetaData;
-import org.atomserver.utils.perf.AutomaticStopWatch;
-import org.atomserver.utils.perf.StopWatch;
+//import org.atomserver.utils.perf.AutomaticStopWatch;
+//import org.atomserver.utils.perf.StopWatch;
+import org.perf4j.StopWatch;
+import org.perf4j.log4j.Log4JStopWatch;
 import org.springframework.orm.ibatis.SqlMapClientCallback;
 
 import java.sql.SQLException;
@@ -86,7 +89,7 @@ public class EntryCategoriesDAOiBatisImpl
     /**
      */
     public int insertEntryCategory(EntryCategory entry) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntryCategoriesDAOiBatisImpl INSERT ==> " + entry);
         }
@@ -97,9 +100,7 @@ public class EntryCategoriesDAOiBatisImpl
             numRowsAffected = 1;
         }
         finally {
-            if (perflog != null) {
-                perflog.log("DB.insertEntryCategory", perflog.getPerfLogEntryCategoryString(entry), stopWatch);
-            }
+            stopWatch.stop("DB.insertEntryCategory", AtomServerPerfLogTagFormatter.getPerfLogEntryCategoryString(entry));
         }
         return numRowsAffected;
     }
@@ -107,7 +108,7 @@ public class EntryCategoriesDAOiBatisImpl
     /**
      */
     public void insertEntryCategoryBatch(List<EntryCategory> entryCategoryList) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         if (log.isTraceEnabled()) {
             log.trace("EntryCategoriesDAOiBatisImpl INSERT BATCH==> " + entryCategoryList);
         }
@@ -116,9 +117,7 @@ public class EntryCategoriesDAOiBatisImpl
                                                                        EntryCategoryBatcher.OperationType.INSERT));
         }
         finally {
-            if (perflog != null) {
-                perflog.log("DB.insertEntryCategoryBATCH", "", stopWatch);
-            }
+            stopWatch.stop("DB.insertEntryCategoryBATCH", "");
         }
     }
 
@@ -128,7 +127,7 @@ public class EntryCategoriesDAOiBatisImpl
     /**
      */
     public EntryCategory selectEntryCategory(EntryCategory entryQuery) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntryCategoriesDAOiBatisImpl SELECT ==> " + entryQuery);
         }
@@ -136,9 +135,9 @@ public class EntryCategoriesDAOiBatisImpl
             return (EntryCategory) (getSqlMapClientTemplate().queryForObject("selectEntryCategory", entryQuery));
         }
         finally {
-            if (perflog != null) {
-                perflog.log("DB.selectEntryCategory", perflog.getPerfLogEntryCategoryString(entryQuery), stopWatch);
-            }
+
+            stopWatch.stop("DB.selectEntryCategory",
+                           AtomServerPerfLogTagFormatter.getPerfLogEntryCategoryString(entryQuery));
         }
     }
 
@@ -150,7 +149,7 @@ public class EntryCategoriesDAOiBatisImpl
      * This form does delete the actual record from the DB.
      */
     public void deleteEntryCategory(EntryCategory entryQuery) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntryCategoriesDAOiBatisImpl DELETE [ " + entryQuery + " ]");
         }
@@ -158,16 +157,15 @@ public class EntryCategoriesDAOiBatisImpl
             getSqlMapClientTemplate().delete("deleteEntryCategory", entryQuery);
         }
         finally {
-            if (perflog != null) {
-                perflog.log("DB.deleteEntryCategory", perflog.getPerfLogEntryCategoryString(entryQuery), stopWatch);
-            }
+            stopWatch.stop("DB.deleteEntryCategory",
+                           AtomServerPerfLogTagFormatter.getPerfLogEntryCategoryString(entryQuery));
         }
     }
 
     /**
      */
     public void deleteEntryCategoryBatch(List<EntryCategory> entryCategoryList) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         if (log.isTraceEnabled()) {
             log.trace("EntryCategoriesDAOiBatisImpl DELETE BATCH==> " + entryCategoryList);
         }
@@ -176,9 +174,7 @@ public class EntryCategoriesDAOiBatisImpl
                                                                        EntryCategoryBatcher.OperationType.DELETE));
         }
         finally {
-            if (perflog != null) {
-                perflog.log("DB.deleteEntryCategoryBATCH", "", stopWatch);
-            }
+            stopWatch.stop("DB.deleteEntryCategoryBATCH", "");
         }
     }
 
@@ -187,7 +183,7 @@ public class EntryCategoriesDAOiBatisImpl
     //======================================
 
     public List<EntryCategory> selectEntriesCategories(String workspace, String collection, Set<String> entryIds) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         try {
             return getSqlMapClientTemplate().queryForList(
                     "selectCategoriesForEntries",
@@ -197,9 +193,7 @@ public class EntryCategoriesDAOiBatisImpl
                             .param("entryIds", new ArrayList<String>(entryIds)));
         }
         finally {
-            if (perflog != null) {
-                perflog.log("DB.selectEntriesForCategories", "[" + workspace + "." + collection + "]", stopWatch);
-            }
+            stopWatch.stop("DB.selectEntriesForCategories", "[" + workspace + "." + collection + "]");            
         }
     }
 
@@ -208,7 +202,7 @@ public class EntryCategoriesDAOiBatisImpl
     }
 
     public List<EntryCategory> selectEntryCategoriesInScheme(EntryDescriptor entryQuery, String scheme) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         try {
             EntryCategory paramMap = new EntryCategory();
             if (entryQuery instanceof EntryMetaData) {
@@ -223,9 +217,8 @@ public class EntryCategoriesDAOiBatisImpl
             return getSqlMapClientTemplate().queryForList("selectEntryCategories", paramMap);
         }
         finally {
-            if (perflog != null) {
-                perflog.log("DB.selectEntryCategoriesInScheme", perflog.getPerfLogEntryString(entryQuery), stopWatch);
-            }
+            stopWatch.stop("DB.selectEntryCategoriesInScheme",
+                           AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryQuery));
         }
     }
 
@@ -243,7 +236,7 @@ public class EntryCategoriesDAOiBatisImpl
     }
 
     private void deleteEntryCategoriesInScheme(EntryDescriptor entryQuery, Long entryStoreId, String scheme) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         try {
             EntryCategory paramMap = new EntryCategory();
             if (entryStoreId == null) {
@@ -257,30 +250,27 @@ public class EntryCategoriesDAOiBatisImpl
             getSqlMapClientTemplate().delete("deleteEntryCategories", paramMap);
         }
         finally {
-            if (perflog != null) {
-                perflog.log("DB.deleteEntryCategoriesInScheme", perflog.getPerfLogEntryString(entryQuery), stopWatch);
-            }
+            stopWatch.stop("DB.deleteEntryCategoriesInScheme",
+                           AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryQuery));
         }
     }
 
     /**
      */
     public List<String> selectDistictCollections(String workspace) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         try {
             return getSqlMapClientTemplate().queryForList("selectDistinctCollections", workspace);
         }
         finally {
-            if (perflog != null) {
-                perflog.log("DB.selectDistinctCollections", "[" + workspace + "]", stopWatch);
-            }
+            stopWatch.stop("DB.selectDistinctCollections", "[" + workspace + "]");            
         }
     }
 
     /**
      */
     public List<Map<String, String>> selectDistictCategoriesPerCollection(String workspace, String collection) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntryCategoriesDAOiBatisImpl::selectDistictCategoriesPerCollection [ " + workspace + " " + collection + " ]");
         }
@@ -292,9 +282,7 @@ public class EntryCategoriesDAOiBatisImpl
                             .param("collection", collection));
         }
         finally {
-            if (perflog != null) {
-                perflog.log("DB.selectDistinctCollections", "[" + workspace + "." + collection + "]", stopWatch);
-            }
+            stopWatch.stop("DB.selectDistinctCollections", "[" + workspace + "." + collection + "]");
         }
     }
 

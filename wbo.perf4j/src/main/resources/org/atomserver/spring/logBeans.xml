@@ -20,11 +20,11 @@
        xsi:schemaLocation="
            http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
-
+<!--
     <bean id="org.atomserver-statsTracker" 
           class="org.atomserver.utils.stats.StatsTracker"/>
-
-    <bean id="org.atomserver-performanceLog"
+-->
+<!--    <bean id="org.atomserver-performanceLog"
           class="org.atomserver.core.etc.AtomServerPerformanceLog">
         <property name="statsTracker" ref="org.atomserver-statsTracker"/>
         <property name="loggerName" value="org.atomserver.perf"/>
@@ -34,6 +34,7 @@
             </set>
         </property>
     </bean>
+i-->
 
     <bean id="org.atomserver-errorLog" class="org.atomserver.utils.IOCLog">
         <property name="loggerName" value="org.atomserver.http500errors"/>

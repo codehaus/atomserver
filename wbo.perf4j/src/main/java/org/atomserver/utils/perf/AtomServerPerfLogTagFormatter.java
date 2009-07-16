@@ -1,42 +1,27 @@
-/* Copyright (c) 2007 HomeAway, Inc.
- *  All rights reserved.  http://www.atomserver.org
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/* Copyright Homeaway, Inc 2005-2008. All Rights Reserved.
+ * No unauthorized use of this software.
  */
+package org.atomserver.utils.perf;
 
-package org.atomserver.core.etc;
-
-import java.util.Locale;
-
-import org.atomserver.utils.stats.StatsTrackingPerformanceLog;
 import org.atomserver.EntryDescriptor;
 import org.atomserver.core.EntryCategory;
 
+import java.util.Locale;
+
 /**
- * Adds some simple utility methods specific to AtomServer to the StatsTrackingPerformanceLog
+ * Simple utility methods specific to AtomServer to format tags for perf4j logging.
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
-public class AtomServerPerformanceLog extends StatsTrackingPerformanceLog {
-    
-    //~~~~~~~~~~~~~~~~~~~~~~
-    public String getPerfLogFeedString( Locale locale, String workspace, String collection ) { 
+public class AtomServerPerfLogTagFormatter {
+
+    public static String getPerfLogFeedString( Locale locale, String workspace, String collection ) {
         String localeStr = ( locale == null ) ? null : locale.toString();
         return getPerfLogFeedString( localeStr, workspace, collection );
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~
-    public String getPerfLogFeedString( String locale, String workspace, String collection ) { 
+    public static String getPerfLogFeedString( String locale, String workspace, String collection ) {
         StringBuffer buff = new StringBuffer();
         buff.append( "[" );
         buff.append( workspace );
@@ -49,10 +34,10 @@ public class AtomServerPerformanceLog extends StatsTrackingPerformanceLog {
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~
-    public String getPerfLogEntryString( EntryDescriptor entryQuery ) { 
-        if ( entryQuery == null ) 
+    public static String getPerfLogEntryString( EntryDescriptor entryQuery ) {
+        if ( entryQuery == null )
             return "";
-            
+
         StringBuffer buff = new StringBuffer();
         buff.append( "[" );
         buff.append( entryQuery.getWorkspace() );
@@ -70,8 +55,8 @@ public class AtomServerPerformanceLog extends StatsTrackingPerformanceLog {
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~
-    public String getPerfLogEntryCategoryString( EntryCategory entryQuery ) {
-        if ( entryQuery == null ) 
+    public static String getPerfLogEntryCategoryString( EntryCategory entryQuery ) {
+        if ( entryQuery == null )
             return "";
 
         StringBuffer buff = new StringBuffer();
@@ -88,5 +73,4 @@ public class AtomServerPerformanceLog extends StatsTrackingPerformanceLog {
         buff.append( "]" );
         return buff.toString();
     }
-
 }

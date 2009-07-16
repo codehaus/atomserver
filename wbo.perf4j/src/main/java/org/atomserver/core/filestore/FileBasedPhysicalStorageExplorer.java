@@ -20,11 +20,12 @@ package org.atomserver.core.filestore;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.EntryDescriptor;
 import org.atomserver.core.filestore.FileBasedContentStorage;
-import org.atomserver.utils.perf.SimpleStopWatch;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.perf4j.StopWatch;
+import org.perf4j.log4j.Log4JStopWatch;
 
 import java.io.File;
 import java.text.MessageFormat;
@@ -112,45 +113,51 @@ public abstract class FileBasedPhysicalStorageExplorer {
 
         log.debug(MessageFormat.format("Walking the store at {0}", rootDir.getPath()));
 
-        SimpleStopWatch stopWatch = new SimpleStopWatch();
-        stopWatch.start();
+//        SimpleStopWatch stopWatch = new SimpleStopWatch();
+//        stopWatch.start();
+        StopWatch stopWatch = new Log4JStopWatch();
 
-        beforeExploration();
+        try {
+            beforeExploration();
 
-        List<String> childDirs = null;
+            List<String> childDirs = null;
 
-        //allows the user to specify a child directory, otherwise it walks all top level directories
-        if (this.childDirectories != null) {
-            log.info(MessageFormat.format("User specified child directories found ({0}) will not walk top level directories", this.childDirectories));
-            childDirs = childDirectories;
-        } else {
-            log.info("No user specified child directory.  Exploring all top level directories.");
-            childDirs = new ArrayList<String>();
-            Collection files = FileUtils.listFiles(rootDir, null, false);
-            for (Iterator fileIter = files.iterator(); fileIter.hasNext();) {
-                File subFile = (File) fileIter.next();
-                if (subFile.isDirectory()
-                    && !subFile.isHidden()) {
-                    log.info(MessageFormat.format("Discovered top level directory {0}", subFile.getName()));
-                    childDirs.add(subFile.getName());
+            //allows the user to specify a child directory, otherwise it walks all top level directories
+            if (this.childDirectories != null) {
+                log.info(MessageFormat.format("User specified child directories found ({0}) will not walk top level directories", this.childDirectories));
+                childDirs = childDirectories;
+            } else {
+                log.info("No user specified child directory.  Exploring all top level directories.");
+                childDirs = new ArrayList<String>();
+                Collection files = FileUtils.listFiles(rootDir, null, false);
+                for (Iterator fileIter = files.iterator(); fileIter.hasNext();) {
+                    File subFile = (File) fileIter.next();
+                    if (subFile.isDirectory()
+                        && !subFile.isHidden()) {
+                        log.info(MessageFormat.format("Discovered top level directory {0}", subFile.getName()));
+                        childDirs.add(subFile.getName());
+                    }
                 }
             }
-        }
 
-        //iterate over each child dir and explore each one
-        for (String childDir : childDirs) {
-            log.info(MessageFormat.format("Exploring store {0}, child {1}", rootDir.getPath(), childDir));
+            //iterate over each child dir and explore each one
+            for (String childDir : childDirs) {
+                log.info(MessageFormat.format("Exploring store {0}, child {1}", rootDir.getPath(), childDir));
 
-            boolean foundFiles = explore(rootDir, childDir);
-            if (!foundFiles) {
-                throw new AtomServerException("Did not find any files in " + rootDir + " " + childDir);
+                boolean foundFiles = explore(rootDir, childDir);
+                if (!foundFiles) {
+                    throw new AtomServerException("Did not find any files in " + rootDir + " " + childDir);
+                }
             }
+
+            afterExploration();
+        }
+        finally {
+            stopWatch.stop("Exploring the property store","");
         }
 
-        afterExploration();
-
-        stopWatch.stop();
-        log.warn("Exploring the property store took " + stopWatch.getElapsed() + " secs");
+//        stopWatch.stop();
+//        log.warn("Exploring the property store took " + stopWatch.getElapsed() + " secs");
     }
 
     /**

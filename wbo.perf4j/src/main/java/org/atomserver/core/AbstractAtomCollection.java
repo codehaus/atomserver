@@ -28,14 +28,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.*;
 import org.atomserver.core.etc.AtomServerConstants;
-import org.atomserver.core.etc.AtomServerPerformanceLog;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.exceptions.BadContentException;
 import org.atomserver.exceptions.BadRequestException;
 import org.atomserver.ext.batch.Operation;
 import org.atomserver.uri.*;
-import org.atomserver.utils.perf.AutomaticStopWatch;
-import org.atomserver.utils.perf.StopWatch;
+import org.perf4j.StopWatch;
+import org.perf4j.log4j.Log4JStopWatch;
+import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
 import org.atomserver.utils.xml.XML;
 
 import java.io.IOException;
@@ -298,9 +298,9 @@ abstract public class AbstractAtomCollection implements AtomCollection {
      *
      * @return The PerformanceLog
      */
-    public AtomServerPerformanceLog getPerformanceLog() {
-        return ((AbstractAtomService) (parentAtomWorkspace.getParentAtomService())).getPerformanceLog();
-    }
+//    public AtomServerPerformanceLog getPerformanceLog() {
+//        return ((AbstractAtomService) (parentAtomWorkspace.getParentAtomService())).getPerformanceLog();
+//    }
 
     /**
      * {@inheritDoc}
@@ -833,14 +833,12 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     private void postProcessEntryContents(String entryXml, EntryMetaData entryMetaData) {
         EntryAutoTagger autoTagger = getAutoTagger();
         if (autoTagger != null) {
-            StopWatch stopWatch = new AutomaticStopWatch();
+            StopWatch stopWatch = new Log4JStopWatch();
             try {
                 autoTagger.tag(entryMetaData, entryXml);
             } finally {
-                if (getPerformanceLog() != null) {
-                    getPerformanceLog().log("XML.autoTagger", getPerformanceLog().getPerfLogEntryString(entryMetaData),
-                                            stopWatch);
-                }
+                stopWatch.stop("XML.autoTagger", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryMetaData));
+
             }
         }
     }
@@ -876,13 +874,11 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         // now validate the <content> with whatever Validator was registered (if any)
         ContentValidator validator = getContentValidator();
         if (validator != null) {
-            StopWatch stopWatch = new AutomaticStopWatch();
+            StopWatch stopWatch = new Log4JStopWatch();
             try {
                 validator.validate(entryXml);
             } finally {
-                if (getPerformanceLog() != null) {
-                    getPerformanceLog().log("XML.validator", getPerformanceLog().getPerfLogEntryString(entryTarget), stopWatch);
-                }
+                stopWatch.stop("XML.validator", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryTarget));
             }
         }
 
@@ -949,7 +945,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     protected Entry newEntry(Abdera abdera, EntryMetaData entryMetaData, EntryType entryType)
             throws AtomServerException {
 
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         try {
             Entry entry = newEntryWithCommonContentOnly(abdera, entryMetaData);
 
@@ -980,9 +976,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
 
             return entry;
         } finally {
-            if (getPerformanceLog() != null) {
-                getPerformanceLog().log("XML.fine.entry", getPerformanceLog().getPerfLogEntryString(entryMetaData), stopWatch);
-            }
+            stopWatch.stop("XML.fine.entry", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryMetaData));
         }
     }
 

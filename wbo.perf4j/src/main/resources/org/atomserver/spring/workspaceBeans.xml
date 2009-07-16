@@ -74,7 +74,6 @@
                     <property name="taggers">
                         <list>
                             <bean class="org.atomserver.core.autotaggers.XPathAutoTagger">
-                                <property name="performanceLog" ref="org.atomserver-performanceLog"/>
                                 <property name="categoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
                                 <property name="script">
                                     <value>
@@ -101,7 +100,6 @@
                             </bean>
                             <bean class="org.atomserver.core.autotaggers.StripingAutoTagger">
                                 <property name="categoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
-                                <property name="performanceLog" ref="org.atomserver-performanceLog"/>
                                 <property name="stripeScheme" value="urn:test-stripes"/>
                                 <property name="numStripes" value="4"/>
                                 <property name="radix" value="2"/>

@@ -45,9 +45,9 @@ public class IOCLog
         ioclog = LogFactory.getLog( loggerName );
         if ( ioclog == null || !ioclog.isInfoEnabled () ) {
             ioclog.warn( new Date () + "\nLogger is not currently ENABLED. \nEnable \""+
-                          loggerName + "=INFO\" in log4j.properties to see the log messages\n");
+                          loggerName + "=INFO\" in log4j.xml to see the log messages\n");
             stdlog.warn( new Date () + "\nLogger is not currently ENABLED. \nEnable \""+
-                          loggerName + "=INFO\" in log4j.properties to see the log messages\n");
+                          loggerName + "=INFO\" in log4j.xml to see the log messages\n");
         }   
         if ( stdlog.isDebugEnabled() ) 
             stdlog.debug( "IOCLog( " + loggerName + ") is ENABLED" );

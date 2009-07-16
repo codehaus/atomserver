@@ -18,9 +18,11 @@ package org.atomserver.core.dbstore.dao;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.atomserver.core.etc.AtomServerPerformanceLog;
-import org.atomserver.utils.perf.AutomaticStopWatch;
-import org.atomserver.utils.perf.StopWatch;
+//import org.atomserver.core.etc.AtomServerPerformanceLog;
+//import org.atomserver.utils.perf.AutomaticStopWatch;
+//import org.atomserver.utils.perf.StopWatch;
+import org.perf4j.StopWatch;
+import org.perf4j.log4j.Log4JStopWatch;
 import org.springframework.orm.ibatis.support.SqlMapClientDaoSupport;
 
 import java.util.*;
@@ -65,21 +67,10 @@ abstract public class AbstractDAOiBatisImpl
     }
 
     //======================================
-    //   set the PerformanceLogger from Spring
-    //======================================
-    protected AtomServerPerformanceLog perflog;
-
-    public void setPerformanceLog(AtomServerPerformanceLog perflog) {
-        if (logger.isDebugEnabled())
-            logger.debug( "PerformanceLogProvider.setPerformanceLog (DB) : perflog= " + perflog);
-        this.perflog = perflog;
-    }
-
-    //======================================
     //          COUNT QUERIES
     //======================================
     public int getTotalCountInternal(String workspace, String collection, String iBatisSQLId ) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         try {
             HashMap paramMap = new HashMap();
             paramMap.put("workspace", workspace);
@@ -90,9 +81,7 @@ abstract public class AbstractDAOiBatisImpl
             return ((count == null) ? 0 : count);
         }
         finally {
-            if ( perflog != null ) {
-                perflog.log( "DB.getTotalCount", "", stopWatch );
-            }
+            stopWatch.stop("DB.getTotalCount", "");
         }
     }
 
