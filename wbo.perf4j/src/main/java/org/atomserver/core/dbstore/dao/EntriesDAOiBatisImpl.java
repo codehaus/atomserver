@@ -30,8 +30,6 @@ import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
 import org.atomserver.utils.locale.LocaleUtils;
 import org.atomserver.utils.logic.BooleanExpression;
 import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
-//import org.atomserver.utils.perf.AutomaticStopWatch;
-//import org.atomserver.utils.perf.StopWatch;
 import org.perf4j.StopWatch;
 import org.perf4j.log4j.Log4JStopWatch;
 import org.springframework.dao.DataIntegrityViolationException;
