@@ -20,7 +20,6 @@ package org.atomserver.core.autotaggers;
 import org.atomserver.CategoriesHandler;
 import org.atomserver.EntryAutoTagger;
 import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
-//import org.atomserver.core.etc.AtomServerPerformanceLog;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

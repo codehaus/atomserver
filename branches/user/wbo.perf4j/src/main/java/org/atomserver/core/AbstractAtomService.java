@@ -27,7 +27,6 @@ import org.atomserver.AtomService;
 import org.atomserver.AtomWorkspace;
 import org.atomserver.CategoriesHandler;
 import org.atomserver.VirtualWorkspaceHandler;
-//import org.atomserver.core.etc.AtomServerPerformanceLog;
 import org.atomserver.exceptions.BadRequestException;
 import org.atomserver.uri.ServiceTarget;
 import org.atomserver.uri.URIHandler;

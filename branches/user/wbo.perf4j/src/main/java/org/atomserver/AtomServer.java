@@ -35,8 +35,6 @@ import org.atomserver.ext.batch.Status;
 import org.atomserver.uri.EntryTarget;
 import org.atomserver.uri.FeedTarget;
 import org.atomserver.utils.IOCLog;
-//import org.atomserver.utils.perf.AutomaticStopWatch;
-//import org.atomserver.utils.perf.StopWatch;
 import org.perf4j.StopWatch;
 import org.perf4j.log4j.Log4JStopWatch;
 
