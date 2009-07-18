@@ -19,15 +19,14 @@ package org.atomserver.core.autotaggers;
 
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryMetaData;
-import org.atomserver.core.etc.AtomServerPerformanceLog;
 import org.atomserver.utils.collections.BidirectionalMap;
-import org.atomserver.utils.perf.AutomaticStopWatch;
-import org.atomserver.utils.perf.StopWatch;
+import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
+import org.perf4j.StopWatch;
+import org.perf4j.log4j.Log4JStopWatch;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import javax.xml.namespace.NamespaceContext;
-import javax.xml.namespace.QName;
 import javax.xml.xpath.*;
 import java.io.StringReader;
 import java.text.MessageFormat;
@@ -218,12 +217,7 @@ public class XPathAutoTagger
 
     private static abstract class AbstractAction implements Action {
 
-        protected AtomServerPerformanceLog perflog;
         protected List<String> subExpressions = new ArrayList<String>();
-
-        public void setPerformanceLog( AtomServerPerformanceLog perflog ) {
-            this.perflog = perflog;
-        }
 
         protected String transformReplacements(String pattern) {
             StringBuffer buffer = new StringBuffer();
@@ -263,15 +257,13 @@ public class XPathAutoTagger
             if (xpath != null) {
                 try {
                     NodeList nodeList = null;
-                    StopWatch stopWatch = new AutomaticStopWatch();
+                    StopWatch stopWatch = new Log4JStopWatch();
                     try {
                         if (log.isDebugEnabled())
                             log.debug("executing XPATH expression : " + xpath);
                         nodeList = (NodeList) xPath.evaluate( xpath, inputSource, XPathConstants.NODESET);
                     } finally {
-                        if ( perflog != null ) {
-                            perflog.log( "XML.fine.xpath", perflog.getPerfLogEntryString(entry), stopWatch );
-                        }
+                        stopWatch.stop("XML.fine.xpath", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
                     }
                     for (int i = 0; i < nodeList.getLength(); i++) {
                         List<String> values = new ArrayList<String>(this.subExpressions.size() + 1);
@@ -336,15 +328,13 @@ public class XPathAutoTagger
                         XPath xPath) {
             try {
                 NodeList nodeList = null;
-                StopWatch stopWatch = new AutomaticStopWatch();
+                StopWatch stopWatch = new Log4JStopWatch();
                 try { 
                     if (log.isDebugEnabled()) 
                         log.debug("executing XPATH expression : " + xpath);
                     nodeList = (NodeList) xPath.evaluate( xpath, inputSource, XPathConstants.NODESET);
                 } finally {
-                    if ( perflog != null ) {
-                        perflog.log( "XML.fine.xpath", perflog.getPerfLogEntryString(entry), stopWatch );        
-                    }
+                    stopWatch.stop("XML.fine.xpath", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
                 }
 
                 for (int i = 0; i < nodeList.getLength(); i++) {
@@ -463,7 +453,6 @@ public class XPathAutoTagger
                         action.setScheme(matcher.group(2));
                         action.setTermPattern(matcher.group(3));
                         action.setLabelPattern(matcher.group(4));
-                        action.setPerformanceLog( perflog );
                         actions.add(action);
                         log.debug("found MATCH XPATH command : \"" + action.xpath +
                                   "\" {" + action.scheme + "}" + action.termPattern + "[" +

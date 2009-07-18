@@ -461,6 +461,11 @@
             <version>1.0.10</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.perf4j</groupId>
+            <artifactId>perf4j</artifactId>
+            <version>0.9.10</version>
+        </dependency>
     </dependencies>
 
     <!-- ======================================================================= -->
@@ -657,7 +662,7 @@
 
                     <forkMode>once</forkMode>
 
-                    <argLine>-Dlog4j.configuration=org/atomserver/log4j.properties</argLine>
+                    <argLine>-Dlog4j.configuration=org/atomserver/log4j.xml</argLine>
                     <reportFormat>plain</reportFormat>
                     <trimStackTrace>false</trimStackTrace>
                     <includes>
@@ -715,8 +720,8 @@
 
                         <!-- log4j ONLY looks at System properties .... sigh -->
                         <property>
-                            <name>log4j.configuration</name>
-                            <value>org/atomserver/log4j.properties</value>
+                            <name>lgg4j.configuration</name>
+                            <value>org/atomserver/log4j.xml</value>
                         </property>
                         <property>
                             <name>log4j.debug</name>
@@ -906,7 +911,7 @@
                         <!-- log4j ONLY looks at System properties .... sigh -->
                         <systemProperty>
                             <name>log4j.configuration</name>
-                            <value>org/atomserver/log4j.properties</value>
+                            <value>org/atomserver/log4j.xml</value>
                         </systemProperty>
 
                         <systemProperty>

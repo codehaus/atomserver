@@ -29,8 +29,9 @@ import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
 import org.atomserver.utils.locale.LocaleUtils;
 import org.atomserver.utils.logic.BooleanExpression;
-import org.atomserver.utils.perf.AutomaticStopWatch;
-import org.atomserver.utils.perf.StopWatch;
+import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
+import org.perf4j.StopWatch;
+import org.perf4j.log4j.Log4JStopWatch;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
@@ -155,7 +156,7 @@ public class EntriesDAOiBatisImpl
     //-----------------------
     private int internalEntryBatch(Collection<? extends EntryDescriptor> entryList,
                                    EntryBatcher.OperationType opType) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         if (log.isTraceEnabled()) {
             log.trace("EntryDAOiBatisImpl " + opType + " BATCH==> " + entryList);
         }
@@ -163,9 +164,7 @@ public class EntriesDAOiBatisImpl
             return (Integer) (getSqlMapClientTemplate().execute(new EntryBatcher(this, entryList, opType)));
         }
         finally {
-            if (perflog != null) {
-                perflog.log("DB." + opType + "EntryBATCH", "", stopWatch);
-            }
+            stopWatch.stop("DB." + opType + "EntryBATCH", "") ;
         }
     }
 
@@ -194,7 +193,7 @@ public class EntriesDAOiBatisImpl
     //     SELECT BATCH 
     //-----------------------
     public List<EntryMetaData> selectEntryBatch(Collection<? extends EntryDescriptor> entryQueries) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         try {
             ParamMap paramMap = prepareBatchParamMap(entryQueries);
 
@@ -205,9 +204,7 @@ public class EntriesDAOiBatisImpl
             return getSqlMapClientTemplate().queryForList("selectEntryBatch", paramMap);
         }
         finally {
-            if (perflog != null) {
-                perflog.log("DB.selectEntryBATCH", "", stopWatch);
-            }
+            stopWatch.stop("DB.selectEntryBATCH", "");
         }
     }
 
@@ -284,7 +281,7 @@ public class EntriesDAOiBatisImpl
                               boolean isSeedingDB,
                               Date published,
                               Date updated) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntriesDAOiBatisImpl INSERT ==> " + entry);
         }
@@ -302,9 +299,7 @@ public class EntriesDAOiBatisImpl
             }
         }
         finally {
-            if (perflog != null) {
-                perflog.log("DB.insertEntry", perflog.getPerfLogEntryString(entry), stopWatch);
-            }
+            stopWatch.stop("DB.insertEntry", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
         }
     }
 
@@ -328,7 +323,7 @@ public class EntriesDAOiBatisImpl
     //       SELECT
     //-----------------------
     public EntryMetaData selectEntry(EntryDescriptor entryQuery) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         try {
             Map<String, Object> paramMap = paramMap()
                     .param("workspace", entryQuery.getWorkspace())
@@ -342,14 +337,12 @@ public class EntriesDAOiBatisImpl
             return (EntryMetaData) (getSqlMapClientTemplate().queryForObject("selectEntry", paramMap));
         }
         finally {
-            if (perflog != null) {
-                perflog.log("DB.selectEntry", perflog.getPerfLogEntryString(entryQuery), stopWatch);
-            }
+            stopWatch.stop("DB.selectEntry", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryQuery));
         }
     }
 
     public List<EntryMetaData> selectEntries(EntryDescriptor entryQuery) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         try {
             Map<String, Object> paramMap = paramMap()
                     .param("workspace", entryQuery.getWorkspace())
@@ -364,9 +357,8 @@ public class EntriesDAOiBatisImpl
             return getSqlMapClientTemplate().queryForList("selectEntries", paramMap);
         }
         finally {
-            if (perflog != null) {
-                perflog.log("DB.selectEntries", perflog.getPerfLogEntryString(entryQuery), stopWatch);
-            }
+            stopWatch.stop("DB.selectEntries", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryQuery));
+
         }
     }
 
@@ -387,7 +379,7 @@ public class EntriesDAOiBatisImpl
      * so that Pagination will work properly.
      */
     public int updateEntry(EntryDescriptor entryQuery, boolean deleted) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         try {
             if (log.isDebugEnabled()) {
                 log.debug("EntriesDAOiBatisImpl UPDATE ==> [ " + entryQuery + " " + deleted + "]");
@@ -403,9 +395,7 @@ public class EntriesDAOiBatisImpl
                                                                            metaData));
         }
         finally {
-            if (perflog != null) {
-                perflog.log("DB.updateEntry", perflog.getPerfLogEntryString(entryQuery), stopWatch);
-            }
+            stopWatch.stop("DB.updateEntry", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryQuery));
         }
     }
 
@@ -424,7 +414,7 @@ public class EntriesDAOiBatisImpl
     }
 
     private int updateEntryOverwrite(EntryMetaData entry, boolean resetRevision, Date published, Date updated) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         try {
             if (log.isDebugEnabled()) {
                 log.debug("EntriesDAOiBatisImpl UPDATE ==> [resetRevision= " + resetRevision + "  entry= " + entry + "]");
@@ -438,9 +428,7 @@ public class EntriesDAOiBatisImpl
                                                             .param("updatedDate", updated));
         }
         finally {
-            if (perflog != null) {
-                perflog.log("DB.updateEntryOverwrite", perflog.getPerfLogEntryString(entry), stopWatch);
-            }
+            stopWatch.stop("DB.updateEntryOverwrite", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
         }
     }
 
@@ -526,7 +514,7 @@ public class EntriesDAOiBatisImpl
                                                                      Collection<BooleanExpression<AtomCategory>> categoriesQuery,
                                                                      List<String> joinWorkspaces) {
 
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         try {
             ParamMap paramMap = prepareParamMapForSelectEntries(updatedMin, updatedMax,
                                                                 startIndex, endIndex, pageSize,
@@ -554,11 +542,9 @@ public class EntriesDAOiBatisImpl
                     AggregateEntryMetaData.aggregate(feed.getWorkspace(), feed.getCollection(), locale, entries);
             return new ArrayList(map.values());
         } finally {
-            if (perflog != null) {
-                perflog.log("DB.selectAggregateEntriesByPage",
-                            perflog.getPerfLogFeedString(locale == null ? null : locale.toString(),
-                                                         feed.getWorkspace(), feed.getCollection()), stopWatch);
-            }
+            stopWatch.stop("DB.selectAggregateEntriesByPage",
+                     AtomServerPerfLogTagFormatter.getPerfLogFeedString(locale == null ? null : locale.toString(),feed.getWorkspace(), feed.getCollection())
+            );
         }
     }
 
@@ -570,7 +556,7 @@ public class EntriesDAOiBatisImpl
                                               String locale,
                                               FeedDescriptor feed,
                                               Collection<BooleanExpression<AtomCategory>> categoryQuery) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         try {
             ParamMap paramMap = prepareParamMapForSelectEntries(updatedMin, updatedMax,
                                                                 startIndex, endIndex,
@@ -590,10 +576,8 @@ public class EntriesDAOiBatisImpl
             return getSqlMapClientTemplate().queryForList("selectFeedPage", paramMap);
         }
         finally {
-            if (perflog != null) {
-                perflog.log("DB.selectFeedPage",
-                            perflog.getPerfLogFeedString(locale, feed.getWorkspace(), feed.getCollection()), stopWatch);
-            }
+            stopWatch.stop("DB.selectFeedPage",
+                             AtomServerPerfLogTagFormatter.getPerfLogFeedString(locale, feed.getWorkspace(), feed.getCollection()));
         }
     }
 
@@ -625,7 +609,7 @@ public class EntriesDAOiBatisImpl
      */
     public List<EntryMetaData> selectEntriesByLastModified(String workspace, String collection,
                                                            Date updatedMin) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         try {
             return getSqlMapClientTemplate().queryForList("selectEntriesByLastModified",
                                                           paramMap()
@@ -634,9 +618,7 @@ public class EntriesDAOiBatisImpl
                                                                   .param("collection", collection));
         }
         finally {
-            if (perflog != null) {
-                perflog.log("DB.selectEntriesByLastModified", "", stopWatch);
-            }
+            stopWatch.stop("DB.selectEntriesByLastModified", "");
         }
     }
 
@@ -644,7 +626,7 @@ public class EntriesDAOiBatisImpl
      */
     public List<EntryMetaData> selectEntriesByLastModifiedSeqNum(FeedDescriptor feed,
                                                                  Date updatedMin) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         try {
             return getSqlMapClientTemplate().queryForList("selectEntriesByLastModifiedSeqNum",
                                                           paramMap()
@@ -653,9 +635,7 @@ public class EntriesDAOiBatisImpl
                                                                   .param("collection", feed.getCollection()));
         }
         finally {
-            if (perflog != null) {
-                perflog.log("DB.selectEntriesByLastModifiedSeqNum", "", stopWatch);
-            }
+            stopWatch.stop("DB.selectEntriesByLastModifiedSeqNum", "");
         }
     }
 
@@ -698,7 +678,7 @@ public class EntriesDAOiBatisImpl
     }
 
     int getCountByLastModifiedInternal(String workspace, String collection, Date updatedMin) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         try {
             Integer count =
                     (Integer) (getSqlMapClientTemplate().queryForObject("$join".equals(workspace) ?
@@ -711,9 +691,7 @@ public class EntriesDAOiBatisImpl
             return count == null ? 0 : count;
         }
         finally {
-            if (perflog != null) {
-                perflog.log("DB.getCountByLastModified", "", stopWatch);
-            }
+            stopWatch.stop("DB.getCountByLastModified", "");
         }
     }
 

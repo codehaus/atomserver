@@ -27,7 +27,6 @@ import org.atomserver.AtomService;
 import org.atomserver.AtomWorkspace;
 import org.atomserver.CategoriesHandler;
 import org.atomserver.VirtualWorkspaceHandler;
-import org.atomserver.core.etc.AtomServerPerformanceLog;
 import org.atomserver.exceptions.BadRequestException;
 import org.atomserver.uri.ServiceTarget;
 import org.atomserver.uri.URIHandler;
@@ -61,7 +60,6 @@ abstract public class AbstractAtomService implements AtomService {
 
     protected URIHandler uriHandler = null;
     protected java.util.Map<String, AtomWorkspace> workspaces = null;
-    protected AtomServerPerformanceLog perflog;
 
     protected Map<String, VirtualWorkspaceHandler> virtualWorkspaceHandlers =
             new HashMap<String, VirtualWorkspaceHandler>();
@@ -92,32 +90,6 @@ abstract public class AbstractAtomService implements AtomService {
     }
 
     public void initialize() {}
-
-    /**
-     * Set the optional Performance log. If present a logger will log performance statistics
-     * (i.e. start time, and elapsed time in milliseconds, along with some identifier) at
-     * several pertinent points within this AtomService, including all methods in this class,
-     * as well as wrapping database access methods, etc. This method is meant to
-     * inject an PerformanceLog which has been configured externally in an IOC container like Spring.
-     * It is in this external configuration that you specify such details as the logger name, which, in turn,
-     * will define the actual name of the performance log file.
-     *
-     * @param perflog The AtomServerPerformanceLog
-     */
-    public void setPerformanceLog(AtomServerPerformanceLog perflog) {
-        if (log.isTraceEnabled()) {
-            log.trace("setPerformanceLog: perflog= " + perflog);
-        }
-        this.perflog = perflog;
-    }
-
-    /**
-     * Returns the optional Performance log.     
-     * @return The AtomServerPerformanceLog
-     */
-    public AtomServerPerformanceLog getPerformanceLog() {
-        return perflog;
-    }
 
     /**
      * {@inheritDoc}

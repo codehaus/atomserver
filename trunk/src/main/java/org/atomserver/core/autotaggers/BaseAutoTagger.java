@@ -20,7 +20,6 @@ package org.atomserver.core.autotaggers;
 import org.atomserver.CategoriesHandler;
 import org.atomserver.EntryAutoTagger;
 import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
-import org.atomserver.core.etc.AtomServerPerformanceLog;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -43,16 +42,6 @@ public abstract class BaseAutoTagger implements EntryAutoTagger {
     public void setCategoriesHandler(CategoriesHandler categoriesHandler) {
         this.categoriesHandler = categoriesHandler;
     }
-
-    /**
-     * Set from Spring
-     */
-    protected AtomServerPerformanceLog perflog;
-
-    public void setPerformanceLog(AtomServerPerformanceLog perflog) {
-        this.perflog = perflog;
-    }
-
 
     //>>>>>>>>>>>>>>>>>>>>>>>>>>
     // DEPRECATED OPTIONS -- remove in 2.0.5

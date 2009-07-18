@@ -24,7 +24,7 @@ export ATOMSERVER_ARGS="$ATOMSERVER_ARGS"
 echo " ATOMSERVER_ARGS= $ATOMSERVER_ARGS"
 
 # ----- log4j specific arguments
-#  NOTE: log4j ONLY takes System vars for substitution in log4j.properties
+#  NOTE: log4j ONLY takes System vars for substitution in log4j.xml
 #
 LOG4J_ARGS="-Droot.loglevel=DEBUG -Droot.appender=StdoutFile"
 LOG4J_ARGS="-Datomserver.loglevel=DEBUG -Datomserver.logdir=$ATOMSERVER_HOME/logs $LOG4J_ARGS"

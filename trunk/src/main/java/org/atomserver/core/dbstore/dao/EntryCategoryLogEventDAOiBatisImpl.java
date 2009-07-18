@@ -20,10 +20,11 @@ import com.ibatis.sqlmap.client.SqlMapExecutor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.EntryDescriptor;
+import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryCategoryLogEvent;
-import org.atomserver.utils.perf.AutomaticStopWatch;
-import org.atomserver.utils.perf.StopWatch;
+import org.perf4j.StopWatch;
+import org.perf4j.log4j.Log4JStopWatch;
 import org.springframework.orm.ibatis.SqlMapClientCallback;
 
 import java.sql.SQLException;
@@ -46,7 +47,7 @@ public class EntryCategoryLogEventDAOiBatisImpl
      * Insert a single EntryCategoryLogEvent
      */
     public int insertEntryCategoryLogEvent(EntryCategory entry) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntryCategoryLogEventDAOiBatisImpl INSERT ==> " + entry);
         }
@@ -57,9 +58,8 @@ public class EntryCategoryLogEventDAOiBatisImpl
             numRowsAffected = 1;
         }
         finally {
-            if (perflog != null) {
-                perflog.log("DB.insertEntryCategoryLogEvent", perflog.getPerfLogEntryCategoryString(entry), stopWatch);
-            }
+            stopWatch.stop("DB.insertEntryCategoryLogEvent",
+                           AtomServerPerfLogTagFormatter.getPerfLogEntryCategoryString(entry));
         }
         return numRowsAffected;
     }
@@ -69,7 +69,7 @@ public class EntryCategoryLogEventDAOiBatisImpl
      * I.e. Return EntryCategoryLogEvents that match both Entry and Scheme/Term.
      */
     public List<EntryCategoryLogEvent> selectEntryCategoryLogEventBySchemeAndTerm(EntryCategory entryQuery) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntryCategoryLogEventDAOiBatisImpl SELECT ==> " + entryQuery);
         }
@@ -78,10 +78,8 @@ public class EntryCategoryLogEventDAOiBatisImpl
                     (getSqlMapClientTemplate().queryForList("selectEntryCategoryLogEventsBySchemeTerm",entryQuery));
         }
         finally {
-            if (perflog != null) {
-                perflog.log("DB.selectEntryCategoryLogEventsBySchemeTerm",
-                            perflog.getPerfLogEntryCategoryString(entryQuery), stopWatch);
-            }
+              stopWatch.stop("DB.selectEntryCategoryLogEventsBySchemeTerm",
+                            AtomServerPerfLogTagFormatter.getPerfLogEntryCategoryString(entryQuery));
         }
     }
 
@@ -90,7 +88,7 @@ public class EntryCategoryLogEventDAOiBatisImpl
      * I.e. Return EntryCategoryLogEvents that match both Entry and Scheme/Term.
      */
     public List<EntryCategoryLogEvent> selectEntryCategoryLogEventByScheme(EntryCategory entryQuery) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntryCategoryLogEventDAOiBatisImpl SELECT ==> " + entryQuery);
         }
@@ -99,10 +97,8 @@ public class EntryCategoryLogEventDAOiBatisImpl
                     (getSqlMapClientTemplate().queryForList("selectEntryCategoryLogEventsByScheme",entryQuery));
         }
         finally {
-            if (perflog != null) {
-                perflog.log("DB.selectEntryCategoryLogEventsByScheme",
-                            perflog.getPerfLogEntryCategoryString(entryQuery), stopWatch);
-            }
+            stopWatch.stop("DB.selectEntryCategoryLogEventsByScheme",
+                            AtomServerPerfLogTagFormatter.getPerfLogEntryCategoryString(entryQuery));
         }
     }
 
@@ -110,7 +106,7 @@ public class EntryCategoryLogEventDAOiBatisImpl
      * Select ALL EntryCategoryLogEvents for a given Entry
      */
     public List<EntryCategoryLogEvent> selectEntryCategoryLogEvent(EntryCategory entryQuery) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntryCategoryLogEventDAOiBatisImpl SELECT ==> " + entryQuery);
         }
@@ -119,10 +115,8 @@ public class EntryCategoryLogEventDAOiBatisImpl
                     (getSqlMapClientTemplate().queryForList("selectEntryCategoryLogEvents",entryQuery));
         }
         finally {
-            if (perflog != null) {
-                perflog.log("DB.selectEntryCategoryLogEvents",
-                            perflog.getPerfLogEntryCategoryString(entryQuery), stopWatch);
-            }
+            stopWatch.stop("DB.selectEntryCategoryLogEvents",
+                            AtomServerPerfLogTagFormatter.getPerfLogEntryCategoryString(entryQuery));
         }
     }
 
@@ -132,7 +126,7 @@ public class EntryCategoryLogEventDAOiBatisImpl
      * If an Entry has, say two LogEvents for (urn:foo)bar, both will be deleted
      */
     public void deleteEntryCategoryLogEventBySchemeAndTerm(EntryCategory entryQuery) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntryCategoryLogEventDAOiBatisImpl DELETE [ " + entryQuery + " ]");
         }
@@ -140,9 +134,8 @@ public class EntryCategoryLogEventDAOiBatisImpl
             getSqlMapClientTemplate().delete("deleteEntryCategoryLogEventsBySchemeTerm", entryQuery);
         }
         finally {
-            if (perflog != null) {
-                perflog.log("DB.deleteEntryCategoryLogEvents", perflog.getPerfLogEntryCategoryString(entryQuery), stopWatch);
-            }
+            stopWatch.stop("DB.deleteEntryCategoryLogEvents",
+                           AtomServerPerfLogTagFormatter.getPerfLogEntryCategoryString(entryQuery));
         }
     }
 
@@ -152,7 +145,7 @@ public class EntryCategoryLogEventDAOiBatisImpl
      * If an Entry has, say two LogEvents for (urn:foo)bar, both will be deleted
      */
     public void deleteEntryCategoryLogEvent(EntryDescriptor entryQuery) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntryCategoryLogEventDAOiBatisImpl DELETE [ " + entryQuery + " ]");
         }
@@ -166,9 +159,8 @@ public class EntryCategoryLogEventDAOiBatisImpl
             getSqlMapClientTemplate().delete("deleteEntryCategoryLogEvents", paramMap);
         }
         finally {
-            if (perflog != null) {
-                perflog.log("DB.deleteEntryCategoryLogEvents", "", stopWatch);
-            }
+            stopWatch.stop("DB.deleteEntryCategoryLogEvents", "");
+
         }
     }
 
@@ -196,7 +188,7 @@ public class EntryCategoryLogEventDAOiBatisImpl
     }
 
     public void insertEntryCategoryLogEventBatch(List<EntryCategory> entryCategoryList) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         if (log.isTraceEnabled()) {
             log.trace("EntryCategoryLogEventDAOiBatisImpl INSERT BATCH==> " + entryCategoryList);
         }
@@ -204,9 +196,7 @@ public class EntryCategoryLogEventDAOiBatisImpl
             getSqlMapClientTemplate().execute(new EntryCategoryLogEventBatcher(entryCategoryList));
         }
         finally {
-            if (perflog != null) {
-                perflog.log("DB.insertEntryCategoryLogEventBATCH", "", stopWatch);
-            }
+            stopWatch.stop("DB.insertEntryCategoryLogEventBATCH", "");
         }
     }
 

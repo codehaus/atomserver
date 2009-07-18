@@ -38,11 +38,12 @@ import org.atomserver.exceptions.EntryNotFoundException;
 import org.atomserver.exceptions.OptimisticConcurrencyException;
 import org.atomserver.uri.*;
 import org.atomserver.utils.AtomDate;
+import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
 import org.atomserver.utils.collections.MultiHashMap;
 import org.atomserver.utils.collections.MultiMap;
 import org.atomserver.utils.logic.BooleanExpression;
-import org.atomserver.utils.perf.AutomaticStopWatch;
-import org.atomserver.utils.perf.StopWatch;
+import org.perf4j.StopWatch;
+import org.perf4j.log4j.Log4JStopWatch;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -78,7 +79,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
      }
 
     public void obliterateEntry(final EntryMetaData entryMetaData) {
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         try {
             getTransactionTemplate().execute(new TransactionCallbackWithoutResult() {
                 protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
@@ -88,23 +89,19 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                 }
             });
         } finally {
-            if ( getPerformanceLog() != null ) {
-                getPerformanceLog().log( "obliterate", getPerformanceLog().getPerfLogEntryString( entryMetaData ), stopWatch );
-            }
+            stopWatch.stop("obliterate", AtomServerPerfLogTagFormatter.getPerfLogEntryString( entryMetaData ));
         }
     }
 
     protected <T> T executeTransactionally(final TransactionalTask<T> task) {
         return (T) getTransactionTemplate().execute(new TransactionCallback() {
             public Object doInTransaction(TransactionStatus transactionStatus) {
-                StopWatch stopWatch = new AutomaticStopWatch();
+                StopWatch stopWatch = new Log4JStopWatch();
                 try {
                     getEntriesDAO().acquireLock();
                     return task.execute();
                 } finally {
-                    if ( getPerformanceLog() != null ) {
-                        getPerformanceLog().log( "DB.txn", "DB.txn", stopWatch );
-                    }
+                    stopWatch.stop("DB.txn", "DB.txn");
                 }
             }
         });
@@ -695,7 +692,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
 
         boolean isLastPage = ((startIndex != 0) && resultsFitOnOnePage);
 
-        StopWatch stopWatch = new AutomaticStopWatch();
+        StopWatch stopWatch = new Log4JStopWatch();
         try {
             addAtomServerFeedElements(feed, lastTimestamp );
             if ( ! resultsFitOnOnePage || startIndex != 0 ) {
@@ -707,9 +704,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             addFeedSelfLink(abdera, feed, iri, startIndex, pageSize );
             addFeedEntries( abdera, feed, sortedList, pageSize, entryType );
         } finally {
-            if ( getPerformanceLog() != null ) {
-                getPerformanceLog().log( "XML.feed", getPerformanceLog().getPerfLogFeedString( locale, workspace, collection ), stopWatch );
-            }
+            stopWatch.stop("XML.feed", AtomServerPerfLogTagFormatter.getPerfLogFeedString( locale, workspace, collection ));
         }
         return lastUpdatedDate;
     }
