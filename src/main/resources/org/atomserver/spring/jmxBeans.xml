@@ -40,9 +40,6 @@
                 <entry key="org.atomserver.beans:type=IsAliveHandler,name=isAliveHandler"
                        value-ref="org.atomserver-isAliveHandler"/>
               
-                <entry key="org.atomserver.beans:type=StatsTracker,name=StatsTracker"
-                       value-ref="org.atomserver-statsTracker"/>
-
                 <entry key="org.atomserver.beans:type=ContentStorage,name=ContentStorage"
                        value-ref="org.atomserver-contentStorage"/>
 

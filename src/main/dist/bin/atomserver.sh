@@ -151,7 +151,7 @@ if [ -z "$ATOMSERVER_LOG_FILENAME" ]; then
     ATOMSERVER_LOG_FILENAME=atomserver
 fi
 
-# this name MUST match that configured in the log4j.properties file
+# this name MUST match that configured in the log4j.xml file
 #  NOTE: it is only configurable so that we can use Stdout in development
 #        Make it ROOT_APPENDER=StdoutFile if you want it to log stdout to a file
 if [ -z "$ROOT_APPENDER" ]; then
@@ -422,9 +422,9 @@ ATOMSERVER_ARGS="-Datomserver.servlet.mapping=$ATOMSERVER_SERVLET_MAPPING $ATOMS
 ATOMSERVER_ARGS="-Dseed.database.with.pets=$SEED_DATABASE_WITH_PETS $ATOMSERVER_ARGS"
 
 # ----- log4j specific arguments
-#  NOTE: log4j ONLY takes System vars for substitution in log4j.properties
+#  NOTE: log4j ONLY takes System vars for substitution in log4j.xml
 #
-LOG4J_ARGS="-Dlog4j.configuration=org/atomserver/log4j.properties"
+LOG4J_ARGS="-Dlog4j.configuration=org/atomserver/log4j.xml"
 LOG4J_ARGS="-Droot.loglevel=$ROOT_LOG_LEVEL $LOG4J_ARGS"
 LOG4J_ARGS="-Droot.appender=$ROOT_APPENDER  $LOG4J_ARGS"
 LOG4J_ARGS="-Datomserver.loglevel=$ATOMSERVER_LOG_LEVEL $LOG4J_ARGS"

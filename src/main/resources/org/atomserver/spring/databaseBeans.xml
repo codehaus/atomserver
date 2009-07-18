@@ -61,7 +61,6 @@
         <property name="dataSource" ref="org.atomserver-dataSource"/>
         <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
         <property name="databaseType" value="${db.type}"/>
-        <property name="performanceLog" ref="org.atomserver-performanceLog"/>
         <property name="contentDAO" ref="org.atomserver-contentDAO"/>
         <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO" />
         <property name="entryCategoryLogEventDAO" ref="org.atomserver-entryCategoryLogEventDAO" />
@@ -74,7 +73,6 @@
         <property name="dataSource" ref="org.atomserver-dataSource"/>
         <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
         <property name="databaseType" value="${db.type}"/>
-        <property name="performanceLog" ref="org.atomserver-performanceLog"/>
     </bean>
 
     <bean id="org.atomserver-entryCategoriesDAO"
@@ -83,7 +81,6 @@
         <property name="dataSource" ref="org.atomserver-dataSource"/>
         <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
         <property name="databaseType" value="${db.type}"/>
-        <property name="performanceLog" ref="org.atomserver-performanceLog"/>
     </bean>
 
     <bean id="org.atomserver-entryCategoryLogEventDAO"
@@ -92,7 +89,6 @@
         <property name="dataSource" ref="org.atomserver-dataSource"/>
         <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
         <property name="databaseType" value="${db.type}"/>
-        <property name="performanceLog" ref="org.atomserver-performanceLog"/>
     </bean>
 
     <bean class="org.atomserver.utils.spring.StartupConstraints"
