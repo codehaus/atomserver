@@ -1,0 +1,8 @@
+<entry>
+  <id>widgets/acme/12345.en.xml</id>
+  <content type="xhtml">
+    <div xmlns="http://www.w3.org/1999/xhtml">
+      <somexml>blah</somexml>
+    </div>
+  </content>
+</entry>
