@@ -21,18 +21,18 @@ import com.ibatis.sqlmap.client.SqlMapExecutor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.EntryDescriptor;
-import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryMetaData;
+import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
+import org.atomserver.utils.perf.AtomServerStopWatch;
 import org.perf4j.StopWatch;
-import org.perf4j.log4j.Log4JStopWatch;
 import org.springframework.orm.ibatis.SqlMapClientCallback;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -87,7 +87,7 @@ public class EntryCategoriesDAOiBatisImpl
     /**
      */
     public int insertEntryCategory(EntryCategory entry) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntryCategoriesDAOiBatisImpl INSERT ==> " + entry);
         }
@@ -106,7 +106,7 @@ public class EntryCategoriesDAOiBatisImpl
     /**
      */
     public void insertEntryCategoryBatch(List<EntryCategory> entryCategoryList) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         if (log.isTraceEnabled()) {
             log.trace("EntryCategoriesDAOiBatisImpl INSERT BATCH==> " + entryCategoryList);
         }
@@ -125,7 +125,7 @@ public class EntryCategoriesDAOiBatisImpl
     /**
      */
     public EntryCategory selectEntryCategory(EntryCategory entryQuery) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntryCategoriesDAOiBatisImpl SELECT ==> " + entryQuery);
         }
@@ -147,7 +147,7 @@ public class EntryCategoriesDAOiBatisImpl
      * This form does delete the actual record from the DB.
      */
     public void deleteEntryCategory(EntryCategory entryQuery) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntryCategoriesDAOiBatisImpl DELETE [ " + entryQuery + " ]");
         }
@@ -163,7 +163,7 @@ public class EntryCategoriesDAOiBatisImpl
     /**
      */
     public void deleteEntryCategoryBatch(List<EntryCategory> entryCategoryList) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         if (log.isTraceEnabled()) {
             log.trace("EntryCategoriesDAOiBatisImpl DELETE BATCH==> " + entryCategoryList);
         }
@@ -181,7 +181,7 @@ public class EntryCategoriesDAOiBatisImpl
     //======================================
 
     public List<EntryCategory> selectEntriesCategories(String workspace, String collection, Set<String> entryIds) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         try {
             return getSqlMapClientTemplate().queryForList(
                     "selectCategoriesForEntries",
@@ -200,7 +200,7 @@ public class EntryCategoriesDAOiBatisImpl
     }
 
     public List<EntryCategory> selectEntryCategoriesInScheme(EntryDescriptor entryQuery, String scheme) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         try {
             EntryCategory paramMap = new EntryCategory();
             if (entryQuery instanceof EntryMetaData) {
@@ -234,7 +234,7 @@ public class EntryCategoriesDAOiBatisImpl
     }
 
     private void deleteEntryCategoriesInScheme(EntryDescriptor entryQuery, Long entryStoreId, String scheme) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         try {
             EntryCategory paramMap = new EntryCategory();
             if (entryStoreId == null) {
@@ -256,7 +256,7 @@ public class EntryCategoriesDAOiBatisImpl
     /**
      */
     public List<String> selectDistictCollections(String workspace) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         try {
             return getSqlMapClientTemplate().queryForList("selectDistinctCollections", workspace);
         }
@@ -268,7 +268,7 @@ public class EntryCategoriesDAOiBatisImpl
     /**
      */
     public List<Map<String, String>> selectDistictCategoriesPerCollection(String workspace, String collection) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntryCategoriesDAOiBatisImpl::selectDistictCategoriesPerCollection [ " + workspace + " " + collection + " ]");
         }

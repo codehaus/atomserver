@@ -20,11 +20,11 @@ import com.ibatis.sqlmap.client.SqlMapExecutor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.EntryDescriptor;
-import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryCategoryLogEvent;
+import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
+import org.atomserver.utils.perf.AtomServerStopWatch;
 import org.perf4j.StopWatch;
-import org.perf4j.log4j.Log4JStopWatch;
 import org.springframework.orm.ibatis.SqlMapClientCallback;
 
 import java.sql.SQLException;
@@ -47,7 +47,7 @@ public class EntryCategoryLogEventDAOiBatisImpl
      * Insert a single EntryCategoryLogEvent
      */
     public int insertEntryCategoryLogEvent(EntryCategory entry) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntryCategoryLogEventDAOiBatisImpl INSERT ==> " + entry);
         }
@@ -69,7 +69,7 @@ public class EntryCategoryLogEventDAOiBatisImpl
      * I.e. Return EntryCategoryLogEvents that match both Entry and Scheme/Term.
      */
     public List<EntryCategoryLogEvent> selectEntryCategoryLogEventBySchemeAndTerm(EntryCategory entryQuery) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntryCategoryLogEventDAOiBatisImpl SELECT ==> " + entryQuery);
         }
@@ -88,7 +88,7 @@ public class EntryCategoryLogEventDAOiBatisImpl
      * I.e. Return EntryCategoryLogEvents that match both Entry and Scheme/Term.
      */
     public List<EntryCategoryLogEvent> selectEntryCategoryLogEventByScheme(EntryCategory entryQuery) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntryCategoryLogEventDAOiBatisImpl SELECT ==> " + entryQuery);
         }
@@ -106,7 +106,7 @@ public class EntryCategoryLogEventDAOiBatisImpl
      * Select ALL EntryCategoryLogEvents for a given Entry
      */
     public List<EntryCategoryLogEvent> selectEntryCategoryLogEvent(EntryCategory entryQuery) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntryCategoryLogEventDAOiBatisImpl SELECT ==> " + entryQuery);
         }
@@ -126,7 +126,7 @@ public class EntryCategoryLogEventDAOiBatisImpl
      * If an Entry has, say two LogEvents for (urn:foo)bar, both will be deleted
      */
     public void deleteEntryCategoryLogEventBySchemeAndTerm(EntryCategory entryQuery) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntryCategoryLogEventDAOiBatisImpl DELETE [ " + entryQuery + " ]");
         }
@@ -145,7 +145,7 @@ public class EntryCategoryLogEventDAOiBatisImpl
      * If an Entry has, say two LogEvents for (urn:foo)bar, both will be deleted
      */
     public void deleteEntryCategoryLogEvent(EntryDescriptor entryQuery) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntryCategoryLogEventDAOiBatisImpl DELETE [ " + entryQuery + " ]");
         }
@@ -188,7 +188,7 @@ public class EntryCategoryLogEventDAOiBatisImpl
     }
 
     public void insertEntryCategoryLogEventBatch(List<EntryCategory> entryCategoryList) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         if (log.isTraceEnabled()) {
             log.trace("EntryCategoryLogEventDAOiBatisImpl INSERT BATCH==> " + entryCategoryList);
         }
