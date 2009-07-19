@@ -20,12 +20,12 @@ package org.atomserver.core.filestore;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.EntryDescriptor;
 import org.atomserver.core.filestore.FileBasedContentStorage;
+import org.atomserver.utils.perf.AtomServerStopWatch;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.perf4j.StopWatch;
-import org.perf4j.log4j.Log4JStopWatch;
 
 import java.io.File;
 import java.text.MessageFormat;
@@ -113,7 +113,9 @@ public abstract class FileBasedPhysicalStorageExplorer {
 
         log.debug(MessageFormat.format("Walking the store at {0}", rootDir.getPath()));
 
-        StopWatch stopWatch = new Log4JStopWatch();
+//        SimpleStopWatch stopWatch = new SimpleStopWatch();
+//        stopWatch.start();
+        StopWatch stopWatch = new AtomServerStopWatch();
 
         try {
             beforeExploration();

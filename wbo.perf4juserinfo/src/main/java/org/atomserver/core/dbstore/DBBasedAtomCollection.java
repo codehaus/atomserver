@@ -38,12 +38,12 @@ import org.atomserver.exceptions.EntryNotFoundException;
 import org.atomserver.exceptions.OptimisticConcurrencyException;
 import org.atomserver.uri.*;
 import org.atomserver.utils.AtomDate;
-import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
 import org.atomserver.utils.collections.MultiHashMap;
 import org.atomserver.utils.collections.MultiMap;
 import org.atomserver.utils.logic.BooleanExpression;
+import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
+import org.atomserver.utils.perf.AtomServerStopWatch;
 import org.perf4j.StopWatch;
-import org.perf4j.log4j.Log4JStopWatch;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -79,7 +79,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
      }
 
     public void obliterateEntry(final EntryMetaData entryMetaData) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         try {
             getTransactionTemplate().execute(new TransactionCallbackWithoutResult() {
                 protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
@@ -96,7 +96,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
     protected <T> T executeTransactionally(final TransactionalTask<T> task) {
         return (T) getTransactionTemplate().execute(new TransactionCallback() {
             public Object doInTransaction(TransactionStatus transactionStatus) {
-                StopWatch stopWatch = new Log4JStopWatch();
+                StopWatch stopWatch = new AtomServerStopWatch();
                 try {
                     getEntriesDAO().acquireLock();
                     return task.execute();
@@ -692,7 +692,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
 
         boolean isLastPage = ((startIndex != 0) && resultsFitOnOnePage);
 
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         try {
             addAtomServerFeedElements(feed, lastTimestamp );
             if ( ! resultsFitOnOnePage || startIndex != 0 ) {

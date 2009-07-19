@@ -18,11 +18,14 @@ package org.atomserver.core.dbstore.dao;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.atomserver.utils.perf.AtomServerStopWatch;
 import org.perf4j.StopWatch;
-import org.perf4j.log4j.Log4JStopWatch;
 import org.springframework.orm.ibatis.support.SqlMapClientDaoSupport;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
 
 /**
  * @author Chris Berry  (chriswberry at gmail.com)
@@ -67,7 +70,7 @@ abstract public class AbstractDAOiBatisImpl
     //          COUNT QUERIES
     //======================================
     public int getTotalCountInternal(String workspace, String collection, String iBatisSQLId ) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         try {
             HashMap paramMap = new HashMap();
             paramMap.put("workspace", workspace);

@@ -35,19 +35,16 @@ import org.atomserver.ext.batch.Status;
 import org.atomserver.uri.EntryTarget;
 import org.atomserver.uri.FeedTarget;
 import org.atomserver.utils.IOCLog;
+import org.atomserver.utils.perf.AtomServerStopWatch;
 import org.perf4j.StopWatch;
-import org.perf4j.log4j.Log4JStopWatch;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.io.StringWriter;
-import java.io.IOException;
 
 /**
  * AtomServer - This class is the true entry point for an AtomServer web application - the AbderaServlet
@@ -150,7 +147,7 @@ public class AtomServer extends AbstractProvider {
      * as detailed above.
      */
     public ResponseContext getService(RequestContext request) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         if (logger.isInfoEnabled()) {
             logger.info("GET Service:: [ " + request.getUri() + " ]");
         }
@@ -233,7 +230,7 @@ public class AtomServer extends AbstractProvider {
      * as detailed above.
      */
     public ResponseContext getFeed(RequestContext request) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         if (logger.isInfoEnabled()) {
             logger.info("GET Feed:: [ " + request.getUri() + " ]");
         }
@@ -277,7 +274,7 @@ public class AtomServer extends AbstractProvider {
      * as detailed above
      */
     public ResponseContext getEntry(RequestContext request) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         if (logger.isInfoEnabled()) {
             logger.info("GET Entry:: [ " + request.getUri() + " ]");
         }
@@ -321,7 +318,7 @@ public class AtomServer extends AbstractProvider {
      * as detailed above. (201 indicates a successful creation)
      */
     public ResponseContext createEntry(RequestContext request) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         if (logger.isInfoEnabled()) {
             logger.info("POST Entry:: [ " + request.getUri() + " ]");
         }
@@ -346,7 +343,7 @@ public class AtomServer extends AbstractProvider {
      * as detailed above.
      */
     public ResponseContext deleteEntry(RequestContext request) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         if (logger.isInfoEnabled()) {
             logger.info("DELETE Entry:: [ " + request.getUri() + " ]");
         }
@@ -393,7 +390,7 @@ public class AtomServer extends AbstractProvider {
      * and otherwise, 200 for success.
      */
     public ResponseContext updateEntry(RequestContext request) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         if (logger.isInfoEnabled()) {
             logger.info("PUT Entry:: [ " + request.getUri() + " ]");
         }

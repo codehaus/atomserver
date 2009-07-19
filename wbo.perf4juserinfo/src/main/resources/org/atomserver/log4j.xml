@@ -78,7 +78,7 @@
 
   <root>
     <level value="${root.loglevel}"/>
-    <!-- appender-ref ref="${root.appender}"/>  - does not work with log4j.1.2.13 -->
-    <appender-ref ref="StdoutFile" />
+    <!-- appender-ref ref="${root.appender}" />  log4j 1.2.13 does not substitute -->
+    <appender-ref ref="StdoutFile" /> 
   </root>
 </log4j:configuration>

@@ -46,4 +46,17 @@
         <url-pattern>/*</url-pattern>
     </servlet-mapping>
 
+  <filter>
+    <filter-name>
+      UserFilter
+    </filter-name>
+    <filter-class>org.atomserver.server.servlet.UserInfoFilter</filter-class>
+  </filter>
+
+  <filter-mapping>
+    <filter-name>UserFilter</filter-name>
+    <servlet-name>atomserver</servlet-name>
+  </filter-mapping>
+
+
 </web-app>
