@@ -323,7 +323,6 @@ public class EntriesDAOiBatisImpl
     //       SELECT
     //-----------------------
     public EntryMetaData selectEntry(EntryDescriptor entryQuery) {
-        Thread.dumpStack();
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
             Map<String, Object> paramMap = paramMap()
