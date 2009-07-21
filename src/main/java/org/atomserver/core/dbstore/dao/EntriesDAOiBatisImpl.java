@@ -30,8 +30,8 @@ import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
 import org.atomserver.utils.locale.LocaleUtils;
 import org.atomserver.utils.logic.BooleanExpression;
 import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
+import org.atomserver.utils.perf.AtomServerStopWatch;
 import org.perf4j.StopWatch;
-import org.perf4j.log4j.Log4JStopWatch;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
@@ -156,7 +156,7 @@ public class EntriesDAOiBatisImpl
     //-----------------------
     private int internalEntryBatch(Collection<? extends EntryDescriptor> entryList,
                                    EntryBatcher.OperationType opType) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         if (log.isTraceEnabled()) {
             log.trace("EntryDAOiBatisImpl " + opType + " BATCH==> " + entryList);
         }
@@ -193,7 +193,7 @@ public class EntriesDAOiBatisImpl
     //     SELECT BATCH 
     //-----------------------
     public List<EntryMetaData> selectEntryBatch(Collection<? extends EntryDescriptor> entryQueries) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         try {
             ParamMap paramMap = prepareBatchParamMap(entryQueries);
 
@@ -281,7 +281,7 @@ public class EntriesDAOiBatisImpl
                               boolean isSeedingDB,
                               Date published,
                               Date updated) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntriesDAOiBatisImpl INSERT ==> " + entry);
         }
@@ -323,7 +323,7 @@ public class EntriesDAOiBatisImpl
     //       SELECT
     //-----------------------
     public EntryMetaData selectEntry(EntryDescriptor entryQuery) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         try {
             Map<String, Object> paramMap = paramMap()
                     .param("workspace", entryQuery.getWorkspace())
@@ -342,7 +342,7 @@ public class EntriesDAOiBatisImpl
     }
 
     public List<EntryMetaData> selectEntries(EntryDescriptor entryQuery) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         try {
             Map<String, Object> paramMap = paramMap()
                     .param("workspace", entryQuery.getWorkspace())
@@ -379,7 +379,7 @@ public class EntriesDAOiBatisImpl
      * so that Pagination will work properly.
      */
     public int updateEntry(EntryDescriptor entryQuery, boolean deleted) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         try {
             if (log.isDebugEnabled()) {
                 log.debug("EntriesDAOiBatisImpl UPDATE ==> [ " + entryQuery + " " + deleted + "]");
@@ -414,7 +414,7 @@ public class EntriesDAOiBatisImpl
     }
 
     private int updateEntryOverwrite(EntryMetaData entry, boolean resetRevision, Date published, Date updated) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         try {
             if (log.isDebugEnabled()) {
                 log.debug("EntriesDAOiBatisImpl UPDATE ==> [resetRevision= " + resetRevision + "  entry= " + entry + "]");
@@ -514,7 +514,7 @@ public class EntriesDAOiBatisImpl
                                                                      Collection<BooleanExpression<AtomCategory>> categoriesQuery,
                                                                      List<String> joinWorkspaces) {
 
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         try {
             ParamMap paramMap = prepareParamMapForSelectEntries(updatedMin, updatedMax,
                                                                 startIndex, endIndex, pageSize,
@@ -556,7 +556,7 @@ public class EntriesDAOiBatisImpl
                                               String locale,
                                               FeedDescriptor feed,
                                               Collection<BooleanExpression<AtomCategory>> categoryQuery) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         try {
             ParamMap paramMap = prepareParamMapForSelectEntries(updatedMin, updatedMax,
                                                                 startIndex, endIndex,
@@ -609,7 +609,7 @@ public class EntriesDAOiBatisImpl
      */
     public List<EntryMetaData> selectEntriesByLastModified(String workspace, String collection,
                                                            Date updatedMin) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         try {
             return getSqlMapClientTemplate().queryForList("selectEntriesByLastModified",
                                                           paramMap()
@@ -626,7 +626,7 @@ public class EntriesDAOiBatisImpl
      */
     public List<EntryMetaData> selectEntriesByLastModifiedSeqNum(FeedDescriptor feed,
                                                                  Date updatedMin) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         try {
             return getSqlMapClientTemplate().queryForList("selectEntriesByLastModifiedSeqNum",
                                                           paramMap()
@@ -678,7 +678,7 @@ public class EntriesDAOiBatisImpl
     }
 
     int getCountByLastModifiedInternal(String workspace, String collection, Date updatedMin) {
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         try {
             Integer count =
                     (Integer) (getSqlMapClientTemplate().queryForObject("$join".equals(workspace) ?

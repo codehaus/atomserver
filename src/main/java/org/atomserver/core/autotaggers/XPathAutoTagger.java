@@ -21,8 +21,8 @@ import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.utils.collections.BidirectionalMap;
 import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
+import org.atomserver.utils.perf.AtomServerStopWatch;
 import org.perf4j.StopWatch;
-import org.perf4j.log4j.Log4JStopWatch;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
@@ -257,7 +257,7 @@ public class XPathAutoTagger
             if (xpath != null) {
                 try {
                     NodeList nodeList = null;
-                    StopWatch stopWatch = new Log4JStopWatch();
+                    StopWatch stopWatch = new AtomServerStopWatch();
                     try {
                         if (log.isDebugEnabled())
                             log.debug("executing XPATH expression : " + xpath);
@@ -328,7 +328,7 @@ public class XPathAutoTagger
                         XPath xPath) {
             try {
                 NodeList nodeList = null;
-                StopWatch stopWatch = new Log4JStopWatch();
+                StopWatch stopWatch = new AtomServerStopWatch();
                 try { 
                     if (log.isDebugEnabled()) 
                         log.debug("executing XPATH expression : " + xpath);

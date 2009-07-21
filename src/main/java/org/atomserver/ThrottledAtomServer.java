@@ -20,6 +20,7 @@ import org.apache.abdera.protocol.server.RequestContext;
 import org.apache.abdera.protocol.server.ResponseContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.atomserver.server.servlet.AtomServerUserInfo;
 import org.atomserver.utils.thread.ManagedThreadPoolTaskExecutor;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
@@ -91,9 +92,11 @@ public class ThrottledAtomServer extends AtomServerWrapper {
      * @return The Abdera ResponseContext
      */
     public ResponseContext createEntry(final RequestContext request) {
+        final String t_user = AtomServerUserInfo.getUser();
         Callable<ResponseContext> callableTask =
                 new Callable<ResponseContext>() {
                     public ResponseContext call() {
+                        AtomServerUserInfo.setUser(t_user);
                         return getAtomServer().createEntry(request);
                     }
                 };
@@ -109,9 +112,11 @@ public class ThrottledAtomServer extends AtomServerWrapper {
      * @return The Abdera ResponseContext
      */
     public ResponseContext updateEntry(final RequestContext request) {
+        final String t_user = AtomServerUserInfo.getUser();
         Callable<ResponseContext> callableTask =
                 new Callable<ResponseContext>() {
                     public ResponseContext call() {
+                        AtomServerUserInfo.setUser(t_user);
                         return getAtomServer().updateEntry(request);
                     }
                 };
@@ -127,9 +132,11 @@ public class ThrottledAtomServer extends AtomServerWrapper {
      * @return The Abdera ResponseContext
      */
     public ResponseContext deleteEntry(final RequestContext request) {
+        final String t_user = AtomServerUserInfo.getUser();
         Callable<ResponseContext> callableTask =
                 new Callable<ResponseContext>() {
                     public ResponseContext call() {
+                        AtomServerUserInfo.setUser(t_user);
                         return getAtomServer().deleteEntry(request);
                     }
                 };
