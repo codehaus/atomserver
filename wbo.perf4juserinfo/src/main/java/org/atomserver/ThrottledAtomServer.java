@@ -95,9 +95,8 @@ public class ThrottledAtomServer extends AtomServerWrapper {
         final String t_user = AtomServerUserInfo.getUser();
         Callable<ResponseContext> callableTask =
                 new Callable<ResponseContext>() {
-                    String user = t_user;
                     public ResponseContext call() {
-                        AtomServerUserInfo.setUser(this.user);
+                        AtomServerUserInfo.setUser(t_user);
                         return getAtomServer().createEntry(request);
                     }
                 };
@@ -116,9 +115,8 @@ public class ThrottledAtomServer extends AtomServerWrapper {
         final String t_user = AtomServerUserInfo.getUser();
         Callable<ResponseContext> callableTask =
                 new Callable<ResponseContext>() {
-                    String user = t_user;
                     public ResponseContext call() {
-                        AtomServerUserInfo.setUser(this.user);
+                        AtomServerUserInfo.setUser(t_user);
                         return getAtomServer().updateEntry(request);
                     }
                 };
@@ -137,9 +135,8 @@ public class ThrottledAtomServer extends AtomServerWrapper {
         final String t_user = AtomServerUserInfo.getUser();
         Callable<ResponseContext> callableTask =
                 new Callable<ResponseContext>() {
-                    String user = t_user;
                     public ResponseContext call() {
-                        AtomServerUserInfo.setUser(this.user);
+                        AtomServerUserInfo.setUser(t_user);
                         return getAtomServer().deleteEntry(request);
                     }
                 };
