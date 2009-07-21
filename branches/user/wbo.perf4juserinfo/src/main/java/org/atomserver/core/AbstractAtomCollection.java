@@ -303,15 +303,6 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     }
 
     /**
-     * A convenience method to obtain the PerformanceLog from the AtomService which owns this AtomCollection
-     *
-     * @return The PerformanceLog
-     */
-//    public AtomServerPerformanceLog getPerformanceLog() {
-//        return ((AbstractAtomService) (parentAtomWorkspace.getParentAtomService())).getPerformanceLog();
-//    }
-
-    /**
      * {@inheritDoc}
      */
     public CollectionOptions getOptions() {

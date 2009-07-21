@@ -113,8 +113,6 @@ public abstract class FileBasedPhysicalStorageExplorer {
 
         log.debug(MessageFormat.format("Walking the store at {0}", rootDir.getPath()));
 
-//        SimpleStopWatch stopWatch = new SimpleStopWatch();
-//        stopWatch.start();
         StopWatch stopWatch = new AtomServerStopWatch();
 
         try {
