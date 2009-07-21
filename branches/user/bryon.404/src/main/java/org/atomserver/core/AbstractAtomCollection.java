@@ -800,8 +800,14 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         EntryMetaData entryMetaData = executeTransactionally(
                 new TransactionalTask<EntryMetaData>() {
                     public EntryMetaData execute() {
-                        EntryMetaData entryMetaData =
-                                deleteEntry(entryTarget, setDeletedFlag());
+                        // first, try to get the entry, and if it's deleted already, just return it
+                        EntryMetaData entryMetaData = getEntry(entryTarget);
+                        if (entryMetaData.getDeleted()) {
+                            return entryMetaData;
+                        }
+
+                        // otherwise, try to delete it
+                        entryMetaData = deleteEntry(entryTarget, setDeletedFlag());
 
                         // Replace the XML file with a "deleted file"
                         //  we wait to do this now that we know that the delete was successfull
