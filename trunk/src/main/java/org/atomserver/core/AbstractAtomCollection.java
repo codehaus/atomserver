@@ -33,15 +33,24 @@ import org.atomserver.exceptions.BadContentException;
 import org.atomserver.exceptions.BadRequestException;
 import org.atomserver.ext.batch.Operation;
 import org.atomserver.uri.*;
-import org.perf4j.StopWatch;
-import org.perf4j.log4j.Log4JStopWatch;
 import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
+import org.atomserver.utils.perf.AtomServerStopWatch;
 import org.atomserver.utils.xml.XML;
+import org.perf4j.StopWatch;
 
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Locale;
+import java.util.HashMap;
 
 /**
  * The abstract, base AtomCollection implementation. Subclasses must implement several specific
@@ -824,7 +833,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     private void postProcessEntryContents(String entryXml, EntryMetaData entryMetaData) {
         EntryAutoTagger autoTagger = getAutoTagger();
         if (autoTagger != null) {
-            StopWatch stopWatch = new Log4JStopWatch();
+            StopWatch stopWatch = new AtomServerStopWatch();
             try {
                 autoTagger.tag(entryMetaData, entryXml);
             } finally {
@@ -865,7 +874,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         // now validate the <content> with whatever Validator was registered (if any)
         ContentValidator validator = getContentValidator();
         if (validator != null) {
-            StopWatch stopWatch = new Log4JStopWatch();
+            StopWatch stopWatch = new AtomServerStopWatch();
             try {
                 validator.validate(entryXml);
             } finally {
@@ -936,7 +945,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     protected Entry newEntry(Abdera abdera, EntryMetaData entryMetaData, EntryType entryType)
             throws AtomServerException {
 
-        StopWatch stopWatch = new Log4JStopWatch();
+        StopWatch stopWatch = new AtomServerStopWatch();
         try {
             Entry entry = newEntryWithCommonContentOnly(abdera, entryMetaData);
 
