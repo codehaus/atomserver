@@ -7,7 +7,6 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.atomserver.testutils.perf.TimedTestCase;
-import org.atomserver.blogs.BlockingFilterTest;
 
 /**
  * Basic performance test suite.
@@ -23,13 +22,13 @@ public class PerfTestSuite extends TestCase {
     static private TestCase[] initTestList() {
         
          return new TestCase[] {
-            new TimedTestCase(BlockingFilterTest.class,"testGetServiceDocument",4200),
-            new TimedTestCase(BlockingFilterTest.class,"testReadFeed",3327),
-            new TimedTestCase(BlockingFilterTest.class,"testReadUpdatedFeed",3990),
-            new TimedTestCase(BlockingFilterTest.class,"testCreateEntry",3405),
-            new TimedTestCase(BlockingFilterTest.class,"testCreateAndReadEntry",3693),
-            new TimedTestCase(BlockingFilterTest.class,"testDeleteEntry",3444),
-            new TimedTestCase(BlockingFilterTest.class,"testUpdateEntry",3717),
+            new TimedTestCase(org.atomserver.blogs.BlogServiceTest.class,"testGetServiceDocument",4200),
+            new TimedTestCase(org.atomserver.blogs.BlogServiceTest.class,"testReadFeed",3327),
+            new TimedTestCase(org.atomserver.blogs.BlogServiceTest.class,"testReadUpdatedFeed",3990),
+            new TimedTestCase(org.atomserver.blogs.BlogServiceTest.class,"testCreateEntry",3405),
+            new TimedTestCase(org.atomserver.blogs.BlogServiceTest.class,"testCreateAndReadEntry",3693),
+            new TimedTestCase(org.atomserver.blogs.BlogServiceTest.class,"testDeleteEntry",3444),
+            new TimedTestCase(org.atomserver.blogs.BlogServiceTest.class,"testUpdateEntry",3717),
             new TimedTestCase(org.atomserver.core.EntryURIHelperTest.class,"testError",3500),
             new TimedTestCase(org.atomserver.core.EntryURIHelperTest.class,"testDate",360),
             new TimedTestCase(org.atomserver.core.EntryURIHelperTest.class,"testDate2",825),
