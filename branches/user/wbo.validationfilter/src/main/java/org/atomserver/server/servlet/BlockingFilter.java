@@ -16,15 +16,24 @@
 
 package org.atomserver.server.servlet;
 
+import org.atomserver.exceptions.TooMuchDataException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
+
+
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.security.Principal;
 import java.util.List;
 
@@ -34,13 +43,15 @@ import java.util.List;
  * content-length, user, and paths.
  *
  * HTTP STATUS CODES on blocked state
- * Blocked By               Status Code
+ * Blocked By                   Status Code
  * Content Length > maximum    413  (Request entity too large)
  * User                        403  (Forbidden - the server understood the request but refused to fulfill it.)
  * Path                        403  (Forbidden - the server understood the request but refused to fulfill it.)
  */
 public class BlockingFilter implements Filter
 {
+    static protected Log logger = LogFactory.getLog(BlockingFilter.class);
+    
     // JMX MBean
     private final BlockingFilterSettings settings;
 
@@ -64,7 +75,8 @@ public class BlockingFilter implements Filter
         if(contentNotBlockedByLength(request, response) &&
            userNotBlocked(request, response) &&
            pathNotBlocked(request, response)) {
-                filterChain.doFilter(servletRequest, servletResponse);
+                ServletRequest servRequest = (isContentLengthNotSet(request)) ? wrapServletRequest(request): request;
+                filterChain.doFilter(servRequest, servletResponse);
         }
     }
 
@@ -72,14 +84,25 @@ public class BlockingFilter implements Filter
         // settings's life cyclce is maintained by spring.
     }
 
-    private boolean contentNotBlockedByLength(final HttpServletRequest request, HttpServletResponse response)
+    // Note: If the content length is -1, this method will return true.
+    private boolean contentNotBlockedByLength( HttpServletRequest request, HttpServletResponse response)
     throws IOException {
-        if((settings.getMaxContentLength() >= 0) &&
-           (request.getContentLength() > settings.getMaxContentLength())) {
-            response.sendError(javax.servlet.http.HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE);
-            return false;
+        boolean isWrite = request.getMethod().equals("POST") || request.getMethod().equals("PUT");
+        if(isWrite && settings.getMaxContentLength() >= 0) {
+            if(request.getContentLength() > settings.getMaxContentLength()) {
+                String message = "TOO MUCH DATA :: (Content length exceeds the maximum length allowed.) :: " +
+                                request.getRequestURI();
+                setError(response, HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, message);
+                return false;
+            }
         }
         return true;
+    }
+
+    // check if the content length is set to -1 on POST/PUT
+    private boolean isContentLengthNotSet(final HttpServletRequest request) {
+        boolean isWrite = request.getMethod().equals("POST") || request.getMethod().equals("PUT");
+        return isWrite && (settings.getMaxContentLength() >= 0) && (request.getContentLength() == -1);
     }
 
     private boolean userNotBlocked(final HttpServletRequest request, HttpServletResponse response)
@@ -89,7 +112,9 @@ public class BlockingFilter implements Filter
         if(principal != null) {
             name = principal.getName();
             if(settings.getBlockedUsers().contains(name)) {
-                response.sendError(javax.servlet.http.HttpServletResponse.SC_FORBIDDEN);
+                String message = "USER IS BLOCKED :: ("+ name + " is blocked from accessing the server.) :: " +
+                                request.getRequestURI();
+                setError(response, HttpServletResponse.SC_FORBIDDEN, message);
                 return false;
             }
         }
@@ -102,10 +127,57 @@ public class BlockingFilter implements Filter
         String uriPath = request.getRequestURI();
         for(String path: paths) {
             if(uriPath.matches(path))  {
-                response.sendError(javax.servlet.http.HttpServletResponse.SC_FORBIDDEN);
+                String message = "PATH IS BLOCKED :: ("+ uriPath + " is blocked from access.) :: " ;
+                setError(response, HttpServletResponse.SC_FORBIDDEN, message);
                 return false;
             }
         }
         return true;
+    }
+
+    /*
+     * Wraps the servletResquest with tracking to validate its length.
+     */
+    private ServletRequest wrapServletRequest(ServletRequest servletRequest)
+    throws IOException {
+        final ServletInputStream originalInputStream = servletRequest.getInputStream();
+        final int maxBytes = settings.getMaxContentLength();
+        final ServletInputStream inputStream = new ServletInputStream() {
+            int bytesRead = 0;
+            public int read() throws IOException {
+                if (bytesRead++ > maxBytes) {
+                    throw new TooMuchDataException("Content length exceeds the maximum length allowed.");
+                }
+                return originalInputStream.read();
+            }
+        };
+        // wrap the original request, returning the wrapped input stream instead
+       return new HttpServletRequestWrapper((HttpServletRequest) servletRequest) {
+                public ServletInputStream getInputStream() throws IOException {
+                    return inputStream;
+                    }
+        };
+    }
+
+    /*
+     * Set ServletResponse to abdera style xml response.
+     */
+    private void setError(HttpServletResponse response, int errCode, String message)
+    throws IOException {
+        logger.error(message);
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType("application/xml");
+        response.setStatus(errCode);
+
+        PrintWriter writer = response.getWriter();
+        writer.println(errorMessage(errCode, message));
+    }
+
+    private String errorMessage (final int errCode, final String message) {
+         return  "<?xml version='1.0' encoding='UTF-8'?>" +
+                 "<error xmlns=\"http://incubator.apache.org/abdera\">" +
+                 "<code>" + errCode + "</code>" +
+                 "<message>" + message + "</message>"+
+                 "</error>";
     }
 }
