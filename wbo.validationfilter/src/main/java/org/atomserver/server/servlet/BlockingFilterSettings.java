@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import org.springframework.jmx.export.annotation.*;
 
 /**
- * BlockingFileterSettings - settings for the BlockingFilter. This object is an JMX MBean and is managed through
+ * BlockingFilterSettings - settings for the BlockingFilter. This object is a JMX MBean and is managed through
  * JMX console. It is injected into <code>BlockingFilter</code> object.
  */
 @ManagedResource(description = "Blocking Filter")
