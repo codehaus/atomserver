@@ -92,7 +92,7 @@ public class BlockingFilterTest extends CRUDDBSTestCase {
 
     public void checkBlockedUser() throws Exception {
         // TODO: Jetty needs to be set up with authentication.
-        // As it is now, this test does not do much to validate blocking user.
+        // As it is now, this test does not do much to validate blocking of a user.
         
         // Block User
         getFilterSettings().addBlockedUser("foo");
