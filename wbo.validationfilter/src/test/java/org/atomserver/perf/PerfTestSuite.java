@@ -219,6 +219,7 @@ public class PerfTestSuite extends TestCase {
             new TimedTestCase(org.atomserver.core.dbstore.dao.EntryCategoryLogEventDAOTest.class,"testCRUD",2500),
             new TimedTestCase(org.atomserver.core.dbstore.dao.EntryCategoryLogEventDAOTest.class,"testBatch",2000),
             new TimedTestCase(org.atomserver.core.dbstore.dao.EntryCategoryLogEventDAOTest.class,"testSelect",2000),
+            new TimedTestCase(org.atomserver.core.dbstore.BlockingFilterTest.class,"testBlockingFilter",8000),
         };
     }
 
