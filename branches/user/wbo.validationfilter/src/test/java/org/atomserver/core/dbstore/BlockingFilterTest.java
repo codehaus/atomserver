@@ -121,7 +121,6 @@ public class BlockingFilterTest extends CRUDDBSTestCase {
 
     protected String simpleInsert(int expectedResponse ) throws Exception {
 
-        System.out.println("In simple post");
         String urlPath = getURLPath();
         String fullURL = getServerURL() + urlPath;
         String id = urlPath;
