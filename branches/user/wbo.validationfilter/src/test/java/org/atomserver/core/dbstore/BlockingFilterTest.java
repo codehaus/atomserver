@@ -34,7 +34,7 @@ import org.atomserver.server.servlet.BlockingFilterSettings;
  * This test checks the blocking of contents, url paths, and user by setting the BlockingFilterSettings.
  */
 public class BlockingFilterTest extends CRUDDBSTestCase {
-    
+
     static final String REGX_PATH = "^\\/atomserver\\/v1\\/widgets\\/acme(.)*";
 
     private String editUrl = null;
@@ -44,8 +44,7 @@ public class BlockingFilterTest extends CRUDDBSTestCase {
         removeEntry(); // make sure data is clean
     }
 
-    public void tearDown() throws Exception
-    {
+    public void tearDown() throws Exception {
         removeEntry();
         super.tearDown();
     }
@@ -65,11 +64,24 @@ public class BlockingFilterTest extends CRUDDBSTestCase {
 
         // Block by content length.
         getFilterSettings().setMaxContentLength(10);
-        String editLink = addEntry(413);
+        // This addEntry will set the servlet request's content length
+        String editLink = addEntry(false, 413);
+
+        // This addEntry will not set the servlet request's content length
+        editLink = addEntry(true, 413);
 
         // Unblock content length.
         getFilterSettings().setMaxContentLength(-1);
-        editUrl = addEntry(201);
+
+        // addEntry with servlet request's content length set
+        editUrl = addEntry(false, 201);
+        assertNotNull(editUrl);
+
+        removeEntry();
+
+        // addEntry with servlet request's content length not being set.
+        editUrl = addEntry(true, 201);
+
         assertNotNull(editUrl);
 
     }
@@ -77,15 +89,15 @@ public class BlockingFilterTest extends CRUDDBSTestCase {
     public void checkBlockedPath() throws Exception {
 
         // Blocked by Path
-        ClientResponse response = clientGet( editUrl, null, 200, true );
+        ClientResponse response = clientGet(editUrl, null, 200, true);
         response.release();
 
         getFilterSettings().addBlockedPath(REGX_PATH);
-        response = clientGet( editUrl, null, 403, true );
+        response = clientGet(editUrl, null, 403, true);
         response.release();
 
         getFilterSettings().removeBlockedPath(REGX_PATH);
-        response = clientGet( editUrl, null, 200, true );
+        response = clientGet(editUrl, null, 200, true);
         response.release();
 
     }
@@ -93,26 +105,26 @@ public class BlockingFilterTest extends CRUDDBSTestCase {
     public void checkBlockedUser() throws Exception {
         // TODO: Jetty needs to be set up with authentication.
         // As it is now, this test does not do much to validate blocking of a user.
-        
+
         // Block User
         getFilterSettings().addBlockedUser("foo");
         getFilterSettings().addBlockedUser("bar");
         //ClientResponse response = clientGet( editUrl, null, 403, true );
-        ClientResponse response = clientGet( editUrl, null, 200, true ); // should be 403 if working correctly.
+        ClientResponse response = clientGet(editUrl, null, 200, true); // should be 403 if working correctly.
         response.release();
 
         // Unblock user
         getFilterSettings().removeBlockedUser("foo");
         getFilterSettings().removeBlockedUser("bar");
-        response = clientGet( editUrl, null, 200, true );
+        response = clientGet(editUrl, null, 200, true);
         response.release();
 
     }
 
-    private String addEntry(int expectedResponse) throws Exception {
-        String editLink = simpleInsert(expectedResponse);
-        if(editLink != null) {
-           return getSelfUriFromEditUri(editLink);
+    private String addEntry(boolean noContentLen, int expectedResponse) throws Exception {
+        String editLink = simpleInsert(noContentLen, expectedResponse);
+        if (editLink != null) {
+            return getSelfUriFromEditUri(editLink);
         }
         return null;
     }
@@ -124,7 +136,7 @@ public class BlockingFilterTest extends CRUDDBSTestCase {
         entriesDAO.obliterateEntry(entryTarget);
     }
 
-    protected String simpleInsert(int expectedResponse ) throws Exception {
+    protected String simpleInsert(boolean noContentLen, int expectedResponse) throws Exception {
 
         String urlPath = getURLPath();
         String fullURL = getServerURL() + urlPath;
@@ -133,6 +145,9 @@ public class BlockingFilterTest extends CRUDDBSTestCase {
         AbderaClient client = new AbderaClient();
         RequestOptions options = client.getDefaultRequestOptions();
         options.setHeader("Connection", "close");
+        if (noContentLen) {
+            options.setUseChunked(true); // this will set the Content Length to -1
+        }
 
         Entry entry = getFactory().newEntry();
         entry.setId(id);
@@ -143,16 +158,16 @@ public class BlockingFilterTest extends CRUDDBSTestCase {
 
         int status = response.getStatus();
 
-        assertEquals( expectedResponse, response.getStatus() );
+        assertEquals(expectedResponse, response.getStatus());
 
         String editLinkStr = null;
-        if(status == 201 || status == 200) {
+        if (status == 201 || status == 200) {
             Document<Entry> doc = response.getDocument();
             Entry entryOut = null;
             try {
                 entryOut = doc.getRoot();
             } catch (ClassCastException e) {
-                log.error("ABDERA ERROR MESSAGE : " + ((org.apache.abdera.protocol.error.Error)doc.getRoot()).getMessage());
+                log.error("ABDERA ERROR MESSAGE : " + ((org.apache.abdera.protocol.error.Error) doc.getRoot()).getMessage());
                 throw e;
             }
 
@@ -164,7 +179,7 @@ public class BlockingFilterTest extends CRUDDBSTestCase {
             response.release();
         }
         response.release();
-        return editLinkStr;  
+        return editLinkStr;
     }
 
     private BlockingFilterSettings getFilterSettings() throws Exception {
