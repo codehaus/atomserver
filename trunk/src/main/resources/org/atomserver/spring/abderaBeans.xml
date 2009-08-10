@@ -206,4 +206,14 @@
         <property name="workspaces" ref="org.atomserver-workspaces"/>
     </bean>
 
+    <bean id="org.atomserver-blockingFilter"
+          class="org.atomserver.server.servlet.BlockingFilterSettings">
+    </bean>
+
+    <!-- Delegated servlet filter -->
+    <bean id="BlockingFilter"
+          class="org.atomserver.server.servlet.BlockingFilter">
+      <constructor-arg index="0" ref="org.atomserver-blockingFilter"/>
+    </bean>
+
 </beans>

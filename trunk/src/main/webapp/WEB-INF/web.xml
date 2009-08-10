@@ -98,20 +98,32 @@
         <url-pattern>/alive</url-pattern>  
     </servlet-mapping>
 
-    <filter>
-      <filter-name>
-        UserFilter
-      </filter-name>
-      <filter-class>org.atomserver.server.servlet.UserInfoFilter</filter-class>
-    </filter>
 
+    <!-- filters -->
+    <filter>
+      <filter-name>BlockingFilter</filter-name>
+      <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+    </filter>
     <filter-mapping>
-      <filter-name>UserFilter</filter-name>
+      <filter-name>BlockingFilter</filter-name>
       <servlet-name>atomserver</servlet-name>
     </filter-mapping>
     <filter-mapping>
-      <filter-name>UserFilter</filter-name>
+      <filter-name>BlockingFilter</filter-name>
       <servlet-name>atomserverV2</servlet-name>
+    </filter-mapping>
+
+  <filter>
+      <filter-name>UserFilter</filter-name>
+      <filter-class>org.atomserver.server.servlet.UserInfoFilter</filter-class>
+    </filter>
+    <filter-mapping>
+       <filter-name>UserFilter</filter-name>
+       <servlet-name>atomserver</servlet-name>
+     </filter-mapping>
+     <filter-mapping>
+       <filter-name>UserFilter</filter-name>
+       <servlet-name>atomserverV2</servlet-name>
     </filter-mapping>
 
 </web-app>
