@@ -38,6 +38,7 @@ import org.atomserver.utils.IOCLog;
 import org.atomserver.utils.perf.AtomServerStopWatch;
 import org.perf4j.StopWatch;
 
+import javax.servlet.http.HttpServletResponse;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
@@ -810,7 +811,14 @@ public class AtomServer extends AbstractProvider {
         String message = MessageFormat.format( "Unknown Error:: {0}\nReason:: {1}", request.getUri(), e.getMessage());
 
         ResponseContext response = null;
-        if (exceptionHandler == null) {
+
+        // TODO: Refactor exception handling
+        // Check for TooMuchDataException intercepted in ServletInputStream.
+        if(isTooMuchDataException(e)) {
+
+            response = tooMuchDataError(abdera, request);
+
+        } else if (exceptionHandler == null) {
             response = servererror(abdera, request, message, e);
             if (response instanceof BaseResponseContext) {
                 ((BaseResponseContext) response).setStatusText(message);
@@ -823,13 +831,30 @@ public class AtomServer extends AbstractProvider {
             logger.error( message, e );
 
         } else {
-            if ( e instanceof EntryNotFoundException ) 
+            if ( e instanceof EntryNotFoundException )
                 logger.warn( ("Error for [" + request.getUri() + "] Cause: " + e.getMessage()) );
             else 
                 logger.error( ("Error for [" + request.getUri() + "] Cause: " + e.getMessage()), e );
             response = exceptionHandler.handle(e, abdera, request);
         }
         return response;
+    }
+
+    private boolean isTooMuchDataException(Throwable e) {
+        Throwable cause = e.getCause();
+        while( cause!= null && !(cause instanceof TooMuchDataException)) {
+            cause = cause.getCause();
+        }
+        return (cause!=null);
+    }
+
+    private ResponseContext tooMuchDataError(Abdera abdera, RequestContext request) {
+        String msg = "TOO MUCH DATA :: (Content length exceeds the maximum length allowed.) :: " + request.getUri();
+        logger.error(msg);
+        return returnBase(
+                createErrorDocument(abdera, HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, msg, null),
+                        HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE,
+                        null);
     }
 
     static private final int MAX_REQ_BODY_DUMP = 500;

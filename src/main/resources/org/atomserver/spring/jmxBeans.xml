@@ -55,6 +55,9 @@
                 <entry key="org.atomserver.beans:type=EntriesDAO,name=EntriesDAO"
                        value-ref="org.atomserver-entriesDAO" />
 
+                <entry key="org.atomserver.beans:type=BlockingFilter,name=BlockingFilter"
+                       value-ref="org.atomserver-blockingFilter" />
+
                 <!-- The key name is used as the ObjectName of the MBean -->
                 <!-- NOTE: this key name MUST match the code in HttpAdaptorMgr.java -->
                 <entry key="Server:name=HttpAdaptor">
