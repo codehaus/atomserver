@@ -31,12 +31,12 @@
 
   <!-- perf4j appenders -->
   <appender name="Perf4JLog" class="org.apache.log4j.RollingFileAppender" >
-     <param name="File" value="${atomserver.logdir}/${atomserver.logfilename}.xperf4j.log" />
+     <param name="File" value="${atomserver.logdir}/${atomserver.logfilename}.perf4j.log" />
      <param name="Append" value="true" />
      <param name="MaxFileSize"  value="20MB" />
      <param name="MaxBackupIndex" value="10" />
      <layout class="org.apache.log4j.PatternLayout">
-         <param name="ConversionPattern" value="[%d{MM/dd/yy HH:mm:ss:S}](%t) %-5p - %-26.26c{1} - %m%n" />
+         <param name="ConversionPattern" value="%m%n" />
      </layout>
   </appender>
 
@@ -49,11 +49,9 @@
       <!--
         The TimeSlice option is used to determine the time window for which
         all received StopWatch logs are aggregated to create a single
-        GroupedTimingStatistics log. Here we set it to 10 seconds, overriding
-        the default of 30000 ms
+        GroupedTimingStatistics log.
       -->
-      <param name="TimeSlice" value="10000"/>
-      <appender-ref ref="fileAppender"/> 
+      <param name="TimeSlice" value="30000"/>
       <!--
         Note how the GraphingStatisticsAppenders have been attached to the
         CoalescingStatistics here.
@@ -62,14 +60,6 @@
       <appender-ref ref="graphExecutionTPS"/>
       <!-- JMX Appender -->
       <appender-ref ref="perf4jJmxAppender"/> 
-  </appender>
-
-  <!-- This file appender is used to output aggregated performance statistics -->
-  <appender name="fileAppender" class="org.apache.log4j.FileAppender">
-      <param name="File" value="${atomserver.logdir}/perfStats.log"/>
-      <layout class="org.apache.log4j.PatternLayout">
-          <param name="ConversionPattern" value="%m%n"/>
-      </layout>
   </appender>
 
   <!--
@@ -83,7 +73,7 @@
       e.g., GET.feed.john  for user with id john.
       -->
       <param name="TagNamesToGraph" value="GET.feed,GET.entry,POST.entry,DELETE.entry,PUT.entry"/>
-      <appender-ref ref="graphsFileAppender"/>
+      <!-- appender-ref ref="graphsFileAppender"/> -->
   </appender>
 
   <!--
@@ -92,7 +82,7 @@
   <appender name="graphExecutionTPS" class="org.perf4j.log4j.GraphingStatisticsAppender">
       <param name="GraphType" value="TPS"/>
       <param name="TagNamesToGraph" value="GET.feed,GET.entry,POST.entry,DELETE.entry,PUT.entry"/>
-      <appender-ref ref="graphsFileAppender"/>
+      <!-- appender-ref ref="graphsFileAppender"/> -->
   </appender>
 
   <!--
@@ -161,10 +151,10 @@
       <appender-ref ref="Http500log"/>
   </logger>
 
-  <!-- perf4J Loggers - use CoalescingStatistics to get better performance statistics  -->
+  <!-- perf4J Loggers  -->
   <logger name="org.perf4j.TimingLogger" additivity="false">
     <level value="INFO"/>
-    <!-- appender-ref ref="Perf4JLog"/> -->
+    <appender-ref ref="Perf4JLog"/>
     <appender-ref ref="CoalescingStatistics"/>
   </logger>
 
