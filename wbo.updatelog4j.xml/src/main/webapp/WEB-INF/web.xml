@@ -81,6 +81,21 @@
         <load-on-startup>10</load-on-startup>
     </servlet>
 
+    <servlet>
+        <servlet-name>perf4j</servlet-name>
+        <servlet-class>org.perf4j.log4j.servlet.GraphingServlet</servlet-class>
+        <!--
+          The graphNames parameter determines which graphs to expose. The
+          param-value should be a comma-separated list of the
+          appender NAMES as defined in the log4j.xml file.
+        -->
+        <init-param>
+            <param-name>graphNames</param-name>
+            <param-value>graphExecutionTimes,graphExecutionTPS</param-value>
+        </init-param>
+        <load-on-startup>11</load-on-startup>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>atomserver</servlet-name>
         <url-pattern>/v1/*</url-pattern>  
@@ -97,7 +112,10 @@
         <servlet-name>aliveservlet</servlet-name>
         <url-pattern>/alive</url-pattern>  
     </servlet-mapping>
-
+    <servlet-mapping>
+        <servlet-name>perf4j</servlet-name>
+        <url-pattern>/perf4j</url-pattern>
+    </servlet-mapping>
 
     <!-- filters -->
     <filter>
@@ -112,7 +130,8 @@
       <filter-name>BlockingFilter</filter-name>
       <servlet-name>atomserverV2</servlet-name>
     </filter-mapping>
-
+  
+  <!-- filter to track the authenticated user - enable this to track Perf4j with user-based tags -->
   <filter>
       <filter-name>UserFilter</filter-name>
       <filter-class>org.atomserver.server.servlet.UserInfoFilter</filter-class>
@@ -125,5 +144,4 @@
        <filter-name>UserFilter</filter-name>
        <servlet-name>atomserverV2</servlet-name>
     </filter-mapping>
-
 </web-app>
