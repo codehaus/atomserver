@@ -1,0 +1,127 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <link rel="StyleSheet" href="css/style.css" type="text/css">
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+  <meta name="verify-v1" content="sRQSq4VA5FRMhwzFB4U3I9AtgLMtIWTdpVVO6jg1az4=" />
+  <title>AtomServer Features</title>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-4603527-2");
+pageTracker._initData();
+pageTracker._trackPageview();
+</script></head>
+<body class="maincontent">
+<h1><img src="images/atom-logo.gif" alt="logo">&nbsp;
+<span style="font-weight: bold;"></span>AtomServer, Feature Highlights<br>
+</h1>
+<div class="content"><span style="font-style: italic;">Chris Berry,
+Bryon Jacob. Updated 05/01/08 </span><br>
+<span style="font-weight: bold;"><br>
+</span>AtomServer has a relatively lengthy feature set. Here is a list
+of highlights;<br>
+<ul>
+  <li><span style="font-weight: bold;">Based on the Atom Publishing
+Protocol</span>. Atom is an RESTful protocol for data transfer and
+syndication, which has quickly become the Industry standard. Atom
+libraries exist in practically all computer languages, which makes
+writing Atom clients trivial.</li>
+  <li><span style="font-weight: bold;">A Fully Functional "GData-style
+Atom Data Store".</span>
+Rather than reinvent the wheel, AtomServer is roughly based on GData.
+GData basically picks up where the Atom lets off, defining further
+protocols for interaction.</li>
+  <li><span style="font-weight: bold;">Full Support for Atom Categories.</span>
+Essentially, Atom Categories allow you to extend your data - your
+Content - without modifying the data itself. This is a very powerful
+concept. AtomServer allows you to conveniently create, update, and
+delete Atom Categories using a virtual Workspace. Atom also supports
+Category queries with arbitrarilly complex boolean logic (ANDs and ORs)<br>
+  </li>
+  <li><span style="font-weight: bold;">Auto-tagger for Atom Categories.</span>
+AtomServer has an easily configured mechanism to "auto tag" Entries
+when they are either created or updated. An XPathAutoTagger is
+provided, which allows you to XPath into your Content and conditionally
+associate Atom Categories with it. <br>
+  </li>
+  <li><span style="font-weight: bold;"></span><span
+ style="font-weight: bold;">Optimistic Concurrency.</span>
+AtomServer provides full supports for optimistic concurrency, but also
+provides a mechanism to shut it off for a "user knows best" scenario.</li>
+  <li><span style="font-weight: bold;">Batch Operations. </span>AtomServer
+has full support for operating on a mixed "batch" of create, update, or
+delete requests. <br>
+  </li>
+  <li><span style="font-weight: bold;">Aggregate Feeds.</span>
+AtomServer has the powerful ability to join together disparate Entries
+into an
+aggregate Entry, using Atom Categories. And further, provides the
+mechanism to
+request Feeds of these aggregates.&nbsp;
+Instead of forcing clients&nbsp; to deal with several Feeds, and having
+to tie the information back together themselves, they can listen to a
+single
+aggregate Feed, with will reflect the changes to any of its parts.<br>
+  </li>
+  <li><span style="font-weight: bold;">Transactionally Correct</span>.
+First and foremost AtomServer is a data service. Obviously, that
+implies that AtomServer must maintain data integrity at all times, even
+when you are paging. You should see everything that has changed - no
+more and no less. To accomplish this, all write operations in
+AtomServer take place within a transaction.</li>
+  <li><span style="font-weight: bold;">Pluggable Content Validation.</span>
+AtomServer allows you to plug in a ContentValidator of your choice. It
+includes a RelaxNG validator and a simple XML validator.</li>
+  <li><span style="font-weight: bold;">Lazy Inserts.</span> AtomServer
+will create an Entry when it is PUT, and it does not yet exist.</li>
+  <li><span style="font-weight: bold;">Consistent Paging.</span>
+AtomServer maintains&nbsp; an internal, monotonically increasing
+identifier
+for each Collection, which ensures that paging is always consistent.</li>
+  <li><span style="font-weight: bold;">Spring Configured.</span>
+AtomServer is configured using Spring's Dependency Injection model. And
+along with this, i makes use of Springs hierarchically loaded Beans,
+allowing you to easily override any part of AtomServer's default setup.<br>
+  </li>
+  <li><span style="font-weight: bold;">A Simple Configuration Model</span>.
+AtomServer was built to be very easily extended by client applications.
+It employs a specialized ClassLoader that allows you to specify your
+own configuration Resources, outside the standard web application
+structure. <br>
+  </li>
+  <li><span style="font-weight: bold;">Supports Several Databases.</span>
+AtomServer supports Postgresql, SQLServer, and HSQLDB. Oracle would be
+relatively simple to support, since it is so similar to Postgresql. At
+one time AtomServer also supported MySql, and can so again. Although it
+should be noted that HSQLDB and MySQL do not support "Snapshot
+concurrency", and are recommended only for low load/low concurrency
+applications.</li>
+  <li><span style="font-weight: bold;"></span><span
+ style="font-weight: bold;">Based on Apache Abdera</span>.
+AtomServer acts as a layer above the Abdera Atom framework, and thus,
+makes all the features of that framework available to you, including
+efficient Stax processing, and the convenient Feed Object Model.</li>
+  <li><span style="font-weight: bold;">Tested Under Fire.</span>
+AtomServer has been in Production at a major website
+since January 2008, taking approximately one million hits/day, with a
+peak
+throughput above 100 requests/sec (although we've seen much higher
+throughput in load
+testing.</li>
+  <li><span style="font-weight: bold;">Different Content Storage
+Options.</span> AtomServer provide allows you to choose between
+File-based or DB-based Content storage.</li>
+  <li><span style="font-weight: bold;">Standalone, Zero-configuration
+Server.</span> AtomServer comes with the ability to run as a standalone
+server, spinning up in an embedded Jetty Servlet engine. Initially it
+will spin up using an embedded HSQLDB database, so you can get started
+quickly. This standalone AtomServer can be reconfigured to use another
+database and your own Workspaces.<br>
+  </li>
+</ul>
+</div>
+</body>
+</html>
