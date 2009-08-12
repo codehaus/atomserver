@@ -155,7 +155,7 @@
   <logger name="org.perf4j.TimingLogger" additivity="false">
     <level value="INFO"/>
     <appender-ref ref="Perf4JLog"/>
-    <appender-ref ref="CoalescingStatistics"/>  
+    <!--  appender-ref ref="CoalescingStatistics"/>  - Uncomment this for perf4j graphics and Jmx -->
   </logger>
 
   <root>
