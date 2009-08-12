@@ -180,6 +180,10 @@
             <id>relaxng4j</id>
             <url>http://relaxng4j.googlecode.com/svn/repo/</url>
         </repository>
+	<repository>
+	    <id>snapshotCodeHaus</id>
+	    <url>http://snapshots.repository.codehaus.org/</url>
+	</repository>
     </repositories>
 
     <pluginRepositories>
