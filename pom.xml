@@ -666,7 +666,7 @@
 
                     <forkMode>once</forkMode>
 
-                    <argLine>-Dlog4j.configuration=org/atomserver/log4j.xml</argLine>
+                    <argLine>-Dlog4j.configuration=org/atomserver/test-log4j.xml</argLine>
                     <reportFormat>plain</reportFormat>
                     <trimStackTrace>false</trimStackTrace>
                     <includes>
@@ -724,8 +724,8 @@
 
                         <!-- log4j ONLY looks at System properties .... sigh -->
                         <property>
-                            <name>lgg4j.configuration</name>
-                            <value>org/atomserver/log4j.xml</value>
+                            <name>log4j.configuration</name>
+                            <value>org/atomserver/test-log4j.xml</value>
                         </property>
                         <property>
                             <name>log4j.debug</name>
@@ -915,7 +915,7 @@
                         <!-- log4j ONLY looks at System properties .... sigh -->
                         <systemProperty>
                             <name>log4j.configuration</name>
-                            <value>org/atomserver/log4j.xml</value>
+                            <value>org/atomserver/test-log4j.xml</value>
                         </systemProperty>
 
                         <systemProperty>
