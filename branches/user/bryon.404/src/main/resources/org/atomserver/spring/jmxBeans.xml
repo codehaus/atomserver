@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2007 HomeAway, Inc.
+  All rights reserved.  http://www.atomserver.org
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                           http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+
+    <bean id="org.atomserver-mBeanServerLocator"
+          class="org.atomserver.utils.jmx.MBeanServerLocator" >
+      <property name="containerType" value="${atomserver.container.name}"/>
+    </bean>
+
+    <bean id="org.atomserver-mBeanServer"
+          factory-bean="org.atomserver-mBeanServerLocator"
+          factory-method="locateMBeanServer" /> 
+
+    <bean id="org.atomserver-mBeanExporter"
+          lazy-init="false"
+          class="org.atomserver.utils.jmx.NoGetterMBeanExporter">
+        <property name="beans">
+            <map>
+                <entry key="org.atomserver.beans:type=Store,name=store"
+                       value-ref="org.atomserver-atomService"/>
+
+                <entry key="org.atomserver.beans:type=IsAliveHandler,name=isAliveHandler"
+                       value-ref="org.atomserver-isAliveHandler"/>
+              
+                <entry key="org.atomserver.beans:type=ContentStorage,name=ContentStorage"
+                       value-ref="org.atomserver-contentStorage"/>
+
+                <entry key="org.atomserver.beans:type=DelegatingProvider,name=DelegatingProvider"
+                       value-ref="org.atomserver-atomServer" />
+
+                <entry key="org.atomserver.beans:type=ThrottledAtomServer,name=ThrottledAtomServer"
+                       value-ref="org.atomserver-throttledAtomServer" />
+
+                <entry key="org.atomserver.beans:type=ThrottledAtomServerThreadPool,name=ThrottledAtomServerThreadPool"
+                       value-ref="org.atomserver-taskExecutor" />
+
+                <entry key="org.atomserver.beans:type=EntriesDAO,name=EntriesDAO"
+                       value-ref="org.atomserver-entriesDAO" />
+
+                <!-- The key name is used as the ObjectName of the MBean -->
+                <!-- NOTE: this key name MUST match the code in HttpAdaptorMgr.java -->
+                <entry key="Server:name=HttpAdaptor">
+                    <bean class="mx4j.tools.adaptor.http.HttpAdaptor">
+
+                        <property name="port" value="${atomserver.jmxhttp.port}"/>
+                        <property name="host" value="${atomserver.jmxhttp.hostname}"/>
+
+                        <property name="processor">
+                            <bean class="mx4j.tools.adaptor.http.XSLTProcessor"/>
+                        </property>
+                    </bean>
+                </entry>
+
+            </map>
+        </property>
+
+        <!-- this configures an mbean assembler based on the Spring JMX annotations -->
+        <property name="assembler">
+            <bean class="org.springframework.jmx.export.assembler.MetadataMBeanInfoAssembler">
+                <property name="attributeSource">
+                    <bean class="org.springframework.jmx.export.annotation.AnnotationJmxAttributeSource"/>
+                </property>
+            </bean>
+        </property>
+
+        <property name="registrationBehaviorName" value="REGISTRATION_REPLACE_EXISTING"/>
+
+        <!--
+            Note that we don't explicitly set the server property. JDK 1.5 (and Resin, for that matter)
+            provides its own platform MBeanServer that we use by default if we don't specify a server.
+
+            let the HttpAdapter be started after it is registered in the MBeanServer.
+        -->
+        <property name="listeners">
+            <list>
+                <bean class="org.atomserver.utils.jmx.HttpAdaptorMgr">
+                    <property name="mbeanServer" ref="org.atomserver-mBeanServer"/>
+                </bean>
+            </list>
+        </property>
+
+    </bean>
+</beans>

@@ -1,0 +1,111 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+  <link rel="StyleSheet" href="css/style.css" type="text/css">
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+    <meta name="verify-v1" content="sRQSq4VA5FRMhwzFB4U3I9AtgLMtIWTdpVVO6jg1az4=" />
+
+  <title>AtomServer Configuration</title>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-4603527-2");
+pageTracker._initData();
+pageTracker._trackPageview();
+</script>
+</head>
+
+<body class="maincontent">
+<h1><img src="images/atom-logo.gif" alt="logo">
+AtomServer Configuration</h1>
+<br>
+<div class="content"><span style="font-style: italic;">Chris Berry,
+Bryon Jacob.
+Updated 05/07/08</span><br>
+<br>
+This
+document describes specific details about configuring AtomServer; where
+to put configuration files, how to define your own Workspaces, etc.<br>
+<br>
+For a further, detailed description of the actual protocol, either<br>
+<ul>
+  <li>See <a href="http://www.atomenabled.org/developers/syndication/">the
+Atom Publishing Protocol Reference</a> for further information about
+the
+elements of the feed itself. Note that we do not exhaustingly document
+this
+information ourselves,&nbsp; because we are using Atom entirely as
+dictated
+by the standard.</li>
+  <li>See <a href="atomserver_protocol_basics.html">the AtomServer
+Protocol
+Basics document </a>for general information about communicating with
+the atomserver service.<br>
+  </li>
+</ul>
+This document does <span style="font-weight: bold;">not</span> explain
+the underlying concepts behind AtomServer; REST, Atom, and OpenSearch.
+That
+information can be found in <a href="atomserver_intro.html">the
+AtomServer
+General Introduction document</a>. <span style="font-style: italic;">It
+is highly recommended that you read this document first</span>.<br>
+<br>
+Nor does this document explain the basics of XML,
+namespaces, syndicated feeds, and the <span style="font-family: monospace;">GET, POST, PUT</span>, and <span style="font-family: monospace;">DELETE</span>
+requests in HTTP, as well as HTTP's concept of a "resource." For more
+information about those things, see the <a href="#resources">Additional
+resources </a>section of
+this document.<br>
+<h2>Contents</h2>
+<ul><li><a href="#Atomservers_Classpath">Atomserver's Classpath</a></li><li><a href="#Atomserver_Environment">Atomserver Environment</a></li><li><a href="#Additional_Resources">Additional Resources</a><br>
+  </li>
+</ul>
+<hr style="width: 100%; height: 2px;">
+<h2><a name="Atomservers_Classpath"></a>Atomserver's Classpath <br>
+</h2>For most uses of Atomserver, you won't need to write any code - a
+bit of XML configuration is all you'll need. &nbsp;If you DO need to
+extend Atomserver with your own custom code, it is very easy to do -
+all of Atomserver's runtime context is wired together with Spring, and
+injecting your own beans into the server's configuration is
+straightforward.<br><br>Whether you're adding your own classes, or just
+adding configuration files, Atomserver discovers your extensions as
+classes an resources on the java classpath. &nbsp;Because Atomserver is
+a java web application, the default classpath is comprised of the <span style="font-weight: bold;">/WEB-INF/classes</span> directory, and any .jar files in the <span style="font-weight: bold;">/WEB-INF/lib</span>
+directory inside the Atomserver .war file. &nbsp;The default
+classloader is extended to recognize several additional configuration
+locations, defined by two System Properties - <span style="font-weight: bold;">atomserver.conf.dir</span>, and <span style="font-weight: bold;">atomserver.ops.conf.dir</span>. &nbsp;<br><br><span style="font-weight: bold;">atomserver.conf.dir</span> is the primary place for you to put additional application configuration. &nbsp;It acts very much like a web app's <span style="font-weight: bold;">WEB-INF</span> directory, in that it expects there to be a <span style="font-weight: bold;">classes </span>subdirectory, which is added to the classpath directly, and optionally a <span style="font-weight: bold;">lib</span> subdirectory, which contains .jar files - each of which will be added to the classpath.<br><br>One of the most common things you will do is add your own Spring Configuration files to Atomserver (see <a href="extending_with_spring.html">Extending Atomserver with Spring</a>), particularly to configure your server's workspaces. &nbsp;An example of this would look like:<br><br><span style="font-weight: bold;">first</span>, set up the following directory structure:<br><pre> /home<br> `-/you<br>   `-/atomserver-conf<br>     |-/classes<br>     | `-/org<br>     |   `-/atomserver<br>     |     `-/spring<br>     |       `-/ext<br>     `-/lib<br><span style="font-weight: bold;"></span></pre><span style="font-weight: bold;">next</span>, put your Spring configuration file into the <span style="font-weight: bold;">org.atomserver.spring.ext</span> package:<br><pre> /home<br> `-/you<br>   `-/atomserver-conf<br>     |-/classes<br>     | `-/<span style="font-weight: bold;">org</span><br>     |   `-/<span style="font-weight: bold;">atomserver</span><br>     |     `-/<span style="font-weight: bold;">spring</span><br>     |       `-/<span style="font-weight: bold;">ext</span><br>     |         `-/<span style="font-weight: bold; font-style: italic;">myAtomserverBeans.xml</span><br>     `-/lib<br></pre><span style="font-weight: bold;">if</span> you need any additional java libraries, you can put the .jar files in the <span style="font-weight: bold;">/lib</span> directory:<br><pre> /home<br> `-/you<br>   `-/atomserver-conf<br>     |-/classes<br>     | `-/org<br>     |   `-/atomserver<br>     |     `-/spring<br>     |       `-/ext<br>     |         `-/myAtomserverBeans.xml<br>     `-/<span style="font-weight: bold;">lib</span><br>       `-/<span style="font-weight: bold; font-style: italic;">myJar.jar</span><br style="font-weight: bold; font-style: italic;"></pre><span style="font-weight: bold;">finally</span>, you just need to make sure that the system property <span style="font-weight: bold;">atomserver.conf.dir</span> is set to your configuration directory (<span style="font-weight: bold;">/home/you/atomserver-conf</span> in this example.). &nbsp;If you are starting up with the standard <span style="font-weight: bold;">atomserver.sh</span> server, you can just set the environment variable <span style="font-weight: bold;">ATOMSERVER_CONF_DIR</span> and the script will take care of setting the System Property for you.<br><br><span style="font-weight: bold;">atomserver.ops.conf.dir</span>
+is an additional configuration directory, designed to allow for
+configuration that is managed separately from the main configuration
+directory (say, to allow operations people to specify DB
+usernames/passwords for production machines, keeping that information
+hidden from the application developers.) &nbsp;The "ops" conf dir is
+injected directly into the classpath - there are no /classes or /lib
+subdirectories. &nbsp;This property is configured in <span style="font-weight: bold;">atomserver.sh</span> from the value of the <span style="font-weight: bold;">ATOMSERVER_OPSCONF_DIR</span> environment variable.<br><br>When using these configuration directories, the full search order for classes and resources is:<br><ol><li>the bootstrap classloader</li><li>the default web application class loader (<span style="font-weight: bold;">/WEB-INF/classes</span> and .jar files in <span style="font-weight: bold;">/WEB-INF/lib</span>)</li><li>the "ops" configuration dir <span style="font-weight: bold;">{atomserver.ops.conf.dir}/</span></li><li>the "normal" configuration dir (<span style="font-weight: bold;">{atomserver.conf.dir}/classes</span> and .jar files in <span style="font-weight: bold;">{atomserver.conf.dir}/lib</span>)</li></ol><br><h2><a name="Atomserver_Environment"></a>Atomserver Environment</h2>The
+Atomserver environment defines a set of properties that configure the
+behavior of Atomserver. &nbsp;The environment is set via the System
+Property <span style="font-weight: bold;">atomserver.env</span>. &nbsp;When using the <span style="font-weight: bold;">atomserver.sh</span> startup script, you can specify the environment with the command-line argument <span style="font-weight: bold;">-env</span> - for example, <span style="font-weight: bold;">atomserver.sh -env prod start</span> to start Atomserver with the <span style="font-weight: bold;">"prod"</span> environment.<br><br>The
+environment name is used to load properties from the classpath - these
+properties are made available to the Spring context in addition to the
+standard java System Properties. &nbsp;Atomserver loads <span style="font-weight: bold;">/env/{atomserver.env}.properties</span> and <span style="font-weight: bold;">/env/{atomserver.env}-ops.properties</span> from the classpath -- properties in <span style="font-weight: bold;">{atomserver.env}-ops.properties</span> override the ones in <span style="font-weight: bold;">{atomserver.env}.properties</span>. &nbsp;The search order for these properties files is as defined in the above section (note that the <span style="font-weight: bold;">{atomserver.env}-ops.properties</span> does not necessarily HAVE to be in the <span style="font-weight: bold;">{atomserver.ops.conf.dir<span style="font-weight: bold;">}</span></span>, nor does the <span style="font-weight: bold;">{atomserver.env}.properties</span>
+file need to be in the normal conf dir, but in any case only ONE file
+with each name will be loaded, and the search order is defined by the
+classloader. &nbsp;if you define both properties files in the ops conf
+dir, then those two WILL be loaded, and no others.)<br><br>&nbsp;<hr style="width: 100%; height: 2px;">
+<h2><a name="Additional_Resources"></a>Additional resources</h2>
+You may find the following third-party documents useful:<br>
+<br>
+&nbsp;&nbsp;&nbsp; * <a href="http://www-128.ibm.com/developerworks/xml/library/x-atom10.html">Overview
+of Atom</a> from IBM<br>
+&nbsp;&nbsp;&nbsp; * <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html">HTTP 1.1
+method definitions</a>; specification for GET, POST, PUT, and DELETE<br>
+&nbsp;&nbsp;&nbsp; * <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html">HTTP 1.1
+status code definitions</a><br>
+&nbsp;&nbsp;&nbsp; * <a href="http://www.atomenabled.org/developers/syndication/">Atom
+Syndication Reference</a> (from Atom-enabled)<br>
+&nbsp;&nbsp;&nbsp; * <a href="http://www-128.ibm.com/developerworks/library/x-atompp1/">Getting
+to know the Atom Publishing Protocol (from IBM)</a><span style="font-weight: bold;"></span><br>
+<br>
+</div>
+</body></html>

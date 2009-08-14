@@ -1,0 +1,440 @@
+
+
+                ---------------------
+                AtomServer v3 Roadmap
+                ---------------------
+                     Bryon Jacob
+                ---------------------
+                     2009-04-09
+
+AtomServer v3 Roadmap
+
+    AtomServer v3 will represent a major breaking point from the previous reasons.  It is a
+    ground-up rewrite of the underlying implementation.  From the user's point of view, every
+    attempt will be made to make the new version as backwards-compatible with previous versions
+    as possible, while rolling in changes that are based on lessons learned, a philosophical
+    shift about what AtomServer <<IS>> (or at least, what it SHOULD BE), and the goal of increased
+    compliance with the Atom and AtomPub specs.  From the administration and configuration point
+    of view, it will be an entirely new world, but hopefully a world that all will agree is much
+    better than the previous.
+
+
+* I. Major Objectives
+
+    There are several high-level themes that are driving AtomServer v3.  These are derived from
+    our two years of experience with previous versions of AtomServer in a high-traffic production
+    environment.
+
+** 1.  Performance Improvements
+
+    We've spent a huge amount of effort performance testing the exisitng service, and tweaking it
+    to improve performance.  It meets our needs now, but we can see the limits of it's ability to
+    scale, and a ground-up rewrite of at least some parts of the system is needed to bring the
+    performance metrics that we need to an acceptable level.
+
+    In particular, Aggregate Feeds - which were originally conceived as an afterthought to the
+    system's overall design - have proven to be an incredibly useful feature of the system, and
+    the current implementation just won't support acceptable performance for Aggregate Feeds.
+
+** 2.  Spec Compliance
+
+    AtomServer has some noticeable gaps with respect to the Atom specs.  There are several
+    reasons for this:
+
+    *   In many cases, we were making design decisions before the spec had actually weighed in on
+        a particular issue, and so we were forced to make a decision "ahead of the curve"
+
+    *   In some cases, the fledgling spec disagreed with Google's GData specification, and we
+        thought that the Google Way was more appropriate to our problem than the spec's
+
+    *   In some cases, we decided in the interest of time to implement something in a non-spec
+        compliant way, with the intention of "coming back later" to rectify the situation
+
+    *   In some cases, we just screwed up
+
+    []
+
+    In any case, with the next release of AtomServer, we have the goal of providing a
+    spec-compliant method of accessing all of AtomServer's functionality (we may also provide
+    parallel non-spec variants of these operations, for simplicity and/or
+    backwards-compatibility), and of explicitly documenting any place where the released version
+    does deviate from the spec.  From AtomServer v3 on, it will be considered a bug if the server
+    deviates from the Atom specs, and all such issues will be resolved by either rectifying the
+    deviation, or by explicitly listing the deviation in the documentation, so that users can
+    easily determine whether the level of compliance with the Atom specifications is adequate for
+    their needs.
+
+** 3.  Increased ease of administration / configuration
+
+    AtomServer has, up until now, relied on Spring for its configuration, which is burdensome to
+    users, who have often had to treat AtomServer as more of an "application framework" rather
+    than the "out of the box Atom Store" that was promised.  AtomServer v3 will be configured
+    dynamically, through a REST API, using the APP standard document types (Service, Workspace,
+    Collection) and a small set of custom extensions to deal with AtomServer-specific
+    configuration parameters.  There will also be an easy-to-use Administration UI that uses the
+    REST API.
+
+** 4.  Philosophical shift to AtomServer as an "Atom-Oriented Database"
+
+    Apart from the Performance Improvements, all of the Objectives can really be grouped as part
+    of a philosophical shift in how we view AtomServer - AtomServer should be, fundamentally, a
+    highly scalable, out of the box, standalone Atom Store.  It should be treated the same way as
+    one might treat a relational database - in particular:
+
+    *   It should be simple to set up and administer - you should be able to get a basic server
+        working in less than ten minutes, and you should be able to expand that configuration to
+        meet expanding needs.
+
+    *   You should trust it - there should be extremely little debugging of the AtomServer itself
+        needed.  You wouldn't expect to have to debug the internals of MySQL in order to use it as
+        your RDBMS solution.
+
+    *   It should be a stand-alone application - you should be able to run, use, and understand it
+        without having to write any code, or even to know what the underlying technologies are.
+        It should be <<extensible>> via writing custom Java code, but all of the main
+        functionality of the system should be completely accessible without having to do so.
+
+    []
+
+* II. New Features
+
+    (this is very incomplete - just checking in a version of the doc with formatting in place)
+
+    [[1]] <<ETags>>\
+            Previous versions of AtomServer used a <<revision>> query parameter to handle
+            Optimistic Concurrency with publishes.  The specs specify that we should use <<ETags>>
+            for this instead.  AtomServer v3 will AT LEAST support ETags, but may support the
+            revision parameter for backwards compatibility as well.
+
+    [[2]] <<Feed Paging>>\
+            AtomServer has used the paging mechanism specified by the GData specification, which
+            violates the way that Feed Paging is specified by the Atom specs.  We believe that the
+            GData version is superior for most applications, but will support the spec-compliant
+            version of feed paging for better interoperability with clients.
+
+    [[3]] <<Feed Push>>\
+            Clients will be able to register a URL to which entries will be "pushed" as they are
+            published, rather than having to poll the collection URL.
+    
+
+* III. Full REST API for AtomServer v3 APP (Atom Publishing Protocol) service
+
+    (this is very incomplete - just checking in a version of the doc with formatting in place)
+
+** References
+
+    The following documents are extremely important to the design of AtomServer, and will be
+    referenced heavily by the rest of this document.
+
+    * {{{http://tools.ietf.org/html/rfc4287}RFC 4287}} -
+            <<The Atom Syndication Format>>\
+        This document defines the basics of Atom, including XML Schemas for the basic elements
+        of Atom (Feeds and Entries).
+
+    * {{{http://tools.ietf.org/html/rfc5023}RFC 5023}} -
+            <<The Atom Publishing Protocol>>\
+        This document describes a protocol for an Atom-enabled server.  It extends the concepts
+        defined in RFC 4287 with definitions for elements to describe the metadata of a system,
+        allowing for automatic discovery of Atom data and a standardized interface for
+        interacting with an Atom-enabled server.
+
+    * {{{http://tools.ietf.org/html/rfc5005}RFC 5005}} -
+            <<Feed Paging and Archiving>>\
+        This document describes a method for "paginating" an Atom Feed from a an Atom-enabled
+        server.
+
+    * {{{http://tools.ietf.org/html/rfc2616}RFC 2616}} -
+            <<Hypertext Transfer Protocol -- HTTP/1.1>>\
+        This document defines the HTTP protocol itself.
+
+    * {{{http://code.google.com/apis/gdata/docs/2.0/reference.html}GData}} -
+            <<Google Data APIs -- Protocol Reference>>\
+        This document describes the implementation of Google's GData service, which provides an
+        Atom-oriented API to access data from Google's Data Services.  This document was the
+        original inspiration for the design of AtomServer, and many ideas in AtomServer are
+        borrowed from concepts in this document.
+
+** Data Organization
+
+    The Atom Publishing Protocol Spec ({{{http://tools.ietf.org/html/rfc5023}RFC 5023}}) defines
+    {{{http://tools.ietf.org/html/rfc5023#section-8}Service Documents}}, which can be used to
+    describe the metadata of an Atom-Enabled server.  The spec specifies that the root of a
+    service document is an element of the type
+    {{{http://tools.ietf.org/html/rfc5023#section-8.3.1}app:service}}.  Such elements can contain
+    {{{http://tools.ietf.org/html/rfc5023#section-8.3.2}app:workspace}} elements, which can in
+    turn contain {{{http://tools.ietf.org/html/rfc5023#section-8.3.3}app:collection}} elements
+    (among other data elements).
+
+    The specification is intentionally vague about HOW the discovery of this metadata is to occur.
+    Implementors are to define their own mechanism by which these Service Documents can be
+    retrieved to allow for discovery.  In addition, the specification specifically does not
+    specify any particular meaning to be attached to Workspaces or Collections, and allows for
+    servers to include the same Collection within multiple Workspaces, if that makes sense in the
+    organization of that server.
+
+    AtomServer implements a specific mechanism for organizing data that is conformant to the
+    structure set forth in the spec.  As an implementor of the spec, we are forced to choose an
+    option in places where the spec remains agnostic, and so we have opted for a simple,
+    hierarchical organization of data within the Atom Pub framework:
+
+    [Entry] Entries are the actual Atom Entries that are to be stored within AtomServer.
+
+    [Collection] Collections are the lowest-level organization of Atom Entries - a Collection
+    logically contains zero or more Entries.
+
+    [Workspace] Workspaces are the next level up in the hierarchy - a Workspace logically
+    contains zero or more Collections.
+
+    [Service] Services are the highest level in the hierarchy - a Service logically contains one
+    or more Workspaces.
+
+    []
+
+    Whereas the Atom Pub spec allows server implementors to include the same Collection in
+    multiple Workspaces, AtomServer does NOT allow this - the organization is a strict hierarchy.
+    This hierarchical layout allows for simple, easy to construct URLs for each of these
+    components - relative to the root of AtomServer's APP interface, the URLs for each of these
+    components is:
+
+    [Service]       <<<\{SERVICE NAME\}>>>
+
+    [Workspace]     <<<\{SERVICE NAME\}/\{WORKSPACE NAME\}>>>
+
+    [Collection]    <<<\{SERVICE NAME\}/\{WORKSPACE NAME\}/\{COLLECTION NAME\}>>>
+
+    [Entry]         <<<\{SERVICE NAME\}/\{WORKSPACE NAME\}/\{COLLECTION NAME\}/\{ENTRY NAME\}>>>
+
+    []
+
+** AtomServer Extensions
+
+    AtomServer defines a number of Atom Extensions (additional XML elements that can be included
+    with Atom and AtomPub documents that have special meaning to AtomServer).
+
+    All AtomServer elements will be in the XML namespace <<<http://atomserver.org/AtomServer>>>,
+    which is represented here with the namespace prefix <<<as:>>>.
+
+*** {as:name}
+
+---
+    name = element as:name { text }
+---
+
+*** {as:aggregate}
+
+---
+    aggregate = element as:aggregate {
+        attribute collection { text },
+        attribute entryId { text }
+    }
+---
+
+** API
+
+    [[1]] <<ROOT URL>>
+            (<<<http://my.atomserver/>>>)
+
+        The ROOT URL to the server should be the entry point to AtomServer's web-based GUI.  As
+        such, it is only barely part of the RESTful API of the service, but is included for
+        completeness.
+
+        [[1]] <GET>\
+                An HTTP GET against the ROOT URL of a running AtomServer should return an HTML
+                document representing the entry point to the AtomServer web-based GUI.
+
+    [[2]] <<APP ROOT URL>>
+            (<<<http://my.atomserver/app>>>)
+
+        The APP ROOT URL represents the root of the server, as far as interacting with the server
+        through the Atom Publishing Protocol (APP) is concerned.  This URL is used for discovery
+        (inspection of the contents of the server) as well as for installing new Services into the
+        server.
+
+        [[1]] <GET>\
+                An HTTP GET against the APP ROOT URL of a running AtomServer should return an
+                ATOM FEED containing the SERVICE DOCUMENTS of the services installed in the server.
+
+            [[1]] An HTTP 200 OK response should be returned.
+
+            [[2]] The response will have a Content-Type of "application/atom+xml"
+
+            [[3]] The response body will be an XML 1.0 document, whose root element will be an
+                    {{{http://tools.ietf.org/html/rfc4287#section-4.1.1}atom:feed}} element.
+
+                [[1]] The {{{http://tools.ietf.org/html/rfc4287#section-4.2.1}atom:author}}
+                        element will contain the text "AtomServer v3".
+
+                [[2]] The {{{http://tools.ietf.org/html/rfc4287#section-4.2.6}atom:id}} element
+                        will contain the APP ROOT URL for the server as the universally unique
+                        identifier.
+
+                [[3]] The {{{http://tools.ietf.org/html/rfc4287#section-4.2.14}atom:title}}
+                        element will contain the text "AtomServer v3 Service Documents Feed".
+
+                [[4]] The {{{http://tools.ietf.org/html/rfc4287#section-4.2.15}atom:updated}}
+                        will contain the latest updated date of any of the services present in the
+                        Service Document Feed.  If there are no services in the Feed, this will
+                        represent the last time the server was edited - which will either be the
+                        time at which the server was first brought online, if there has never been
+                        any Service installed on this server, or the time at which the last
+                        Service was deleted, if there were previously Services installed on this
+                        server.
+
+                [[5]] There will be an
+                        {{{http://tools.ietf.org/html/rfc4287#section-4.2.7}atom:link}} element
+                        with the <<rel>> attribute set to "self", and the <<href>> attribute set
+                        to the APP ROOT URL for the server.
+
+                [[6]] There will be one
+                        {{{http://tools.ietf.org/html/rfc4287#section-4.1.2}atom:entry}} element
+                        for each Service that exists within the server.
+
+                    [[1]] The {{{http://tools.ietf.org/html/rfc4287#section-4.2.6}atom:id}}
+                            element will contain the SERVICE URL for the Service in question.
+
+                    [[2]] The {{{http://tools.ietf.org/html/rfc4287#section-4.2.14}atom:title}}
+                            will contain the title of the Service.
+
+                    [[3]] The {{{http://tools.ietf.org/html/rfc4287#section-4.2.15}atom:updated}}
+                            element will contain the latest updated date of any of the workspaces
+                            within the service.
+
+                    [[4]] There will be an
+                            {{{http://tools.ietf.org/html/rfc4287#section-4.2.7}atom:link}}
+                            element with the <<rel>> attribute set to "alternate", and the
+                            <<href>> attribute set to the SERVICE URL for the Service.  This will
+                            be in lieu of having a
+                            {{{http://tools.ietf.org/html/rfc4287#section-4.1.3}atom:content}}
+                            element, as specified by the definition of
+                            {{{http://tools.ietf.org/html/rfc4287#section-4.1.2}atom:entry}}.
+
+                    [[5]] Because we provide out-of-line content, we provide an
+                            {{{http://tools.ietf.org/html/rfc4287#section-4.2.13}atom:summary}}
+                            child element.  The <<type>> attribute for this element will be set
+                            to "text", and the contents will be "Service Document for the
+                            \{SERVICE NAME\} Service".
+
+                    [[6]] The {{{http://tools.ietf.org/html/rfc4287#section-4.1.2}atom:entry}}
+                            elements will be sorted by their
+                            {{{http://tools.ietf.org/html/rfc4287#section-4.2.15}atom:updated}}
+                            child elements, with the newest first.
+
+        [[2]] <POST>\
+                An HTTP POST against the ROOT URL should contain a SERVICE DOCUMENT as the request
+                entity.
+
+            [[1]] If the request contains no body, an HTTP 400 BAD REQUEST should be returned,
+                    with an appropriate error message.
+
+            [[2]] The Server prefers a Content-Type of "application/atomsvc+xml", but will also
+                    accept content types of "application/atom+xml", "application/xml", or
+                    "text/xml".  If no Content-Type header is provided at all, the server will
+                    assume that the body contains XML and proceed.  If any other Content-Type is
+                    provided, an HTTP 415 UNSUPPORTED MEDIA TYPE should be returned with an
+                    appropriate error message.
+
+            [[3]] If the request body is not well-formed XML, or is not a valid
+                    {{{http://tools.ietf.org/html/rfc5023#section-8}Service Document}}, an HTTP
+                    400 BAD REQUEST should be returned with an appropriate error message.
+
+            [[4]] If the request is otherwise valid, the server should look for an {{as:name}}
+                    element within the SERVICE DOCUMENT and use that as the SERVICE NAME.  If no
+                    {{as:name}} element is present, then the Server will take the
+                    {{{http://tools.ietf.org/html/rfc4287#section-4.2.14}atom:title}} element and
+                    convert it to a SERVICE NAME by stripping all characters that are not valid in
+                    a NAME.
+
+                [[1]] If there is already a Service with the SERVICE NAME, an HTTP 409 CONFLICT
+                        response should be returned with an appropriate error message.
+
+                [[2]] If there is no other Service with the SERVICE NAME, a new Service is added
+                        to the Server, registered under the SERVICE NAME, and defined by the
+                        SERVICE DOCUMENT that was parsed from the request body.
+
+                    [[1]] The SERVICE DOCUMENT must contain one or more
+                            {{{http://tools.ietf.org/html/rfc5023#section-8.3.2}app:workspace}}
+                            elements (this is verified by the requirement above that the document
+                            be a valid
+                            {{{http://tools.ietf.org/html/rfc5023#section-8}Service Document}}).
+                            Any workspaces specified are created within the service.  If there is
+                            any error creating any part of the service, including creating any of
+                            the workspaces, the entire request fails, an HTTP 400 BAD REQUEST with
+                            an appropriate error message is returned, and the Service is NOT
+                            added to the server.
+
+                    [[2]] If the service is successfully added to the server, an HTTP 201 CREATED
+                            is returned from the server, and everything else about the request is
+                            exactly identical to what is returned from an HTTP GET against the
+                            newly created Service's SERVICE URL.
+
+    [[3]] <<SERVICE URL>>
+            (<<<http://my.atomserver/app/\{SERVICE\}>>>)
+
+        [[1]] <GET>\
+                An HTTP GET against a SERVICE URL should return the SERVICE DOCUMENT that
+                describes that Service.
+
+    [[4]] <<WORKSPACE URL>>
+            (<<<http://my.atomserver/app/\{SERVICE\}/\{WORKSPACE\}>>>)
+
+        [[1]] <GET>\
+                An HTTP GET against a WORKSPACE URL should return the WORKSPACE DOCUMENT that
+                describes the Workspace.
+
+    [[5]] <<COLLECTION URL>>
+            (<<<http://my.atomserver/app/\{SERVICE\}/\{WORKSPACE\}/\{COLLECTION\}>>>)
+
+        [[1]] <GET>\
+                An HTTP GET against a COLLECTION URL should return a FEED PAGE of documents in
+                that COLLECTION.
+
+    [[6]] <<CATEGORIZED COLLECTION URL>>
+            (<<<http://my.atomserver/app/\{SERVICE\}/\{WORKSPACE\}/\{COLLECTION\}/-/\{CATEGORY QUERY\}>>>)
+
+        [[1]] <GET>\
+                An HTTP GET against a CATEGORIZED COLLECTION URL should return a FEED PAGE of
+                documents in that COLLECTION, filtered by the CATEGORY QUERY.
+
+    [[7]] <<ENTRY URL>>
+            (<<<http://my.atomserver/app/\{SERVICE\}/\{WORKSPACE\}/\{COLLECTION\}/\{ENTRY_ID\}>>>)
+
+        [[1]] <GET>\
+                An HTTP GET against a COLLECTION URL should return a FEED PAGE of documents in
+                that COLLECTION.
+
+
+* IV. Internal Design Decisions
+
+    (this is very incomplete - just checking in a version of the doc with formatting in place)
+    
+    [[1]] No Relational DB
+
+
+* Uncategorized Thoughts
+
+    This document is going to take a while to coalesce to the final version - and organizing the
+    document into the above outline format is time-consuming.  As ideas are created relating to
+    AtomServer v3, I plan to first capture them in this list in a "raw", uncategorized fashion,
+    and then move the items up into their proper place in focused editing sessions, as time
+    permits.  I would ask that anyone who reads this doc and finds it lacking first look through
+    the below list to see if the item you're looking for is there before contacting me with your
+    addition.  If it's not there, let me know and I'll add it (or just add it yourself if you are
+    a developer with access to our source control) - and of course if you'd like to spend some
+    time editing this document and putting any of the data into its "final resting place" up
+    above, it will be greatly appreciated.
+
+    *   "Named Queues" - server managed queues of entries from a given feed
+
+    *   Entry Filters (as opposed to AutoTaggers)
+    
+    *   RESTful configuration documentation
+
+    *   document the AtomServer extensions
+
+    *   put links to the relevant Atom Specs, and to the GData paper that started it all
+
+    *   Describe how Aggregate Feeds will be improved
+
+    *   User Management
+
+    *   Content Storage API - 2PC
