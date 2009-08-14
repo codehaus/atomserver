@@ -7,6 +7,14 @@
     </properties>
 
     <body>
+	<section name="Release 2.1.13 (8/14/09)">
+             <ul>
+                 <li>Update a non-aggregate feed query that could take significant amount of time when the pulled feed is far from the tip due to an invalid query hint. </li>
+                <li>Replaced built in logging with Perf4J to allow better performance monitoring.</li>
+                </li>Added a blocking filter to block requests based on the authenticated user id, content size or uri paths </li>
+            </ul>
+         </section>
+
         <section name="Release 2.1.12 (5/19/09)">
              <ul>
                  <li>Removed scheme/term validation from deleteEntryCategoryBatch, 
