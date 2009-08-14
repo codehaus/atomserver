@@ -92,16 +92,26 @@
                 <role>developer</role>
             </roles>
         </developer>
-        <developer>
-            <id>avictoria</id>
-            <name>Alex Victoria</name>
-            <email>alex@atomserver.org</email>
-            <organization>atomserver.org</organization>
-            <timezone>-6</timezone>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
+      <developer>
+          <id>avictoria</id>
+          <name>Alex Victoria</name>
+          <email>alex@atomserver.org</email>
+          <organization>atomserver.org</organization>
+          <timezone>-6</timezone>
+          <roles>
+              <role>developer</role>
+          </roles>
+      </developer>
+      <developer>
+          <id>wbo</id>
+          <name>Win Bo</name>
+          <email>wbo@atomserver.org</email>
+          <organization>atomserver.org</organization>
+          <timezone>-6</timezone>
+          <roles>
+              <role>developer</role>
+          </roles>
+      </developer>
     </developers>
 
     <scm>
@@ -978,12 +988,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
-            </plugin>
-
-            <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>javancss-maven-plugin</artifactId>
             </plugin>
 
             <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
