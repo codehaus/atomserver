@@ -1,0 +1,923 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <link rel="StyleSheet" href="css/style.css" type="text/css">
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>AtomServer, Protocol Basics</title>
+    <meta name="verify-v1" content="sRQSq4VA5FRMhwzFB4U3I9AtgLMtIWTdpVVO6jg1az4=" />
+    
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-4603527-2");
+pageTracker._initData();
+pageTracker._trackPageview();
+</script>
+</head>
+<body class="maincontent">
+<h1><img style="width: 75px; height: 75px;" src="images/atom-logo.gif"
+ alt="logo">&nbsp;&nbsp;&nbsp;<span style="font-weight: bold;"></span>AtomServer,
+Protocol Basics <span style="color: rgb(255, 0, 0);"></span></h1>
+<div class="content"><span style="font-style: italic;"><br>
+Chris Berry, Bryon Jacob. Updated 05/01/08</span><br>
+<br>
+This document describes the basics of the protocol used by AtomServer,
+including examples of what requests looks like, what results look like,
+and so on. It is intended for anyone wanting to understand the general
+idea of the XML format and protocol used by AtomServer. <br>
+<br>
+For a detailed description of the actual protocol, either<br>
+<ul>
+  <li>See <a href="protocol_reference.html">the AtomServer Protocol
+Reference</a> for detailed information about the XML format. <br>
+  </li>
+  <li>See <a href="http://www.atomenabled.org/developers/syndication/">the
+Atom Publishing Protocol Reference</a> for further information about
+the
+elements of the feed itself. <br>
+  </li>
+</ul>
+This document does <span style="font-weight: bold;">not</span> explain
+the underlying concepts behind AtomServer; REST, Atom, and OpenSearch.
+That
+information can be found in <a href="intro.html">the AtomServer
+General Introduction document</a>. <span style="font-style: italic;">It
+is highly recommended that you read this document first</span>.<br>
+<br>
+Nor does this document explain the basics of XML,
+namespaces, syndicated feeds, and the <span
+ style="font-family: monospace;">GET, POST, PUT</span>, and <span
+ style="font-family: monospace;">DELETE</span>
+requests in HTTP, as well as HTTP's concept of a "resource." For more
+information about those things, see the <a href="#more-info">Additional
+resources </a>section of
+this document.<br>
+<br>
+This document doesn't rely on any particular programming language; you
+can send and receive AtomServer messages using any programming language
+that
+lets you issue HTTP requests and parse XML-based responses.<br>
+<br>
+<span style="font-style: italic;">Finally, giving credit where it is
+due, this document is based on the
+GData Protocol Basics document.</span><span
+ style="font-weight: bold; color: rgb(255, 0, 0); font-style: italic;"><br>
+</span>
+<h2>Contents</h2>
+<ol>
+  <li><a href="#url">URL Structure</a><br>
+  </li>
+  <li><a href="#examples">Examples</a></li>
+  <ol>
+    <li><a href="#feed-first">Requesting a feed for the first time</a></li>
+    <li><a href="#feed-second">Requesting a feed after the first time</a></li>
+    <li><a href="#paging">Requesting a "paging" feed</a><br>
+    </li>
+    <li><a href="#get-entry">Requesting a specific entry.</a><br>
+    </li>
+    <li><a href="#post-entry">Inserting a new entry</a></li>
+    <ol>
+      <li><a href="#insert-post">Inserting a new Entry using a POST</a></li>
+      <li><a href="#insert-put">Inserting a new Entry using a PUT</a></li>
+    </ol>
+    <li><a href="#update">Updating an entry</a></li>
+    <li><a href="#delete-entry">Deleting an entry</a></li>
+  </ol>
+  <li><a href="#more-info">Additional resources</a></li>
+</ol>
+<h2><a name="url"></a>URL structure</h2>
+An AtomServer URI has the form; <br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-family: monospace;"></span><br>
+<div id="codebox"><span
+ style="font-family: monospace; font-weight: bold;">/{version}/{workspace}/{collection}/{id}/{revision}</span>
+</div>
+</div>
+<span style="font-family: monospace; font-weight: bold;"></span><br>
+</div>
+where<br>
+<ul>
+  <li><span style="font-weight: bold; font-family: monospace;">{version}</span><span
+ style="font-family: monospace;"> </span>is the version of this
+AtomServer
+server. This is a placeholder in case future versions of your Service
+have to
+change substantially. </li>
+  <li><span style="font-weight: bold; font-family: monospace;">{workspace}</span>
+is the Atom Workspace. <br>
+  </li>
+  <li><span style="font-weight: bold; font-family: monospace;">{collection}</span><span
+ style="font-family: monospace;"> </span>is the Atom Collection.&nbsp;
+  </li>
+  <li><span style="font-weight: bold; font-family: monospace;">{id}</span>
+is the identifier for the desired Atom representation. If id is
+omitted, then it is assumed that the client intends to operate on the
+entire collection. The id may be any String up to 32 characters in
+length.<br>
+  </li>
+  <li><span style="font-weight: bold; font-family: monospace;">{revision}</span>
+is the identifier for the desired revision. It is used
+for optimistic concurrency and is only required in certain
+circumstances (PUTs and DELETEs) See <a href="protocol_reference.html">the
+Protocol Reference document</a>
+for further information. <br>
+  </li>
+</ul>
+The following are examples of valid AtomServer URIs;<br>
+<br>
+<div style="margin-left: 40px;"><span style="font-family: monospace;">/v1/widgets/acme</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">/v1/widgets/acme?locale=fr</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">/v1/widgets/acme?updated-min=2007-06-22T20:38:49.000Z&amp;locale=en_GB&amp;max-results=20</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">/v1/widgets/acme/2888</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">/v1/widgets/acme/2888?locale=fr</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">/v1/widgets/acme/2888.en.xml/3<br>
+<br>
+</span></div>
+The following URL query parameters are recognized;<br>
+<ul>
+  <li><span style="font-weight: bold;">locale</span>&nbsp; is the
+"locale" (language and country identifier).&nbsp; It <span
+ style="font-style: italic;">must</span> be specified in the required
+format.</li>
+  <li><span style="font-weight: bold;">updated-min</span>&nbsp; is the
+last modified date. It <span style="font-style: italic;">must</span>
+be specified in required Atom format.</li>
+  <li><span style="font-weight: bold;">start-index</span>&nbsp; is the
+"start index" for the requested page.</li>
+  <li><span style="font-weight: bold;">max-results</span>&nbsp; is the
+"page size" for the requested page</li>
+  <li><span style="font-weight: bold;">entry-type</span> indicates the
+type of Entry to return. This parameter is generally not required. </li>
+</ul>
+See <a href="protocol_reference.html">the Protocol Reference
+document</a> for further, important information on specifying these
+parameters.<br>
+<h2><a name="examples"></a>Examples</h2>
+Notes pertaining to all of the examples; <br>
+<ul>
+  <li>The responses shown below have been
+formatted to make them easy to read. Atom actually responds without the
+additional whitespace!</li>
+  <li>The Atom namespace is assumed, so none of the XML tags are shown
+with <span style="font-family: monospace;">atom:</span> prefix.</li>
+  <li>The actual Entry XML is <span style="font-weight: bold;">not </span>shown.
+That is out of scope for
+this document.&nbsp;<br>
+  </li>
+</ul>
+<h3><a name="feed-first"></a>1) Requesting a feed for the first time<br>
+</h3>
+The general form of the AtomServer feed request URL follows, where <span
+ style="font-family: monospace;">v1</span> is the version Id, and<span
+ style="font-family: monospace;"> {collection}</span> specifies the
+Atom Collection<br>
+<div style="margin-left: 40px;"><span style="font-family: monospace;"></span><br>
+<div id="codebox"><span style="font-family: monospace;">GET
+/v1/widgets/{collection}</span>&nbsp; </div>
+<br>
+</div>
+Let's assume that you are requesting the feed for the <span
+ style="font-style: italic;">acme</span> Collection, that this is your
+first request for this feed, and, for the sake of brevity, that the
+feed has only two Entries associated with it. <br>
+To see it, you would send the following request to the server:<br>
+<div style="margin-left: 40px;"><span style="font-family: monospace;"></span><br>
+<div id="codebox"><span style="font-family: monospace;">GET
+/v1/widgets/acme</span><br>
+</div>
+</div>
+<br>
+The server responds:<span style="font-family: monospace;"></span><br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-family: monospace;"></span><br>
+<div id="codebox"><span style="font-family: monospace;">200
+OK</span><span style="font-family: monospace;"><br>
+</span>
+<pre id="line1">&lt;?xml version='1.0' encoding='UTF-8'?&gt;<br>&lt;feed xmlns="http://www.w3.org/2005/Atom" xmlns:ha="http://atomserver.org/namespaces/1.0/" xmlns:os="http://a9.com/-/spec/opensearchrss/1.1/"&gt;<br>   &lt;as:endIndex&gt;153&lt;/as:endIndex&gt;<br>   &lt;link href="/myserver/v1/widgets/acme" rel="self" /&gt;<br>   &lt;author&gt;&lt;name&gt;AtomServer APP Service&lt;/name&gt;&lt;/author&gt;<br>   &lt;title type="text"&gt;acme entries&lt;/title&gt;<br>   &lt;updated&gt;2007-10-05T19:17:42.750Z&lt;/updated&gt;<br>   &lt;id&gt;tag:atomserver.org,2007:v1:acme&lt;/id&gt;<br>   &lt;entry&gt;<br>      &lt;id&gt;/myserver/v1/widgets/acme/205390.en.xml&lt;/id&gt;<br>      &lt;updated&gt;2007-10-05T19:17:42.750Z&lt;/updated&gt;<br>      &lt;published&gt;2007-10-05T18:48:23.437Z&lt;/published&gt;<br>      &lt;title type="text"&gt; Entry: acme 205390.en&lt;/title&gt;&lt;author&gt;<br>      &lt;name&gt;AtomServer Atom Service&lt;/name&gt;&lt;/author&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml" rel="self" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml/2" rel="edit" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml" rel="alternate" /&gt;<br>   &lt;/entry&gt;<br>   &lt;entry&gt;<br>      &lt;id&gt;/myserver/v1/widgets/acme/205391.en.xml&lt;/id&gt;<br>      &lt;updated&gt;2007-10-05T18:48:23.437Z&lt;/updated&gt;<br>      &lt;published&gt;2007-10-05T12:36:23.437Z&lt;/published&gt;<br>      &lt;title type="text"&gt; Entry: acme 205391.en&lt;/title&gt;&lt;author&gt;<br>      &lt;name&gt;AtomServer Atom Service&lt;/name&gt;&lt;/author&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205391.en.xml" rel="self" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205391.en.xml/1" rel="edit" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205391.en.xml" rel="alternate" /&gt;<br>   &lt;/entry&gt;<span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"><br>&lt;/feed</span>
+</pre>
+</div>
+</div>
+</div>
+<br>
+Note that the <span style="font-family: monospace;">feed</span> has,
+as expected, two <span style="font-family: monospace;">entry</span>
+elements - one for each Widget in this example. Each of these
+entries contains a "permalink" to the specific resource associated with
+that Entry (e.g. <span style="font-family: monospace;">/myserver/v1/widgets/acme/205390.en.xml</span>).
+For AtomServer this may ultimately be either a physical XML file stored
+on disk, or XML stored in the database. The
+client (i.e. the feed reader) can follow these links as it sees fit.
+Although the client should <span style="font-style: italic;">always</span>
+use the edit link when it wishes to modify the entry. <br>
+<br>
+Had there been more than than 100 entries available (100 is the default
+entries per page limit), or you had specified the <span
+ style="font-family: monospace;">max-results</span> query parameter,
+then several additional elements would have been returned by the feed.
+Please see <a href="#paging">the Paging Time-sensitive Feed section</a>
+for further details.<br>
+<br>
+Note also that the feed returns an <span
+ style="font-family: monospace;">updated</span> tag and an <span
+ style="font-family: monospace;">endIndex</span> tag. The feed reader
+should store one of these values and use it to control the amount of
+content it
+retrieves in subsequent reads. This is explained further in the next
+example. <br>
+<br>
+Each <span style="font-family: monospace;">entry</span> also contains
+an <span style="font-family: monospace;">updated</span> tag. This tag
+represents the last modification date for the data represented by this
+resource. For AtomServer this is the actual system modification date
+for the Database row associated with this Entry. <br>
+<br>
+Now, if you had wanted the French versions of this feed, you would make
+your request like this;<br>
+<br>
+<div style="margin-left: 40px;"><span style="font-family: monospace;">GET
+/v1/widgets/acme?locale=fr</span><br>
+</div>
+<br>
+And the server would have responded with a <span
+ style="font-family: monospace;">feed </span>of the French versions.
+NOTE, if no French version had been available, then <span
+ style="font-style: italic;">nothing </span>would have been returned
+instead.<br>
+<h3><a name="feed-second"></a>2) Requesting a feed after the first time</h3>
+Continuing on with the first example, let's assume that Widget
+205390 has been updated since you last requested the feed, and that you
+have stored either the <span style="font-family: monospace;">updated </span>date
+or the <span style="font-family: monospace;">endIndex </span>value
+from Example 1 someplace safe.&nbsp; Most likely, what you want to see
+is <span style="font-style: italic;">only</span> the updated entries
+and no others. To do this you have several choices <br>
+<ul>
+  <li>You can set the <span style="font-family: monospace;">If-Modified-Since
+    </span>HTTP Header
+of your request to the previous <span style="font-family: monospace;">updated</span>
+date, which reflects the last time you requested a feed. </li>
+  <li>You can use the <span style="font-family: monospace;">updated-min</span>
+URL Query parameter. (e.g. <span style="font-family: monospace;">
+GET /v1/widgets/acme?updated-min=</span><span
+ style="font-family: monospace;">2007-10-05T19:17:42.750Z) </span>which
+behaves identical to the<span style="font-family: monospace;">
+If-Modified-Since </span>Header. Note, the date provided <span
+ style="font-weight: bold;">must</span> be formatted according to the
+Atom specification (<a href="protocol_reference.html">see here</a>).<span
+ style="font-family: monospace;"><br>
+    </span></li>
+  <li>Or best of all, you can use the <span
+ style="font-family: monospace;">start-index</span> URL Query (e.g. <span
+ style="font-family: monospace;">
+GET /v1/widgets/acme?start-index=</span><span
+ style="font-family: monospace;">153). </span>Using this method
+ensures that you will never recieve any inappropriate duplicate
+Entries. The reason for this is that a "last modified date" operation
+is, by definition, an inclusive operation (i.e. "&gt;="). And that many
+Entries could possibly have the same Date. To work around this,
+AtomServer indexes
+every Entry monotonically. And a "get next index" operation is
+exclusive (i.e. "&gt;"), so you are therefore be assured of getting the
+appropriate next Entry.</li>
+</ul>
+Other than
+that the request is identical to Example 1.<br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-family: monospace;"></span><br>
+<div id="codebox"><span style="font-family: monospace;">HTTP
+Header<br>
+&nbsp; If-Modified-Since: 2007-10-05T19:17:42.750Z
+<br>
+<br>
+GET /v1/widgets/acme</span>
+</div>
+</div>
+</div>
+<br>
+The server responds with:<span style="font-family: monospace;"></span><br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-family: monospace;"></span><br>
+<div id="codebox"><span style="font-family: monospace;">200
+OK</span><br style="font-family: monospace;">
+<pre id="line1">&lt;?xml version='1.0' encoding='UTF-8'?&gt;<br>&lt;feed xmlns="http://www.w3.org/2005/Atom" xmlns:ha="http://atomserver.org/namespaces/1.0/" xmlns:os="http://a9.com/-/spec/opensearchrss/1.1/"&gt;<br>   &lt;as:endIndex&gt;154&lt;/as:endIndex&gt;<br>   &lt;link href="/myserver/v1/widgets/acme" rel="self" /&gt;<br>   &lt;author&gt;&lt;name&gt;AtomServer APP Service&lt;/name&gt;&lt;/author&gt;<br>   &lt;title type="text"&gt;acme entries&lt;/title&gt;<br>   &lt;updated&gt;2007-10-05T20:17:50.750Z&lt;/updated&gt;<br>   &lt;id&gt;tag:atomserver.org,2007:v1:acme&lt;/id&gt;<br>   &lt;entry&gt;<br>      &lt;id&gt;/myserver/v1/widgets/acme/205390.en.xml&lt;/id&gt;<br>      &lt;updated&gt;2007-10-05T20:17:50.750Z&lt;/updated&gt;<br>      &lt;published&gt;2007-10-05T18:48:23.437Z&lt;/published&gt;<br>      &lt;title type="text"&gt; Entry: acme 205390.en&lt;/title&gt;&lt;author&gt;<br>      &lt;name&gt;AtomServer Atom Service&lt;/name&gt;&lt;/author&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml" rel="self" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml/3" rel="edit" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml" rel="alternate" /&gt;<br>   &lt;/entry&gt;<span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"><br>&lt;/feed&gt;</span></pre>
+</div>
+<br>
+</div>
+<span style="font-family: monospace;"></span></div>
+If nothing had been updated since your last feed request, then you
+would have received:<br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-family: monospace;"></span><br>
+<div id="codebox"><span style="font-family: monospace;">304
+NOT MODIFIED</span><span style="font-family: monospace;"></span><br>
+</div>
+<br>
+</div>
+<span style="font-family: monospace;"></span></div>
+Note that in thsi case, you did<span style="font-style: italic;"> not </span>simply
+receive an empty <span style="font-family: monospace;">feed</span>
+(i.e a feed with no entries). Instead you are returned the standard
+HTTP status code; <span style="font-family: monospace;">304 </span><span
+ style="font-family: monospace;">NOT MODIFIED</span><span
+ style="font-family: monospace;"></span>. <br>
+<h3><a name="paging"></a>3) A "paging" time-sensitive feed</h3>
+In general, the feed will be returned to the client as a series of
+"pages".&nbsp; An initial "paged" request looks like this<br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-family: monospace;"></span><br>
+<div id="codebox"><span style="font-family: monospace;">GET
+/v1/widgets/acme?max-results=2</span>
+</div>
+<br>
+</div>
+<span style="font-family: monospace;"></span></div>
+The server responds with<br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-family: monospace;"></span><br>
+<div id="codebox"><span style="font-family: monospace;">200
+OK </span><br>
+<pre id="line1">&lt;?xml version='1.0' encoding='UTF-8'?&gt;<br>&lt;feed xmlns="http://www.w3.org/2005/Atom" xmlns:ha="http://atomserver.org/namespaces/1.0/" xmlns:os="http://a9.com/-/spec/opensearchrss/1.1/"&gt;<br>   &lt;os:totalResults&gt;65801&lt;/os:totalResults&gt;<br>   &lt;os:startIndex&gt;0&lt;/os:startIndex&gt;<br>   &lt;os:itemsPerPage&gt;2&lt;/os:itemsPerPage&gt;<br>   &lt;as:endIndex&gt;153&lt;/as:endIndex&gt;<br>   &lt;link href="/myserver/v1/widgets/acme?start-index=153&amp;amp;max-results=2" rel="next" /&gt;<br>   &lt;link href="/myserver/v1/widgets/acme?start-index=0&amp;amp;max-results=2" rel="self" /&gt;<br>   &lt;author&gt;&lt;name&gt;AtomServer APP Service&lt;/name&gt;&lt;/author&gt;<br>   &lt;title type="text"&gt;acme entries&lt;/title&gt;<br>   &lt;updated&gt;2007-10-05T19:17:42.750Z&lt;/updated&gt;<br>   &lt;id&gt;tag:atomserver.org,2007:v1:acme&lt;/id&gt;<br>   &lt;entry&gt;<br>      &lt;id&gt;/myserver/v1/widgets/acme/205390.en.xml&lt;/id&gt;<br>      &lt;updated&gt;2007-10-05T18:48:23.437Z&lt;/updated&gt;<br>      &lt;published&gt;2007-10-05T18:48:23.437Z&lt;/published&gt;<br>      &lt;title type="text"&gt; Entry: acme 205390.en&lt;/title&gt;&lt;author&gt;<br>      &lt;name&gt;AtomServer APP Service&lt;/name&gt;&lt;/author&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml" rel="self" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml/2" rel="edit" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205390.en.xml" rel="alternate" /&gt;<br>   &lt;/entry&gt;<br>   &lt;entry&gt;<br>      &lt;id&gt;/myserver/v1/widgets/acme/205395.en.xml&lt;/id&gt;<br>      &lt;updated&gt;2007-10-05T15:48:56.437Z&lt;/updated&gt;<br>      &lt;published&gt;2007-10-05T12:50:76.437Z&lt;/published&gt;<br>      &lt;title type="text"&gt; Entry: acme 205395.en&lt;/title&gt;&lt;author&gt;<br>      &lt;name&gt;AtomServer APP Service&lt;/name&gt;&lt;/author&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205395.en.xml" rel="self" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205395.en.xml/1" rel="edit" /&gt;<br>      &lt;link href="/myserver/v1/widgets/acme/205395.en.xml" rel="alternate" /&gt;<br>   &lt;/entry&gt;<span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"><br>&lt;/feed&gt;</span><br></pre>
+<span style="font-family: monospace;"></span>
+<span style="font-family: monospace;"></span></div>
+<br>
+</div>
+<span style="font-family: monospace;"></span></div>
+Note that the response contains many new XML elements. If these
+elements are not present, then the client can assume the results are
+all on one page.<br>
+<br>
+<table style="text-align: left; width: 1494px; height: 124px;"
+ border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">&lt;os:totalResults&gt;</span></td>
+      <td
+ style="vertical-align: top; font-family: helvetica,arial,sans-serif;">The
+total number of results
+available for this query (from the OpenSearch spec). Note that this
+number is "temporal". Because entries may be modified, and possibly
+even deleted, this number may grow as the client pages. <br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">&lt;os:startIndex&gt; <br>
+      </span></td>
+      <td
+ style="vertical-align: top; font-family: helvetica,arial,sans-serif;">The
+starting "index" for this
+page (from the OpenSearch spec). Note that this index should not be
+interpreted. It is valid to
+the Server, but the client should never attach any further meaning to
+the number. In other words, one can not use (<span
+ style="font-family: monospace;">startIndex + itemsPerPage</span>)
+to determine the page next index</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">&lt;os:itemsPerPage&gt;</span></td>
+      <td
+ style="vertical-align: top; font-family: helvetica,arial,sans-serif;">The
+page size (from the
+OpenSearch spec).<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">&lt;as:endIndex&gt;</span></td>
+      <td
+ style="vertical-align: top; font-family: helvetica,arial,sans-serif;">The
+ending "index" for this
+page (an AtomServer extension). Note that this index should not be
+interpreted. It is valid to
+the Server, but the client should never attach any further meaning to
+the number. <span style="font-family: monospace;">endIndex</span> is
+required so that we can determine the next page.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: monospace;">&lt;link
+href="/myserver/v1/widgets/acme?start-index=3264&amp;max-results=2"
+rel="next" /&gt;</span></td>
+      <td
+ style="vertical-align: top; font-family: helvetica,arial,sans-serif;">The
+"next link" (from the Paging
+History spec).&nbsp; <span style="font-style: italic;">The client
+should always use this link to get to the next page</span>.&nbsp; It is
+the only guaranteed mechanism for page traversal.<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<h3><a name="get-entry"></a>4) Requesting a specific entry<br>
+</h3>
+The general form of the AtomServer Entry request URL follows,
+where <span style="font-family: monospace;">v1</span> is the version
+Id, <span style="font-family: monospace;">{collection}</span>
+specifies the Atom Collection (e.g. acme, etc.),&nbsp; <span
+ style="font-family: monospace;">{propId}</span> specifies the Entry
+Id,&nbsp; and <span style="font-family: monospace;">{locale}</span>
+specifies the language.
+<span style="font-style: italic;">Locale is optional, depending on how
+the Workspace or Collection is configured.</span><br>
+<br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div id="codebox"><span style="font-family: monospace;">GET
+/v1/widgets/{brand}/{prodId}.{locale}.xml</span><br>
+</div>
+</div>
+</div>
+<br>
+Let's assume that you are requesting the US English version of the <span
+ style="font-style: italic;">acme</span> Widget; 169371.<br>
+To see it, you would send the following request to the server:<br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-family: monospace;"></span><br>
+<div id="codebox"><span style="font-family: monospace;">GET
+/v1/widgets/acme/169371.en_US.xml</span>
+</div>
+<br>
+</div>
+</div>
+The server responds with:<span style="font-family: monospace;"></span><br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-family: monospace;"></span><br>
+<div id="codebox"><span style="font-family: monospace;">200
+OK</span><br>
+<pre id="line1"><span class="pi">&lt;?xml version='1.0' encoding='UTF-8'?&gt;</span><br>&lt;<span
+ class="start-tag">entry</span><span class="attribute-name"> xmlns</span>=<span
+ class="attribute-value">"http://www.w3.org/2005/Atom"</span>&gt;<br>   &lt;<span
+ class="start-tag">id</span>&gt;/myserver/v1/widgets/acme/169371.en_US.xml&lt;/<span
+ class="end-tag">id</span>&gt;<br>   &lt;<span class="start-tag">updated</span>&gt;2007-10-05T19:17:42.640Z&lt;/<span
+ class="end-tag">updated</span>&gt;<br>   &lt;<span class="start-tag">published</span>&gt;2007-10-05T19:17:42.640Z&lt;/<span
+ class="end-tag">published</span>&gt;<br>   &lt;<span class="start-tag">title</span><span
+ class="attribute-name"> type</span>=<span class="attribute-value">"text"</span>&gt; Entry: acme 169371.en_US&lt;/<span
+ class="end-tag">title</span>&gt;<br>   &lt;<span class="start-tag">author</span>&gt;&lt;<span
+ class="start-tag">name</span>&gt;AtomServer APP Service&lt;/<span
+ class="end-tag">name</span>&gt;&lt;/<span class="end-tag">author</span>&gt;<br>   &lt;<span
+ class="start-tag">link</span><span class="attribute-name"> href</span>=<span
+ class="attribute-value">"/myserver/v1/widgets/acme/169371.en_US.xml" </span><span
+ class="attribute-name">rel</span>=<span class="attribute-value">"self" </span><span
+ class="attribute-name">/</span>&gt;<br>   &lt;<span class="start-tag">link</span><span
+ class="attribute-name"> href</span>=<span class="attribute-value">"/myserver/v1/widgets/acme/169371.en_US.xml/0" </span><span
+ class="attribute-name">rel</span>=<span class="attribute-value">"edit" </span><span
+ class="attribute-name">/</span>&gt;<br>   &lt;<span class="start-tag">content</span><span
+ class="attribute-name"></span><span class="attribute-value"></span> type="application/xml"&gt;<br>     &lt;property xmlns="http://schemas.atomserver.org/widgets/v1/rev0" systemId="acme" id="2787" inNetwork="false"&gt;<br>         .....<br>     &lt;/property&gt;<br><span
+ style="font-family: monospace;">   &lt;/content&gt;</span><span
+ style="font-family: monospace;"><br>&lt;/entry</span>
+</pre>
+</div>
+<br>
+</div>
+<span style="font-family: monospace;"></span>
+</div>
+<span style="font-weight: bold;">Notes:</span><br>
+<ul>
+  <li>The actual Widget XML is not shown in this example. It is
+immaterial. Although do note that the <span
+ style="font-family: monospace;"></span>entire XML
+document is returned&nbsp; inside the <span
+ style="font-family: monospace;">content</span> element.</li>
+  <li>One can request the Entry using the revision (i.e. <span
+ style="font-family: monospace;">/v1/widgets/acme/169371.en_US.xml/0 </span>),
+    <span style="font-style: italic;">but</span> if the revision is <span
+ style="font-style: italic;">not </span>available you will receive a <span
+ style="font-family: monospace;">409 Conflict</span> error.&nbsp; And
+if you do receive a <span style="font-family: monospace;">409 Conflict</span>,
+you will receive the response content as described in <a
+ href="#put-entry">the Update section</a> below.<br>
+  </li>
+</ul>
+<h3><a name="post-entry"></a>5) Inserting a new entry</h3>
+There are two ways to insert a new Entry. Which of these you use
+depends on whether you already know the Entry's identifier or not. <br>
+<ul>
+  <li><span style="font-weight: bold;">Using a</span><span
+ style="font-family: monospace; font-weight: bold;"> PUT</span><span
+ style="font-weight: bold;"> request.</span>&nbsp; If you already know
+the identifier of your Entry, when it was assigned outside of
+AtomServer, you make a PUT request to the specific URL associated with
+this Entry. </li>
+  <li><span style="font-weight: bold;">Using a </span><span
+ style="font-family: monospace; font-weight: bold;">POST</span><span
+ style="font-weight: bold;"> request.</span>&nbsp; If you want
+AtomServer to assign an Entry ID for you, then you make a POST request
+to the Feed URL of the Workspace, Collection you want this Entry
+created in. <br>
+  </li>
+</ul>
+<h4><a name="insert-post"></a>5.1) Inserting a new Entry using a POST
+</h4>
+When you want AtomServer to create an Entry Id for you, you send a <span
+ style="font-family: monospace;">POST</span>
+request to the appropriate Feed URL, and supply a new Entry in
+AtomServer format. AtomServer can be configured with an whatevre
+EntryIDGenerator you care to supply, as long as it supplies a unique Id
+for the given Workspace/Collection. By default, AtomServer uses a
+UUIDEntryIDGenerator, which creates a unique UUID as the Entry Id. <br>
+<br>
+NOTE: If the Workspace and/or Collection has been configured for
+localization, then you must supply the locale Query parameter with the
+URL, as depicted in the example below.<br>
+NOTE: the XML namespace qualifier ( e.g. <span
+ style="font-family: monospace;">&lt;entry
+xmlns="http://www.w3.org/2005/Atom"</span>&gt;) is <span
+ style="font-weight: bold;">required</span> by the Atompub
+specification!<br>
+NOTE: the client does <span style="font-weight: bold;">not </span>need
+to provide any of the <span style="font-family: monospace;">entry</span>
+elements
+when creating an Entry including the <span
+ style="font-family: monospace;">&lt;id&gt;</span><span
+ style="font-weight: bold;"></span>.<br>
+<br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-family: monospace;"></span><br>
+<div id="codebox"><span style="font-family: monospace;">POST
+/v1/widgets/acme?local=en_US</span><br>
+<pre id="line1">&lt;<span class="start-tag">entry</span><span
+ class="attribute-name"> xmlns</span>=<span class="attribute-value">"http://www.w3.org/2005/Atom"</span>&gt;<br>   &lt;<span
+ class="start-tag">content</span><span class="attribute-name"></span> type="application/xml"&gt;<br>     &lt;property xmlns="http://schemas.atomserver.org/widgets/v1/rev0" systemId="acme" inNetwork="false"&gt;<br>         .....<br>     &lt;/property&gt;<br><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;">   &lt;/content&gt;</span><span
+ style="font-family: monospace;"><br>&lt;/entry&gt;</span>
+</pre>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;">
+</span><span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+</div>
+<span style="font-family: monospace;"><br>
+</span><span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+The server responds:<br>
+<br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div id="codebox"><span style="font-family: monospace;">201
+CREATED</span><br>
+<pre id="line1"><span class="pi">&lt;?xml version='1.0' encoding='UTF-8'?&gt;</span><br>&lt;<span
+ class="start-tag">entry</span><span class="attribute-name"> xmlns</span>=<span
+ class="attribute-value">"http://www.w3.org/2005/Atom"</span>&gt;<br>   &lt;<span
+ class="start-tag">id</span>&gt;/myserver/v1/widgets/acme/a371412926e0439983eda36651049dfa.en_US.xml&lt;/<span
+ class="end-tag">id</span>&gt;<br>   &lt;<span class="start-tag">updated</span>&gt;2007-10-05T19:17:42.640Z&lt;/<span
+ class="end-tag">updated</span>&gt;<br>   &lt;<span class="start-tag">published</span>&gt;2007-10-05T19:17:42.640Z&lt;/<span
+ class="end-tag">published</span>&gt;<br>   &lt;<span class="start-tag">title</span><span
+ class="attribute-name"> type</span>=<span class="attribute-value">"text"</span>&gt; Entry: acme a371412926e0439983eda36651049dfa.en_US&lt;/<span
+ class="end-tag">title</span>&gt;<br>   &lt;<span class="start-tag">author</span>&gt;&lt;<span
+ class="start-tag">name</span>&gt;AtomServer APP Service&lt;/<span
+ class="end-tag">name</span>&gt;&lt;/<span class="end-tag">author</span>&gt;<br>   &lt;<span
+ class="start-tag">link</span><span class="attribute-name"> href</span>=<span
+ class="attribute-value">"/myserver/v1/widgets/acme/</span>a371412926e0439983eda36651049dfa<span
+ class="attribute-value">.en_US.xml" </span><span class="attribute-name">rel</span>=<span
+ class="attribute-value">"self" </span><span class="attribute-name">/</span>&gt;<br>   &lt;<span
+ class="start-tag">link</span><span class="attribute-name"> href</span>=<span
+ class="attribute-value">"/myserver/v1/widgets/acme/</span>a371412926e0439983eda36651049dfa<span
+ class="attribute-value">.en_US.xml/0" </span><span
+ class="attribute-name">rel</span>=<span class="attribute-value">"edit" </span><span
+ class="attribute-name">/</span>&gt;<br>   &lt;<span class="start-tag">content</span><span
+ class="attribute-name"></span> type="application/xml"&gt;<br>     &lt;property xmlns="http://schemas.atomserver.org/widgets/v1/rev0" systemId="acme" id="a371412926e0439983eda36651049dfa" inNetwork="false"&gt;<br>         .....<br>     &lt;/property&gt;<br><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;">   &lt;/content&gt;</span><span
+ style="font-family: monospace;"><br>&lt;/entry&gt;</span>
+</pre>
+</div>
+<br>
+</div>
+<span style="font-family: monospace;"></span>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+<h4><a name="insert-put"></a>5.2) Inserting a new Entry using a PUT</h4>
+When you already know the Entry Id for the Entry you want created, you
+send a <span style="font-family: monospace;">PUT</span>
+request to the appropriate Entry URL, and supply a new Entry in
+AtomServer format. Note that, for this case, there
+is effectively no difference between an
+Update and an Insert, <span style="font-style: italic;">except</span>
+for Updates, where you <span style="font-weight: bold;">must</span>
+provide the revision identifier. (Although, for situations where there
+is a "single writer" and optimistic concurrency is not required, you
+can use the widcard revision identifier ( <span
+ style="font-family: monospace;">/*</span> ) to override optimistic
+concurrency).<br>
+<br>
+NOTE: the XML namespace qualifier ( e.g. <span
+ style="font-family: monospace;">&lt;entry
+xmlns="http://www.w3.org/2005/Atom"</span>&gt;) is <span
+ style="font-weight: bold;">required</span> by the Atompub
+specification!<br>
+NOTE: the client does not need to provide any of the <span
+ style="font-family: monospace;">entry</span> elements
+when creating an Entry <span style="font-style: italic;">except for </span><span
+ style="font-family: monospace; font-style: italic;">&lt;id&gt;</span>,
+which <span style="font-weight: bold;">must</span> be provided
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-family: monospace;"></span><br>
+<div id="codebox"><span style="font-family: monospace;">PUT
+/v1/widgets/acme/169371.en_US.xml</span><br>
+<pre id="line1">&lt;<span class="start-tag">entry</span><span
+ class="attribute-name"> xmlns</span>=<span class="attribute-value">"http://www.w3.org/2005/Atom"</span>&gt;<br>   &lt;<span
+ class="start-tag">id</span>&gt;/myserver/v1/widgets/acme/169371.en_US.xml&lt;/<span
+ class="end-tag">id</span>&gt;<br>   &lt;<span class="start-tag">content</span><span
+ class="attribute-name"></span> type="application/xml"&gt;<br>     &lt;property xmlns="http://schemas.atomserver.org/widgets/v1/rev0" systemId="acme" id="2787" inNetwork="false"&gt;<br>         .....<br>     &lt;/property&gt;<br><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;">   &lt;/content&gt;</span><span
+ style="font-family: monospace;"><br>&lt;/entry&gt;</span>
+</pre>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;">
+</span><span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+</div>
+<span style="font-family: monospace;"><br>
+</span><span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+The server responds:<br>
+<br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div id="codebox"><span style="font-family: monospace;">201
+CREATED</span><br>
+<pre id="line1"><span class="pi">&lt;?xml version='1.0' encoding='UTF-8'?&gt;</span><br>&lt;<span
+ class="start-tag">entry</span><span class="attribute-name"> xmlns</span>=<span
+ class="attribute-value">"http://www.w3.org/2005/Atom"</span>&gt;<br>   &lt;<span
+ class="start-tag">id</span>&gt;/myserver/v1/widgets/acme/169371.en_US.xml&lt;/<span
+ class="end-tag">id</span>&gt;<br>   &lt;<span class="start-tag">updated</span>&gt;2007-10-05T19:17:42.640Z&lt;/<span
+ class="end-tag">updated</span>&gt;<br>   &lt;<span class="start-tag">published</span>&gt;2007-10-05T19:17:42.640Z&lt;/<span
+ class="end-tag">published</span>&gt;<br>   &lt;<span class="start-tag">title</span><span
+ class="attribute-name"> type</span>=<span class="attribute-value">"text"</span>&gt; Entry: acme 169371.en_US&lt;/<span
+ class="end-tag">title</span>&gt;<br>   &lt;<span class="start-tag">author</span>&gt;&lt;<span
+ class="start-tag">name</span>&gt;AtomServer APP Service&lt;/<span
+ class="end-tag">name</span>&gt;&lt;/<span class="end-tag">author</span>&gt;<br>   &lt;<span
+ class="start-tag">link</span><span class="attribute-name"> href</span>=<span
+ class="attribute-value">"/myserver/v1/widgets/acme/169371.en_US.xml" </span><span
+ class="attribute-name">rel</span>=<span class="attribute-value">"self" </span><span
+ class="attribute-name">/</span>&gt;<br>   &lt;<span class="start-tag">link</span><span
+ class="attribute-name"> href</span>=<span class="attribute-value">"/myserver/v1/widgets/acme/169371.en_US.xml/0" </span><span
+ class="attribute-name">rel</span>=<span class="attribute-value">"edit" </span><span
+ class="attribute-name">/</span>&gt;<br>   &lt;<span class="start-tag">content</span><span
+ class="attribute-name"></span> type="application/xml"&gt;<br>     &lt;property xmlns="http://schemas.atomserver.org/widgets/v1/rev0" systemId="acme" id="2787" inNetwork="false"&gt;<br>         .....<br>     &lt;/property&gt;<br><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;">   &lt;/content&gt;</span><span
+ style="font-family: monospace;"><br>&lt;/entry&gt;</span>
+</pre>
+</div>
+</div>
+<span style="font-family: monospace;"></span>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+<h3><a name="update"></a>6) Updating an entry</h3>
+To update an existing entry, use PUT, with the entry's edit URI (as
+provided by the server in the previous example, in the &lt;link
+rel="edit"&gt; element). Note that there is effectively no difference
+between an
+Update and an Insert, <span style="font-style: italic;">except</span>
+in Updates, you <span style="font-weight: bold;">must</span>
+provide the revision identifier. Although, for situations where there
+is a "single writer" and optimistic concurrency is not required, you
+can use the wildcard revision identifier ( <span
+ style="font-family: monospace;">/*</span> ) to override optimistic
+concurrency.<br>
+<br>
+NOTE: the XML namespace qualifier ( e.g. <span
+ style="font-family: monospace;">&lt;entry
+xmlns="http://www.w3.org/2005/Atom"</span>&gt;) is <span
+ style="font-weight: bold;">required</span> by the Atompub
+specification!<br>
+<br>
+If your firewall does not allow PUT, then do an HTTP POST and set the
+method override header as follows:<br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-family: monospace;"></span><br>
+<div id="codebox"><span style="font-family: monospace;">X-HTTP-Method-Override:
+PUT</span>
+</div>
+</div>
+</div>
+<br>
+PUT the following <br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-family: monospace;"></span><br>
+<div id="codebox"><span style="font-family: monospace;">PUT
+/v1/widgets/acme/169371.en_US.xml/3</span><br>
+<pre id="line1">&lt;<span class="start-tag">entry</span><span
+ class="attribute-name"> xmlns</span>=<span class="attribute-value">"http://www.w3.org/2005/Atom"</span>&gt;<br>   &lt;<span
+ class="start-tag">id</span>&gt;/myserver/v1/widgets/acme/169371.en_US.xml&lt;/<span
+ class="end-tag">id</span>&gt;<br>   &lt;<span class="start-tag">content</span><span
+ class="attribute-name"></span><span class="attribute-value"></span> type="application/xml"&gt;<br>     &lt;property xmlns="http://schemas.atomserver.org/widgets/v1/rev0" systemId="acme" id="2787" inNetwork="false"&gt;<br>         .....<br>     &lt;/property&gt;<br><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;">   &lt;/content&gt;</span><span
+ style="font-family: monospace;"><br>&lt;/entry&gt;</span></pre>
+</div>
+<br>
+</div>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span>
+</div>
+The server responds:<br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-family: monospace;"></span><br>
+<div id="codebox"><span style="font-family: monospace;">200
+OK</span><br>
+<pre id="line1"><span class="pi">&lt;?xml version='1.0' encoding='UTF-8'?&gt;</span><br>&lt;<span
+ class="start-tag">entry</span><span class="attribute-name"> xmlns</span>=<span
+ class="attribute-value">"http://www.w3.org/2005/Atom"</span>&gt;<br>   &lt;<span
+ class="start-tag">id</span>&gt;/myserver/v1/widgets/acme/169371.en_US.xml&lt;/<span
+ class="end-tag">id</span>&gt;<br>   &lt;<span class="start-tag">updated</span>&gt;2007-10-05T19:17:42.640Z&lt;/<span
+ class="end-tag">updated</span>&gt;<br>   &lt;<span class="start-tag">published</span>&gt;2007-10-05T19:17:42.640Z&lt;/<span
+ class="end-tag">published</span>&gt;<br>   &lt;<span class="start-tag">title</span><span
+ class="attribute-name"> type</span>=<span class="attribute-value">"text"</span>&gt; Entry: acme 169371.en_US&lt;/<span
+ class="end-tag">title</span>&gt;<br>   &lt;<span class="start-tag">author</span>&gt;&lt;<span
+ class="start-tag">name</span>&gt;AtomServer APP Service&lt;/<span
+ class="end-tag">name</span>&gt;&lt;/<span class="end-tag">author</span>&gt;<br>   &lt;<span
+ class="start-tag">link</span><span class="attribute-name"> href</span>=<span
+ class="attribute-value">"/myserver/v1/widgets/acme/169371.en_US.xml" </span><span
+ class="attribute-name">rel</span>=<span class="attribute-value">"self" </span><span
+ class="attribute-name">/</span>&gt;<br>   &lt;<span class="start-tag">link</span><span
+ class="attribute-name"> href</span>=<span class="attribute-value">"/myserver/v1/widgets/acme/169371.en_US.xml/4" </span><span
+ class="attribute-name">rel</span>=<span class="attribute-value">"edit" </span><span
+ class="attribute-name">/</span>&gt;<br>   &lt;<span class="start-tag">content</span><span
+ class="attribute-name"></span><span class="attribute-value"></span> type="application/xml"&gt;<br>     &lt;property xmlns="http://schemas.atomserver.org/widgets/v1/rev0" systemId="acme" id="2787" inNetwork="false"&gt;<br>         .....<br>     &lt;/property&gt;<br><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;">  &lt;/content&gt;</span><span
+ style="font-family: monospace;"><br>&lt;/entry&gt;</span>
+</pre>
+</div>
+</div>
+<span style="font-family: monospace;"><br>
+</span></div>
+Note that you receive an <span style="font-family: monospace;">edit</span>
+link and a <span style="font-family: monospace;">self</span> link in
+the response.&nbsp; And that you <span style="font-weight: bold;">must</span>
+use this <span style="font-family: monospace;">edit</span> link when
+you wish to edit (Update or Delete) the Entry. <br>
+<br>
+If you had requested a revision which did <span
+ style="font-style: italic;">not </span>match the Entry's revision
+currently in the AtomServer store, then you will receive a <span
+ style="font-family: monospace;">409 Conflict </span>error response
+like that below.<br>
+<div style="margin-left: 40px;"><br>
+<div style="margin-left: 40px;">
+<div id="codebox"><span style="font-family: monospace;">409 CONFLICT </span><br>
+<br>
+<span style="font-family: monospace;">&lt;?xml version='1.0'
+encoding='UTF-8'?&gt;</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&lt;a:error
+xmlns:a="http://incubator.apache.org/abdera"&gt;</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;
+&lt;a:code&gt;409&lt;/a:code&gt;</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;
+&lt;a:message&gt;Optimistic Concurrency Error::
+/myserver/v1/widgets/acme/12345.en.xml/2&lt;/a:message&gt;</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp; &lt;link
+xmlns="http://www.w3.org/2005/Atom"
+href="/myserver/v1/widgets/acme/12345.en.xml/3" rel="edit" /&gt;</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;">&lt;/a:error&gt;</span>
+</div>
+<br>
+</div>
+<span style="font-family: monospace;"></span>
+</div>
+Note that you also receive an <span style="font-family: monospace;">edit</span>
+link in the error response which you can use to make your update
+request again.<br>
+<br>
+Further details on the optimistic concurrency model can be found <a
+ href="protocol_reference.html#Optimistic_concurrency_versioning">here</a>.<br>
+<h3><a name="delete-entry"></a>7) Deleting an entry</h3>
+To delete an existing Entry, send a DELETE request, using the Entry's
+<span style="font-family: monospace;">edit</span> URI (as provided by
+the server in the previous example). Note that a special <span
+ style="font-family: monospace;">&lt;deletion&gt;</span> XML document
+is returned as the XML <span style="font-family: monospace;">content</span>
+for <span style="font-family: monospace;">DELETE</span>s. This allows
+you to verify that a particular Entry has been deleted. Note that this
+XML content replaces the XML stored for this Entry. And thus, any
+subsequent Feed will return a &lt;deletion&gt; and the Feed client can
+act accordingly.&nbsp; Deletions are configured by default to be <span
+ style="font-weight: bold;">verbose</span>, which means that when an
+entry is deleted, the &lt;deletion&gt; XML element contains the content
+of the entry at the time just before it was deleted.&nbsp; This is
+particularly useful if a client needs to take some action based on
+another object that is linked through a property of the deleted entry
+itself.&nbsp; <br>
+<br>
+If your firewall does not allow DELETE, then do an HTTP POST and set
+the method override header as follows:<br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-family: monospace;"></span><br>
+<div id="codebox"><span style="font-family: monospace;">X-HTTP-Method-Override:
+DELETE</span>
+</div>
+</div>
+<span style="font-family: monospace;"></span><br>
+</div>
+The following example deletes an entry:<br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-family: monospace;"></span><br>
+<div id="codebox"><span style="font-family: monospace;">DELETE
+</span><span style="font-family: monospace;">/v1/widgets/acme/205390.en.xml/3</span>
+</div>
+</div>
+</div>
+<br>
+The server responds:<br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-family: monospace;"></span><br>
+<div id="codebox"><span style="font-family: monospace;">200
+OK<br>
+</span>
+<pre id="line1"><span class="pi">&lt;?xml version='1.0' encoding='UTF-8'?&gt;</span><br>&lt;<span
+ class="start-tag">entry</span><span class="attribute-name"> xmlns</span>=<span
+ class="attribute-value">"http://www.w3.org/2005/Atom"</span>&gt;<br>   &lt;<span
+ class="start-tag">id</span>&gt;/myserver/v1/widgets/acme/205390.en.xml&lt;/<span
+ class="end-tag">id</span>&gt;<br>   &lt;<span class="start-tag">updated</span>&gt;2007-10-05T18:48:23.437Z&lt;/<span
+ class="end-tag">updated</span>&gt;<br>   &lt;<span class="start-tag">published</span>&gt;2007-10-05T18:48:23.437Z&lt;/<span
+ class="end-tag">published</span>&gt;<br>   &lt;<span class="start-tag">title</span><span
+ class="attribute-name"> type</span>=<span class="attribute-value">"text"</span>&gt; Entry: acme 205390.en&lt;/<span
+ class="end-tag">title</span>&gt;<br>   &lt;<span class="start-tag">author</span>&gt;&lt;<span
+ class="start-tag">name</span>&gt;AtomServer Atom Service&lt;/<span
+ class="end-tag">name</span>&gt;&lt;/<span class="end-tag">author</span>&gt;<br>   &lt;<span
+ class="start-tag">link</span><span class="attribute-name"> href</span>=<span
+ class="attribute-value">"/myserver/v1/widgets/acme/205390.en.xml" </span><span
+ class="attribute-name">rel</span>=<span class="attribute-value">"self" </span><span
+ class="attribute-name">/</span>&gt;<br>   &lt;<span class="start-tag">link</span><span
+ class="attribute-name"> href</span>=<span class="attribute-value">"/myserver/v1/widgets/acme/205390.en.xml/4" </span><span
+ class="attribute-name">rel</span>=<span class="attribute-value">"edit" </span><span
+ class="attribute-name">/</span>&gt;<br>   &lt;<span class="start-tag">content</span><span
+ class="attribute-name"></span> type="application/xml"&gt;<br>      &lt;<span
+ class="start-tag">deletion</span><span class="attribute-name"> xmlns</span>=<span
+ class="attribute-value">"http://schemas.atomserver.org/atomserver/v1/rev0" </span><span
+ class="attribute-name">collection</span>=<span class="attribute-value">"acme" </span><span
+ class="attribute-name">id</span>=<span class="attribute-value">"205390" </span><span
+ class="attribute-name">locale</span>=<span class="attribute-value">"en" </span><span
+ class="attribute-name">workspace</span>=<span class="attribute-value">"widgets"&gt;<br></span>        &lt;property xmlns="http://schemas.atomserver.org/widgets/v1/rev0" systemId="acme" id="2787" inNetwork="false"&gt;<br>            .....<br>        &lt;/property&gt;<br><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span>      &lt;/deletion&gt;<br>   &lt;/<span
+ class="end-tag">content</span>&gt;<br>   &lt;<span class="start-tag">category</span><span
+ class="attribute-name"> /</span>&gt;<br> &lt;/<span class="end-tag">entry</span>&gt;</pre>
+</div>
+<br>
+</div>
+<span style="font-family: monospace;"></span></div>
+If the deletion fails, then the server responds with an error code.
+<h2><a name="more-info"></a>Additional resources</h2>
+You may find the following third-party documents useful:<br>
+<br>
+&nbsp;&nbsp;&nbsp; * <a
+ href="http://www-128.ibm.com/developerworks/xml/library/x-atom10.html">Overview
+of Atom</a> from IBM<br>
+&nbsp;&nbsp;&nbsp; * <a
+ href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html">HTTP 1.1
+method definitions</a>; specification for GET, POST, PUT, and DELETE<br>
+&nbsp;&nbsp;&nbsp; * <a
+ href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html">HTTP 1.1
+status code definitions</a><br>
+&nbsp;&nbsp;&nbsp; * <a
+ href="http://www.atomenabled.org/developers/syndication/">Atom
+Syndication Reference</a> (from Atom-enabled)<br>
+&nbsp;&nbsp;&nbsp; * <a
+ href="http://www-128.ibm.com/developerworks/library/x-atompp1/">Getting
+to know the Atom Publishing Protocol (from IBM)</a><br>
+<br>
+<br>
+</div>
+</body>
+</html>

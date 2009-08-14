@@ -1,0 +1,65 @@
+<tc:tc-config xmlns:tc="http://www.terracotta.org/config">
+
+    <!-- TODO: the tc.home variable, what are the ramifications of that on the DSO server? -->
+    <!-- TODO: refactor AtomServer to be a TIM, so the application config is distinct from servers -->
+
+    <servers>
+        <server name="tc-main" host="localhost">
+            <dso-port>9510</dso-port>
+            <jmx-port>9520</jmx-port>
+            <data>%(tc.home)/server/data</data>
+            <logs>%(tc.home)/server/logs</logs>
+            <statistics>%(tc.home)/server/statistics</statistics>
+            <dso>
+                <persistence>
+                    <mode>permanent-store</mode>
+                </persistence>
+            </dso>
+        </server>
+    </servers>
+
+    <clients>
+        <logs>%(tc.home)/clients/%(tc.nodeName)-logs</logs>
+        <statistics>%(tc.home)/clients/%(tc.nodeName)</statistics>
+        <modules>
+            <module group-id="org.compass-project" name="compass" version="2.1.2"/>
+        </modules>
+
+    </clients>
+
+    <application>
+
+        <spring>
+            <jee-application name="*">
+
+                <application-contexts>
+                    <application-context>
+                        <paths>
+                            <path>*/applicationContext.xml</path>
+                        </paths>
+                        <beans>
+                            <bean name="org.atomserver.app.APPRoot"/>
+                        </beans>
+                    </application-context>
+                </application-contexts>
+
+                <instrumented-classes>
+                    <include>
+                        <class-expression>org.atomserver..*</class-expression>
+                        <honor-transient>true</honor-transient>
+                    </include>
+                    <include>
+                        <class-expression>org.atomserver.filter.XPathEntryFilter</class-expression>
+                        <honor-transient>true</honor-transient>
+                        <on-load>
+                            <method>onLoad</method>
+                        </on-load>
+                    </include>
+                </instrumented-classes>
+
+            </jee-application>
+
+        </spring>
+    </application>
+
+</tc:tc-config>

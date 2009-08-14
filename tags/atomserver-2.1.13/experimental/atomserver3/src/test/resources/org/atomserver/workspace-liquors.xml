@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<workspace xmlns="http://www.w3.org/2007/app"
+           xmlns:atom="http://www.w3.org/2005/Atom"
+           xmlns:as="http://atomserver.org/3">
+    <as:name>liquors</as:name>
+    <atom:title>Liquors and Spirits</atom:title>
+</workspace>

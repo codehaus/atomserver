@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+    "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<!--
+ Copyright (c) 2007 HomeAway, Inc.
+  All rights reserved.  http://www.atomserver.org
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<sqlMap>
+
+  <resultMap id="schemeTermMap" class="java.util.HashMap" >
+    <result property="scheme" column="Scheme" />
+    <result property="term"   column="Term" />
+  </resultMap>
+
+  <!-- #################### insert ############### -->
+
+  <insert id="insertEntryCategory" parameterClass="entryCategory">
+      INSERT INTO EntryCategory (EntryStoreId, Scheme, Term, Label)
+      <dynamic>
+      <isNotNull property="entryStoreId">
+          VALUES (#entryStoreId#, #scheme#, #term#, #label#)
+      </isNotNull>
+      <isNull property="entryStoreId">
+          SELECT EntryStoreId, #scheme#, #term#, #label#
+            FROM EntryStore
+           WHERE Workspace=#workspace#
+             AND Collection=#collection#
+             AND EntryId=#entryId#
+             AND LanCode=#language#
+             AND CountryCode=#country#
+      </isNull>
+      </dynamic>
+
+  </insert>
+
+  <!-- #################### select ############### -->
+  <!-- This SELECT is pretty useless, since you already had to know everything in the row to do the SELECT
+       But its helpful in tests -->
+  <select id="selectEntryCategory" parameterClass="entryCategory" resultMap="entryCategoryResult" >
+    SELECT
+    EntryStore.EntryStoreId AS EntryStoreId, Workspace, Collection, EntryId, Scheme, Term, Label
+    FROM EntryCategory JOIN EntryStore ON EntryCategory.EntryStoreId = EntryStore.EntryStoreId
+      <isNotNull property="entryStoreId">
+          WHERE EntryStore.EntryStoreId = #entryStoreId#
+      </isNotNull>
+      <isNull property="entryStoreId">
+          WHERE EntryStore.EntryStoreId = (SELECT EntryStoreId FROM EntryStore
+                                            WHERE Workspace=#workspace#
+                                              AND Collection=#collection#
+                                              AND EntryId=#entryId#
+                                              AND LanCode=#language#
+                                              AND CountryCode=#country#)
+      </isNull>
+    AND Scheme=#scheme#
+    AND Term=#term#
+  </select>
+
+  <!-- return the List of all Categories for this Entry -->
+  <select id="selectEntryCategories" parameterClass="entryCategory" resultMap="entryCategoryResult" >
+    SELECT EntryStore.EntryStoreId AS EntryStoreId,
+           Workspace,
+           Collection,
+           EntryId,
+           Scheme,
+           Term,
+           Label
+      FROM EntryCategory
+      JOIN EntryStore
+        ON EntryCategory.EntryStoreId = EntryStore.EntryStoreId
+      <isNotNull property="entryStoreId">
+     WHERE EntryStore.EntryStoreId = #entryStoreId#
+      </isNotNull>
+      <isNull property="entryStoreId">
+     WHERE EntryStore.EntryStoreId = (SELECT EntryStoreId FROM EntryStore
+                                       WHERE Workspace=#workspace#
+                                         AND Collection=#collection#
+                                         AND EntryId=#entryId#
+                                         AND LanCode=#language#
+                                         AND CountryCode=#country#)
+      </isNull>
+    <isNotNull property="scheme" >
+       AND Scheme=#scheme#
+   </isNotNull>
+  </select>
+
+
+  <delete id="deleteEntryCategories" parameterClass="entryCategory">
+    DELETE FROM EntryCategory
+      <isNotNull property="entryStoreId">
+     WHERE EntryStoreId = #entryStoreId#
+      </isNotNull>
+      <isNull property="entryStoreId">
+     WHERE EntryStoreId = (SELECT EntryStoreId FROM EntryStore
+                            WHERE Workspace=#workspace#
+                              AND Collection=#collection#
+                              AND EntryId=#entryId#
+                              AND LanCode=#language#
+                              AND CountryCode=#country#)
+      </isNull>
+    <isNotNull property="scheme" >
+       AND Scheme=#scheme#
+    </isNotNull>
+  </delete>
+  
+  <!-- return the Distinct List of all Collections for a Workspace -->
+  <select id="selectDistinctCollections" parameterClass="string" resultClass="string" >
+    SELECT DISTINCT Collection
+      FROM EntryStore
+     INNER JOIN EntryCategory 
+        ON EntryCategory.EntryStoreId = EntryStore.EntryStoreId
+     WHERE Workspace=#workspace#
+  </select>
+
+  <!-- return the Distinct List of all Scheme/Term for a Workspace/Collection -->
+   <select id="selectDistinctCategoriesPerCollection" parameterClass="map" resultMap="schemeTermMap" >
+    SELECT DISTINCT Scheme, Term
+      FROM EntryCategory
+     WHERE EntryStoreId IN (SELECT EntryStoreId FROM EntryStore
+                             WHERE Workspace=#workspace#
+                               AND Collection=#collection#)
+  </select>
+
+  <!-- #################### delete  ############### -->
+  <delete id="deleteEntryCategory" parameterClass="entryCategory" >
+    DELETE FROM EntryCategory
+      <isNotNull property="entryStoreId">
+          WHERE EntryStoreId = #entryStoreId#
+      </isNotNull>
+      <isNull property="entryStoreId">
+          WHERE EntryStoreId = (SELECT EntryStoreId FROM EntryStore
+                                 WHERE Workspace=#workspace#
+                                   AND Collection=#collection#
+                                   AND EntryId=#entryId#
+                                   AND LanCode=#language#
+                                   AND CountryCode=#country#)
+      </isNull>
+    AND Scheme=#scheme#
+    AND Term=#term#
+  </delete>
+
+  <!-- #################### Count  ############### -->
+  <select id="countEntryCategoriesTotal" parameterClass="map" resultClass="int" >
+    SELECT COUNT(*) as entrycount FROM EntryCategory
+     WHERE EntryStoreId IN (SELECT EntryStoreId FROM EntryStore
+                             WHERE Workspace=#workspace#
+                             <isNotNull property="collection" >
+                                AND Collection=#collection#
+                             </isNotNull>)
+  </select>
+
+  <!-- #################### Delete All ############### -->
+  <delete id="deleteEntryCategoriesAll" parameterClass="map">
+    DELETE FROM EntryCategory
+     WHERE EntryStoreId IN (SELECT EntryStoreId FROM EntryStore
+                             WHERE Workspace=#workspace#
+                             <isNotNull property="collection" >
+                               AND Collection=#collection#
+                             </isNotNull>)
+  </delete>
+
+  <!-- #################### Delete All ############### -->
+  <delete id="deleteAllRowsFromEntryCategories" >
+    DELETE FROM EntryCategory
+  </delete>
+
+</sqlMap>
+
