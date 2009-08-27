@@ -72,6 +72,9 @@
                     </bean>
                 </entry>
 
+                <entry key="org.atomserver.beans:type=StatsMonitor,name=StatsMonitor"
+                       value-ref="org.atomserver-statsMonitor" />
+
             </map>
         </property>
 
