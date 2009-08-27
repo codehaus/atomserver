@@ -31,10 +31,10 @@ public class StatisticsMonitorDAOTest extends DAOTestCase {
     public void testStatistcsMonitorDAO() throws Exception {
         List<WorkspaceCollectionMaxIndex> indexList = statisticsMonitorDAO.getLastIndexPerWorkspaceCollection();
         assertNotNull(indexList);
-        assertTrue(indexList.size() >= 0);
+        assertTrue(indexList.size() >= 0);    // depending on the db state it could return 0.
 
         List<WorkspaceCollectionDocumentCount> docCountList  = statisticsMonitorDAO.getDocumentCountPerWorkspaceCollection();
         assertNotNull( docCountList);
-        assertTrue(docCountList.size() >= 0);
+        assertTrue(docCountList.size() >= 0); // depending on the db state it could return 0.
     }
 }
