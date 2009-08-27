@@ -27,8 +27,6 @@ public class StatisticsMonitorTest extends AtomServerTestCase {
     public void tearDown() throws Exception
     { super.tearDown(); }
 
-    protected boolean requiresDBSeeding() { return true; }
-
     // --------------------
     //       tests
     //---------------------
@@ -39,14 +37,14 @@ public class StatisticsMonitorTest extends AtomServerTestCase {
         assertNotNull(indexMap);
         assertTrue(indexMap.entrySet() != null);
         assertTrue(indexMap.containsKey(workspaceCollection));
-        assertTrue(((Long)indexMap.get(workspaceCollection))> 0 );
+        assertTrue((indexMap.get(workspaceCollection))> 0 );
 
 
         Map<String, Integer> docCountMap = statsMonitor.getDocumentCountPerWorkspaceCollection();
         assertNotNull(docCountMap);
         assertTrue(docCountMap.entrySet() != null);
         assertTrue(docCountMap.containsKey(workspaceCollection));
-        assertTrue(((Integer)docCountMap.get(workspaceCollection))> 0 );
+        assertTrue((docCountMap.get(workspaceCollection))> 0 );
 
         assertTrue(statsMonitor.getLatency()>0);
         statsMonitor.setLatency(60000);
