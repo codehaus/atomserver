@@ -216,4 +216,10 @@
       <constructor-arg index="0" ref="org.atomserver-blockingFilter"/>
     </bean>
 
+    <bean id="org.atomserver-statsMonitor"
+          class="org.atomserver.monitor.StatisticsMonitor"
+          lazy-init="true">
+        <property name="statsMonitorDAO" ref="org.atomserver-statsMonitorDAO" />
+    </bean>
+
 </beans>
