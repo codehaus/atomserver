@@ -1,0 +1,5 @@
+<pet xmlns="http://schemas.atomserver.org/pets/v1/rev0" type="dog">
+    <breed>Mixed</breed>
+    <name>Spike</name>
+    <owner>Bryon Jacob</owner>
+</pet>
