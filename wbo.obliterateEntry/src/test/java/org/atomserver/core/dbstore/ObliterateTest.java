@@ -4,6 +4,10 @@ package org.atomserver.core.dbstore;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.atomserver.core.BaseFeedDescriptor;
+import org.atomserver.core.EntryCategory;
+import org.atomserver.core.BaseEntryDescriptor;
+import org.atomserver.core.EntryMetaData;
+import org.atomserver.EntryDescriptor;
 
 public class ObliterateTest extends CRUDDBSTestCase {
 
@@ -45,6 +49,38 @@ public class ObliterateTest extends CRUDDBSTestCase {
 
         assertFalse( contentStorage.contentExists(getEntryTarget("widgets", "acme", "2797", "en")) );
         assertFalse( contentStorage.contentExists(getEntryTarget("widgets", "acme", "9993", "en")) );
+    }
+
+    // delete entry that have a category
+    public void testObliterate2() throws Exception {
+
+        String workspace = "widgets";
+        String sysId = "acme";
+        String propId = "2182";
+        String scheme = "urn:ha/widgets";
+        String term = "foobar";
+
+        // INSERT
+        EntryCategory entryIn = new EntryCategory();
+        EntryDescriptor descriptor  = new BaseEntryDescriptor(workspace, sysId, propId, null, 0);
+        entriesDAO.ensureCollectionExists(descriptor.getWorkspace(), descriptor.getCollection());
+        entriesDAO.insertEntry(descriptor);
+        EntryMetaData metaData = entriesDAO.selectEntry(descriptor);
+        entryIn.setEntryStoreId(metaData.getEntryStoreId());
+        entryIn.setScheme( scheme );
+        entryIn.setTerm( term );
+
+        int numRows = entryCategoriesDAO.insertEntryCategory(entryIn);
+        assertTrue(numRows > 0);
+
+        // DELETE
+        int startCount = entriesDAO.getTotalCount( new BaseFeedDescriptor("widgets", "acme"));
+        DBBasedAtomService service = (DBBasedAtomService) getSpringFactory().getBean("org.atomserver-atomService");
+        service.obliterateEntries("widgets/acme/9999?locale=en");
+        int endCount = entriesDAO.getTotalCount( new BaseFeedDescriptor("widgets", "acme"));
+
+        assertEquals(startCount - 1, endCount);
+
     }
 
 }

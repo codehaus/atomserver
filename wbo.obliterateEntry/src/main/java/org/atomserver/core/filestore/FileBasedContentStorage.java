@@ -441,8 +441,10 @@ public class FileBasedContentStorage implements ContentStorage {
     public void obliterateContent(EntryDescriptor descriptor) {
         File entryFile = findExistingEntryFile(descriptor);
         try {
-            FileUtils.deleteDirectory(entryFile.getParentFile());
-            cleanUpToCollection(descriptor, entryFile);
+            if(entryFile != null) {
+                FileUtils.deleteDirectory(entryFile.getParentFile());
+                cleanUpToCollection(descriptor, entryFile);
+            }
         } catch (Exception e) {
             throw new AtomServerException("exception obliterating content from storage for " + descriptor + ".", e);
         }
