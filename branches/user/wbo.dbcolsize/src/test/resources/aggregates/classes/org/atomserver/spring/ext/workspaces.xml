@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util" 
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+                           http://www.springframework.org/schema/util
+                           http://www.springframework.org/schema/util/spring-util-2.0.xsd">
+
+    <util:set id="org.atomserver-workspaces">
+
+        <bean class="org.atomserver.core.WorkspaceOptions">
+            <property name="name" value="lalas"/>
+            <property name="defaultLocalized" value="true"/>
+            <property name="defaultContentStorage" ref="org.atomserver-contentStorage"/>
+            <property name="defaultContentValidator" ref="org.atomserver-simpleXMLContentValidator"/>
+            <property name="defaultCategoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
+            <property name="defaultProducingEntryCategoriesFeedElement" value="true"/>
+            <property name="defaultAutoTagger">
+                <bean class="org.atomserver.core.autotaggers.XPathAutoTagger">
+                    <!-- <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO"/> -->
+                    <property name="categoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
+                    <property name="script">
+                        <value>
+                            <![CDATA[
+                            NAMESPACE agg = http://schemas.atomserver.org/aggregate-tests;
+                            DELETE SCHEME {urn:group};
+                            MATCH "//agg:lala/agg:group" {urn:group}$;
+                            DELETE SCHEME {urn:link};
+                            MATCH "//agg:lala/agg:id" {urn:link}$;
+                            ]]>
+                        </value>
+                    </property>
+                </bean>
+            </property>
+        </bean>
+
+        <bean class="org.atomserver.core.WorkspaceOptions">
+            <property name="name" value="cuckoos"/>
+            <property name="defaultLocalized" value="false"/>
+            <property name="defaultContentStorage" ref="org.atomserver-contentStorage"/>
+            <property name="defaultContentValidator" ref="org.atomserver-simpleXMLContentValidator"/>
+            <property name="defaultCategoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
+            <property name="defaultProducingEntryCategoriesFeedElement" value="true"/>
+            <property name="defaultAutoTagger">
+                <bean class="org.atomserver.core.autotaggers.XPathAutoTagger">
+                    <!-- <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO"/> -->
+                    <property name="categoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
+                    <property name="script">
+                        <value>
+                            <![CDATA[
+                            NAMESPACE agg = http://schemas.atomserver.org/aggregate-tests;
+                            DELETE SCHEME {urn:group};
+                            MATCH "//agg:cuckoo/agg:group" {urn:group}$;
+                            DELETE SCHEME {urn:link};
+                            MATCH "//agg:cuckoo/agg:lala" {urn:link}$;
+                            ]]>
+                        </value>
+                    </property>
+                </bean>
+            </property>
+        </bean>
+
+        <bean class="org.atomserver.core.WorkspaceOptions">
+            <property name="name" value="aloos"/>
+            <property name="defaultLocalized" value="false"/>
+            <property name="defaultContentStorage" ref="org.atomserver-contentStorage"/>
+            <property name="defaultContentValidator" ref="org.atomserver-simpleXMLContentValidator"/>
+            <property name="defaultCategoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
+            <property name="defaultProducingEntryCategoriesFeedElement" value="true"/>
+            <property name="defaultAutoTagger">
+                <bean class="org.atomserver.core.autotaggers.XPathAutoTagger">
+                    <!-- <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO"/> -->
+                    <property name="categoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
+                    <property name="script">
+                        <value>
+                            <![CDATA[
+                            NAMESPACE agg = http://schemas.atomserver.org/aggregate-tests;
+                            DELETE SCHEME {urn:group};
+                            MATCH "//agg:aloo/agg:group" {urn:group}$;
+                            DELETE SCHEME {urn:link};
+                            MATCH "//agg:aloo/agg:lala" {urn:link}$;
+                            ]]>
+                        </value>
+                    </property>
+                </bean>
+            </property>
+        </bean>
+
+    </util:set>
+
+</beans>
