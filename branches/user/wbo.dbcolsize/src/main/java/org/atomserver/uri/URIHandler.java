@@ -29,6 +29,7 @@ import org.atomserver.AtomService;
 import org.atomserver.EntryDescriptor;
 import org.atomserver.FeedDescriptor;
 import org.atomserver.core.WorkspaceOptions;
+import org.atomserver.core.dbstore.utils.SizeLimit;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.exceptions.BadRequestException;
 import org.atomserver.utils.collections.ArraySegmentIterator;
@@ -551,6 +552,7 @@ public class URIHandler
                                 entryDescriptor.getCollection(),
                                 iri,
                                 checkIfCollectionExists);
+        verifySizeLimits(entryDescriptor);
     }
 
     private void verifyURIMatchesStorage(String workspace,
@@ -565,6 +567,18 @@ public class URIHandler
             }
         } else {
             atomService.verifyURIMatchesStorage(workspace, collection, iri, checkIfCollectionExists);
+        }
+    }
+
+    private void verifySizeLimits(EntryDescriptor entryDescriptor) {
+        if(entryDescriptor != null) {
+            String entryId = entryDescriptor.getEntryId();
+            if (!SizeLimit.isValidEntryId(entryId)) {
+                String msg = "An EntryId must NOT be longer than " + SizeLimit.getEntryIdSize() +
+                             " characters. The EntryId [" + entryId + "] was not properly formatted";
+                log.error(msg);
+                throw new BadRequestException(msg);
+            }
         }
     }
 
