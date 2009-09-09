@@ -26,6 +26,7 @@ import org.apache.abdera.protocol.client.ClientResponse;
 import org.apache.abdera.protocol.client.RequestOptions;
 import org.apache.commons.lang.LocaleUtils;
 import org.atomserver.core.EntryMetaData;
+import org.atomserver.core.dbstore.utils.SizeLimit;
 import org.atomserver.testutils.client.MockRequestContext;
 import org.atomserver.uri.EntryTarget;
 
@@ -200,7 +201,7 @@ public class TagsBasicsDBSTest extends CRUDDBSTestCase {
         EntryCategoriesHandler catHandler =
                 (EntryCategoriesHandler) getSpringFactory().getBean("org.atomserver-entryCategoriesHandler");
 
-        int schemeSize = catHandler.getSchemeSize();
+        int schemeSize = SizeLimit.getSchemeSize();
         assertTrue( schemeSize  > 0);
         
         String scheme = "urn:widgets/foo";
@@ -218,7 +219,7 @@ public class TagsBasicsDBSTest extends CRUDDBSTestCase {
         assertNull( editURI );
 
         //--------------
-        int termSize = catHandler.getTermSize();
+        int termSize = SizeLimit.getTermSize();
         assertTrue( termSize  > 0);
 
         String term = "term";
@@ -236,7 +237,7 @@ public class TagsBasicsDBSTest extends CRUDDBSTestCase {
         assertNull( editURI );
 
         //--------------
-        int labelSize = catHandler.getLabelSize();
+        int labelSize = SizeLimit.getLabelSize();
         assertTrue( labelSize  > 0);
 
         String label = "label";
