@@ -56,6 +56,8 @@ public class EntryCategoriesHandler
     private boolean isLoggingAllCategoryEvents = false;
     private EntryCategoryLogEventDAO entryCategoryLogEventDAO;
 
+    private SizeLimit sizeLimit = null;
+
     // -----------------------------------
     public String getCategoriesWorkspaceName(String entriesWorkspaceName) {
         return DEFAULT_CATEGORIES_WORKSPACE_PREFIX + entriesWorkspaceName;
@@ -117,6 +119,24 @@ public class EntryCategoriesHandler
     }
     public void setEntryCategoryLogEventDAO(EntryCategoryLogEventDAO entryCategoryLogEventDAO) {
         this.entryCategoryLogEventDAO = entryCategoryLogEventDAO;
+    }
+
+    /**
+     * Get the size limit settings
+     *
+     * @return
+     */
+    public SizeLimit getSizeLimit() {
+        return sizeLimit;
+    }
+
+    /**
+     * Set the size limit settings
+     *
+     * @param sizeLimit
+     */
+    public void setSizeLimit(SizeLimit sizeLimit) {
+        this.sizeLimit = sizeLimit;
     }
 
 
@@ -518,8 +538,8 @@ public class EntryCategoriesHandler
             log.error(msg);
             throw new BadRequestException(msg);
         }
-        if (!SizeLimit.isValidScheme(scheme)) {
-            String msg = "A Category SCHEME must NOT be longer than " + SizeLimit.getSchemeSize() +
+        if (sizeLimit != null && !sizeLimit.isValidScheme(scheme)) {
+            String msg = "A Category SCHEME must NOT be longer than " + sizeLimit.getSchemeSize() +
                          " characters. The Category [" + category + "] was not properly formatted";
             log.error(msg);
             throw new BadRequestException(msg);
@@ -532,16 +552,16 @@ public class EntryCategoriesHandler
             log.error(msg);
             throw new BadRequestException(msg);
         }
-        if (!SizeLimit.isValidTerm(term)) {
-            String msg = "A Category TERM must NOT be longer than " + SizeLimit.getTermSize() +
+        if (sizeLimit != null && !sizeLimit.isValidTerm(term)) {
+            String msg = "A Category TERM must NOT be longer than " + sizeLimit.getTermSize() +
                          " characters. The Category [" + category + "] was not properly formatted";
             log.error(msg);
             throw new BadRequestException(msg);
         }
 
         String label = category.getLabel();
-        if (!StringUtils.isEmpty(label) && !SizeLimit.isValidLabel(label)) {
-            String msg = "A Category LABEL must NOT be longer than " + SizeLimit.getLabelSize() +
+        if (!StringUtils.isEmpty(label) && sizeLimit != null && !sizeLimit.isValidLabel(label)) {
+            String msg = "A Category LABEL must NOT be longer than " + sizeLimit.getLabelSize() +
                          " characters. The Category [" + category + "] was not properly formatted";
             log.error(msg);
             throw new BadRequestException(msg);

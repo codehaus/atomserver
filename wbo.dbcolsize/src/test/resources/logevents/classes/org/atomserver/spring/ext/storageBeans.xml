@@ -29,6 +29,7 @@
         <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO"/>
         <property name="loggingAllCategoryEvents" value="true" />
         <property name="entryCategoryLogEventDAO" ref="org.atomserver-entryCategoryLogEventDAO" />
+        <property name="sizeLimit" ref="org.atomserver-sizeLimit" />
     </bean>
 
 </beans>

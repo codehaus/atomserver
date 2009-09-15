@@ -200,8 +200,8 @@ public class TagsBasicsDBSTest extends CRUDDBSTestCase {
 
         EntryCategoriesHandler catHandler =
                 (EntryCategoriesHandler) getSpringFactory().getBean("org.atomserver-entryCategoriesHandler");
-
-        int schemeSize = SizeLimit.getSchemeSize();
+        SizeLimit sizeLimit =  (SizeLimit) getSpringFactory().getBean("org.atomserver-sizeLimit");
+        int schemeSize = sizeLimit.getSchemeSize();
         assertTrue( schemeSize  > 0);
         
         String scheme = "urn:widgets/foo";
@@ -219,7 +219,7 @@ public class TagsBasicsDBSTest extends CRUDDBSTestCase {
         assertNull( editURI );
 
         //--------------
-        int termSize = SizeLimit.getTermSize();
+        int termSize = sizeLimit.getTermSize();
         assertTrue( termSize  > 0);
 
         String term = "term";
@@ -237,7 +237,7 @@ public class TagsBasicsDBSTest extends CRUDDBSTestCase {
         assertNull( editURI );
 
         //--------------
-        int labelSize = SizeLimit.getLabelSize();
+        int labelSize = sizeLimit.getLabelSize();
         assertTrue( labelSize  > 0);
 
         String label = "label";

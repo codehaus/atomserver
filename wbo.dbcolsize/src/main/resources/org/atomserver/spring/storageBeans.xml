@@ -46,6 +46,7 @@
           depends-on="org.atomserver-propertyConfigurer"
           lazy-init="true">
         <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO"/>
+        <property name="sizeLimit" ref="org.atomserver-sizeLimit" />
     </bean>
 
 
