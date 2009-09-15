@@ -115,4 +115,10 @@
         </property>
     </bean>
 
+    <bean id="org.atomserver-sizeLimit"
+          class="org.atomserver.core.dbstore.utils.SizeLimit"
+          depends-on="org.atomserver-propertyConfigurer">
+         <property name="dataSource" ref="org.atomserver-dataSource"/>
+    </bean>
+
 </beans>

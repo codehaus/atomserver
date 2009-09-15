@@ -3,11 +3,9 @@
  */
 package org.atomserver.core.dbstore.utils;
 
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -31,7 +29,7 @@ import java.util.HashSet;
  */
 public class SizeLimit {
 
-    static private final Log log = LogFactory.getLog(SizeLimit.class);
+    private final Log log = LogFactory.getLog(SizeLimit.class);
 
     // One time initialization flag
     private static boolean initialized = false;
@@ -52,78 +50,104 @@ public class SizeLimit {
         attributeSize.put(getColumnKey("entrycategory", "label"), LABEL_DEFAULT_SIZE);
     }
 
+    private BasicDataSource dataSource = null;
+
     /**
      * validate EntryId size
+     * @param entryId entry id to validate
+     * @return true if the entry id size is valid
      */
-    public static boolean isValidEntryId(String entryId) {
+    public boolean isValidEntryId(String entryId) {
         return isValidSize(entryId, getEntryIdSize());
     }
 
     /**
      * Maximum EntryId size
-     *
-     * @return
+     * @return maximum entry id size
      */
-    public static int getEntryIdSize() {
+    public int getEntryIdSize() {
         return getColumnSize("entrystore", "entryid");
     }
 
     /**
      * validate Scheme size
+     * @param scheme scheme value to validate
+     * @return true if the scheme size is valid
      */
-    public static boolean isValidScheme(String scheme) {
+    public boolean isValidScheme(String scheme) {
         return isValidSize(scheme, getSchemeSize());
     }
 
     /**
      * Maximum Scheme size
-     *
      * @return maximum size of Scheme
      */
-    public static int getSchemeSize() {
+    public int getSchemeSize() {
         return getColumnSize("entrycategory", "scheme");
     }
 
     /**
      * validate Term size
+     * @param term term value to validate
+     * @return true if the term size is valid
      */
-    public static boolean isValidTerm(String term) {
+    public boolean isValidTerm(String term) {
         return isValidSize(term, getTermSize());
     }
 
     /**
      * Maximum Term size
-     *
-     * @return
+     * @return the maximum term size
      */
-    public static int getTermSize() {
+    public int getTermSize() {
         return getColumnSize("entrycategory", "term");
     }
 
     /**
      * validate Label size
+     * @param label label value to validate
+     * @return true if the label size is valid
      */
-    public static boolean isValidLabel(String label) {
+    public boolean isValidLabel(String label) {
         return isValidSize(label, getLabelSize());
     }
 
     /**
      * Maximum Label size
-     *
-     * @return
+     * @return the maximum label size
      */
-    public static int getLabelSize() {
+    public int getLabelSize() {
         return getColumnSize("entrycategory", "label");
     }
 
-    // basic size check
-    private static boolean isValidSize(String value, Integer maxSize) {
-        return (value == null) || ("".equals(value)) ||
-               ((maxSize != null) && (maxSize.intValue() >= value.length()));
+    /**
+     * Get the data source
+     * @return  the data source
+     */
+    public BasicDataSource getDataSource() {
+        return dataSource;
     }
 
-    // Initialize from Sping and database once. If failed, it will use the defaults
-    private static void init() {
+    /**
+     * Set the data source
+     * @param dataSource Data Source to use in determining the size limits.
+     */
+    public void setDataSource(BasicDataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
+    // basic size check
+    private boolean isValidSize(String value, Integer maxSize) {
+        return (value == null) || ("".equals(value)) ||
+               ((maxSize != null) && (maxSize >= value.length()));
+    }
+
+    // Initialize from data source to override the settings.
+    private void init() {
+        if(dataSource == null) {
+            return;
+        }
+
         // biuld a set to filter table by name
         Set<String> tables = new HashSet<String>();
         Set<String> keys = attributeSize.keySet();
@@ -132,15 +156,11 @@ public class SizeLimit {
             tables.add(tableName);
         }
 
-        // get datasource
-        ClassPathXmlApplicationContext ctx = getApplicationContext();
-        BasicDataSource dataSource = (BasicDataSource) ctx.getBean("org.atomserver-dataSource");
         try {
             // get metadata
             Connection conn = dataSource.getConnection();
             DatabaseMetaData md = conn.getMetaData();
             ResultSet dbTables = md.getTables(null, null, "%", new String[]{"TABLE"});
-
             // update max size from column size
             while (dbTables.next()) {
 
@@ -153,7 +173,8 @@ public class SizeLimit {
                 while (columns.next()) {
 
                     String columnName = columns.getString(4).toLowerCase();
-                    String key = getColumnKey(tableName, columnName);
+                    String key = getColumnKey(tableName.toLowerCase(), columnName);
+
                     if (keys.contains(key)) {
                         String size = columns.getString(7);
                         if (size != null) {
@@ -162,10 +183,7 @@ public class SizeLimit {
                         }
                     }
                 }
-
             }
-
-            ctx.close(); // done with ApplicationContext.
         }
         catch (Exception e) {
             log.error("Error in SizeLimit settings", e);
@@ -179,18 +197,7 @@ public class SizeLimit {
         }
     }
 
-    private static ClassPathXmlApplicationContext getApplicationContext() {
-        String[] configs = {
-                "/org/atomserver/spring/propertyConfigurerBeans.xml",
-                "/org/atomserver/spring/databaseBeans.xml"
-        };
-        ClassPathXmlApplicationContext springFactory = new ClassPathXmlApplicationContext(configs, false);
-        springFactory.setClassLoader(new ConfigurationAwareClassLoader(springFactory.getClassLoader()));
-        springFactory.refresh();
-        return springFactory;
-    }
-
-    private static Integer getColumnSize(String tableName, String columnName) {
+    private Integer getColumnSize(String tableName, String columnName) {
         if (!initialized) {
             init();
         }
