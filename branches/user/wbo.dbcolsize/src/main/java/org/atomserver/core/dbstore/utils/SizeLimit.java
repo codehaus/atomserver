@@ -3,13 +3,13 @@
  */
 package org.atomserver.core.dbstore.utils;
 
-import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -50,7 +50,7 @@ public class SizeLimit {
         attributeSize.put(getColumnKey("entrycategory", "label"), LABEL_DEFAULT_SIZE);
     }
 
-    private BasicDataSource dataSource = null;
+    private DataSource dataSource = null;
 
     /**
      * validate EntryId size
@@ -124,7 +124,7 @@ public class SizeLimit {
      * Get the data source
      * @return  the data source
      */
-    public BasicDataSource getDataSource() {
+    public DataSource getDataSource() {
         return dataSource;
     }
 
@@ -132,7 +132,7 @@ public class SizeLimit {
      * Set the data source
      * @param dataSource Data Source to use in determining the size limits.
      */
-    public void setDataSource(BasicDataSource dataSource) {
+    public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
