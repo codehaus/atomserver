@@ -29,6 +29,7 @@ import org.atomserver.AtomService;
 import org.atomserver.EntryDescriptor;
 import org.atomserver.FeedDescriptor;
 import org.atomserver.core.WorkspaceOptions;
+import org.atomserver.core.dbstore.utils.SizeLimit;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.exceptions.BadRequestException;
 import org.atomserver.utils.collections.ArraySegmentIterator;
@@ -60,10 +61,12 @@ public class URIHandler
     public static final int REVISION_OVERRIDE = -1;
 
     private AtomService atomService = null;
+
     private String rootPath = null;
     private String contextPath = null;
     public static final Pattern JOIN_WORKSPACE_PATTERN =
             Pattern.compile("\\$join(?:\\((\\w+(?:,\\s*\\w+)*)\\))?");
+    private SizeLimit sizeLimit = null;     // injected by spring if database storage.
 
     private class ParsedTarget {
         private final URITarget target;
@@ -104,6 +107,23 @@ public class URIHandler
     public void setContextPath(String contextPath) {
         this.contextPath = contextPath;
     }
+
+    /**
+     * Get the size limit settings
+     * @return
+     */
+    public SizeLimit getSizeLimit() {
+        return sizeLimit;
+    }
+
+    /**
+     * Set the size limit settings
+     * @param sizeLimit
+     */
+    public void setSizeLimit(SizeLimit sizeLimit) {
+        this.sizeLimit = sizeLimit;
+    }
+
 
     /**
      * Construct a URI string that matches the supplied parameters
@@ -551,6 +571,7 @@ public class URIHandler
                                 entryDescriptor.getCollection(),
                                 iri,
                                 checkIfCollectionExists);
+        verifySizeLimits(entryDescriptor);
     }
 
     private void verifyURIMatchesStorage(String workspace,
@@ -565,6 +586,18 @@ public class URIHandler
             }
         } else {
             atomService.verifyURIMatchesStorage(workspace, collection, iri, checkIfCollectionExists);
+        }
+    }
+
+    private void verifySizeLimits(EntryDescriptor entryDescriptor) {
+        if(entryDescriptor != null && sizeLimit != null) {
+            String entryId = entryDescriptor.getEntryId();
+            if (!sizeLimit.isValidEntryId(entryId)) {
+                String msg = "An EntryId must NOT be longer than " + sizeLimit.getEntryIdSize() +
+                             " characters. The EntryId [" + entryId + "] was not properly formatted";
+                log.error(msg);
+                throw new BadRequestException(msg);
+            }
         }
     }
 

@@ -64,6 +64,28 @@ public class TestingAtomServerTest extends TestCase {
             "  </content>\n" +
             "</entry>";
 
+    // Long EntryId to PUT
+    private static final String LONGID =
+        "<entry xmlns=\"http://www.w3.org/2005/Atom\">\n" +
+        "  <id>bars/test/1111111111222222222233333333334444444444.xml</id>\n" +
+        "  <content type=\"xhtml\">\n" +
+        "    <div xmlns=\"http://www.w3.org/1999/xhtml\">\n" +
+        "      <bar xmlns=\"http://atomserver.org/bars\"><name>Aquarium</name></bar>\n" +
+        "    </div>\n" +
+        "  </content>\n" +
+        "</entry>";
+
+    // Long Term to PUT
+    private static final String LONGTERM =
+        "<entry xmlns=\"http://www.w3.org/2005/Atom\">\n" +
+        "  <id>tags:bars/test/1234</id>\n" +
+        "  <content type=\"application/xml\">\n" +
+        "    <app:categories xmlns:app=\"http://www.w3.org/2007/app\" xmlns=\"http://www.w3.org/2005/Atom\" >\n" +
+        "        <category scheme=\"urn:bars.test.type\" term=\"0000000000111111111122222222223333333333\" />\n" +
+        "    </app:categories> \n" +
+        "  </content>\n" +
+        "</entry>";
+
     // test that our server works when configured through Spring
     public void testSpringConfigured() throws Exception {
         TestingAtomServer server = new TestingAtomServer();
@@ -125,6 +147,13 @@ public class TestingAtomServerTest extends TestCase {
 
         postEntry("http://localhost:" + port + "/atomserver/v1/baz/" + collection + "?locale=en_US",
                  BAZ, 201);
+
+
+        putEntry("http://localhost:" + port + "/atomserver/v1/bars/" + collection + "/1111111111222222222233333333334444444444.xml",
+                 LONGID, 400);
+
+        putEntry("http://localhost:" + port + "/atomserver/v1/tags:bars/test/1234.xml/1",
+                 LONGTERM, 400);
 
         server.stop();
     }

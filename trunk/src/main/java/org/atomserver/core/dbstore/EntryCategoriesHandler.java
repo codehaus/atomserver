@@ -31,6 +31,7 @@ import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.WorkspaceOptions;
 import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
 import org.atomserver.core.dbstore.dao.EntryCategoryLogEventDAO;
+import org.atomserver.core.dbstore.utils.SizeLimit;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.exceptions.BadRequestException;
 
@@ -49,17 +50,13 @@ public class EntryCategoriesHandler
     static private final Log log = LogFactory.getLog(EntryCategoriesHandler.class);
     static public final String DEFAULT_CATEGORIES_WORKSPACE_PREFIX = "tags:";
     
-    static public final int DEFAULT_SIZE = 120;
-
     private AtomService atomService;
     private EntryCategoriesDAO entryCategoriesDAO;
 
     private boolean isLoggingAllCategoryEvents = false;
     private EntryCategoryLogEventDAO entryCategoryLogEventDAO;
 
-    private int schemeSize = DEFAULT_SIZE;
-    private int termSize = DEFAULT_SIZE;
-    private int labelSize = DEFAULT_SIZE;
+    private SizeLimit sizeLimit = null;
 
     // -----------------------------------
     public String getCategoriesWorkspaceName(String entriesWorkspaceName) {
@@ -124,26 +121,24 @@ public class EntryCategoriesHandler
         this.entryCategoryLogEventDAO = entryCategoryLogEventDAO;
     }
 
-    public int getSchemeSize() {
-        return schemeSize;
-    }
-    public void setSchemeSize(int schemeSize) {
-        this.schemeSize = schemeSize;
-    }
-
-    public int getTermSize() {
-        return termSize;
-    }
-    public void setTermSize(int termSize) {
-        this.termSize = termSize;
+    /**
+     * Get the size limit settings
+     *
+     * @return
+     */
+    public SizeLimit getSizeLimit() {
+        return sizeLimit;
     }
 
-    public int getLabelSize() {
-        return labelSize;
+    /**
+     * Set the size limit settings
+     *
+     * @param sizeLimit
+     */
+    public void setSizeLimit(SizeLimit sizeLimit) {
+        this.sizeLimit = sizeLimit;
     }
-    public void setLabelSize(int labelSize) {
-        this.labelSize = labelSize;
-    }
+
 
     // -----------------------------------
     //        CategoriesHandler
@@ -543,9 +538,9 @@ public class EntryCategoriesHandler
             log.error(msg);
             throw new BadRequestException(msg);
         }
-        if (scheme.length() > schemeSize) {
-            String msg = "A Category SCHEME must NOT be longer than " + schemeSize +
-                         "characters. The Category [" + category + "] was not properly formatted";
+        if (sizeLimit != null && !sizeLimit.isValidScheme(scheme)) {
+            String msg = "A Category SCHEME must NOT be longer than " + sizeLimit.getSchemeSize() +
+                         " characters. The Category [" + category + "] was not properly formatted";
             log.error(msg);
             throw new BadRequestException(msg);
         }
@@ -557,17 +552,17 @@ public class EntryCategoriesHandler
             log.error(msg);
             throw new BadRequestException(msg);
         }
-        if (term.length() > termSize) {
-            String msg = "A Category TERM must NOT be longer than " + termSize +
-                         "characters. The Category [" + category + "] was not properly formatted";
+        if (sizeLimit != null && !sizeLimit.isValidTerm(term)) {
+            String msg = "A Category TERM must NOT be longer than " + sizeLimit.getTermSize() +
+                         " characters. The Category [" + category + "] was not properly formatted";
             log.error(msg);
             throw new BadRequestException(msg);
         }
 
         String label = category.getLabel();
-        if (!StringUtils.isEmpty(label) && label.length() > labelSize) {
-            String msg = "A Category LABEL must NOT be longer than " + labelSize +
-                         "characters. The Category [" + category + "] was not properly formatted";
+        if (!StringUtils.isEmpty(label) && sizeLimit != null && !sizeLimit.isValidLabel(label)) {
+            String msg = "A Category LABEL must NOT be longer than " + sizeLimit.getLabelSize() +
+                         " characters. The Category [" + category + "] was not properly formatted";
             log.error(msg);
             throw new BadRequestException(msg);
         }
