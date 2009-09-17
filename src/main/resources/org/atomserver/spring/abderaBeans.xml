@@ -29,11 +29,13 @@
     <bean id="org.atomserver-uriHandler" class="org.atomserver.uri.URIHandler">
         <property name="rootPath" value="${atomserver.servlet.context}"/>
         <property name="contextPath" value="v1"/>
+        <property name="sizeLimit"  ref="org.atomserver-sizeLimit" /> 
     </bean>
 
     <bean id="org.atomserver-uriHandlerV2" class="org.atomserver.uri.URIHandler">
         <property name="rootPath" value="${atomserver.servlet.context}"/>
         <property name="contextPath" value="v2"/>
+       <property name="sizeLimit"  ref="org.atomserver-sizeLimit" /> 
     </bean>
 
     <a:serviceContext>
