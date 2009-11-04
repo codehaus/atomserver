@@ -91,6 +91,14 @@
         <property name="databaseType" value="${db.type}"/>
     </bean>
 
+    <bean id="org.atomserver-feedCacheDAO"
+          class="org.atomserver.core.dbstore.dao.AggregateFeedCacheDAOiBatisImpl"
+          depends-on="org.atomserver-propertyConfigurer">
+        <property name="dataSource" ref="org.atomserver-dataSource"/>
+        <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
+        <property name="databaseType" value="${db.type}"/>
+    </bean>
+
     <bean id="org.atomserver-statsMonitorDAO"
           class="org.atomserver.core.dbstore.dao.StatisticsMonitorDAOiBatisImpl"
           depends-on="org.atomserver-propertyConfigurer">

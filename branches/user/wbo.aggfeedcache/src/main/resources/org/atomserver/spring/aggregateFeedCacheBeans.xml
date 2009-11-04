@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2007 HomeAway, Inc.
+  All rights reserved.  http://www.atomserver.org
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+
+  <bean id="org.atomserver-aggregatefeedcachemanager"
+        class="org.atomserver.cache.AggregateFeedCacheManager">
+    <property name="feedCacheDAO" ref="org.atomserver-feedCacheDAO"/>
+    <property name="transactionTemplate">
+      <bean class="org.springframework.transaction.support.TransactionTemplate">
+        <property name="timeout" value="${db.timeout.txn.put}"/>
+        <property name="transactionManager">
+          <bean class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+            <property name="dataSource" ref="org.atomserver-dataSource"/>
+          </bean>
+        </property>
+      </bean>
+    </property>
+    <property name="entriesDAO" ref="org.atomserver-entriesDAO"/>
+    <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO"/>
+    <property name="cacheList">
+      <list>
+        <!-- format: joined-workspaces, scheme, locale 
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.arbritel, da_DK</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.arbritel, en_US</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.arbritel, en_GB</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.arbritel, en_AU</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.arbritel, en_CA</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.arbritel, fr_FR</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.arbritel, fr_CA</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.arbritel, fi_FI</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.arbritel, es_MX</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.arbritel, es_ES</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.arbritel, it_IT</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.arbritel, nl_NL</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.arbritel, no_NO</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.arbritel, pt_PT</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.arbritel, sv_SE</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.villanoapro, da_DK</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.villanoapro, en_US</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.villanoapro, en_GB</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.villanoapro, en_AU</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.villanoapro, en_CA</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.villanoapro, fr_FR</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.villanoapro, fr_CA</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.villanoapro, fi_FI</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.villanoapro, es_MX</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.villanoapro, es_ES</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.villanoapro, it_IT</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.villanoapro, nl_NL</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.villanoapro, no_NO</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.villanoapro, pt_PT</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.villanoapro, sv_SE</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.homelidays, da_DK</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.homelidays, en_US</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.homelidays, en_GB</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.homelidays, en_AU</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.homelidays, en_CA</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.homelidays, fr_FR</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.homelidays, fr_CA</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.homelidays, fi_FI</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.homelidays, es_MX</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.homelidays, es_ES</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.homelidays, it_IT</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.homelidays, nl_NL</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.homelidays, no_NO</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.homelidays, pt_PT</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.homelidays, sv_SE</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.vrbo, da_DK</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.vrbo, en_US</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.vrbo, en_GB</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.vrbo, en_AU</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.vrbo, en_CA</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.vrbo, fr_FR</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.vrbo, fr_CA</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.vrbo, fi_FI</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.vrbo, es_MX</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.vrbo, es_ES</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.vrbo, it_IT</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.vrbo, nl_NL</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.vrbo, no_NO</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.vrbo, pt_PT</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.vrbo, sv_SE</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.triphomes.com, da_DK</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.triphomes.com, en_US</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.triphomes.com, en_GB</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.triphomes.com, en_AU</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.triphomes.com, en_CA</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.triphomes.com, fr_FR</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.triphomes.com, fr_CA</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.triphomes.com, fi_FI</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.triphomes.com, es_MX</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.triphomes.com, es_ES</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.triphomes.com, it_IT</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.triphomes.com, nl_NL</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.triphomes.com, no_NO</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.triphomes.com, pt_PT</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.triphomes.com, sv_SE</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.trips, da_DK</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.trips, en_US</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.trips, en_GB</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.trips, en_AU</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.trips, en_CA</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.trips, fr_FR</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.trips, fr_CA</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.trips, fi_FI</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.trips, es_MX</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.trips, es_ES</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.trips, it_IT</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.trips, nl_NL</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.trips, no_NO</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.trips, pt_PT</value>
+        <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.trips, sv_SE</value>
+        <value>$join(lalas,cuckoos,aloos), urn:group, en_US</value>
+        <value>$join(lalas,cuckoos), urn:link, en_US</value>
+        <value>$join(lalas,aloos), urn:group</value>        -->
+        <value>$join(cuckoos,lalas), urn:link </value>
+        <value>$join(cuckoos,lalas), urn:link, en_US </value>
+        <value>$join(cuckoos,lalas), urn:group </value>
+        <value>$join, urn:link </value> 
+      </list>
+    </property>
+  </bean>
+</beans>

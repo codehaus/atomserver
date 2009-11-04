@@ -17,6 +17,7 @@
 package org.atomserver.core.dbstore.dao;
 
 import org.atomserver.EntryDescriptor;
+import org.atomserver.cache.AggregateFeedCacheManager;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryMetaData;
 
@@ -83,4 +84,9 @@ public interface EntryCategoriesDAO
     int getTotalCount(String workspace);
 
     int getTotalCount(String workspace, String collection);
+
+    //======================================
+    //          OTHER
+    //======================================
+    void setCacheManager(AggregateFeedCacheManager cacheManager);
 }
