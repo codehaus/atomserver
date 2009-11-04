@@ -298,14 +298,19 @@ public class AggregateFeedCacheManager {
      * @param scheme        the scheme that is removed.
      */
     public void updateCacheOnCategoryRemovedFromEntry(final EntryMetaData entryMetaData, final String scheme) {
+        if(entryMetaData == null) {
+            return;
+        }
         List<EntryCategory> categories;
         if (scheme == null) {
             categories = entryMetaData.getCategories();
         } else {
             categories = new ArrayList<EntryCategory>();
-            for (EntryCategory cat : entryMetaData.getCategories()) {
-                if (scheme.equals(cat.getScheme())) {
-                    categories.add(cat);
+            if(entryMetaData.getCategories() == null) {
+                for (EntryCategory cat : entryMetaData.getCategories()) {
+                    if (scheme.equals(cat.getScheme())) {
+                        categories.add(cat);
+                    }
                 }
             }
         }
