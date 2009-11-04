@@ -21,6 +21,7 @@ import com.ibatis.sqlmap.client.SqlMapExecutor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.EntryDescriptor;
+import org.atomserver.cache.AggregateFeedCacheManager;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
@@ -43,6 +44,16 @@ public class EntryCategoriesDAOiBatisImpl
         extends AbstractDAOiBatisImpl
         implements EntryCategoriesDAO {
 
+    private AggregateFeedCacheManager cacheManager = null;
+
+    public AggregateFeedCacheManager getCacheManager() {
+        return cacheManager;
+    }
+
+    public void setCacheManager(AggregateFeedCacheManager cacheManager) {
+        this.cacheManager = cacheManager;
+    }
+
     /**
      */
     static class EntryCategoryBatcher implements SqlMapClientCallback {
@@ -54,10 +65,12 @@ public class EntryCategoriesDAOiBatisImpl
 
         private List<EntryCategory> entryCategoryList = null;
         private OperationType opType = null;
+        private AggregateFeedCacheManager cacheManager = null;
 
-        EntryCategoryBatcher(List<EntryCategory> entryCategoryList, OperationType opType) {
+        EntryCategoryBatcher(List<EntryCategory> entryCategoryList, OperationType opType, AggregateFeedCacheManager cacheManager) {
             this.entryCategoryList = entryCategoryList;
             this.opType = opType;
+            this.cacheManager = cacheManager;
         }
 
         public Object doInSqlMapClient(SqlMapExecutor executor) throws SQLException {
@@ -65,6 +78,9 @@ public class EntryCategoriesDAOiBatisImpl
             for (EntryCategory entryCategory : entryCategoryList) {
                 if (opType == OperationType.INSERT) {
                     executor.insert("insertEntryCategory", entryCategory);
+                    if(cacheManager != null) {
+                        cacheManager.updateCacheOnEntryCategoryAddedToEntry(entryCategory);
+                    }
                 } else if (opType == OperationType.DELETE) {
                     executor.delete("deleteEntryCategory", entryCategory);
                 } else {
@@ -96,6 +112,9 @@ public class EntryCategoriesDAOiBatisImpl
         try {
             getSqlMapClientTemplate().insert("insertEntryCategory", entry);
             numRowsAffected = 1;
+            if(getCacheManager() != null) {
+                getCacheManager().updateCacheOnEntryCategoryAddedToEntry(entry);
+            }
         }
         finally {
             stopWatch.stop("DB.insertEntryCategory", AtomServerPerfLogTagFormatter.getPerfLogEntryCategoryString(entry));
@@ -112,7 +131,8 @@ public class EntryCategoriesDAOiBatisImpl
         }
         try {
             getSqlMapClientTemplate().execute(new EntryCategoryBatcher(entryCategoryList,
-                                                                       EntryCategoryBatcher.OperationType.INSERT));
+                                                                       EntryCategoryBatcher.OperationType.INSERT,
+                                                                       getCacheManager()));
         }
         finally {
             stopWatch.stop("DB.insertEntryCategoryBATCH", "");
@@ -153,6 +173,7 @@ public class EntryCategoriesDAOiBatisImpl
         }
         try {
             getSqlMapClientTemplate().delete("deleteEntryCategory", entryQuery);
+            updateCache(entryQuery);
         }
         finally {
             stopWatch.stop("DB.deleteEntryCategory",
@@ -169,7 +190,8 @@ public class EntryCategoriesDAOiBatisImpl
         }
         try {
             getSqlMapClientTemplate().execute(new EntryCategoryBatcher(entryCategoryList,
-                                                                       EntryCategoryBatcher.OperationType.DELETE));
+                                                                       EntryCategoryBatcher.OperationType.DELETE,
+                                                                       getCacheManager()));
         }
         finally {
             stopWatch.stop("DB.deleteEntryCategoryBATCH", "");
@@ -236,6 +258,7 @@ public class EntryCategoriesDAOiBatisImpl
     private void deleteEntryCategoriesInScheme(EntryDescriptor entryQuery, Long entryStoreId, String scheme) {
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
+            
             EntryCategory paramMap = new EntryCategory();
             if (entryStoreId == null) {
                 paramMap.setWorkspace(entryQuery.getWorkspace());
@@ -246,6 +269,7 @@ public class EntryCategoriesDAOiBatisImpl
             paramMap.setEntryStoreId(entryStoreId);
             paramMap.setScheme(scheme);
             getSqlMapClientTemplate().delete("deleteEntryCategories", paramMap);
+            updateCache(entryQuery, scheme);
         }
         finally {
             stopWatch.stop("DB.deleteEntryCategoriesInScheme",
@@ -301,14 +325,49 @@ public class EntryCategoriesDAOiBatisImpl
     //======================================
     public void deleteAllEntryCategories(String workspace) {
         super.deleteAllEntriesInternal(workspace, null, "deleteEntryCategoriesAll");
+        rebuildCache(workspace);
     }
 
     public void deleteAllEntryCategories(String workspace, String collection) {
         super.deleteAllEntriesInternal(workspace, collection, "deleteEntryCategoriesAll");
+        rebuildCache(workspace);
     }
 
     public void deleteAllRowsFromEntryCategories() {
         getSqlMapClientTemplate().delete("deleteAllRowsFromEntryCategories");
+        if(getCacheManager() != null) {
+            getCacheManager().removeCachedTimestampsByWorkspace(null);
+        }
     }
 
+    //======================================
+    // Cache
+    //======================================
+    private void rebuildCache(String workspace) {
+        if(getCacheManager() != null) {
+            if(getCacheManager().isWorkspaceInCachedFeeds(workspace)) {
+                getCacheManager().rebuildCachedTimestampByWorkspace(workspace) ;
+            }
+        }
+    }
+
+    private void updateCache(EntryDescriptor entryQuery, String scheme) {
+        if (getCacheManager() != null) {
+            if (getCacheManager().isWorkspaceInCachedFeeds(entryQuery.getWorkspace())) {
+                if (entryQuery instanceof EntryMetaData) {
+                    getCacheManager().updateCacheOnCategoryRemovedFromEntry((EntryMetaData) entryQuery, scheme);
+                } else {
+                    getCacheManager().updateCacheOnCategoryRemovedFromEntry(entryQuery, scheme);
+                }
+            }
+        }
+    }
+
+    private void updateCache(EntryCategory entryCategory) {
+        if (getCacheManager() != null) {
+            if (getCacheManager().isWorkspaceInCachedFeeds(entryCategory.getWorkspace())) {
+                getCacheManager().updateCacheOnCategoryRemoval(entryCategory);
+            }
+        }
+    }
 }
