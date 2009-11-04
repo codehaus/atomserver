@@ -78,9 +78,7 @@ public class EntryCategoriesDAOiBatisImpl
             for (EntryCategory entryCategory : entryCategoryList) {
                 if (opType == OperationType.INSERT) {
                     executor.insert("insertEntryCategory", entryCategory);
-                    if(cacheManager != null) {
-                        cacheManager.updateCacheOnEntryCategoryAddedToEntry(entryCategory);
-                    }
+
                 } else if (opType == OperationType.DELETE) {
                     executor.delete("deleteEntryCategory", entryCategory);
                 } else {
@@ -90,6 +88,19 @@ public class EntryCategoriesDAOiBatisImpl
                 }
             }
             executor.executeBatch();
+            
+            // update cache as a batch
+            if (cacheManager != null) {
+                executor.startBatch();
+                for (EntryCategory entryCategory : entryCategoryList) {
+                    if (opType == OperationType.INSERT ) {
+                        cacheManager.updateCacheOnEntryCategoryAddedToEntry(entryCategory);
+                    } else if (opType == OperationType.DELETE) {
+                        cacheManager.updateCacheOnCategoryRemoval(entryCategory);
+                    }
+                }
+                executor.executeBatch();
+            }
             return null;
         }
     }

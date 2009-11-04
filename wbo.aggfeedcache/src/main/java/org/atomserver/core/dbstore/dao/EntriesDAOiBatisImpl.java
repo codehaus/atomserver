@@ -136,12 +136,12 @@ public class EntriesDAOiBatisImpl
         }
 
         public Object doInSqlMapClient(SqlMapExecutor executor) throws SQLException {
+            Set<EntryDescriptor> invalidEntry = new HashSet<EntryDescriptor>();
             executor.startBatch();
             for (EntryDescriptor uriData : entryList) {
 
                 if (opType == OperationType.insert) {
                     Map<String, Object> paramMap = entriesDAO.prepareInsertParamMap(uriData);
-                                                                                              System.out.println("EntryBatch.insert");
                     executor.insert("insertEntry-" + entriesDAO.getDatabaseType(), paramMap);
 
                 } else if (opType == OperationType.update || opType == OperationType.delete) {
@@ -152,7 +152,8 @@ public class EntriesDAOiBatisImpl
                                          entriesDAO.prepareUpdateParamMap(deleted,
                                                                           uriData.getRevision(),
                                                                           metaData));
-                        System.out.println("EntryBatch.update");
+                    } else {
+                        invalidEntry.add(uriData);
                     }
                 } else {
                     String msg = "Unknown OperationType";
@@ -160,7 +161,26 @@ public class EntriesDAOiBatisImpl
                     throw new SQLException(msg);
                 }
             }
-            return executor.executeBatch();
+            Object obj = executor.executeBatch();
+
+            // update cache as batch
+            if (entriesDAO.getCacheManager() != null) {
+                executor.startBatch();
+                for (EntryDescriptor uriData : entryList) {
+                    if(invalidEntry.contains(uriData)) {
+                        continue;
+                    }
+                    if (opType == OperationType.insert || opType == OperationType.update ) {
+                         entriesDAO.updateCacheOnEntryAddOrUpdate(uriData);
+
+                    } else if (opType == OperationType.delete) {
+                         entriesDAO.updateCacheOnEntryDelete(uriData);
+                    } 
+                }
+                executor.executeBatch();
+            }
+
+            return obj;
         }
     }
 
@@ -872,6 +892,7 @@ public class EntriesDAOiBatisImpl
     //==============================
     private void updateCacheOnEntryAddOrUpdate(EntryDescriptor entryDescriptor) {
         if (getCacheManager() != null) {
+             System.out.println(" updateCacheOnEntryAddOrUpdate:entryDescriptor" + entryDescriptor);
             if (cacheManager.isWorkspaceInCachedFeeds(entryDescriptor.getWorkspace())) {
                 if(entryDescriptor instanceof EntryMetaData) {
                     cacheManager.updateCacheOnEntryAddOrUpdate((EntryMetaData) entryDescriptor);

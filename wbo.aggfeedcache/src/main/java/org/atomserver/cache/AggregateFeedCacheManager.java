@@ -272,32 +272,6 @@ public class AggregateFeedCacheManager {
         updateCacheOnEntryAddOrUpdate(entryMetaData);
     }
 
-    // Not fully implemented yet.
-    public void updateCacheOnEntryCategoryAddBatch(List<EntryCategory> categoryList) {
-//        System.out.println("updateCacheOnEntryCategoryAddBatch");
-        Map<Long, List<EntryCategory>> storeIdCategory = new HashMap<Long, List<EntryCategory>>();
-        for (EntryCategory cat : categoryList) {
-            List<EntryCategory> list = storeIdCategory.get(cat.getEntryStoreId());
-            if (list == null) {
-                list = new ArrayList<EntryCategory>();
-                storeIdCategory.put(cat.getEntryStoreId(), list);
-            }
-            list.add(cat);
-        }
-
-        for (Long storeId : storeIdCategory.keySet()) {
-            EntryMetaData entryMetaData = entriesDAO.selectEntryByInternalId(storeId);
-            // merge old and new categories
-            List<EntryCategory> categories = entryMetaData.getCategories();
-            Set<EntryCategory> existing = new HashSet<EntryCategory>(categories);
-            Set<EntryCategory> allCat = new HashSet<EntryCategory>(storeIdCategory.get(storeId));
-            allCat.addAll(existing);
-            entryMetaData.setCategories(new ArrayList<EntryCategory>(allCat));
-            // Update the cache
-            updateCacheOnEntryAddOrUpdate(entryMetaData);
-        }
-    }
-
     /**
      * This method is called when an entry is deleted.
      *
