@@ -429,11 +429,11 @@ public class EntriesDAOiBatisImpl
                                                                            entryQuery.getRevision(),
                                                                            metaData));
             if(!deleted) {
-                System.out.println("** Updated existing entry store");
+//                System.out.println("** Updated existing entry store");
                 updateCacheOnEntryAddOrUpdate(entryQuery);
             } else {
                 // TODO: validate if deleted should update the cache (since it is not actually deleted)
-                System.out.println("** Deleting existing entry store");
+//                System.out.println("** Deleting existing entry store");
                 updateCacheOnEntryDelete(metaData);
             }
 
@@ -892,7 +892,7 @@ public class EntriesDAOiBatisImpl
     //==============================
     private void updateCacheOnEntryAddOrUpdate(EntryDescriptor entryDescriptor) {
         if (getCacheManager() != null) {
-             System.out.println(" updateCacheOnEntryAddOrUpdate:entryDescriptor" + entryDescriptor);
+//             System.out.println(" updateCacheOnEntryAddOrUpdate:entryDescriptor" + entryDescriptor);
             if (cacheManager.isWorkspaceInCachedFeeds(entryDescriptor.getWorkspace())) {
                 if(entryDescriptor instanceof EntryMetaData) {
                     cacheManager.updateCacheOnEntryAddOrUpdate((EntryMetaData) entryDescriptor);
@@ -906,7 +906,7 @@ public class EntriesDAOiBatisImpl
 
     private void updateCacheOnEntryDelete(EntryDescriptor entryDescriptor) {
         if(getCacheManager() != null) {
-            System.out.println(" updateCacheOnEntryDelete:entryDescriptor" + entryDescriptor);
+//            System.out.println(" updateCacheOnEntryDelete:entryDescriptor" + entryDescriptor);
             if (cacheManager.isWorkspaceInCachedFeeds(entryDescriptor.getWorkspace())) {
                 if(entryDescriptor instanceof EntryMetaData) {
                     cacheManager.updateCacheOnEntryDelete((EntryMetaData)entryDescriptor);
@@ -932,7 +932,7 @@ public class EntriesDAOiBatisImpl
             if (feedId != null) {
                 sqlId = "selectAggregateEntriesUsingCache";
                 paramMap.param("cachedfeedid", feedId);
-                System.out.println("*** Using cache during aggregate feed query.");
+//                System.out.println("*** Using cache during aggregate feed query.");
             }
         }
         return sqlId;

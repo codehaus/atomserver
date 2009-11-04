@@ -438,14 +438,14 @@ public class AggregateFeedCacheManager {
             executeTransactionally(new TransactionalTask<Object>() {
                 public Object execute() {
                     // Create CachedFeed first because of FK constraint
-                    System.out.println("Executing addFeedToCache");
+//                    System.out.println("Executing addFeedToCache");
                     feedCacheDAO.addNewFeedToCache(new CachedAggregateFeed(feedId,
                                                                        getOrderedWorkspaceList(workspaces),
                                                                        locale,
                                                                        scheme));
-                    System.out.println("CachedFeed added");
+//                    System.out.println("CachedFeed added");
                     feedCacheDAO.cacheAggregateFeedTimestamps(workspaces, locale, scheme, feedId);
-                    System.out.println("Timestamps added");
+//                    System.out.println("Timestamps added");
                     return null;
                 }
             });
