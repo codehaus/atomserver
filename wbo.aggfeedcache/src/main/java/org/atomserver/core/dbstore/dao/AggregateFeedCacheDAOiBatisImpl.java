@@ -38,16 +38,18 @@ public class AggregateFeedCacheDAOiBatisImpl
     public void updateFeedCacheOnEntryAddOrUpdate(Set<String> aggregateFeedIds,
                                                   List<EntryCategory> categories,
                                                   long timestamp) {
-        List<String> termsInEntry = new ArrayList<String>();
+        Set<String> termsInEntry = new HashSet<String>();
         for (EntryCategory category : categories) {
             termsInEntry.add(category.getTerm());
         }
         List<String> aggFeedIds = new ArrayList<String>(aggregateFeedIds);
+        // convert termsInEntry set into list for sqlMap
+        List<String> termsInEntryList = new ArrayList<String>(termsInEntry);
 
         // get terms for each joined
         ParamMap paramMap = paramMap()
                 .param("joinWorkspaces", aggFeedIds)
-                .param("terms", termsInEntry)
+                .param("terms", termsInEntryList)
                 .param("timestamp", timestamp);
 
         // Note: Some terms may already be cached and some terms may be not.
@@ -64,7 +66,7 @@ public class AggregateFeedCacheDAOiBatisImpl
                 newTermsInFeed.put(cachedFeedId, termset); // all expected terms from this entry
                 currentFeedId = cachedFeedId;
             }
-            termset.remove(aft.getTerm());  // remove if already in the cache
+            termset.remove(aft.getTerm());  // remove if already in the cache for the feed
         }
 
         // Update existing timestamps of terms already in the cache.
