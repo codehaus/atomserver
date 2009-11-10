@@ -36,7 +36,7 @@
     <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO"/>
     <property name="cacheList">
       <list>
-        <!-- format: joined-workspaces, scheme, locale 
+        <!-- format: joined-workspaces, scheme, locale
         <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.arbritel, da_DK</value>
         <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.arbritel, en_US</value>
         <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.arbritel, en_GB</value>
@@ -127,13 +127,7 @@
         <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.trips, no_NO</value>
         <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.trips, pt_PT</value>
         <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.trips, sv_SE</value>
-        <value>$join(lalas,cuckoos,aloos), urn:group, en_US</value>
-        <value>$join(lalas,cuckoos), urn:link, en_US</value>
-        <value>$join(lalas,aloos), urn:group</value>        -->
-        <value>$join(cuckoos,lalas), urn:link </value>
-        <value>$join(cuckoos,lalas), urn:link, en_US </value>
-        <value>$join(cuckoos,lalas), urn:group </value>
-        <value>$join, urn:link </value> 
+        -->
       </list>
     </property>
   </bean>

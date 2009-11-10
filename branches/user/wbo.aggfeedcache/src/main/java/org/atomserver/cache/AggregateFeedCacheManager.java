@@ -117,13 +117,13 @@ public class AggregateFeedCacheManager {
 
         // remove the missing caches
         for (String deletedCache : deletedCaches) {
-            this.removeFeedFromCache(deletedCache);
+            this.removeFeedFromCacheInDB(deletedCache);
         }
 
         // add the new caches.
         for (String addedCache : addedCaches) {
             CachedAggregateFeed fcs = cachedFeedById.get(addedCache);
-            this.addFeedToCache(fcs.getJoinWorkspaceList(), fcs.getLocale(), fcs.getScheme(), fcs.getCachedFeedId());
+            this.addFeedToCacheInDB(fcs.getJoinWorkspaceList(), fcs.getLocale(), fcs.getScheme(), fcs.getCachedFeedId());
         }
     }
 
@@ -396,13 +396,128 @@ public class AggregateFeedCacheManager {
         }
     }
 
+    //==============================
+    // Manage Cached Aggregate Feeds
+    //==============================
     /**
-      * Remove cached timestamps for a gvien feed id.
-      *
-      * @param feedId MD5 hashed id of the feed.
-      */
+     * Cache a given aggregate feed
+     * @param feedConfigEntry       a string specifying a feed to cache in the format:
+     *                        $join(list-of-workspaces),scheme, locale
+     * @return cachedFeedId
+     */
+    public String cacheAggregateFeed(final String feedConfigEntry) {
+        CachedAggregateFeed feed = parseConfig(feedConfigEntry);
+            addFeedToCacheInDB(feed.getJoinWorkspaceList(), feed.getLocale(), feed.getScheme(), feed.getCachedFeedId());
+            // Add feed to local maps
+            cachedFeedById.put(feed.getCachedFeedId(), feed);
+            for(String workspace: feed.getJoinWorkspaceList()) {
+                Set<CachedAggregateFeed> relatedFeeds = this.workspaceToCachedFeeds.get(workspace);
+                if(relatedFeeds == null) {
+                    relatedFeeds = new HashSet<CachedAggregateFeed>();
+                    this.workspaceToCachedFeeds.put(workspace,relatedFeeds);
+                }
+                relatedFeeds.add(feed);
+            }
+        return feed.getCachedFeedId();
+    }
+
+    /**
+     * Cache a given list of aggregate feeds
+     * @param feedConfigEntryList     a listof strings specifying each feed to cache in the format:
+     *                          $join(list-of-workspaces),scheme, locale
+     * @return a list of cachedFeedId in the same order as the given feed list.
+     */
+    public List<String> cacheAggregateFeed(final List<String> feedConfigEntryList) {
+        List<String> feedIds = new ArrayList<String>();
+        for(String feedConfigEntry: feedConfigEntryList) {
+            String feedId = cacheAggregateFeed(feedConfigEntry);
+            feedIds.add(feedId);
+        }
+        return feedIds;
+    }
+
+    /**
+     * Remmove from cache a feed given by an entry of the format: $join(list-of-workspaces),scheme,locale.
+     *
+     * @param feedConfigEntry
+     */
+    public void removeCachedAggregateFeed(final String feedConfigEntry){
+        CachedAggregateFeed feed = parseConfig(feedConfigEntry);
+        removeCachedAggregateFeedByFeedId(feed.getCachedFeedId());
+    }
+
+    /**
+     * Remmove from cache given feeds each specified by an entry of the format:
+     * $join(list-of-workspaces),scheme,locale.
+     *
+     * @param feedConfigEntries a list of feed entries
+     */
+    public void removeCachedAggregateFeeds(final List<String> feedConfigEntries) {
+        for(String feedConfigEntry: feedConfigEntries) {
+            removeCachedAggregateFeed(feedConfigEntry);
+        }
+    }
+
+    /**
+     * Remove the feed with given feed id from cache
+     *
+     * @param feedId  a cached feed id
+     */
+    public void removeCachedAggregateFeedByFeedId(final String feedId) {
+        if(feedId == null) {
+            return;
+        }
+        // Remove from db
+        removeFeedFromCacheInDB(feedId);
+        // Remove from local maps
+        CachedAggregateFeed feed = cachedFeedById.get(feedId);
+        if (feed != null) {
+            cachedFeedById.remove(feedId);
+            List<String> workspaces = feed.getJoinWorkspaceList();
+            for (String workspace : workspaces) {
+                if (workspace != null) {
+                    Set<CachedAggregateFeed> relatedFeeds = this.workspaceToCachedFeeds.get(workspace);
+                    relatedFeeds.remove(feed);
+                }
+            }
+        }
+    }
+
+    /**
+     * Remove the feeds with given feed Ids from cache
+     *
+     * @param feedIds a list of cached feed ids.
+     */
+    public void removeCachedAggregateFeedsByFeedIds(final List<String> feedIds) {
+        for(String feedId: feedIds) {
+           removeCachedAggregateFeedByFeedId(feedId);
+        }
+    }
+
+    /**
+     * Remove from cache a feed given by a list of workspaces, locale and scheme.
+     * @param workspaces  comma-separated workspaces
+     * @param locale      locale
+     * @param scheme      scheme
+     */
+    public void removeCachedAggregateFeed(final String workspaces,
+                                     final String locale,
+                                     final String scheme) {
+        if(workspaces == null || "".equals(workspaces)) {
+            return;
+        }
+        String[] workspaceList = workspaces.split(",");
+        CachedAggregateFeed feed = new CachedAggregateFeed(null, this.getOrderedWorkspaceList(workspaceList), locale, scheme);
+        removeCachedAggregateFeedByFeedId(feed.getCachedFeedId());
+    }
+
+    /*
+     * Remove cached timestamps for a gvien feed id.
+     *
+     * @param feedId cached feed id
+     */
     private void removeCachedTimestampsByFeedId(String feedId) {
-        if(feedId != null) {
+        if (feedId != null) {
             feedCacheDAO.removeAggregateFeedTimestampsById(feedId);
         }
     }
@@ -412,11 +527,13 @@ public class AggregateFeedCacheManager {
      *
      * @param feedId MD5 hash Id of the aggregate feed to remove from the cache.
      */
-    private void removeFeedFromCache(final String feedId) {
+    private void removeFeedFromCacheInDB(final String feedId) {
         try {
             executeTransactionally(new TransactionalTask<Object>() {
                 public Object execute() {
-                    feedCacheDAO.removeAggregateFeedTimestampsById(feedId);  // This need to be removed first because of FK.
+                    // This need to be removed first because of FK.
+                    feedCacheDAO.removeAggregateFeedTimestampsById(feedId);
+                    // Remove this feed itself
                     feedCacheDAO.removeFeedFromCacheById(feedId);
                     return null;
                 }
@@ -435,28 +552,30 @@ public class AggregateFeedCacheManager {
      * @param scheme     scheme of the aggregate feed
      * @param feedId     MD5 hash id of the feed.
      */
-    private void addFeedToCache(final List<String> workspaces,
+    private CachedAggregateFeed addFeedToCacheInDB(final List<String> workspaces,
                                 final String locale,
                                 final String scheme,
                                 final String feedId) {
         try {
-            executeTransactionally(new TransactionalTask<Object>() {
-                public Object execute() {
-                    // Create CachedFeed first because of FK constraint
-//                    System.out.println("Executing addFeedToCache");
-                    feedCacheDAO.addNewFeedToCache(new CachedAggregateFeed(feedId,
+            return executeTransactionally(new TransactionalTask<CachedAggregateFeed>() {
+                public CachedAggregateFeed execute() {
+
+                    CachedAggregateFeed caf = new CachedAggregateFeed(feedId,
                                                                        getOrderedWorkspaceList(workspaces),
                                                                        locale,
-                                                                       scheme));
-//                    System.out.println("CachedFeed added");
+                                                                       scheme);
+                    // Create CachedFeed first because of FK constraint
+                    feedCacheDAO.addNewFeedToCache(caf);
+
                     feedCacheDAO.cacheAggregateFeedTimestamps(workspaces, locale, scheme, feedId);
-//                    System.out.println("Timestamps added");
-                    return null;
+                    
+                    return caf;
                 }
             });
         } catch (Exception e) {
             log.warn("exception occurred while addeing cached feed", e);
         }
+        return null;
     }
 
 
@@ -513,14 +632,23 @@ public class AggregateFeedCacheManager {
     private final Pattern jws = Pattern.compile("\\(|\\)");
     private final Pattern sep = Pattern.compile(",");
 
-    private void parseConfigAndPopulateMaps(List<String> cachelist) {
+    private List<String> parseConfigAndPopulateMaps(List<String> cachelist) {
+        List<String> feedIds = new ArrayList<String>();
         if (cacheList == null || cacheList.isEmpty()) {
-            return;
+            return feedIds;
         }
-        String[] allWorkspaceList = null;  // For $join
-
         for (String cacheSetEntry : cachelist) {
-            String[] wsSchemeLocale = trimList(jws.split(cacheSetEntry)); // split on ( or )
+            CachedAggregateFeed cachedFeed = parseConfig(cacheSetEntry);
+            addCachedFeedToMaps(cachedFeed);
+            feedIds.add(cachedFeed.getCachedFeedId());
+        }
+        return feedIds;
+    }
+
+    // Parse config string
+    private CachedAggregateFeed parseConfig(String configuredFeedStr) {
+        String[] allWorkspaceList = null;  // For $join
+        String[] wsSchemeLocale = trimList(jws.split(configuredFeedStr)); // split on ( or )
             boolean joinAll = (wsSchemeLocale.length == 1);
             if (joinAll && allWorkspaceList == null) {
                 allWorkspaceList = getWorkspaceList();
@@ -531,19 +659,7 @@ public class AggregateFeedCacheManager {
             String locale = (schemeLocale.length > 2) ? schemeLocale[2] : "**_**";
             String workspaces = getOrderedWorkspaceList(wkspaces);
 
-            CachedAggregateFeed cachedFeed = new CachedAggregateFeed(null, workspaces, locale, scheme);
-            addCachedFeedToMaps(cachedFeed);
-        }
-
-        // Dump out the workspaceToCachedFeeds map
-//        System.out.println("workspaceTocachedFeeds:");
-//        for (String ws : this.workspaceToCachedFeeds.keySet()) {
-//            Set<CachedAggregateFeed> jws = this.workspaceToCachedFeeds.get(ws);
-//            for (CachedAggregateFeed caf : jws) {
-//                System.out.println(" workspace:" + ws + "=>" + caf.getJoinWorkspaceList() +
-//                                   "." + caf.getLocale() + "-" + caf.getScheme() + "(" + caf.getCachedFeedId() + ")");
-//            }
-//        }
+            return new CachedAggregateFeed(null, workspaces, locale, scheme);
     }
 
     // Retrieve all workspaces defined in the system.

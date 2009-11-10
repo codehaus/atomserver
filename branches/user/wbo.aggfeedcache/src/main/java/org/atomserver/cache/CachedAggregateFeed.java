@@ -88,7 +88,7 @@ public class CachedAggregateFeed {
         }
         StringBuilder builder = new StringBuilder();
         builder.append(orderedJoinedWorkspaces);
-        if (locale != null && !"**_**".equals(locale)) {
+        if (locale != null && !"**_**".equals(locale) && !"".equals(locale)) {
             builder.append(".")
                     .append(locale);
         }
@@ -131,5 +131,14 @@ public class CachedAggregateFeed {
             bld.append(s);
         }
         return bld.toString();
+    }
+
+    public String toString()  {
+        StringBuilder builder = new StringBuilder();
+        builder.append("{feedId=").append(getCachedFeedId())
+                .append("workspaces=").append(getJoinWorkspaceList())
+                .append("locale=").append(getLocale())
+                .append("Scheme=").append(getScheme());
+        return builder.toString();
     }
 }
