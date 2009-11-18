@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Arrays;
 
 /**
- * This class represents a cached aggregate feed. It is mapped to the CachedFeed table where it persists the
- * ordered list of joined workspaces, locale and scheme. The aggregate feed is assigned
+ * This class represents a cached aggregate feed. A cached aggregate feed is stored in the CachedFeed table
+ * where it persists the ordered list of joined workspaces, locale and scheme. The aggregate feed is assigned
  * an id by MD5-hashing of the ordered joined workspaces, locale, and scheme.
  */
 public class CachedAggregateFeed {
@@ -116,7 +116,7 @@ public class CachedAggregateFeed {
     /*
      * Generate MD5 value as a hex string of the form 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
      * (where x is a hex digit) that the MS SQL server will treat it as a uniqueidentifier
-     *  and other db servers will treat it as a 36 character string id.  
+     *  and other db servers will treat it as a 36 character string  unique id.  
      */
     public static String MD5ToHexString(byte[] hval) {
         StringBuilder bld = new StringBuilder();

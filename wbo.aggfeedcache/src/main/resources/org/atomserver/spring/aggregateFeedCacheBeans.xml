@@ -21,7 +21,7 @@
 
   <bean id="org.atomserver-aggregatefeedcachemanager"
         class="org.atomserver.cache.AggregateFeedCacheManager">
-    <property name="feedCacheDAO" ref="org.atomserver-feedCacheDAO"/>
+    <property name="cachedFeedDAO" ref="org.atomserver-feedCacheDAO"/>
     <property name="transactionTemplate">
       <bean class="org.springframework.transaction.support.TransactionTemplate">
         <property name="timeout" value="${db.timeout.txn.put}"/>
@@ -34,7 +34,7 @@
     </property>
     <property name="entriesDAO" ref="org.atomserver-entriesDAO"/>
     <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO"/>
-    <property name="cacheList">
+    <property name="cacheConfigList">
       <list>
         <!-- format: joined-workspaces, scheme, locale
         <value>$join(listings,calendars,reviewmetadata,propmedia), urn:ha.listings.arbritel, da_DK</value>

@@ -92,7 +92,7 @@
     </bean>
 
     <bean id="org.atomserver-feedCacheDAO"
-          class="org.atomserver.core.dbstore.dao.AggregateFeedCacheDAOiBatisImpl"
+          class="org.atomserver.core.dbstore.dao.CachedAggregateFeedDAOiBatisImpl"
           depends-on="org.atomserver-propertyConfigurer">
         <property name="dataSource" ref="org.atomserver-dataSource"/>
         <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
