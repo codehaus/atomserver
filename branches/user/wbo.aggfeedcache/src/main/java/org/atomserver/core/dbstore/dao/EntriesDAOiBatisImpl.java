@@ -170,12 +170,9 @@ public class EntriesDAOiBatisImpl
                     if(invalidEntry.contains(uriData)) {
                         continue;
                     }
-                    if (opType == OperationType.insert || opType == OperationType.update ) {
+                    if (opType == OperationType.insert || opType == OperationType.update || opType == OperationType.delete ) {
                          entriesDAO.updateCacheOnEntryAddOrUpdate(uriData);
-
-                    } else if (opType == OperationType.delete) {
-                         entriesDAO.updateCacheOnEntryDelete(uriData);
-                    } 
+                    }
                 }
                 executor.executeBatch();
             }
@@ -428,15 +425,7 @@ public class EntriesDAOiBatisImpl
                                                      prepareUpdateParamMap(deleted,
                                                                            entryQuery.getRevision(),
                                                                            metaData));
-            if(!deleted) {
-//                System.out.println("** Updated existing entry store");
-                updateCacheOnEntryAddOrUpdate(entryQuery);
-            } else {
-                // TODO: validate if deleted should update the cache (since it is not actually deleted)
-//                System.out.println("** Deleting existing entry store");
-                updateCacheOnEntryDelete(metaData);
-            }
-
+            updateCacheOnEntryAddOrUpdate(entryQuery);
             return rc;
         }
         finally {
@@ -906,13 +895,13 @@ public class EntriesDAOiBatisImpl
 
     private void updateCacheOnEntryDelete(EntryDescriptor entryDescriptor) {
         if(getCacheManager() != null) {
-//            System.out.println(" updateCacheOnEntryDelete:entryDescriptor" + entryDescriptor);
+//            System.out.println(" updateCacheOnEntryObliteration:entryDescriptor" + entryDescriptor);
             if (cacheManager.isWorkspaceInCachedFeeds(entryDescriptor.getWorkspace())) {
                 if(entryDescriptor instanceof EntryMetaData) {
-                    cacheManager.updateCacheOnEntryDelete((EntryMetaData)entryDescriptor);
+                    cacheManager.updateCacheOnEntryObliteration((EntryMetaData)entryDescriptor);
                 } else {
                     EntryMetaData metaData = safeCastToEntryMetaData(entryDescriptor);
-                    cacheManager.updateCacheOnEntryDelete(metaData);
+                    cacheManager.updateCacheOnEntryObliteration(metaData);
                 }
 
             }

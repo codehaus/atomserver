@@ -3,35 +3,55 @@ package org.atomserver.core.dbstore;
 import org.apache.abdera.model.Base;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
+import org.apache.abdera.i18n.iri.IRI;
+import org.apache.abdera.protocol.client.AbderaClient;
+import org.apache.abdera.protocol.client.RequestOptions;
+import org.apache.abdera.protocol.client.ClientResponse;
+import org.apache.commons.lang.LocaleUtils;
 import org.atomserver.core.BaseServiceDescriptor;
 import org.atomserver.core.etc.AtomServerConstants;
 import org.atomserver.testutils.conf.TestConfUtil;
+import org.atomserver.testutils.client.MockRequestContext;
 import org.atomserver.utils.AtomDate;
 import org.atomserver.cache.AggregateFeedCacheManager;
+import org.atomserver.EntryDescriptor;
+import org.atomserver.AtomService;
+import org.atomserver.ext.batch.Operation;
+import org.atomserver.ext.batch.Results;
+import org.atomserver.ext.batch.Status;
+import org.atomserver.uri.URIHandler;
+import org.atomserver.uri.EntryTarget;
+import org.springframework.context.ApplicationContext;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
+import java.text.MessageFormat;
 
 /**
- *  Test AggregateFeeds using Cached timestamps. It is similar in testing functionality to AggregateFeedsTest.
- *
+ *  Test AggregateFeeds using Cached timestamps. This test is the similar to
+ * AggregateFeedsTest except cached is turned on and different data set is used.
  */
 public class CachedAggregateFeedsTest extends DBSTestCase {
 
     AggregateFeedCacheManager cacheManager = null;
     List<String> cachedFeedIds = null;
+    protected URIHandler entryURIHelper = null;
 
     public void setUp() throws Exception {
         TestConfUtil.preSetup("aggregates3");
         super.setUp();
 
-        cacheManager = (AggregateFeedCacheManager) super.getSpringFactory().getBean("org.atomserver-aggregatefeedcachemanager");
+        ApplicationContext appCtx = super.getSpringFactory();
+        cacheManager = (AggregateFeedCacheManager) appCtx.getBean("org.atomserver-aggregatefeedcachemanager");
+        entryURIHelper = ((AtomService) appCtx.getBean("org.atomserver-atomService")).getURIHandler();
 
         // aggregate feeds of interest
         List<String> feedList = new ArrayList<String>();
         feedList.add("$join(reds,greens,blues), urh:hue, en_US");
         feedList.add("$join(reds,greens), urn:hue, en_US");
+        feedList.add("$join(reds,greens), urn:hue");
+        feedList.add("$join,urn:hue,en_US");
         feedList.add("$join,urn:hue");
 
         // clear cache from previous state
@@ -40,10 +60,14 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
         entryCategoriesDAO.deleteAllEntryCategories("reds");
         entryCategoriesDAO.deleteAllEntryCategories("greens");
         entryCategoriesDAO.deleteAllEntryCategories("blues");
-        
+
         entriesDao.deleteAllEntries(new BaseServiceDescriptor("reds"));
         entriesDao.deleteAllEntries(new BaseServiceDescriptor("greens"));
-        entriesDao.deleteAllEntries(new BaseServiceDescriptor("blues"));       
+        entriesDao.deleteAllEntries(new BaseServiceDescriptor("blues"));
+
+        // workspace purples is not used in this test but needs to be cleaned up.
+        entriesDao.deleteAllEntries(new BaseServiceDescriptor("purples"));
+        entriesDao.deleteAllEntries(new BaseServiceDescriptor("purples"));
 
         // add feeds to cache
         cachedFeedIds = cacheManager.cacheAggregateFeed(feedList);
@@ -61,14 +85,13 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
     }
 
     public void tearDown() throws Exception {
-        cacheManager.removeCachedAggregateFeedsByFeedIds(cachedFeedIds);
+//        cacheManager.removeCachedAggregateFeedsByFeedIds(cachedFeedIds);
         super.tearDown();
         TestConfUtil.postTearDown();
     }
 
     public void testAggregateFeeds3() throws Exception {
         
-        // TODO: Aggregate Feeds do not currently work in HSQLDB
         if ( "hsql".equals(entriesDao.getDatabaseType()) ) {
             log.warn( "Aggregate Feeds do NOT currently work in HSQLDB");
             return;
@@ -85,12 +108,11 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
         feed = getPage("blues/shades");
         assertEquals(4, feed.getEntries().size());
 
-        // get the aggregate feed, and mark the end index
+        // Note: $join/urn:hue is a cached feed.
         feed = getPage("$join/urn:hue");
 
         assertEquals(12, feed.getEntries().size());
         endIndex = feed.getSimpleExtension(AtomServerConstants.END_INDEX);
-
 
         // getting the next page should return a 304 NOT MODIFIED
         getPage("$join/urn:hue?start-index=" + endIndex, 304);
@@ -289,7 +311,6 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
         }
         endIndex = feed.getSimpleExtension(AtomServerConstants.END_INDEX);
 
-
         // changing these "overlapping" objects should result in five entries in our aggregate feed
         modifyEntry("reds", "shades", "6017", Locale.US.toString(), redXml(6017), false, "2");
         modifyEntry("greens", "shades", "6014", null, greenXml(6014), false, "2");
@@ -340,7 +361,7 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
                        "?locale=en_US&start-index=" + endIndex);
         assertEquals(2, feed.getEntries().size());
 
-        // Test that we can limit the set of workspaces included in the join.
+        // Test that we can limit the set of workspaces included in the join. $join(reds,greens)/urn:hue is a cached feed
         feed = getPage("$join(reds,greens)/urn:hue");
         assertEquals(12, feed.getEntries().size());
         for (Entry entry : feed.getEntries()) {
@@ -561,12 +582,6 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
             String entryId = feed.getEntries().get(i).getSimpleExtension(AtomServerConstants.ENTRY_ID);
             assertTrue(expected.contains(entryId));
         }
-    }
-
-    private static void dumpToFile(Base object) throws IOException {
-        FileWriter fileWriter = new FileWriter("buff.xml");
-        object.writeTo(fileWriter);
-        fileWriter.close();
     }
 
     private static String redXml(int id) {

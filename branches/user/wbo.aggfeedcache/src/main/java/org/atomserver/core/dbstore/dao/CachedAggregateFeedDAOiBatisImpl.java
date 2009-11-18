@@ -27,10 +27,10 @@ import java.util.*;
 /**
  * Implementation class for AggregateFeedCacheDAO.
  */
-@ManagedResource(description = "AggregateFeedCacheDAO")
-public class AggregateFeedCacheDAOiBatisImpl
+@ManagedResource(description = "CachedAggregateFeedDAO")
+public class CachedAggregateFeedDAOiBatisImpl
         extends AbstractDAOiBatisImpl
-        implements AggregateFeedCacheDAO {
+        implements CachedAggregateFeedDAO {
 
     //==============================
     // Cache updates
@@ -107,7 +107,6 @@ public class AggregateFeedCacheDAOiBatisImpl
                 .param("workspaces", cachedFeed.getOrderedJoinedWorkspaces())
                 .param("scheme", cachedFeed.getScheme())
                 .param("locale", cachedFeed.getLocale());
-        System.out.println("locale=" + cachedFeed.getLocale());
         getSqlMapClientTemplate().insert("insertCachedFeed", paramMap);
     }
 

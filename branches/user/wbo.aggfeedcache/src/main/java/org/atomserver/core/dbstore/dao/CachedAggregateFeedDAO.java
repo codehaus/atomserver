@@ -24,7 +24,7 @@ import java.util.*;
 /**
  * AggregateFeedCacheDAO for accessing Cached Feeds and Cached Aggregate Feed Timestamps
  */
-public interface AggregateFeedCacheDAO
+public interface CachedAggregateFeedDAO
         extends AtomServerDAO {
 
     //========================================
