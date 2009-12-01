@@ -33,11 +33,12 @@ public interface CachedAggregateFeedDAO
     /**
      * Upadte the feed timestamp cache with the new timestamp for givne workspaces and categories. This is called
      * when an Entry is updated or added.
-     * @param joinedWorkspaces
-     * @param categories
-     * @param timestamp
+     * @param feedMap  a list of feeds mapped to its cached information link to each feed
+     * @param categories  categories of the entry
+     * @param locale      locale of the entry
+     * @param timestamp   time stamp value to update
      */
-    void updateFeedCacheOnEntryAddOrUpdate(Set<String>joinedWorkspaces, List<EntryCategory> categories, long timestamp);
+    void updateFeedCacheOnEntryAddOrUpdate(Map<String,CachedAggregateFeed> feedMap, List<EntryCategory> categories, Locale locale, long timestamp);
 
     /**
      * Retrieves cached feed timestamp entries from the given list of feeds that matches that timestamp

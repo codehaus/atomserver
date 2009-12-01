@@ -20,6 +20,7 @@ import org.atomserver.cache.CachedAggregateFeed;
 import org.atomserver.cache.AggregateFeedTerm;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.exceptions.AtomServerException;
+import org.atomserver.AtomCategory;
 import org.springframework.jmx.export.annotation.ManagedResource;
 
 import java.util.*;
@@ -35,58 +36,109 @@ public class CachedAggregateFeedDAOiBatisImpl
     //==============================
     // Cache updates
     //==============================
-    public void updateFeedCacheOnEntryAddOrUpdate(Set<String> aggregateFeedIds,
+    public void updateFeedCacheOnEntryAddOrUpdate(Map<String, CachedAggregateFeed> feedMap,
                                                   List<EntryCategory> categories,
+                                                  Locale entryLocale,
                                                   long timestamp) {
-        Set<String> termsInEntry = new HashSet<String>();
-        for (EntryCategory category : categories) {
-            termsInEntry.add(category.getTerm());
-        }
-        List<String> aggFeedIds = new ArrayList<String>(aggregateFeedIds);
-        // convert termsInEntry set into list for sqlMap
-        List<String> termsInEntryList = new ArrayList<String>(termsInEntry);
 
-        // get terms for each joined
-        ParamMap paramMap = paramMap()
-                .param("joinWorkspaces", aggFeedIds)
-                .param("terms", termsInEntryList)
-                .param("timestamp", timestamp);
+        Set<AtomCategory> entryCat = new HashSet<AtomCategory>();
+        String entryLanCode = (entryLocale == null ) ? "**" : entryLocale.getLanguage();
+        for (EntryCategory category : categories) {
+            entryCat.add(new AtomCategory(category.getScheme(), category.getTerm()));
+        }
 
         // Note: Some terms may already be cached and some terms may be not.
         // We need to update the timestamp of terms already in the cache and add terms not yet in the cache.
         // This query determine which terms are already present in the cache so that new terms can be determined.
+        List<String> aggFeedIds = new ArrayList<String>(feedMap.keySet());
+        ParamMap paramMap = paramMap()
+                .param("joinWorkspaces", aggFeedIds);
         List<AggregateFeedTerm> list = getSqlMapClientTemplate().queryForList("selectJoinedWorkspaceTerms", paramMap);
-        String currentFeedId = null;
-        Set<String> termset = null;
-        Map<String, Set<String>> newTermsInFeed = new HashMap<String, Set<String>>();
-        for (AggregateFeedTerm aft : list) {
-            String cachedFeedId = aft.getCachedFeedId();
-            if(!cachedFeedId.equals(currentFeedId)) {
-                termset = new HashSet<String>(termsInEntry);
-                newTermsInFeed.put(cachedFeedId, termset); // all expected terms from this entry
-                currentFeedId = cachedFeedId;
+
+        List<AggregateFeedTerm> updateCache = new ArrayList<AggregateFeedTerm>();
+        Set<AggregateFeedTerm> addToCache = new HashSet<AggregateFeedTerm>();
+
+        if(list == null || list.isEmpty()) {
+            for(String feedId: feedMap.keySet()) {
+                CachedAggregateFeed caf = feedMap.get(feedId);
+                for(AtomCategory st: entryCat) {
+                    if(st.getScheme().equals(caf.getScheme())) {
+                        addToCache.add( new AggregateFeedTerm(caf.getCachedFeedId(), st.getTerm()));
+                    }
+                }
             }
-            termset.remove(aft.getTerm());  // remove if already in the cache for the feed
+        } else {
+            String currentFeedId = null;
+            String currentScheme = null;
+            Map<String, Set<AtomCategory>> categoriesPerFeed = new HashMap<String, Set<AtomCategory>>();
+            Set<AtomCategory> feedCat = null;
+
+            for(AggregateFeedTerm aft: list) {
+                String cachedFeedId = aft.getCachedFeedId();
+                if(!cachedFeedId.equals(currentFeedId)) {
+                    feedCat = new HashSet<AtomCategory>();
+                    categoriesPerFeed.put(cachedFeedId, feedCat);
+                    currentScheme = feedMap.get(cachedFeedId).getScheme();
+                    currentFeedId = cachedFeedId;
+                }
+                feedCat.add(new AtomCategory(currentScheme, aft.getTerm()));
+            }
+
+            for(String feedId: feedMap.keySet()) { // loop through effected feeds
+                
+                feedCat = categoriesPerFeed.get(feedId);
+                if(feedCat == null) {
+                    feedCat = new HashSet<AtomCategory>();
+                }
+
+                // existing categories for the feed
+                Set<AtomCategory> existingCat = new HashSet<AtomCategory>(feedCat);
+                existingCat.retainAll(entryCat);
+                for(AtomCategory cat: existingCat) {
+                    updateCache.add(new AggregateFeedTerm(feedId, cat.getTerm()));
+                }
+
+                // new categories for the feed
+                Set<AtomCategory> newCat = new HashSet<AtomCategory>(entryCat);
+                newCat.removeAll(feedCat);
+
+                if(!newCat.isEmpty()) {
+                    // cache only if the feed locale and scheme matches with entry.
+                    CachedAggregateFeed feed = feedMap.get(feedId);
+                    String lanCode = (feed.getLocale() == null) ? "**" : feed.getLocale().substring(0,2);
+                    boolean localeMatch = (lanCode.equals(entryLanCode)||lanCode.equals("**"));
+                    if(localeMatch) {
+                        String scheme = feed.getScheme();
+                        for(AtomCategory c: newCat) {
+                            if(c.getScheme().equals(scheme)) {
+                                addToCache.add(new AggregateFeedTerm(feedId, c.getTerm()));
+                            }
+                        }
+                    }
+                }
+            }
+            // cleanup
+            categoriesPerFeed.clear();
+            if(feedCat != null) {
+                feedCat.clear();
+            }
         }
 
         // Update existing timestamps of terms already in the cache.
-        getSqlMapClientTemplate().update("updateTimestamps", paramMap);
+        if(!updateCache.isEmpty()) {
+            paramMap = paramMap()
+                    .param("terms", updateCache)
+                    .param("timestamp", timestamp);
+            getSqlMapClientTemplate().update("updateTimestamps", paramMap);
+        }
 
         // Add new terms to the cache if they are not already there.
-        Collection<String> termsToAdd = null;
-        for (String feedId : aggregateFeedIds) {
-            termsToAdd = newTermsInFeed.get(feedId);
-            if(termsToAdd == null) {
-                termsToAdd = termsInEntry;
-            }
-
-            for (String term : termsToAdd) {
+        for (AggregateFeedTerm fterm : addToCache) {
                 paramMap = paramMap()
-                        .param("cachedfeedid", feedId)
-                        .param("term", term)
+                        .param("cachedfeedid", fterm.getCachedFeedId())
+                        .param("term", fterm.getTerm())
                         .param("timestamp", timestamp);
                 getSqlMapClientTemplate().insert("insertTimestamp", paramMap);
-            }
         }
     }
 
@@ -132,8 +184,16 @@ public class CachedAggregateFeedDAOiBatisImpl
         ParamMap paramMap = paramMap()
                 .param("cachedfeedid", feedId)
                 .param("collection", scheme)
-                .param("joinWorkspaces", joinWorkspaces)
-                .param("locale", locale);
+                .param("joinWorkspaces", joinWorkspaces);
+        
+        if(locale != null) {
+            String lang = locale.substring(0,2);
+            String country = locale.substring(3,5);
+            if(!lang.equals("**")) {
+                paramMap.param("language",lang)
+                    .param("country", country);
+            }
+        }
         getSqlMapClientTemplate().insert("insertAggregateFeedCache", paramMap);
     }
 

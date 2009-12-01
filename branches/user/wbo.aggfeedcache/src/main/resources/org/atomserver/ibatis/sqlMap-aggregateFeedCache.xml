@@ -70,12 +70,18 @@
            <iterate property="joinWorkspaces" open="(" close=")" conjunction=",">
                #joinWorkspaces[]#
            </iterate>
+        </isNotNull>
+        <isNotNull property="cachedfeedid">
            AND timestampCache.CachedFeedId = #cachedfeedid#
         </isNotNull>
         <isNotNull property="categoryQuerySql">
+          <!-- matchineSiblingEntries was join again to get the EntryStoreId to join against EntryCategory.
+               Although this is an extra join, the performance does not seems to have suffered in the performance tests -->
+          INNER JOIN vw_EntryWithCategory matchingSiblingEntries ON recentlyChangedEntries.Term = matchingSiblingEntries.Term
+          AND matchingSiblingEntries.Scheme = #collection#
           LEFT OUTER JOIN EntryCategory searchCategories
-            ON searchCategories.EntryStoreId = recentlyChangedEntries.EntryStoreId
-          GROUP BY recentlyChangedEntries.Scheme, recentlyChangedEntries.UpdateTimestamp, recentlyChangedEntries.Term
+            ON searchCategories.EntryStoreId = matchingSiblingEntries.EntryStoreId
+          GROUP BY recentlyChangedEntries.UpdateTimestamp, recentlyChangedEntries.Term
           HAVING $categoryQuerySql$
         </isNotNull>
          ORDER BY recentlyChangedEntries.UpdateTimestamp ASC
@@ -176,15 +182,12 @@
         UPDATE AggregateFeedTimestamp
            SET UpdateTimestampValue = #timestamp#
          WHERE
-            CachedFeedId IN
-            <iterate property="joinWorkspaces" open="(" close=")" conjunction=",">
-               #joinWorkspaces[]#
-            </iterate>
-         AND Term IN
-            <iterate property="terms" open="(" close=")" conjunction=",">
-               #terms[]#
+            <iterate property="terms" open="(" close=")" conjunction="OR">
+               CachedFeedId = #terms[].cachedFeedId# AND
+               Term = #terms[].term#
             </iterate>
     </update>
+
 
     <insert id="insertTimestamp" >
       INSERT INTO AggregateFeedTimestamp

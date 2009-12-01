@@ -8,8 +8,15 @@ package org.atomserver.cache;
  * existing terms of an aggregated feed from the aggregate feed cache entries.
  */
 public class AggregateFeedTerm {
-    String cachedFeedId;
-    String term;
+    private String cachedFeedId;
+    private String term;
+
+    public AggregateFeedTerm() {}
+
+    public AggregateFeedTerm(String feedId, String term) {
+        this.cachedFeedId = feedId;
+        this.term = term;
+    }
 
     public String getCachedFeedId() {
         return cachedFeedId;
@@ -25,5 +32,14 @@ public class AggregateFeedTerm {
 
     public void setTerm(String term) {
         this.term = term;
+    }
+
+    public String toString(){
+        StringBuilder builder = new StringBuilder();
+        builder.append("[")
+                .append(cachedFeedId).append(", ")
+                .append(term)
+                .append("]");
+        return builder.toString();
     }
 }
