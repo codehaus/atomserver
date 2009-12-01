@@ -15,10 +15,10 @@ import java.util.Arrays;
  */
 public class CachedAggregateFeed {
 
-    String cachedFeedId = null;  // MD5 Hash of [orderedJoinedWorkspaces, locale, and scheme
-    String orderedJoinedWorkspaces;    // ordered list of comma-separated workspaces
-    String locale = null;              // locale of the form lanCode_CountryCode
-    String scheme;                     // scheme
+    private String cachedFeedId = null;  // MD5 Hash of [orderedJoinedWorkspaces, locale, and scheme
+    private String orderedJoinedWorkspaces;    // ordered list of comma-separated workspaces
+    private String locale = null;              // locale of the form lanCode_CountryCode
+    private String scheme;                     // scheme
 
     public CachedAggregateFeed() {}
 
@@ -28,7 +28,7 @@ public class CachedAggregateFeed {
      *                          this class will generate the feedId
      * @param orderedJoinedWorkspaces a comma-separated list of workspaces in alphabetical order.
      * @param locale            locale string of the form "lanCode_CountryCode"
-     * @param scheme
+     * @param scheme            scheme of the category cached
      */
     public CachedAggregateFeed(String cachedFeedId, String orderedJoinedWorkspaces, String locale, String scheme) {
 
@@ -118,7 +118,7 @@ public class CachedAggregateFeed {
      * (where x is a hex digit) that the MS SQL server will treat it as a uniqueidentifier
      *  and other db servers will treat it as a 36 character string  unique id.  
      */
-    public static String MD5ToHexString(byte[] hval) {
+    private static String MD5ToHexString(byte[] hval) {
         StringBuilder bld = new StringBuilder();
         for (int i = 0; i < hval.length; i++) {
             if (i == 4 || i == 6 || i == 8 || i == 10) {
@@ -135,10 +135,11 @@ public class CachedAggregateFeed {
 
     public String toString()  {
         StringBuilder builder = new StringBuilder();
-        builder.append("{feedId=").append(getCachedFeedId())
-                .append("workspaces=").append(getJoinWorkspaceList())
-                .append("locale=").append(getLocale())
-                .append("Scheme=").append(getScheme());
+        builder.append("[ feedId=").append(getCachedFeedId())
+                .append(", workspaces=").append(getJoinWorkspaceList())
+                .append(", locale=").append(getLocale())
+                .append(", scheme=").append(getScheme())
+                .append(" ]");
         return builder.toString();
     }
 }

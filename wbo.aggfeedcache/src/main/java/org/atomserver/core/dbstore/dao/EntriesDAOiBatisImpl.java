@@ -72,7 +72,7 @@ public class EntriesDAOiBatisImpl
         this.entryCategoryLogEventDAO = entryCategoryLogEventDAO;
     }
 
-    public AggregateFeedCacheManager getCacheManager() {
+    AggregateFeedCacheManager getCacheManager() {
         return cacheManager;
     }
 
@@ -493,9 +493,10 @@ public class EntriesDAOiBatisImpl
      */
     public synchronized void obliterateEntry(EntryDescriptor entryQuery) {
         log.info("OBLITERATE EntriesDAOiBatisImpl [ " + entryQuery + " ]");
+        EntryMetaData metaData = null;
 
         if (contentDAO != null || entryCategoriesDAO != null || getCacheManager() != null) {
-            EntryMetaData metaData = selectEntry(entryQuery);
+            metaData = selectEntry(entryQuery);
             if (metaData != null && entryCategoryLogEventDAO != null) {
                 entryCategoryLogEventDAO.deleteEntryCategoryLogEvent(entryQuery);
             }
@@ -505,9 +506,6 @@ public class EntriesDAOiBatisImpl
             if (metaData != null && entryCategoriesDAO != null) {
                 entryCategoriesDAO.deleteEntryCategories(metaData);
             }
-            if (metaData != null && cacheManager != null) {
-                updateCacheOnEntryDelete(metaData);
-            }
         }
 
         getSqlMapClientTemplate().delete("deleteEntry",
@@ -516,6 +514,10 @@ public class EntriesDAOiBatisImpl
                                                  .param("collection", entryQuery.getCollection())
                                                  .param("entryId", entryQuery.getEntryId())
                                                  .addLocaleInfo(entryQuery.getLocale()));
+        // Update cache after delete
+        if(metaData != null && cacheManager != null) {
+            updateCacheOnEntryDelete(metaData);
+        }
 
     }
 
@@ -881,7 +883,6 @@ public class EntriesDAOiBatisImpl
     //==============================
     private void updateCacheOnEntryAddOrUpdate(EntryDescriptor entryDescriptor) {
         if (getCacheManager() != null) {
-//             System.out.println(" updateCacheOnEntryAddOrUpdate:entryDescriptor" + entryDescriptor);
             if (cacheManager.isWorkspaceInCachedFeeds(entryDescriptor.getWorkspace())) {
                 if(entryDescriptor instanceof EntryMetaData) {
                     cacheManager.updateCacheOnEntryAddOrUpdate((EntryMetaData) entryDescriptor);
@@ -895,7 +896,6 @@ public class EntriesDAOiBatisImpl
 
     private void updateCacheOnEntryDelete(EntryDescriptor entryDescriptor) {
         if(getCacheManager() != null) {
-//            System.out.println(" updateCacheOnEntryObliteration:entryDescriptor" + entryDescriptor);
             if (cacheManager.isWorkspaceInCachedFeeds(entryDescriptor.getWorkspace())) {
                 if(entryDescriptor instanceof EntryMetaData) {
                     cacheManager.updateCacheOnEntryObliteration((EntryMetaData)entryDescriptor);
@@ -916,13 +916,16 @@ public class EntriesDAOiBatisImpl
                                ParamMap paramMap) {
         String sqlId = defaultSqlMapId;
         if (getCacheManager() != null) {
-            // check if the joinWorkspaces, locale and scheme are cached.
-            String feedId = cacheManager.isFeedCached(joinWorkspaces, locale, collection);
-            if (feedId != null) {
-                sqlId = "selectAggregateEntriesUsingCache";
-                paramMap.param("cachedfeedid", feedId);
-//                System.out.println("*** Using cache during aggregate feed query.");
-            }
+            // Note: Enable the line before not to use cache if category filter and category query is used.
+//            if (paramMap.get("categoryFilterSql") == null && paramMap.get("categoryQuerySql") == null) {
+
+                // check if the joinWorkspaces, locale and scheme are cached.
+                String feedId = cacheManager.isFeedCached(joinWorkspaces, locale, collection);
+                if (feedId != null) {
+                    sqlId = "selectAggregateEntriesUsingCache";
+                    paramMap.param("cachedfeedid", feedId);
+                }
+//            }
         }
         return sqlId;
     }

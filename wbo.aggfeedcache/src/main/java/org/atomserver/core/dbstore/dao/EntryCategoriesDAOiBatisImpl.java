@@ -30,10 +30,7 @@ import org.perf4j.StopWatch;
 import org.springframework.orm.ibatis.SqlMapClientCallback;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -46,7 +43,7 @@ public class EntryCategoriesDAOiBatisImpl
 
     private AggregateFeedCacheManager cacheManager = null;
 
-    public AggregateFeedCacheManager getCacheManager() {
+    AggregateFeedCacheManager getCacheManager() {
         return cacheManager;
     }
 
@@ -94,7 +91,7 @@ public class EntryCategoriesDAOiBatisImpl
                 executor.startBatch();
                 for (EntryCategory entryCategory : entryCategoryList) {
                     if (opType == OperationType.INSERT ) {
-                        cacheManager.updateCacheOnEntryCategoryAddedToEntry(entryCategory);
+                        cacheManager.updateCacheOnCategoryAddedToEntry(entryCategory);
                     } else if (opType == OperationType.DELETE) {
                         cacheManager.updateCacheOnCategoryRemoval(entryCategory);
                     }
@@ -124,7 +121,7 @@ public class EntryCategoriesDAOiBatisImpl
             getSqlMapClientTemplate().insert("insertEntryCategory", entry);
             numRowsAffected = 1;
             if(getCacheManager() != null) {
-                getCacheManager().updateCacheOnEntryCategoryAddedToEntry(entry);
+                getCacheManager().updateCacheOnCategoryAddedToEntry(entry);
             }
         }
         finally {

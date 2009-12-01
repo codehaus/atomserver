@@ -48,7 +48,7 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
 
         // aggregate feeds of interest
         List<String> feedList = new ArrayList<String>();
-        feedList.add("$join(reds,greens,blues), urh:hue, en_US");
+        feedList.add("$join(reds,greens,blues), urn:hue, en_US");
         feedList.add("$join(reds,greens), urn:hue, en_US");
         feedList.add("$join(reds,greens), urn:hue");
         feedList.add("$join,urn:hue,en_US");
@@ -85,7 +85,7 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
     }
 
     public void tearDown() throws Exception {
-//        cacheManager.removeCachedAggregateFeedsByFeedIds(cachedFeedIds);
+        cacheManager.removeCachedAggregateFeedsByFeedIds(cachedFeedIds);
         super.tearDown();
         TestConfUtil.postTearDown();
     }
@@ -96,7 +96,7 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
             log.warn( "Aggregate Feeds do NOT currently work in HSQLDB");
             return;
         }
-
+        
         Feed feed;
         String endIndex;
 
@@ -426,15 +426,18 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
             assertTrue(fullEntry.getContent().contains("<blue"));
         }
 
-        // deleting entry
-        feed = getPage("$join/urn:hue?locale=en_US");
+        // test deleting entry
+        feed = getPage("$join/urn:hue?locale=en_US");           
         assertEquals(12, feed.getEntries().size());
+        feed = getPage("$join/urn:hue");
+        assertEquals(15, feed.getEntries().size());
+        
         deleteEntry("reds","shades", "6006", "en_US");
         deleteEntry("greens","shades", "6006", null);
         deleteEntry("blues", "shades", "6006", null);
         feed = getPage("$join/urn:hue?locale=en_US");
         assertEquals(11, feed.getEntries().size());
-    }              
+    }
 
     public void testStartEndIndex3() throws Exception {
 
