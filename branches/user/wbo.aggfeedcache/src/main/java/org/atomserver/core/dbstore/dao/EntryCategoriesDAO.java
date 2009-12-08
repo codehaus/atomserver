@@ -63,6 +63,8 @@ public interface EntryCategoriesDAO
 
     void deleteEntryCategories(EntryDescriptor entryQuery);
 
+    void deleteEntryCategoriesWithoutCacheUpdate(EntryDescriptor entryQuery);
+
     void deleteEntryCategoriesInScheme(EntryMetaData entryQuery, String scheme);
 
     List<String> selectDistictCollections(String workspace);

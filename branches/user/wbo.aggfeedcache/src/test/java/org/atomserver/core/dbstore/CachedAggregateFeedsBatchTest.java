@@ -286,7 +286,7 @@ public class CachedAggregateFeedsBatchTest extends DBSTestCase {
             EntryTarget entryTarget = entryURIHelper.getEntryTarget(new MockRequestContext(serviceContext, "GET",
                                                                                            iri.toString()), true);
             EntryMetaData md = entriesDao.selectEntry(entryTarget);
-            entryCategoriesDAO.deleteEntryCategories(entriesDao.selectEntry(entryTarget));
+//            entryCategoriesDAO.deleteEntryCategories(entriesDao.selectEntry(entryTarget));
             contentStorage.deleteContent(null, entryTarget);
             entriesDao.obliterateEntry(entryTarget);
         }

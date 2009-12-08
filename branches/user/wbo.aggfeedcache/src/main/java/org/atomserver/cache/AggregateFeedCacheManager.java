@@ -20,7 +20,6 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 /**
- * 
  * Cache Manager class handles the overall aggregate feed caching functions. It tracks which
  * joined workspaces and scheme are cached, updates the cache when an entry or a category is added,
  * updated or deleted. At statup time, it manages the sets of cached feeds by adding newly configured
@@ -29,7 +28,6 @@ import java.util.regex.Pattern;
  * AggregateFeedTimestampCache stores the actual cache time stamps for aggregate feed query based on cached
  * feed Id. CachedFeed table stores that mapping of the cached feed Id to the aggregate feed specified
  * by joined workspaces, locale and scheme.
- *
  */
 public class AggregateFeedCacheManager {
 
@@ -60,6 +58,7 @@ public class AggregateFeedCacheManager {
 
     // list of existing workspaces used in $join (implicit join)
     private List<String> allWorkspaces = null;
+
     /**
      * Constructor
      */
@@ -95,8 +94,8 @@ public class AggregateFeedCacheManager {
             existingCacheSets.add(f.getCachedFeedId());
         }
 
-        if(log.isDebugEnabled()) {
-           log.debug("Number of existing cached feeds:" + existingCacheSets.size());
+        if (log.isDebugEnabled()) {
+            log.debug("Number of existing cached feeds:" + existingCacheSets.size());
         }
         Set<String> configuredCacheSets = new HashSet<String>();
         configuredCacheSets.addAll(cachedFeedById.keySet());
@@ -111,7 +110,7 @@ public class AggregateFeedCacheManager {
         addedCaches.addAll(configuredCacheSets);
         addedCaches.removeAll(existingCacheSets);
 
-        if(log.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             log.debug("Number of old cached feeds to delete:" + deletedCaches.size());
             log.debug("Number of new cached feeds to add:" + addedCaches.size());
         }
@@ -174,12 +173,12 @@ public class AggregateFeedCacheManager {
      * @param locale     locale used in the aggregate feed
      * @return feed id corresponding to the aggregate feed that is cached, or null if it is not cached.
      */
-    public String isFeedCached(List<String> workspaces, Locale locale, String scheme) {
+    public String isFeedCached(final List<String> workspaces, final Locale locale, final String scheme) {
         if (workspaces == null) {
             return null;
         }
         List<String> wkspaces = workspaces;
-        if(wkspaces.isEmpty()) { // joinAll case
+        if (wkspaces.isEmpty()) { // joinAll case
             wkspaces = getWorkspaceList();
         }
         String strLocale = "**_**";
@@ -197,7 +196,7 @@ public class AggregateFeedCacheManager {
      * @param workspace workspace to check if it belongs to one of the cached aggregated feeds.
      * @return true if it does and false otherwise.
      */
-    public boolean isWorkspaceInCachedFeeds(String workspace) {
+    public boolean isWorkspaceInCachedFeeds(final String workspace) {
         return (this.workspaceToCachedFeeds.get(workspace) != null);
     }
 
@@ -206,55 +205,42 @@ public class AggregateFeedCacheManager {
      *
      * @param entryMetaData Meta data of the entry that is added or updated.
      */
-    public void updateCacheOnEntryAddOrUpdate(EntryMetaData entryMetaData) {
+    public void updateCacheOnEntryAddOrUpdate(final EntryMetaData entryMetaData) {
 
         String workspace = entryMetaData.getWorkspace();
+
         if (isWorkspaceInCachedFeeds(workspace)) {
             List<EntryCategory> categories = entryMetaData.getCategories();
             if (categories.isEmpty()) {
                 return;
             }
-            boolean nullScheme = true;
-            for (EntryCategory cat : categories) {
-                if (cat.getScheme() != null) {
-                    nullScheme = false;
-                    break;
-                }
-            }
-            if (nullScheme) {
+            
+            Set<String> schemes = getSchemesFromCategories(categories);
+            if (schemes.isEmpty()) {
                 return;
             }
 
-            // get cached feeds with matching workspace and categories
-            Map<String,CachedAggregateFeed> feedMap = this.getEffectedCachedFeeds(workspace, categories);
+            // get cached feeds with matching workspace and scheme
+            Map<String, CachedAggregateFeed> feedMap = this.getEffectedCachedFeeds(workspace, schemes);
             if (feedMap.keySet().isEmpty()) {
                 return;
             }
 
-            // filter out scheme with null
-            List<EntryCategory> cats = new ArrayList<EntryCategory>();
-            for (EntryCategory cat : categories) {
-                if (cat.getScheme() != null) {
-                    cats.add(cat);
-                }
-            }
-            cachedFeedDAO.updateFeedCacheOnEntryAddOrUpdate(feedMap,
-                                                           cats,
-                                                           entryMetaData.getLocale(),
-                                                           entryMetaData.getUpdateTimestamp());
+            updateCacheOnEntryAddOrUpdateInDB(feedMap,
+                                              categories,
+                                              entryMetaData);
         }
     }
 
     /**
-     * This method is called to updated the cache when a category is added to an entry.
+     * This method updates the cache when a category is added to an entry.
      *
-     * @param category  EntryCategory added to an entry
+     * @param category EntryCategory added to an entry
      */
     // TODO: Currently when a new entry with categories is inserted, the entry is first inserted
-    // and then the categories are later added. This causes update cache to be called twice, one
-    // for entry add, and another for category add. This needs to be changed so that only one
-    // update is called for all categories in an entry added.
-    public void updateCacheOnCategoryAddedToEntry(EntryCategory category) {
+    // and then the categories are later added. This causes update cache to be called mutiple times.
+    // Change the insert entry so that only one update is called for all categories in the entry.
+    public void updateCacheOnCategoryAddedToEntry(final EntryCategory category) {
 
         Long entryStoreId = category.getEntryStoreId();
 
@@ -270,8 +256,44 @@ public class AggregateFeedCacheManager {
         if (!this.isWorkspaceInCachedFeeds(entryMetaData.getWorkspace())) {
             return;
         }
-        
+
         // merge old and new categories
+        List<EntryCategory> categories = entryMetaData.getCategories();
+        if (!categories.contains(category)) {
+            categories.add(category);
+            entryMetaData.setCategories(categories);
+        }
+        // Update the cache
+        updateCacheOnEntryAddOrUpdate(entryMetaData);
+    }
+
+    /**
+     * This method updates the cache when EntryCategories are added to an entry. It assumes
+     * that the categories in the list belongs to a single EntryStore.
+     *
+     * @param entryCategoryList list of <code>EntryCategory</code> added to the Entry.
+     */
+    public void updateCacheOnCategoriesAddedToEntry(final List<EntryCategory> entryCategoryList) {
+        if (entryCategoryList == null || entryCategoryList.isEmpty()) {
+            return;
+        }
+
+        EntryCategory category = entryCategoryList.get(0);
+        Long entryStoreId = category.getEntryStoreId();
+
+        EntryMetaData entryMetaData = (entryStoreId != null) ?
+                                      entriesDAO.selectEntryByInternalId(entryStoreId) :
+                                      entriesDAO.selectEntry(new BaseEntryDescriptor(
+                                              category.getWorkspace(),
+                                              category.getCollection(),
+                                              category.getEntryId(),
+                                              new Locale(category.getLanguage(), category.getCountry()))
+                                      );
+        if (!this.isWorkspaceInCachedFeeds(entryMetaData.getWorkspace())) {
+            return;
+        }
+        
+        // merge old and new categories (This may not be needed if entryMetaData already has uptodate categories
         List<EntryCategory> categories = entryMetaData.getCategories();
         if (!categories.contains(category)) {
             categories.add(category);
@@ -286,94 +308,72 @@ public class AggregateFeedCacheManager {
      *
      * @param entryMetaData Meta data of the entry that is deleted.
      */
-    public void updateCacheOnEntryObliteration(EntryMetaData entryMetaData) {
-        updateCacheOnCategoryRemovedFromEntry(entryMetaData, null);
-    }
 
-    /**
-     * Update the cache on removing a category  from an Entry
-     * @param entryQuery  EntryDescriptor of the entry from which the category is remove
-     * @param scheme      Scheme of the category removed.
-     */
-    public void updateCacheOnCategoryRemovedFromEntry(EntryDescriptor entryQuery, String scheme) {
-        EntryMetaData entryMetaData = entriesDAO.selectEntry(entryQuery);
-        updateCacheOnCategoryRemovedFromEntry(entryMetaData, scheme);
-    }
+    public void updateCacheOnEntryObliteration(final EntryMetaData entryMetaData, final List<EntryCategory> categoriesToRemove) {
 
-    /**
-     * Update the cache on removing a category
-     * @param entryCategory Cateogry that is removed.
-     */
-    public void updateCacheOnCategoryRemoval(EntryCategory entryCategory) {
-        EntryMetaData entryMetaData = entriesDAO.selectEntryByInternalId(entryCategory.getEntryStoreId());
-        updateCacheOnCategoryRemovedFromEntry(entryMetaData, entryCategory.getScheme());
+        Set<String> schemeSet = getSchemesFromCategories(categoriesToRemove);
+        updateCacheOnSchemeRemoval(entryMetaData, schemeSet);
     }
 
     /**
      * Update the cache on removing a category  from an Entry
      *
-     * @param entryMetaData Meta data of the entry from which the scheme is removed.
-     * @param scheme        the scheme that is removed.
+     * @param entryQuery EntryDescriptor of the entry from which the category is remove
+     * @param scheme     Scheme of the category removed.
      */
-    public void updateCacheOnCategoryRemovedFromEntry(final EntryMetaData entryMetaData, final String scheme) {
+    public void updateCacheOnCategoryRemovedFromEntry(final EntryDescriptor entryQuery, final String scheme) {
 
-        if(entryMetaData == null) {
-            return;
-        }
 
-        // get categories from Entry
-        List<EntryCategory> categories = new ArrayList<EntryCategory>();
-        if(entryMetaData.getCategories() != null) {
-            if (scheme == null) {
-                for (EntryCategory cat : entryMetaData.getCategories()) {
-                    String catScheme = cat.getScheme();
-                    if (catScheme != null && !"".equals(catScheme)) {
-                        categories.add(cat);
-                    }
-                }
+        EntryMetaData entryMetaData = (entryQuery instanceof EntryMetaData) ? (EntryMetaData) entryQuery:
+                                       entriesDAO.selectEntry(entryQuery);
+        Set<String> schemeSet = new HashSet<String>();
+        schemeSet.add(scheme);
+        updateCacheOnSchemeRemoval(entryMetaData, schemeSet);
 
-            } else {
-                for (EntryCategory cat : entryMetaData.getCategories()) {
-                    if (scheme.equals(cat.getScheme())) {
-                        categories.add(cat);
-                    }
-                }
-            }
-        }
-
-        if(categories.isEmpty()) {
-            return;
-        }
-
-        Set<String> feedIds = this.getEffectedCachedFeeds(entryMetaData.getWorkspace(), categories).keySet();
-        if (feedIds == null || feedIds.isEmpty()) {
-            return;
-        }
-
-        // To narrow the number of feeds for which the caches are to be rebuild, get the subset of the
-        // effected feeds which have terms with timestamp value matching the deleted entry. For those feeds
-        // which do not have terms with matching timestamp, this deleted entry does not contribute to
-        // the cached timestamp in the feeds and therefore these feeds do not need to be rebuilt.
-        List<String> feedsToUpdate = cachedFeedDAO.getFeedsWithMatchingTimestamp(new ArrayList<String>(feedIds),
-                                                                                    entryMetaData.getUpdateTimestamp());
-
-        // TODO: Investigate on incrementally updating the cache on entry obliteration.
-        for (String feedId : feedsToUpdate) {
-            CachedAggregateFeed caf = this.cachedFeedById.get(feedId);
-            rebuildCachedTimestampByFeed(caf);
-        }
     }
+
+    /**
+     * Update the cache on removing a category.
+     *
+     * @param entryCategory Cateogry that is removed.
+     */
+    public void updateCacheOnCategoryRemoval(final EntryCategory entryCategory) {
+
+        EntryMetaData entryMetaData = entriesDAO.selectEntryByInternalId(entryCategory.getEntryStoreId());
+        Set<String> schemeSet = new HashSet<String>();
+        schemeSet.add(entryCategory.getScheme());
+        updateCacheOnSchemeRemoval(entryMetaData, schemeSet);
+    }
+
+    /**
+     * Update the cache on removing a list of categories. The list is assumed to
+     * belong to a single entry.
+     *
+     * @param entryCategoryList Cateogries to remove.
+     */
+    public void updateCacheOnCategoriesRemoval(final List<EntryCategory> entryCategoryList) {
+
+        EntryCategory entryCategory = entryCategoryList.get(0);
+        EntryMetaData entryMetaData = entriesDAO.selectEntryByInternalId(entryCategory.getEntryStoreId());
+
+        Set<String> schemeSet = getSchemesFromCategories(entryCategoryList);
+        updateCacheOnSchemeRemoval(entryMetaData, schemeSet);
+    }
+
 
     /**
      * Delete all the cached time stamps related feeds with a given workspace.
      *
      * @param workspace the workspace to delete the cached entries from.
      */
-    public void removeCachedTimestampsByWorkspace(String workspace) {
+    public void removeCachedTimestampsByWorkspace(final String workspace) {
+
         Set<CachedAggregateFeed> cachedfeeds = this.workspaceToCachedFeeds.get(workspace);
+
         if (cachedfeeds == null || cachedfeeds.isEmpty()) {
             return;
         }
+
         for (CachedAggregateFeed feed : cachedfeeds) {
             cachedFeedDAO.removeAggregateFeedTimestampsById(feed.getCachedFeedId());
         }
@@ -382,7 +382,7 @@ public class AggregateFeedCacheManager {
     /**
      * Remove all cached entries in the cache table (AggregateFeedTimestamp)
      */
-    public void removeAllCachedTimestamps() {
+    public synchronized void removeAllCachedTimestamps() {
         cachedFeedDAO.removeAllCachedTimestamps();
     }
 
@@ -392,33 +392,14 @@ public class AggregateFeedCacheManager {
      *
      * @param workspace workspace to rebuild the cached entries for.
      */
-    public void rebuildCachedTimestampByWorkspace(String workspace) {
+    public void rebuildCachedTimestampByWorkspace(final String workspace) {
 
-        Set<CachedAggregateFeed> feedIds = this.workspaceToCachedFeeds.get(workspace);
-        if (feedIds == null) {
+        Set<CachedAggregateFeed> feeds = this.workspaceToCachedFeeds.get(workspace);
+        if (feeds == null) {
             return;
         }
-        for (CachedAggregateFeed caf : feedIds) {
+        for (CachedAggregateFeed caf : feeds) {
             rebuildCachedTimestampByFeed(caf);
-        }
-    }
-
-    /*
-     * Rebuild the cached timestamps for the given feed.
-     *
-     * @param CachedAggregateFeed Cached aggregate feed to rebuild the cached time stamps.
-     */
-    private void rebuildCachedTimestampByFeed(final CachedAggregateFeed feed) {
-        try {
-            executeTransactionally(new TransactionalTask<Object>() {
-                public Object execute() {
-                    removeCachedTimestampsByFeedId(feed.getCachedFeedId());
-                    addCachedTimestamps(feed.getJoinWorkspaceList(), feed.getLocale(), feed.getScheme(), feed.getCachedFeedId());
-                    return null;
-                }
-            });
-        } catch (Exception e) {
-            log.warn("exception occurred while rebuilding cached feed", e);
         }
     }
 
@@ -426,36 +407,44 @@ public class AggregateFeedCacheManager {
     // Manage Cached Aggregate Feeds
     //==============================
     /**
-     * Cache a given aggregate feed
-     * @param cacheCfg       a string specifying a feed to cache in the format:
-     *                        $join(list-of-workspaces),scheme, locale
+     * Cache a given aggregate feed. This call is not for multiple server environment.
+     * It is used for Unit tests.
+     *
+     * @param cacheCfg a string specifying a feed to cache in the format:
+     *                 $join(list-of-workspaces),scheme, locale
      * @return cachedFeedId
      */
     public String cacheAggregateFeed(final String cacheCfg) {
         CachedAggregateFeed feed = parseConfig(cacheCfg);
-        addFeedToCacheInDB(feed);
-        // Add feed to local maps
-        cachedFeedById.put(feed.getCachedFeedId(), feed);
-        for(String workspace: feed.getJoinWorkspaceList()) {
-            Set<CachedAggregateFeed> relatedFeeds = this.workspaceToCachedFeeds.get(workspace);
-            if(relatedFeeds == null) {
-                relatedFeeds = new HashSet<CachedAggregateFeed>();
-                this.workspaceToCachedFeeds.put(workspace,relatedFeeds);
+
+        if (cachedFeedById.get(feed.getCachedFeedId()) == null) {
+            addFeedToCacheInDB(feed);
+
+            // Add feed to local maps
+            cachedFeedById.put(feed.getCachedFeedId(), feed);
+            for (String workspace : feed.getJoinWorkspaceList()) {
+                Set<CachedAggregateFeed> relatedFeeds = this.workspaceToCachedFeeds.get(workspace);
+                if (relatedFeeds == null) {
+                    relatedFeeds = new HashSet<CachedAggregateFeed>();
+                    this.workspaceToCachedFeeds.put(workspace, relatedFeeds);
+                }
+                relatedFeeds.add(feed);
             }
-            relatedFeeds.add(feed);
         }
         return feed.getCachedFeedId();
     }
 
     /**
-     * Cache a given list of aggregate feeds
-     * @param cacheCfgList     a listof strings specifying each feed to cache in the format:
-     *                          $join(list-of-workspaces),scheme, locale
+     * Cache a given list of aggregate feeds. Note: This call is not for multiple server environment.
+     * It is used for unit tests.
+     *
+     * @param cacheCfgList a listof strings specifying each feed to cache in the format:
+     *                     $join(list-of-workspaces),scheme, locale
      * @return a list of cachedFeedId in the same order as the given feed list.
      */
     public List<String> cacheAggregateFeed(final List<String> cacheCfgList) {
         List<String> feedIds = new ArrayList<String>();
-        for(String cacheCfg: cacheCfgList) {
+        for (String cacheCfg : cacheCfgList) {
             String feedId = cacheAggregateFeed(cacheCfg);
             feedIds.add(feedId);
         }
@@ -467,7 +456,7 @@ public class AggregateFeedCacheManager {
      *
      * @param cacheConfig configuration string of an aggregate feed.
      */
-    public void removeCachedAggregateFeed(final String cacheConfig){
+    public void removeCachedAggregateFeed(final String cacheConfig) {
         CachedAggregateFeed feed = parseConfig(cacheConfig);
         removeCachedAggregateFeedByFeedId(feed.getCachedFeedId());
     }
@@ -479,7 +468,7 @@ public class AggregateFeedCacheManager {
      * @param cacheCfgList a list of feed entries
      */
     public void removeCachedAggregateFeeds(final List<String> cacheCfgList) {
-        for(String cacheConfig: cacheCfgList) {
+        for (String cacheConfig : cacheCfgList) {
             removeCachedAggregateFeed(cacheConfig);
         }
     }
@@ -487,10 +476,10 @@ public class AggregateFeedCacheManager {
     /**
      * Remove the feed with given (single) feed id from cache
      *
-     * @param feedId  a cached feed id
+     * @param feedId a cached feed id
      */
     public void removeCachedAggregateFeedByFeedId(final String feedId) {
-        if(feedId == null) {
+        if (feedId == null) {
             return;
         }
         // Remove from db
@@ -515,21 +504,116 @@ public class AggregateFeedCacheManager {
      * @param feedIds a list of cached feed ids.
      */
     public void removeCachedAggregateFeedsByFeedIds(final List<String> feedIds) {
-        if(feedIds != null && !feedIds.isEmpty()) {
-            for(String feedId: feedIds) {
-               removeCachedAggregateFeedByFeedId(feedId);
+        if (feedIds != null && !feedIds.isEmpty()) {
+            for (String feedId : feedIds) {
+                removeCachedAggregateFeedByFeedId(feedId);
             }
         }
     }
 
+    // ----- private methods -----
+
+    private  void updateCacheOnSchemeRemoval(final EntryMetaData entryMetaData, final Set<String> schemes) {
+
+        if (entryMetaData == null) {
+            return;
+        }
+
+        // get schemes from Entry
+        Set<String> schemeSet = schemes;
+
+        if (schemes == null || schemes.isEmpty()) {
+            List<EntryCategory> categories = entryMetaData.getCategories();
+            schemeSet = (categories == null)? new HashSet<String>() :
+                        getSchemesFromCategories(categories);
+        }
+
+        if (schemeSet.isEmpty()) {
+            return;
+        }
+
+        // Filter out feeds that do not match the workspace and scheme.
+        Set<String> feedIds = this.getEffectedCachedFeeds(entryMetaData.getWorkspace(), schemeSet).keySet();
+        if (feedIds == null || feedIds.isEmpty()) {
+            return;
+        }
+
+        // To narrow the number of feeds for which the caches are to be rebuild, get the subset of the
+        // effected feeds which have terms with timestamp value matching the deleted entry. For those feeds
+        // which do not have terms with matching timestamp, this deleted entry does not contribute to
+        // the cached timestamp in the feeds and therefore those feeds do not need to be rebuilt.
+
+        List<AggregateFeedTerm> feedTermsToUpdate = cachedFeedDAO.getFeedTermsWithMatchingTimestamp(
+                new ArrayList<String>(feedIds),
+                entryMetaData.getUpdateTimestamp());
+
+        if (feedTermsToUpdate == null || feedTermsToUpdate.isEmpty()) {
+            return;
+        }
+
+        // group all terms for a feedId, i.e. feedId --> a list of terms in the feed with the timestamp
+        Map<String, List<String>> feedToTerms = new HashMap<String, List<String>>();
+        for (AggregateFeedTerm ft : feedTermsToUpdate) {
+            List<String> terms = feedToTerms.get(ft.getCachedFeedId());
+            if (terms == null) {
+                terms = new ArrayList<String>();
+                feedToTerms.put(ft.getCachedFeedId(), terms);
+            }
+            terms.add(ft.getTerm());
+        }
+
+        // Update the database
+        rebuildCacheByFeedTermsInDB(feedTermsToUpdate, feedToTerms);
+    }
+
     /*
-     * Remove cached timestamps for a gvien feed id.
-     *
-     * @param feedId cached feed id
-     */
-    private void removeCachedTimestampsByFeedId(String feedId) {
+    * Rebuild the cached timestamps for the given feed.
+    *
+    * @param CachedAggregateFeed Cached aggregate feed to rebuild the cached time stamps.
+    */
+    private synchronized void rebuildCachedTimestampByFeed(final CachedAggregateFeed feed) {
+
+        try {
+            executeTransactionally(new TransactionalTask<Object>() {
+                public Object execute() {
+                    removeCachedTimestampsByFeedId(feed.getCachedFeedId());
+                    addCachedTimestamps(feed.getJoinWorkspaceList(), feed.getLocale(), feed.getScheme(), feed.getCachedFeedId());
+                    return null;
+                }
+            });
+        } catch (Exception e) {
+            log.warn("exception occurred while rebuilding cached feed", e);
+        }
+    }
+
+
+    /*
+    * Remove cached timestamps for a gvien feed id.
+    *
+    * @param feedId cached feed id
+    */
+    private void removeCachedTimestampsByFeedId(final String feedId) {
         if (feedId != null) {
             cachedFeedDAO.removeAggregateFeedTimestampsById(feedId);
+        }
+    }
+
+    private synchronized void updateCacheOnEntryAddOrUpdateInDB(final Map<String, CachedAggregateFeed> feedMap,
+                                                                final List<EntryCategory> categories,
+                                                                final EntryMetaData entryMetaData) {
+
+        try {
+            executeTransactionally(new TransactionalTask<Object>() {
+                public Object execute() {
+                    cachedFeedDAO.updateFeedCacheOnEntryAddOrUpdate(feedMap,
+                                                            categories,
+                                                            entryMetaData.getLocale(),
+                                                            entryMetaData.getUpdateTimestamp());
+                    return null;
+                }
+            });
+        } catch (Exception e) {
+            log.warn("exception occurred while rebuilding cached feed", e);
         }
     }
 
@@ -538,13 +622,12 @@ public class AggregateFeedCacheManager {
      *
      * @param feedId MD5 hash Id of the aggregate feed to remove from the cache.
      */
-    private void removeFeedFromCacheInDB(final String feedId) {
+    private synchronized void removeFeedFromCacheInDB(final String feedId) {
         try {
             executeTransactionally(new TransactionalTask<Object>() {
                 public Object execute() {
                     // This need to be removed first because of FK.
                     cachedFeedDAO.removeAggregateFeedTimestampsById(feedId);
-                    // Remove this feed itself
                     cachedFeedDAO.removeFeedFromCacheById(feedId);
                     return null;
                 }
@@ -561,60 +644,73 @@ public class AggregateFeedCacheManager {
      * @param CachedAggregateFeed feed to be saved in the database.
      *
      */
-    private void addFeedToCacheInDB(final CachedAggregateFeed caf) {
+    private synchronized void addFeedToCacheInDB(final CachedAggregateFeed caf) {
         try {
             executeTransactionally(new TransactionalTask<CachedAggregateFeed>() {
                 public CachedAggregateFeed execute() {
 
                     // Create CachedFeed first because of FK constraint
                     cachedFeedDAO.addNewFeedToCache(caf);
-
-                    cachedFeedDAO.cacheAggregateFeedTimestamps(caf.getJoinWorkspaceList(),caf.getLocale(),
-                                                                 caf.getScheme(), caf.getCachedFeedId());
+                    cachedFeedDAO.cacheAggregateFeedTimestamps(caf.getJoinWorkspaceList(), caf.getLocale(),
+                                                               caf.getScheme(), caf.getCachedFeedId());
                     return caf;
                 }
             });
         } catch (Exception e) {
-            log.warn("exception occurred while addeing cached feed", e);
+            log.warn("exception occurred while adding cached feed", e);
         }
     }
 
+    /*
+     * Rebuild cache for each category
+     */
+    private synchronized void rebuildCacheByFeedTermsInDB(final List<AggregateFeedTerm> feedTermsToUpdate,
+                                                          final Map<String,List<String>> map) {
+        try {
+            executeTransactionally(new TransactionalTask<CachedAggregateFeed>() {
+                public CachedAggregateFeed execute() {
+                    // Remove timestamps corresponding to feeds and terms.
+                    cachedFeedDAO.removeAggregateFeedTimestampsByTerms(feedTermsToUpdate);
+                    for (String feedId : map.keySet()) {
+                        
+                        CachedAggregateFeed feed = cachedFeedById.get(feedId);
+                        cachedFeedDAO.cacheAggregateFeedTimestampsByTerms(feed.getJoinWorkspaceList(),
+                                                                          feed.getLocale(),
+                                                                          feed.getScheme(),
+                                                                          feedId,
+                                                                          map.get(feedId));
+                    }
+                    return null;
+                }
+            });
+        } catch (Exception e) {
+            log.warn("exception occurred while updating cached feed", e);
+        }
+    }
 
-    /**
-     * Cache timestamps for the given feed
+    /*
+     * Cache timestamps for the given feed. This should be called within a transaction
      *
      * @param workspaces workspaces to compute and insert timestamps into the cache table (AggregateFeedTimestamp)
      * @param locale     locale of the aggregate feed
      * @param scheme     scheme of the aggregate feed
      * @param feedId     MD5 hashed id of the feed
      */
-    private void addCachedTimestamps(List<String> workspaces, String locale, String scheme, String feedId) {
+    private void addCachedTimestamps(final List<String> workspaces, final String locale, final String scheme, final String feedId) {
         cachedFeedDAO.cacheAggregateFeedTimestamps(workspaces, locale, scheme, feedId);
     }
 
-
-    /**
+    /*
      * Returns feed Ids for cached aggregate feeds effected by the given workspace, locale and categories.
      *
-     * @param workspace  workspace of the entry that is updated.
-     * @param categories a list of categories of the entry that is updated.
+     * @param workspace workspace of the entry that is updated.
+     * @param schemes   a set of schemes of the entry that is updated.
      * @return a list of cached feed ids effected by the entry change.
      */
-    Map<String,CachedAggregateFeed> getEffectedCachedFeeds(String workspace, List<EntryCategory> categories) {
-        Set<String> schemes = new HashSet<String>();
-        for (EntryCategory cat : categories) {
-            if (cat.getScheme() != null) {
-                schemes.add(cat.getScheme());
-            }
-        }
-        return getEffectedCachedFeeds(workspace, schemes);
-    }
 
-    //=== generic method to get effected cached feeds
+    private Map<String, CachedAggregateFeed> getEffectedCachedFeeds(final String workspace, final Set<String> schemes) {
 
-    private Map<String,CachedAggregateFeed> getEffectedCachedFeeds(String workspace, Set<String> schemes) {
-
-        Map<String,CachedAggregateFeed> cachedFeedIds = new HashMap<String,CachedAggregateFeed>();
+        Map<String, CachedAggregateFeed> cachedFeedIds = new HashMap<String, CachedAggregateFeed>();
         Set<CachedAggregateFeed> feedsWithWorkspace = this.workspaceToCachedFeeds.get(workspace);
         if (feedsWithWorkspace != null) {
             for (CachedAggregateFeed caf : feedsWithWorkspace) {
@@ -622,7 +718,7 @@ public class AggregateFeedCacheManager {
                 // if the schemes is empty, pick all workspaces.
                 if (schemes.contains(caf.getScheme()) || schemes.isEmpty()) {
                     // scheme and locale matches with this feed
-                    cachedFeedIds.put(caf.getCachedFeedId(),caf);
+                    cachedFeedIds.put(caf.getCachedFeedId(), caf);
                 }
             }
         }
@@ -634,7 +730,7 @@ public class AggregateFeedCacheManager {
     private final Pattern jws = Pattern.compile("\\(|\\)");
     private final Pattern sep = Pattern.compile(",");
 
-    private void parseConfigAndPopulateMaps(List<String> cachelist) {
+    private void parseConfigAndPopulateMaps(final List<String> cachelist) {
         if (cacheConfigList == null || cacheConfigList.isEmpty()) {
             return;
         }
@@ -645,11 +741,11 @@ public class AggregateFeedCacheManager {
     }
 
     // Parse config string
-    private CachedAggregateFeed parseConfig(String configuredFeedStr) {
+    private CachedAggregateFeed parseConfig(final String configuredFeedStr) {
 
         String[] wsSchemeLocale = trimList(jws.split(configuredFeedStr)); // split on ( or )
         boolean joinAll = (wsSchemeLocale.length == 1);
-        
+
         List<String> wkspaces = (joinAll) ? getWorkspaceList() : Arrays.asList(trimList(sep.split(wsSchemeLocale[1])));
         String[] schemeLocale = trimList(sep.split(wsSchemeLocale[(!joinAll) ? 2 : 0]));
         String scheme = schemeLocale[1];
@@ -662,7 +758,7 @@ public class AggregateFeedCacheManager {
     // Retrieve all workspaces defined in the system.
 
     List<String> getWorkspaceList() {
-        if(allWorkspaces == null) {
+        if (allWorkspaces == null) {
             allWorkspaces = entriesDAO.listWorkspaces();
         }
         return allWorkspaces;
@@ -707,6 +803,19 @@ public class AggregateFeedCacheManager {
             first = false;
         }
         return builder.toString();
+    }
+
+    // Get Schemes from EntryCategories
+    
+    private Set<String> getSchemesFromCategories(final List<EntryCategory> categories) {
+        Set<String> schemes = new HashSet<String>();
+        for(EntryCategory cat: categories) {
+            String scheme = cat.getScheme();
+            if(scheme != null && !"".equals(scheme)) {
+                schemes.add(scheme);
+            }
+        }
+        return schemes;
     }
 
     //==============================

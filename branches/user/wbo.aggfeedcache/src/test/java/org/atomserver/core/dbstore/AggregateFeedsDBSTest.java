@@ -90,7 +90,6 @@ public class AggregateFeedsDBSTest extends DBSTestCase {
             categories.writeTo(stringWriter);
             categoriesXML = stringWriter.toString();
 
-
             modifyEntry("tags:dummy", "mydummies", dummyId, null,
                         categoriesXML, false, "*", false);
         }
