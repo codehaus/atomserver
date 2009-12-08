@@ -58,7 +58,7 @@
             </isEqual>
             )
         </isNotNull>
-      
+
         <isNotNull property="language">
            AND ((recentlyChangedEntries.LanCode = #language# AND recentlyChangedEntries.CountryCode = #country#)
                 OR (recentlyChangedEntries.LanCode = '**' AND recentlyChangedEntries.CountryCode = '**'))
@@ -154,6 +154,14 @@
             ON recentlyChangedEntries.Scheme = #collection#
            AND matchingSiblingEntries.Scheme = #collection#
            AND matchingSiblingEntries.Term = recentlyChangedEntries.Term
+        <isNotNull property="terms">
+       <!-- This parameter terms is used to select cached feed timestamps for a specific cached feed and terms
+            It is used for rebuilding a subset of the cached timestamps on category removal -->
+           AND matchingSiblingEntries.Term IN
+          <iterate property="terms" open="(" close=")" conjunction=",">
+              #terms[]#
+          </iterate>
+        </isNotNull>
         <isNotNull property="language">
            AND ((matchingSiblingEntries.LanCode = #language# AND matchingSiblingEntries.CountryCode = #country#)
                 OR (matchingSiblingEntries.LanCode = '**' AND matchingSiblingEntries.CountryCode = '**'))
@@ -182,10 +190,10 @@
         UPDATE AggregateFeedTimestamp
            SET UpdateTimestampValue = #timestamp#
          WHERE
-            <iterate property="terms" open="(" close=")" conjunction="OR">
-               CachedFeedId = #terms[].cachedFeedId# AND
-               Term = #terms[].term#
-            </iterate>
+          <iterate property="feedterms" open="(" close=")" conjunction="OR">
+            CachedFeedId = #feedterms[].cachedFeedId# AND
+            Term = #feedterms[].term#
+          </iterate>
     </update>
 
 
@@ -196,39 +204,47 @@
         (#cachedfeedid#, #term#, #timestamp#)
     </insert>
 
-    <!-- Find entries in the given feeds with given time stamp -->
-    <select id="selectCachedFeedsWithTimestamp" resultClass="java.lang.String">
-        SELECT
-              CachedFeedId
-          FROM AggregateFeedTimestamp
-          WHERE
-            CachedFeedId IN
-            <iterate property="joinWorkspaces" open="(" close=")" conjunction=",">
-               #joinWorkspaces[]#
-            </iterate>
-            AND UpdateTimestampValue = #timestamp#
+  <!-- Find entries in the given feeds with given time stamp -->
+    <select id="selectFeedIdTermsWithTimestamp" resultClass="org.atomserver.cache.AggregateFeedTerm">
+      SELECT
+          CachedFeedId AS cachedFeedId,
+          Term as term
+        FROM AggregateFeedTimestamp
+        WHERE
+        CachedFeedId IN
+        <iterate property="feedids" open="(" close=")" conjunction=",">
+          #feedids[]#
+        </iterate>
+        AND UpdateTimestampValue = #timestamp#
     </select>
 
-    <!-- Find existing terms for the given cached feeds -->
-    <select id="selectJoinedWorkspaceTerms" resultClass="org.atomserver.cache.AggregateFeedTerm">
-        SELECT
-              CachedFeedId AS cachedFeedId,
-              Term as term
-          FROM AggregateFeedTimestamp
-          WHERE
-            CachedFeedId IN
-            <iterate property="joinWorkspaces" open="(" close=")" conjunction=",">
-               #joinWorkspaces[]#
-            </iterate>
-          ORDER BY cachedFeedId
+  <!-- Find existing terms for the given cached feeds -->
+    <select id="selectFeedIdTerms" resultClass="org.atomserver.cache.AggregateFeedTerm">
+      SELECT
+        CachedFeedId AS cachedFeedId,
+        Term as term
+      FROM AggregateFeedTimestamp
+      WHERE
+      <iterate property="terms" open="(" close=")" conjunction="OR">
+        CachedFeedId = #terms[].cachedFeedId# AND Term = #terms[].term#
+      </iterate>
     </select>
 
     <!-- This query is used to delete a set of cached time stamps from a feed -->
     <delete id="deleteAggregateFeedCache" >
         DELETE FROM AggregateFeedTimestamp
         <isNotNull property="cachedfeedid">
-          WHERE CachedFeedId = #cachedfeedid#            
+          WHERE CachedFeedId = #cachedfeedid#
         </isNotNull>
+    </delete>
+
+    <delete id="deleteAggregateFeedCacheByFeedIdTerm">
+      DELETE FROM AggregateFeedTimestamp
+        WHERE
+        <iterate property="feedterms" open="(" close=")" conjunction="OR">
+          CachedFeedId = #feedterms[].cachedFeedId# AND
+          Term = #feedterms[].term#
+        </iterate>
     </delete>
 
    <!-- Queries on CachedFeed table -->

@@ -85,7 +85,7 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
     }
 
     public void tearDown() throws Exception {
-        cacheManager.removeCachedAggregateFeedsByFeedIds(cachedFeedIds);
+//        cacheManager.removeCachedAggregateFeedsByFeedIds(cachedFeedIds);
         super.tearDown();
         TestConfUtil.postTearDown();
     }
@@ -426,7 +426,7 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
             assertTrue(fullEntry.getContent().contains("<blue"));
         }
 
-        // test deleting entry
+        // test oblite entries
         feed = getPage("$join/urn:hue?locale=en_US");           
         assertEquals(12, feed.getEntries().size());
         feed = getPage("$join/urn:hue");
@@ -437,6 +437,10 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
         deleteEntry("blues", "shades", "6006", null);
         feed = getPage("$join/urn:hue?locale=en_US");
         assertEquals(11, feed.getEntries().size());
+
+        feed = getPage("$join(reds,greens)/urn:hue");
+        assertEquals(13,feed.getEntries().size());
+
     }
 
     public void testStartEndIndex3() throws Exception {

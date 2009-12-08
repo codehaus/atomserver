@@ -17,6 +17,7 @@
 package org.atomserver.core.dbstore.dao;
 
 import org.atomserver.cache.CachedAggregateFeed;
+import org.atomserver.cache.AggregateFeedTerm;
 import org.atomserver.core.EntryCategory;
 
 import java.util.*;
@@ -41,12 +42,12 @@ public interface CachedAggregateFeedDAO
     void updateFeedCacheOnEntryAddOrUpdate(Map<String,CachedAggregateFeed> feedMap, List<EntryCategory> categories, Locale locale, long timestamp);
 
     /**
-     * Retrieves cached feed timestamp entries from the given list of feeds that matches that timestamp
+     * Retrieves feed ids from a given list and terms matching a given timestamp.
      * @param feedIds
      * @param timestamp
      * @return
      */
-    List<String> getFeedsWithMatchingTimestamp(List<String> feedIds, long timestamp);
+    List<AggregateFeedTerm> getFeedTermsWithMatchingTimestamp(List<String> feedIds, long timestamp);
 
     //========================================
     //  CRUD for mapping of feed id and aggregate feeds
@@ -79,20 +80,39 @@ public interface CachedAggregateFeedDAO
     //========================================
     //   CRUD AggregateFeeds Timestamp Cache entries
     //========================================
+
     /**
      * Populate AggregateFeedTimestamp Cache table for a new feed
      * @param workspaces
-     * @param feedId
-     * @param scheme
      * @param locale
+     * @param scheme
+     * @param feedId
      */
     void cacheAggregateFeedTimestamps(List<String> workspaces, String locale, String scheme, String feedId);
+
+    /**
+     * Populate AggregateFeedTimestamp Cache table with entries for a given feed and terms.
+     *
+     * @param workspaces
+     * @param locale
+     * @param scheme
+     * @param feedId
+     * @param terms
+     */
+    void cacheAggregateFeedTimestampsByTerms(List<String> workspaces, String locale, String scheme, String feedId,
+                                      List<String> terms);
 
     /**
      * Remove cached aggregate feed timestamp entries from AggregateFeedTimestamp table.
      * @param cachedFeedId
      */
     void removeAggregateFeedTimestampsById(String cachedFeedId);
+
+    /**
+     * Remove cached aggregate feed timestamp entries with the given list of <code>AggregateFeedTerm</code>.
+     * @param feedTerms
+     */
+    void removeAggregateFeedTimestampsByTerms(List<AggregateFeedTerm> feedTerms);
 
     /**
      * Remove all rows in the AggregateFeedTimestamp table.

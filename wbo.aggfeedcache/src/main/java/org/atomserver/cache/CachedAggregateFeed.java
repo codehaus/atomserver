@@ -30,7 +30,8 @@ public class CachedAggregateFeed {
      * @param locale            locale string of the form "lanCode_CountryCode"
      * @param scheme            scheme of the category cached
      */
-    public CachedAggregateFeed(String cachedFeedId, String orderedJoinedWorkspaces, String locale, String scheme) {
+    public CachedAggregateFeed(final String cachedFeedId, final String orderedJoinedWorkspaces,
+                               final String locale, final String scheme) {
 
         this.cachedFeedId = cachedFeedId;
         this.orderedJoinedWorkspaces = orderedJoinedWorkspaces;
@@ -45,7 +46,7 @@ public class CachedAggregateFeed {
         return this.cachedFeedId;
     }
 
-    public void setCachedFeedId(String cachedFeedId) {
+    public void setCachedFeedId(final String cachedFeedId) {
         this.cachedFeedId = cachedFeedId;
     }
 
@@ -53,7 +54,7 @@ public class CachedAggregateFeed {
         return orderedJoinedWorkspaces;
     }
 
-    public void setOrderedJoinedWorkspaces(String orderedJoinedWorkspaces) {
+    public void setOrderedJoinedWorkspaces(final String orderedJoinedWorkspaces) {
         this.orderedJoinedWorkspaces = orderedJoinedWorkspaces;
     }
 
@@ -61,7 +62,7 @@ public class CachedAggregateFeed {
         return locale;
     }
 
-    public void setLocale(String locale) {
+    public void setLocale(final String locale) {
         this.locale = locale;
     }
 
@@ -69,7 +70,7 @@ public class CachedAggregateFeed {
         return scheme;
     }
 
-    public void setScheme(String scheme) {
+    public void setScheme(final String scheme) {
         this.scheme = scheme;
     }
 
@@ -118,7 +119,7 @@ public class CachedAggregateFeed {
      * (where x is a hex digit) that the MS SQL server will treat it as a uniqueidentifier
      *  and other db servers will treat it as a 36 character string  unique id.  
      */
-    private static String MD5ToHexString(byte[] hval) {
+    private static String MD5ToHexString(final byte[] hval) {
         StringBuilder bld = new StringBuilder();
         for (int i = 0; i < hval.length; i++) {
             if (i == 4 || i == 6 || i == 8 || i == 10) {
@@ -130,7 +131,7 @@ public class CachedAggregateFeed {
             }
             bld.append(s);
         }
-        return bld.toString();
+        return bld.toString().toUpperCase();
     }
 
     public String toString()  {

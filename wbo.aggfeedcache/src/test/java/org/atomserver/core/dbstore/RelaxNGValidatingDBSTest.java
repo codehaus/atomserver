@@ -44,8 +44,6 @@ public class RelaxNGValidatingDBSTest extends CRUDAtomServerTestCase {
 
         EntryTarget entryTarget =
                 widgetURIHelper.getEntryTarget(new MockRequestContext(serviceContext, "GET", entryIRI.toString()), true);
-        EntryCategoriesDAO entryCategoriesDAO = (EntryCategoriesDAO) getSpringFactory().getBean("org.atomserver-entryCategoriesDAO");
-        entryCategoriesDAO.deleteEntryCategories(entriesDAO.selectEntry(entryTarget));
         entriesDAO.obliterateEntry(entryTarget);
     }
 }

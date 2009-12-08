@@ -26,6 +26,7 @@ import org.atomserver.ServiceDescriptor;
 import org.atomserver.cache.AggregateFeedCacheManager;
 import org.atomserver.core.AggregateEntryMetaData;
 import org.atomserver.core.EntryMetaData;
+import org.atomserver.core.EntryCategory;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
 import org.atomserver.utils.locale.LocaleUtils;
@@ -484,7 +485,7 @@ public class EntriesDAOiBatisImpl
         }
         return updateEntry(entryQuery, setDeletedFlag);
     }
-
+    
     /**
      * Obliterate this Entry DB entry.
      * This form does delete the actual record from the DB.
@@ -494,9 +495,14 @@ public class EntriesDAOiBatisImpl
     public synchronized void obliterateEntry(EntryDescriptor entryQuery) {
         log.info("OBLITERATE EntriesDAOiBatisImpl [ " + entryQuery + " ]");
         EntryMetaData metaData = null;
+        List<EntryCategory> categoriesToRemove = null;
 
         if (contentDAO != null || entryCategoriesDAO != null || getCacheManager() != null) {
-            metaData = selectEntry(entryQuery);
+            metaData = (entryQuery instanceof EntryMetaData) ? (EntryMetaData) entryQuery : selectEntry(entryQuery);
+
+            if(metaData != null) {
+                categoriesToRemove = metaData.getCategories();
+            }
             if (metaData != null && entryCategoryLogEventDAO != null) {
                 entryCategoryLogEventDAO.deleteEntryCategoryLogEvent(entryQuery);
             }
@@ -504,7 +510,7 @@ public class EntriesDAOiBatisImpl
                 contentDAO.deleteContent(metaData);
             }
             if (metaData != null && entryCategoriesDAO != null) {
-                entryCategoriesDAO.deleteEntryCategories(metaData);
+                entryCategoriesDAO.deleteEntryCategoriesWithoutCacheUpdate(metaData);
             }
         }
 
@@ -516,7 +522,8 @@ public class EntriesDAOiBatisImpl
                                                  .addLocaleInfo(entryQuery.getLocale()));
         // Update cache after delete
         if(metaData != null && cacheManager != null) {
-            updateCacheOnEntryDelete(metaData);
+            // This must be called after the categories have been deleted from EntryCategory in the database.
+            updateCacheOnEntryDelete(metaData, categoriesToRemove);
         }
 
     }
@@ -881,7 +888,7 @@ public class EntriesDAOiBatisImpl
     //==============================
     // Updating Cache
     //==============================
-    private void updateCacheOnEntryAddOrUpdate(EntryDescriptor entryDescriptor) {
+    private void updateCacheOnEntryAddOrUpdate(final EntryDescriptor entryDescriptor) {
         if (getCacheManager() != null) {
             if (cacheManager.isWorkspaceInCachedFeeds(entryDescriptor.getWorkspace())) {
                 if(entryDescriptor instanceof EntryMetaData) {
@@ -894,14 +901,14 @@ public class EntriesDAOiBatisImpl
         }
     }
 
-    private void updateCacheOnEntryDelete(EntryDescriptor entryDescriptor) {
-        if(getCacheManager() != null) {
+    private void updateCacheOnEntryDelete(final EntryDescriptor entryDescriptor, final List<EntryCategory> categories) {
+        if(getCacheManager() != null && categories != null && !categories.isEmpty() ) {
             if (cacheManager.isWorkspaceInCachedFeeds(entryDescriptor.getWorkspace())) {
                 if(entryDescriptor instanceof EntryMetaData) {
-                    cacheManager.updateCacheOnEntryObliteration((EntryMetaData)entryDescriptor);
+                    cacheManager.updateCacheOnEntryObliteration((EntryMetaData)entryDescriptor, categories);
                 } else {
                     EntryMetaData metaData = safeCastToEntryMetaData(entryDescriptor);
-                    cacheManager.updateCacheOnEntryObliteration(metaData);
+                    cacheManager.updateCacheOnEntryObliteration(metaData, categories);
                 }
 
             }
@@ -909,15 +916,15 @@ public class EntriesDAOiBatisImpl
     }
 
     // returns the correct sql to run if the feed is cached.
-    private String getSqlMapId(List<String> joinWorkspaces,
-                               Locale locale,
-                               String collection,
-                               String defaultSqlMapId,
+    private String getSqlMapId(final List<String> joinWorkspaces,
+                               final Locale locale,
+                               final String collection,
+                               final String defaultSqlMapId,
                                ParamMap paramMap) {
         String sqlId = defaultSqlMapId;
         if (getCacheManager() != null) {
             // Note: Enable the line before not to use cache if category filter and category query is used.
-//            if (paramMap.get("categoryFilterSql") == null && paramMap.get("categoryQuerySql") == null) {
+            if (paramMap.get("categoryFilterSql") == null && paramMap.get("categoryQuerySql") == null) {
 
                 // check if the joinWorkspaces, locale and scheme are cached.
                 String feedId = cacheManager.isFeedCached(joinWorkspaces, locale, collection);
@@ -925,7 +932,7 @@ public class EntriesDAOiBatisImpl
                     sqlId = "selectAggregateEntriesUsingCache";
                     paramMap.param("cachedfeedid", feedId);
                 }
-//            }
+            }
         }
         return sqlId;
     }
