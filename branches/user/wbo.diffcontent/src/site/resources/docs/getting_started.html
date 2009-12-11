@@ -1,0 +1,851 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <link rel="StyleSheet" href="css/style.css" type="text/css">
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <meta name="verify-v1"
+ content="sRQSq4VA5FRMhwzFB4U3I9AtgLMtIWTdpVVO6jg1az4=">
+  <title>AtomServer; Getting Started</title>
+  <script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+  </script>
+  <script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-4603527-2");
+pageTracker._initData();
+pageTracker._trackPageview();
+  </script>
+</head>
+<body class="maincontent">
+<h1><img src="images/atom-logo.gif" alt="logo"> AtomServer, Getting
+Started</h1>
+<span style="font-style: italic;">Chris Berry, Bryon Jacob.
+Updated 11/2/08</span><br>
+<div class="content"><br>
+This
+document describes some specific details about getting started with
+AtomServer. <br>
+<br>
+For a further, detailed description of the actual protocol, either<br>
+<ul>
+  <li>See <a href="http://www.atomenabled.org/developers/syndication/">the
+Atom Publishing Protocol Reference</a> for further information about
+the
+elements of the feed itself. Note that we do not exhaustingly document
+this
+information ourselves,&nbsp; because we are using Atom entirely as
+dictated
+by the standard.</li>
+  <li>See <a href="atomserver_protocol_basics.html">the AtomServer
+Protocol
+Basics document </a>for general information about communicating with
+the atomserver service.<br>
+  </li>
+</ul>
+This document does <span style="font-weight: bold;">not</span> explain
+the underlying concepts behind AtomServer; REST, Atom, and OpenSearch.
+That
+information can be found in <a href="atomserver_intro.html">the
+AtomServer
+General Introduction document</a>. <span style="font-style: italic;">It
+is highly recommended that you read this document first</span>.<br>
+<br>
+Nor does this document explain the basics of XML,
+namespaces, syndicated feeds, and the <span
+ style="font-family: monospace;">GET, POST, PUT</span>, and <span
+ style="font-family: monospace;">DELETE</span>
+requests in HTTP, as well as HTTP's concept of a "resource." For more
+information about those things, see the <a href="#resources">Additional
+resources</a> section of
+this document.<br>
+<h2>Contents</h2>
+<ul>
+  <li><a href="#install">Installing the Demo AtomServer</a></li>
+  <li><a href="#dist">Exploring the Distribution</a></li>
+  <li><a href="#conf">Exploring the Configuration</a></li>
+  <li><a href="#Feed">Some Example Feed Requests</a></li>
+  <li><a href="#PUTs">Testing PUTs and DELETEs</a><br>
+  </li>
+  <li><a href="#build">Building AtomServer</a></li>
+  <li><a href="#postgresql">Configuring Postgresql</a><br>
+  </li>
+  <li><a href="#resources">Additional Resources</a></li>
+</ul>
+<hr style="width: 100%; height: 2px;">
+<h2><a name="install"></a>Installing AtomServer</h2>
+AtomServer is usable right out of the box. It is simply a Java Web
+Application packaged into a standard WAR file. But to make things
+easier for the first time user. AtomServer provides a standalone
+implementation which runs in a embedded Jetty server, complete with a
+sample Atom workspace that contains a few Entries. The only
+prerequisite is, of course, Java. AtomServer will
+build and run with Java 1.5, but <a
+ href="http://java.sun.com/javase/downloads/index.jsp">Java 1.6</a> is
+highly recommended. <br>
+<br>
+The standalone AtomServer implementation requires zero configuration.
+For this discussion, let's assume that you are installing to a
+directory identified by <span
+ style="font-family: monospace; font-weight: bold;">$ATOMSERVER_HOME</span>.
+<br>
+So, to get started with AtomServer, you just <br>
+<br>
+1) Download the AtomServer tarball. <br>
+<div style="margin-left: 40px;"><br>
+<div id="codebox"><span style="font-family: monospace;">$ curl -G
+http://repository.codehaus.org/org/atomserver/atomserver/2.0/atomserver-2.0-install.tar.gz</span>
+</div>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+<br>
+2) Expand it. <span style="font-family: monospace; font-weight: bold;"></span><br>
+<div style="margin-left: 40px;"><br>
+<div id="codebox"><span style="font-family: monospace;">$ cd
+$ATOMSERVER_HOME<br>
+$ tar -zxvf </span><span style="font-family: monospace;">atomserver-2.0-install.tar.gz</span>
+</div>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+<br>
+3) Type a single command;<br>
+<div style="margin-left: 40px;"><br>
+<div id="codebox"><span style="font-family: monospace;">$ cd
+$ATOMSERVER_HOME<br>
+$ ./bin/atomserver -seed<br>
+</span> </div>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+<br>
+And you're up-and-running. It's that easy. By the way, the <span
+ style="font-family: monospace;">-seed</span> switch tells AtomServer
+to seed the HSQLDB database with data to match the few Entries provided
+in <span style="font-family: monospace;">$ATOMSERVER_HOME/data</span>.
+You only need to use <span style="font-family: monospace;">-seed</span>
+this the first time you run <span style="font-family: monospace;">atomserver.sh</span>.<br>
+<br>
+Now you can see your AtomServer in action. Bring up your favorite
+browser and hit the following URL; <a
+ href="http://localhost:7890/atomserver/v1/pets/dogs">http://localhost:7890/atomserver/v1/pets/dogs</a>.&nbsp;
+This URL asks for a Feed of the <span style="font-family: monospace;">dogs</span>
+Collection from the <span style="font-family: monospace;">pets</span>
+Workspace. Dont' worry, in a later section we'll explore how to setup
+your AtomServer to deliver your own workspaces. <br>
+<br>
+Because AtomServer is an <span style="font-style: italic;">Atom Data
+Store</span>,&nbsp; <span style="font-style: italic;">AtomServer
+requires a relational database to run</span>.
+AtomServer currently supports; PostgresSQL, SQLServer, and hsql.
+Installing
+database software is somewhat out of scope for this document. Once
+you've installed your database, you will need
+to setup the required AtomServer database tables. DDLs are provided for
+each supported database to make this relatively painless. <br>
+<br>
+But the out-of-the-box, standalone AtomServer spins up HSQLDB - an
+embeddable Java database - and thus, <span style="font-style: italic;">requires
+no configuration</span>. Unfortunately HSQLDB does not provide
+realistic database isolation levels, and is not recommended for high
+load, heavily concurrent applications, although its perfectly
+acceptable for our standalone demonstration AtomServer.<br>
+<br>
+<hr style="width: 100%; height: 2px;">
+<h2><a name="dist"></a>Exploring the Distribution</h2>
+Let's explore the distribution you just unpacked. Again, for the sake
+of discussion, let's assume that
+you've chosen to install into a directory location identified by the
+environment variable; <span style="font-family: monospace;">$ATOMSERVER_HOME</span>.<span
+ style="font-family: monospace;"> </span>After a successful
+deployment, AtomServer will lay out the following
+directory structure in <span style="font-family: monospace;">$ATOMSERVER_HOME</span>.
+(Directories in <span style="color: rgb(0, 102, 0);">green</span>.
+Files in <span style="color: rgb(102, 0, 0);">red)</span><br>
+<ul>
+  <li><span style="font-weight: bold;"><span
+ style="font-family: monospace; color: rgb(0, 102, 0);">$ATOMSERVER_HOME/data/</span>
+    </span>:
+The AtomServer data directory. Actually, this directory can be
+anywhere, as defined by the environment variable <span
+ style="font-family: monospace;">$ATOMSERVER_DATA_DIR.</span>
+But, in general, it is located at <span style="font-family: monospace;">$ATOMSERVER_HOME/data/</span>.
+Note; <span style="font-style: italic;">this
+directory may actually be a NFS mount when AtomServer is deployed
+across several machines.</span> This is the
+location of the actual data associated with AtomServer. In other words;
+this is the
+location of the XML Atom Content files for Entries. It is only required
+when you are doing file-based Content storage - as opposed to DB-based
+Content storage. The /data directory which ships with AtomServer
+contains a few sample Entries for our demo <span
+ style="font-family: monospace;">pets</span> Workspace. These are
+loaded into an embedded HDSQLDB database when you type <span
+ style="font-family: monospace;">./bin/atomserver.sh -seed</span>. <br>
+  </li>
+  <ul>
+    <li><span style="font-weight: bold;"><span
+ style="font-family: monospace; color: rgb(0, 102, 0);">$ATOMSERVER_HOME/data/pets
+      </span></span><span style="font-weight: bold;"></span>:
+The data for our file-based Demo AtomServer Workspace named <span
+ style="font-family: monospace; font-weight: bold;">pets.</span></li>
+    <ul>
+      <li><span style="font-weight: bold;"><span
+ style="font-family: monospace; color: rgb(0, 102, 0);">$ATOMSERVER_HOME/data/cats
+        </span></span><span style="font-weight: bold;"></span>:
+The <span style="font-family: monospace; font-weight: bold;">cats</span>
+Collection for our file-based Demo AtomServer Workspace; <span
+ style="font-family: monospace;">pets</span>.</li>
+      <li><span style="font-weight: bold;"><span
+ style="font-family: monospace; color: rgb(0, 102, 0);">$ATOMSERVER_HOME/data/dogs
+        </span></span><span style="font-weight: bold;"></span>:
+The <span style="font-family: monospace; font-weight: bold;">dogs</span>
+Collection for our file-based Demo AtomServer Workspace; <span
+ style="font-family: monospace;">pets</span>.</li>
+      <ul>
+        <li><span
+ style="font-weight: bold; font-family: monospace; font-style: italic; color: rgb(102, 0, 0);">$ATOMSERVER_HOME/data/dogs/fi/fido/fido.xml</span><span
+ style="font-weight: bold;"><span
+ style="font-family: monospace; color: rgb(0, 102, 0);"> </span></span><span
+ style="font-weight: bold;"></span>:
+The <span style="font-family: monospace; font-weight: bold;">&lt;content&gt;</span>
+XML for an Entry named fido in our file-based Demo AtomServer
+Workspace/Collection; <span style="font-family: monospace;">pets/dogs</span>.
+Notice that the subdirectories within the Collection are created to
+alleviate possible issues with too many files or directories.
+AtomServer creates this structure when it stores the XML Content to
+disk.<br>
+        </li>
+      </ul>
+    </ul>
+  </ul>
+  <li><span style="font-weight: bold;"><span
+ style="font-family: monospace; color: rgb(0, 102, 0);">$ATOMSERVER_HOME/conf/</span>
+    </span>:
+The AtomServer configuration directory. This is the directory where
+your external configuration files are kept.Note that this directory
+could be anywhere, as defined by the environment variable <span
+ style="font-family: monospace;">$ATOMSERVER_CONF_DIR. </span>This is
+explained in more detail in the Configuration Dorcument.<br>
+  </li>
+  <ul>
+    <li><span style="font-weight: bold;"><span
+ style="font-family: monospace; color: rgb(0, 102, 0);">$ATOMSERVER_HOME/conf/lib</span>
+      </span>: Any JARs in this directory are put onto AtomServer's
+ClassPath with a extended ClassLoader<br>
+      <span style="font-weight: bold;"><span
+ style="font-family: monospace; color: rgb(0, 102, 0);"></span></span></li>
+    <li><span style="font-weight: bold;"><span
+ style="font-family: monospace; color: rgb(0, 102, 0);">$ATOMSERVER_HOME/conf/classes</span>
+      </span>:
+This directory is put onto AtomServer's ClassPath with a extended
+ClassLoader</li>
+    <ul>
+      <li><span
+ style="font-weight: bold; font-family: monospace; font-style: italic; color: rgb(102, 0, 0);">$ATOMSERVER_HOME/conf/classes/pets-1.0.rnc&nbsp;</span><span
+ style="font-weight: bold;"><span
+ style="font-family: monospace; color: rgb(0, 102, 0);"> </span></span>:
+This is the RelaxNG schema for our <span
+ style="font-weight: bold; font-family: monospace;">pets </span>Workspace.
+This file is used by the RelaxNGValidator that we wire into our Spring
+Workspace Bean.<br>
+      </li>
+    </ul>
+    <ul>
+      <li><span style="font-weight: bold;"><span
+ style="font-family: monospace; color: rgb(0, 102, 0);">$ATOMSERVER_HOME/conf/classes/env</span>
+        </span>: AtomServer looks in this directory<span
+ style="font-style: italic;"> first</span> for "environment properties"
+files -- files which tell AtomServer what DB to connect to, etc. These
+files
+are quite important and are, in part how you configure AtomServer for
+your application. You tell AtomServer which of these files to use when
+you
+provide the "<span style="font-family: monospace;">-env</span>"
+argument to the control script; <span style="font-family: monospace;">atomserver.sh.</span>
+For
+example; <span style="font-family: monospace;">atomserver.sh -env
+myenv
+....</span> tells AtomServer to read in the
+properies file; <span style="font-family: monospace;">myenv.properties
+        </span>file.&nbsp;<span style="color: rgb(51, 51, 51);"><span
+ style="font-family: monospace;"></span></span></li>
+      <ul>
+        <li><span
+ style="font-weight: bold; font-family: monospace; font-style: italic; color: rgb(102, 0, 0);">$ATOMSERVER_HOME/conf/classes/env/myenv.properties
+          </span>: This is the environment properties file that your
+demo AtomServer is actually using. Open that file up, and you will see
+that it is configured to use HSQLDB (hsql), the database URL, etc. <br>
+        </li>
+      </ul>
+      <li><span style="font-weight: bold;"><span
+ style="font-family: monospace; color: rgb(0, 102, 0);"><a
+ name="workspaceBeans"></a>$ATOMSERVER_HOME/conf/classes/org/atomserver/spring/ext</span>
+        </span>:
+AtomServer looks in this directory<span style="font-style: italic;">
+first</span> for overrides for AtomServer's Spring Beans. For example,
+you could create a workspaceBeans.xml file here which defines the
+Workspaces for your application overriding those in AtomServer itself.<br>
+      </li>
+      <ul>
+        <li><span
+ style="font-weight: bold; font-family: monospace; font-style: italic; color: rgb(102, 0, 0);">$ATOMSERVER_HOME/conf/classes/org/atomserver/spring/ext/workspaceBeans.xml
+          </span>: This file contains the Spring Beans that set up the <span
+ style="font-family: monospace; font-weight: bold;">pets</span>
+Workspace used by the demo AtomServer. Note that this file could have
+any name, because any "<span style="font-family: monospace;">.xml</span>"
+file in this directory is parsed and all appropriately named Beans will
+override those in AtomServer. So, in this case, by using the <span
+ style="font-family: monospace;">id;</span> <span
+ style="font-family: monospace; font-weight: bold;">org.atomserver-</span><span
+ style="font-family: monospace;"><span style="font-weight: bold;">workspaces</span>
+          </span>we override that Bean within AtomServer itself.<br>
+        </li>
+      </ul>
+    </ul>
+  </ul>
+  <li><span
+ style="font-weight: bold; font-family: monospace; color: rgb(0, 102, 0);">$ATOMSERVER_HOME/bin/</span>
+: The location of scripts exclusive to AtomServer. <br>
+  </li>
+  <ul>
+    <li><span style="font-weight: bold; font-style: italic;"><span
+ style="font-family: monospace; color: rgb(102, 0, 0);">$ATOMSERVER_HOME/bin/atomserver.sh</span>
+      </span>: The AtomServer control script. This script controls
+the starting of AtomServer. There are several ways to provide
+input
+to this script; command line options, environment variables, or an
+override file (<span style="font-family: monospace;">$ATOMSERVER_HOME/atomserver-config.sh</span>).
+This control script is relatively full featured.<br>
+    </li>
+  </ul>
+  <li><span style="font-weight: bold;"><span
+ style="font-family: monospace; color: rgb(0, 102, 0);">$ATOMSERVER_HOME/logs/</span>
+    </span>:
+The directory where all log files are produced. Look here for all
+pertinent AtomServer log files.<br>
+  </li>
+  <li><span style="font-weight: bold;"><span
+ style="font-family: monospace; color: rgb(0, 102, 0);">$ATOMSERVER_HOME/docs/</span>
+    </span>:
+The AtomServer on-line documentation, including this document.<br>
+  </li>
+  <li><span style="font-weight: bold;"><span
+ style="font-family: monospace; color: rgb(0, 102, 0);">$ATOMSERVER_HOME/webapps/</span>
+    </span>:&nbsp;
+The WAR file. This file is expanded the first time you run <span
+ style="font-family: monospace;">atomserver.sh</span>&nbsp; into <span
+ style="font-family: monospace;">$ATOMSERVER_HOME/webapps/atomserver-X.X,<span
+ style="font-family: Verdana,Arial,Helvetica,sans-serif;"> where</span></span>
+    <span style="font-family: monospace;">X.X</span> is the version
+number (e.g. a<span style="font-family: monospace;">tomserver-2.0</span>)
+  </li>
+  <ul>
+    <li><span style="font-weight: bold;"><span
+ style="font-family: monospace; color: rgb(0, 102, 0);">$ATOMSERVER_HOME/webapps/atomserver-X.X/</span>
+      </span>:
+The AtomServer webapp (WAR) directory. This directory is created when <span
+ style="font-family: monospace;">atomserver.sh</span> unpacks the WAR. <br>
+    </li>
+  </ul>
+</ul>
+<hr style="width: 100%; height: 2px;">
+<h2><a name="conf"></a>Exploring the Configuration.<br>
+</h2>
+First let's look at the Spring configuration for our Demo AtomServer.
+As mentioned <a href="#workspaceBeans">above</a>, these Beans are
+contained in the file; <span
+ style="font-family: monospace; color: rgb(102, 0, 0);"><span
+ style="color: rgb(51, 51, 51);">$ATOMSERVER_HOME/conf/classes/org/atomserver/spring/ext/workspaceBeans.xml</span></span><span
+ style="font-weight: bold; font-family: monospace; font-style: italic; color: rgb(102, 0, 0);">
+</span>We are not going to get into all the details here. There is
+another <a href="configuration.html">configuration document&nbsp;</a>
+that explains it all in gory detail. Here is the definition of our
+example&nbsp; <span style="font-weight: bold; font-family: monospace;">pets</span>
+Workspace.<br>
+<div style="margin-left: 40px;"><br>
+<div id="codebox"><span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;
+&lt;util:set id="</span><span style="font-family: monospace;">org.atomserver-</span><span
+ style="font-family: monospace;">workspaces"&gt;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;bean
+class="org.atomserver.core.WorkspaceOptions"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;property name="name" value="<span style="font-weight: bold;">pets</span>"/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;property name="<span style="font-weight: bold;">defaultProducingEntryCategoriesFeedElement</span>"
+value="true"/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &lt;property name="<span
+ style="font-weight: bold;">defaultProducingTotalResultsFeedElement</span>"
+value="true"/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;property name="<span style="font-weight: bold;">defaultContentStorage</span>"
+ref="org.atomserver-contentStorage"/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;property name="<span style="font-weight: bold;">defaultContentValidator</span>"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;bean class="org.atomserver.core.validators.RelaxNGValidator"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;property name="schemaLocation"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+value="<span style="font-weight: bold;">classpath:pets-1.0.rnc</span>"/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/bean&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;property name="<span style="font-weight: bold;">defaultCategoriesHandler</span>"
+ref="</span><span style="font-family: monospace;">org.atomserver-c</span><span
+ style="font-family: monospace;">entryCategoriesHandler"/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;property name="<span style="font-weight: bold;">defaultAutoTagger</span>"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;bean class="org.atomserver.core.autotaggers.XPathAutoTagger"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;property name="performanceLog" ref="</span><span
+ style="font-family: monospace;">org.atomserver-c</span><span
+ style="font-family: monospace;">performanceLog"/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;property name="entryCategoriesDAO" ref="</span><span
+ style="font-family: monospace;">org.atomserver-c</span><span
+ style="font-family: monospace;">entryCategoriesDAO"/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;property name="script"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;value&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;![CDATA[<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<span style="font-weight: bold;">NAMESPACE pets =
+http://schemas.atomserver.org/pets/v1/rev0;</span><br
+ style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+DELETE SCHEME {urn:pets.breeds};</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+MATCH "//pets:breed" {urn:pets.breeds}$;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+]]&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/value&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/bean&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;/property&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/bean&gt;<br>
+<br>
+&nbsp;&nbsp;&nbsp; &lt;/util:set&gt;<br>
+</span> </div>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+<br>
+Most of the properties in this Bean are wired to the AtomServer
+defaults settings, but let's take a look at what's here. Although
+before we get started, you're probably wondering why the all these
+properties start with the word "<span style="font-family: monospace;">default</span>".
+Well, that's because AtomServer will let you configure things at either
+the Workspace and/or the Collection level, and the values set at the
+Workspace level act as the defaults for all of its Collections, unless
+the Collection itself overrides that property.<br>
+<ul>
+  <li><span style="font-family: monospace;"><span
+ style="font-weight: bold;">defaultProducingEntryCategoriesFeedElement</span>
+:: </span>Indicates whether the Workspace will output <span
+ style="font-family: monospace;">&lt;category&gt;</span> elements&nbsp;
+within each <span style="font-family: monospace;">&lt;entry&gt;</span>
+element when a Feed response is produced. Very often this Category
+information is of no interest to the Requestor. And since this
+information requires a reasonably expensive SQL query to produce, as
+well as increased payload, it is omitted by default (i.e. is set to<span
+ style="font-family: monospace;"> false</span>). Note that Category
+information is more often used to fine-point the Feed query itself
+(i.e. search by Category) <br>
+  </li>
+  <li><span style="font-family: monospace;"><span
+ style="font-weight: bold;">defaultProducingTotalResultsFeedElement</span>
+:: </span>Indicates whether the <span style="font-family: monospace;">&lt;totalElements&gt;</span>
+is to be produced for Feed elements. Producing this element requires a
+SQL query that is, in essence, as expensive as the SQL query required
+to produce the requested Feed. And since this information is very often
+of no interest to the Requestor, it is omitted by default (i.e. is set
+to <span style="font-family: monospace;">false</span>). <br>
+    <span style="font-family: monospace;"></span></li>
+  <li><span style="font-family: monospace;"><span
+ style="font-weight: bold;">defaultContentStorage</span> ::</span>
+Specifies the <span style="font-family: monospace;">ContentStorage</span>
+to use -- i.e. the method that an Entry's <span
+ style="font-family: monospace;">&lt;content&gt;</span> is to be
+stored. This storage is either in the file system, or in a database.
+The default<span style="font-family: monospace;"> ContentStorage&nbsp;</span>
+is to use the file system. For our Demo AtomServer, we are<span
+ style="font-family: monospace;"><span
+ style="font-family: Verdana,Arial,Helvetica,sans-serif;"> </span></span>using
+the default, and are storing files in<span
+ style="font-family: monospace;"> $ATOMSERVER_HOME/data/pets</span>. <span
+ style="font-family: monospace;"><br>
+    </span></li>
+  <li><span style="font-family: monospace;"><span
+ style="font-weight: bold;">defaultContentValidator</span> ::</span>
+The&nbsp; <span style="font-family: monospace;">ContentValidator</span>
+to use.&nbsp; In this case we are not using the AtomServer default
+(none). Instead, we are using the <span style="font-family: monospace;">RelaxNGContentValidator</span>,
+which has been wired to validate against the RelaxNG schema specified
+in <span style="font-family: monospace;">pets-1.0.rnc</span>.<span
+ style="font-family: monospace;"><br>
+    </span></li>
+  <li><span style="font-family: monospace;"><span
+ style="font-weight: bold;">defaultCategoriesHandler</span> :: </span>The
+    <span style="font-family: monospace;">CategoriesHandler</span> to
+use. This element is omitted when you don't want your Workspace to
+support Categories. <span style="font-family: monospace;"><br>
+    </span></li>
+  <li><span style="font-family: monospace;"><span
+ style="font-weight: bold;"><a name="autotagger"></a>defaultAutoTagger</span>
+::</span> The <span style="font-family: monospace;">AutoTagger </span>to
+use. Auto Tagging is when AtomServer automatically creates Categories
+for an Entry based on its Content whenever that Entry is updated or
+created. As you can see above, you specify rules in for the <span
+ style="font-family: monospace;">Autotagger</span>. In the Demo
+AtomServer we are using the <span style="font-family: monospace;">XpathAutoTagger,</span>
+which obviously uses XPath to pick out XML Nodes from the <span
+ style="font-family: monospace;">&lt;content&gt;</span>. There are a
+few simple macros (e.g. <span style="font-family: monospace;">DELETE</span>
+and <span style="font-family: monospace;">MATCH</span> above) that you
+can use to create scripts.&nbsp; In this example, we will first delete
+all existing <span style="font-family: monospace;">urn:pets.breeds</span>
+Categories for an Entry, and then create new ones where the Category's
+Term has been set to the value of the XPath expression; <span
+ style="font-family: monospace;">//pets:breed</span>. In other words,
+if there is, say, an element; <span style="font-family: monospace;">&lt;breed&gt;Mixed&lt;/breed&gt;</span>
+in the <span style="font-family: monospace;">&lt;content&gt;</span>
+XML, then a Category in Scheme; <span style="font-family: monospace;">urn:pets.breeds</span>
+with Term; <span style="font-family: monospace;">Mixed</span> will be
+created and stored for this Entry. You can find much more information
+about Auto Tagging <a href="autotagger.html">here</a>.<span
+ style="font-family: monospace;"><br>
+    </span></li>
+</ul>
+<hr style="width: 100%; height: 2px;">
+<h2><a name="Feed"></a>Some Example Feed Requests </h2>
+Assuming that you have followed the simple steps above, you should now
+have our Demo AtomServer running against the sample pets Workspace. So
+now let's explore a bit further. Bring up a browser and type in the
+following URL; <a href="http://localhost:7890/atomserver/v1/pets/dogs">http://localhost:7890/atomserver/v1/pets/dogs</a>.
+You should see something like this in your browser window;<br>
+<br>
+<div style="margin-left: 80px;"><img
+ style="width: 478px; height: 293px;" alt=""
+ src="images/demo-screen1.png"><br>
+</div>
+<br>
+This output is from FireFox. It may look different in your browser of
+choice. Regardless, the browser should likely have a built-in Atom Feed
+Reader, such as Live BookMarks shown above, and should display the Atom
+Feed you requested. Note that a list of links is displays. Each of
+these is a link to an Atom Entry. Click on one of these links, say, <span
+ style="font-family: monospace; font-weight: bold;">Entry: dogs fido,</span>
+and you should get the following Atom XML downloaded. Note that this
+output has been reformatted for readability. The actual output will not
+have much whitespace in it)<br>
+<div style="margin-left: 40px;"><br>
+<div id="codebox"><span style="font-family: monospace;">&lt;?xml
+version='1.0' encoding='UTF-8'?&gt;<br>
+&lt;entry xmlns="http://www.w3.org/2005/Atom"&gt;<br>
+&nbsp;&nbsp; &lt;id&gt;/atomserver/v1/pets/dogs/fido.xml&lt;/id&gt;<br>
+&nbsp;&nbsp; &lt;title type="text"&gt; Entry: dogs fido&lt;/title&gt;<br>
+&nbsp;&nbsp; &lt;author&gt;&lt;name&gt;AtomServer APP
+Service&lt;/name&gt;&lt;/author&gt;<br>
+&nbsp;&nbsp; &lt;link href="/atomserver/v1/pets/dogs/fido.xml"
+rel="self" /&gt;<br>
+&nbsp;&nbsp; &lt;link href="/atomserver/v1/pets/dogs/fido.xml/1"
+rel="edit" /&gt;<br>
+&nbsp;&nbsp; &lt;updated&gt;2008-05-02T21:22:06.122Z&lt;/updated&gt;<br>
+&nbsp;&nbsp; &lt;published&gt;2008-05-02T21:22:06.122Z&lt;/published&gt;<br>
+&nbsp;&nbsp; &lt;category scheme="urn:pets.breeds" term="Mixed" /&gt;<br>
+&nbsp;&nbsp; &lt;content type="application/xml"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;pet xmlns="" type="dog"&gt;<br>
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &lt;breed&gt;Mixed&lt;/breed&gt;<br>
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &lt;name&gt;Fido&lt;/name&gt;<br>
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &lt;owner&gt;Chris Berry&lt;/owner&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/pet&gt;<br>
+&nbsp;&nbsp; &lt;/content&gt;<br>
+&lt;/entry&gt;<br>
+</span> </div>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+<br>
+If we examine this Atom Entry, we can see that we do have one Category
+applied <span style="font-family: monospace;">(urn:pets.breed)Mixed</span>,
+as defined in the AutoTagger setup <a href="#autotagger">above</a>.
+And you can also verify that the <span style="font-family: monospace;">&lt;content&gt;</span>
+returned matches that in the Content storage (<span
+ style="font-family: monospace; color: rgb(51, 51, 51);">$ATOMSERVER_HOME/data/dogs/fi/fido/fido.xml.r0</span><span
+ style="font-weight: bold; font-family: monospace; font-style: italic; color: rgb(102, 0, 0);">).<br>
+</span><br>
+Next, let's do a Category query. In your browser, type in the following
+URL; <a
+ href="http://localhost:7890/atomserver/v1/pets/dogs/-/%28urn:pets.breeds%29Mixed">http://localhost:7890/atomserver/v1/pets/dogs/-/(urn:pets.breeds)Mixed</a>&nbsp;
+Here we are asking for all Entries in the Workspace; pets and the
+Collection; dogs, which have the Category; <span
+ style="font-family: monospace;">(urn:pets.breed)Mixed </span>defined.
+And you should get something like this output returned;<br>
+<br>
+<div style="margin-left: 80px;"><img
+ style="width: 466px; height: 284px;" alt=""
+ src="images/demo-screen2.png"><br>
+</div>
+<br>
+Notice that this time we only get two Entries returned. If you look at
+the corresponding XML in the Content storage you can verify that both <span
+ style="font-family: monospace;">fido </span>and <span
+ style="font-family: monospace;">spike</span> have <span
+ style="font-family: monospace;">&lt;breed&gt;Mixed&lt;/breed&gt;</span>,
+while <span style="font-family: monospace;">sparky</span> is <span
+ style="font-family: monospace;">&lt;breed&gt;Collie&lt;/breed&gt;</span>.&nbsp;
+Thus, only those two Entries are returned.<br>
+<br>
+Of course, we've only scratched the surface of what AtomServer can do.
+It has an impressive <a href="features.html">list of features</a>. But
+we hope that we've piqued your interest enough for you to get your
+hands dirty digging under the covers.<br>
+<br>
+<hr style="width: 100%; height: 2px;">
+<h2><a name="PUTs"></a>Testing PUTs and DELETEs</h2>
+Again, we use Firefox, so our example will center around that browser.
+Before we get started, there is an excellent Firefox plugin named
+<a href="https://addons.mozilla.org/en-US/firefox/addon/2691">Poster</a>
+that you'll need to install if you wish to follow along. Poster is a
+highly recommended&nbsp; tool for RESTful service developers. It
+enables you to easily POST, PUT, or DELETE to a URL. After you've
+installed Poster, open it.
+(Poster opens using a tiny little [P] at bottom of your browser. It's
+easy to miss ;-). <br>
+<br>
+Let's PUT a new dog named "Fang" into our example Workspace. Set up
+Poster as shown below, with <br>
+<ul>
+  <li>URL = <span style="font-family: monospace;">http://localhost:7890/atomserver/v1/pets/dogs/fang.xml</span></li>
+  <li>Content Type = <span style="font-family: monospace;">application/xml</span></li>
+  <li>Actions = <span style="font-family: monospace;">PUT</span></li>
+  <li>Content to Send = <br>
+    <span style="font-family: monospace;">&lt;entry
+xmlns="http://www.w3.org/2005/Atom"&gt;<br>
+&nbsp;&nbsp; &lt;id&gt;/atomserver/v1/pets/dogs/fang.xml&lt;/id&gt;<br>
+&nbsp;&nbsp; &lt;content type="application/xml"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;pet xmlns="</span><span
+ style="font-family: monospace;">http://schemas.atomserver.org/pets/v1/rev0</span><span
+ style="font-family: monospace;">" type="dog"&gt;<br>
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &lt;breed&gt;Mixed&lt;/breed&gt;<br>
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &lt;name&gt;Fang&lt;/name&gt;<br>
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &lt;owner&gt;Chris Berry&lt;/owner&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/pet&gt;<br>
+&nbsp;&nbsp; &lt;/content&gt;<br>
+&lt;/entry&gt;</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+  </li>
+</ul>
+NOTE;
+the namespaces shown the "Content to Send" are <span
+ style="font-weight: bold;">required</span>. (i.e. <span
+ style="font-family: monospace;">&lt;entry </span><span
+ style="font-weight: bold; font-family: monospace;">xmlns="http://www.w3.org/2005/Atom"</span><span
+ style="font-family: monospace;">&gt;</span> and <span
+ style="font-family: monospace;">&lt;pet </span><span
+ style="font-weight: bold; font-family: monospace;">xmlns="http://schemas.atomserver.org/pets/v1/rev0"</span>
+)<br>
+<br>
+<div style="margin-left: 80px;"><img
+ style="width: 490px; height: 549px;" alt="Poster 1"
+ src="images/demo-poster1.png"><br>
+</div>
+&nbsp; <br>
+Now hit <span style="font-weight: bold;">GO</span>, and you will get
+the following response from Poster;<br>
+<br>
+<div style="margin-left: 80px;"><img
+ style="width: 504px; height: 543px;" alt="Poster 2"
+ src="images/demo-poster2.png"><br>
+</div>
+<br>
+Note that Status = <span style="font-family: monospace;">201 CREATED</span>,
+and that your Entry was returned with proper <span
+ style="font-family: monospace;">edit</span> and <span
+ style="font-family: monospace;">self</span> links,&nbsp; <span
+ style="font-family: monospace;">updated </span>and <span
+ style="font-family: monospace;">published</span> elements, etc.<br>
+&nbsp;<br>
+And if you now go back to the "Dogs Feed" (<a
+ href="http://localhost:7890/atomserver/v1/pets/dogs/"><span
+ style="font-family: monospace;">http://localhost:7890/atomserver/v1/pets/dogs/</span></a>)
+, you will see our new dog; Fang.<br>
+<br>
+<div style="margin-left: 80px;"><img
+ style="width: 527px; height: 357px;" alt="screen 3"
+ src="images/demo-screen3.png"><br>
+</div>
+<br>
+<br>
+<hr style="width: 100%; height: 2px;">
+<h2><a name="build"></a>Building AtomServer</h2>
+Most people will never need to actually build AtomServer, instead they
+will simply deploy the AtomServer WAR and configure it to their
+needs.&nbsp; That said, if you do wish to build it, its easy to do.
+AtomServer uses <a href="http://maven.apache.org/">Maven</a> for its
+build, so there are very few prerequisites to building. Maven will
+download all of AtomServer's dependencies for you, and build everything
+into standard locations using standard Maven commands. (e.g. <span
+ style="font-family: monospace;">mvn clean</span>, <span
+ style="font-family: monospace;">mvn install</span>, <span
+ style="font-family: monospace;">mvn jetty:run</span>, etc.). If you
+are not already familiar with Maven, you should probably consider
+reading some <a href="http://maven.apache.org/run-maven/index.html">introductory
+Maven documentation</a> before starting.<br>
+<h3>Prerequisites (in addition to those identified above)<br>
+</h3>
+<ul>
+  <li><span style="font-weight: bold;">Maven</span>.&nbsp; You will
+need to <a href="http://maven.apache.org/download.html">download and
+install the latest Maven</a></li>
+</ul>
+<h3>Building</h3>
+Building is simple, just type;<br>
+<div style="margin-left: 40px;"><br>
+<div id="codebox"><span style="font-family: monospace;">$ mvn clean
+install -Denv=asdev-hsql-mem<br>
+</span> </div>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+<br>
+This would build using the built-in HSQLDB in-memory database. <br>
+<br>
+If you to specify another environment, like, say, Postgresql, you'll
+need to supply a different "<span style="font-family: monospace;">-env</span>"
+switch. (Although, the default env is, infact,&nbsp; asdev-postgres.)
+<div style="margin-left: 40px;"><br>
+<div id="codebox"><span style="font-family: monospace;">$ mvn clean
+install -Denv=asdev-postgres<br>
+</span> </div>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+<br>
+<hr style="width: 100%; height: 2px;">
+<h2><a name="postgresql"></a>Configuring Postgresql</h2>
+Let's assume that you've already installed Postgresql on your computer,
+and that you're ready to install the AtomServer database. Furthermore,
+let's assume
+that you have created the conventional Postgresql admin user; "<span
+ style="font-family: monospace;">postgres</span>".<br>
+<br>
+NOTE: we are using postgres 8.3.X. This process will NOT work with an
+earlier version of postgres (some of the postgres-specific SQL in
+postgres_ddl will not be recognized). <br>
+<br>
+1) You'll need to create a user on your computer named "<span
+ style="font-family: monospace;">atomserver</span>". The scripts below
+assume this user exists, with the password; "<span
+ style="font-family: monospace;">atomserver</span>". Obviously, you can
+create your own versions of any of these scripts, and use any
+username/password you'd like.<br>
+<br>
+2) Create the database;<br>
+<div style="margin-left: 40px;"><br>
+<div id="codebox"><span style="font-family: monospace;">$ su postgres<br>
+$ createdb atomserver_dev<br>
+</span> </div>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+<br>
+3) Create the database tables, indexes, etc.;<br>
+<div style="margin-left: 40px;"><br>
+<div id="codebox"><span style="font-family: monospace;">$ su postgres<br>
+$ psql atomserver_dev -f
+$ATOMSERVER_HOME/webapps/atomserver-X.X/WEB-INF/classes/org/atomserver/sql/postgres/postgres_ddl.sql<br>
+</span> </div>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+<br>
+4) Create the "<span style="font-family: monospace;">atomserver</span>"
+user in Postgresql;<br>
+<div style="margin-left: 40px;"><br>
+<div id="codebox"><span style="font-family: monospace;">$ su postgres<br>
+$ psql atomserver_dev<br>
+# CREATE USER atomserver WITH PASSWORD 'atomserver';<br>
+# \q<br>
+</span> </div>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+<br>
+5) Grant permissions in <span style="font-family: monospace;">atomserver_dev</span>
+to <span style="font-family: monospace;">atomserver</span>;<br>
+<div style="margin-left: 40px;"><br>
+<div id="codebox"><span style="font-family: monospace;">$ </span><span
+ style="font-family: monospace;">su postgres<br>
+$ psql atomserver_dev -f
+$ATOMSERVER_HOME/webapps/atomserver-X.X/WEB-INF/classes/</span><span
+ style="font-family: monospace;">org/atomserver/sql/postgres/</span><span
+ style="font-family: monospace;">grant_perms.sql</span>
+</div>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+<br>
+6) (Optional) Edit <span style="font-family: monospace;">pg_hba.conf.</span>
+Depending on how you've set up your Postgresql security, you may need
+to add permissions to atomserver in this file.<br>
+<br>
+7) Restart Postgresql;<br>
+<div style="margin-left: 40px;"><br>
+<div id="codebox"><span style="font-family: monospace;">$ su postgres<br>
+$ pg_ctl restart</span> </div>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+<br>
+<div style="margin-left: 40px;"><span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span></div>
+<hr style="width: 100%; height: 2px;">
+<h2><a name="resources"></a>Additional resources</h2>
+You may find the following third-party documents useful:<br>
+<br>
+&nbsp;&nbsp;&nbsp; * <a
+ href="http://www-128.ibm.com/developerworks/xml/library/x-atom10.html">Overview
+of Atom</a> from IBM<br>
+&nbsp;&nbsp;&nbsp; * <a
+ href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html">HTTP 1.1
+method definitions</a>; specification for GET, POST, PUT, and DELETE<br>
+&nbsp;&nbsp;&nbsp; * <a
+ href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html">HTTP 1.1
+status code definitions</a><br>
+&nbsp;&nbsp;&nbsp; * <a
+ href="http://www.atomenabled.org/developers/syndication/">Atom
+Syndication Reference</a> (from Atom-enabled)<br>
+&nbsp;&nbsp;&nbsp; * <a
+ href="http://www-128.ibm.com/developerworks/library/x-atompp1/">Getting
+to know the Atom Publishing Protocol (from IBM)</a><span
+ style="font-weight: bold;"></span><br>
+<br>
+</div>
+</body>
+</html>
