@@ -539,17 +539,6 @@
             </plugin>
 
             <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
-            <!-- Specify Java 1.5 when running 'mvn idea:idea' -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-idea-plugin</artifactId>
-                <inherited>true</inherited>
-                <configuration>
-                    <jdkName>1.5</jdkName>
-                </configuration>
-            </plugin>
-
-            <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
