@@ -67,7 +67,7 @@ public class CRUDFSTest extends CRUDAtomServerTestCase {
         return fileXMLInsert;
     }
 
-    protected String getFileXMLUpdate() {
+    protected String getFileXMLUpdate(int revno) {
         String fileXMLUpdate =
             "<property xmlns=\"http://schemas.atomserver.org/widgets/v1/rev0\" " +
             "systemId=\"acme\" id=\"" + propId + "\" inNetwork=\"false\">\n"
@@ -76,7 +76,7 @@ public class CRUDFSTest extends CRUDAtomServerTestCase {
             + "</colors>\n"
             + "<contact>\n"
             + "<contactId>1638</contactId>\n"
-            + "<displayName>This is an update</displayName>\n"
+            + "<displayName>This is an update " + revno + " </displayName>\n"
             + "<hasEmail>true</hasEmail>\n"
             + "</contact>\n"
             + "</property>";

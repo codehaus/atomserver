@@ -31,5 +31,5 @@ public interface EntryAutoTagger {
      * @param entry   The metadata about the entry being written
      * @param content The content of the entry
      */
-    void tag(EntryMetaData entry, String content);
+    boolean tag(EntryMetaData entry, String content);
 }

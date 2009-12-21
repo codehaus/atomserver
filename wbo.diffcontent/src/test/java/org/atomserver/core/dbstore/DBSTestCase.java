@@ -43,6 +43,7 @@ import org.atomserver.uri.URIHandler;
 import org.springframework.context.ApplicationContext;
 
 import java.io.File;
+import java.io.InputStream;
 import java.text.MessageFormat;
 
 /**
@@ -179,7 +180,7 @@ public class DBSTestCase extends AtomServerTestCase {
         modifyEntry(workspace, collection, entryId, locale, xmlFileString, creating, revision, checkContent, true);
      }
 
-     protected void modifyEntry(String workspace,
+    protected void modifyEntry(String workspace,
                                    String collection,
                                    String entryId,
                                    String locale,
@@ -188,6 +189,20 @@ public class DBSTestCase extends AtomServerTestCase {
                                    String revision,
                                    boolean checkContent,
                                    boolean checkCount ) throws Exception {
+
+        modifyEntry(workspace, collection, entryId, locale, xmlFileString, creating, revision, checkContent, checkCount, null);
+    }
+
+     protected void modifyEntry(String workspace,
+                                   String collection,
+                                   String entryId,
+                                   String locale,
+                                   String xmlFileString,
+                                   boolean creating,
+                                   String revision,
+                                   boolean checkContent,
+                                   boolean checkCount,
+                                   String  diffContentValue ) throws Exception {
 
         log.debug("\n%%%%%%%%%%%%%% CREATING:: [" + workspace + ", " + collection + ", " + entryId + ", " + locale);
 
@@ -209,19 +224,20 @@ public class DBSTestCase extends AtomServerTestCase {
 
         String putUrl = getServerURL() + getURLPath(workspace, collection, entryId, locale, revision);
         log.debug("PUTting to URL : " + putUrl);
+
         ClientResponse response = client.put(putUrl, entry, options);
 
         Document<Entry> doc = response.getDocument();
-         Entry entryOut;
-         try {
+        Entry entryOut;
+        try {
              entryOut = doc.getRoot();
-         } catch (Exception e) {
+        } catch (Exception e) {
              Document<org.apache.abdera.protocol.error.Error> errorDoc = response.getDocument();
              log.error(errorDoc.getRoot().getMessage());
              throw e;
-         }
+        }
 
-         IRI editLink = entryOut.getEditLinkResolvedHref();
+        IRI editLink = entryOut.getEditLinkResolvedHref();
         assertNotNull("link rel='edit' must not be null", editLink);
 
         assertEquals( ("entry [" + workspace + "," + collection + "," + locale + "," + entryId +"]"),
@@ -231,7 +247,6 @@ public class DBSTestCase extends AtomServerTestCase {
         // file system needs to catch up
         if (checkContent) {
             int rev = extractRevisionFromURI(editLink.toString());
-
             Thread.sleep( 300 );
             assertNotNull( contentStorage.getContent(new BaseEntryDescriptor(workspace,
                                                                              collection,
@@ -243,9 +258,18 @@ public class DBSTestCase extends AtomServerTestCase {
         // COUNT
         if ( checkCount ) {
             int exitCount = entriesDao.getTotalCount(serviceDescriptor);
-           assertEquals((creating ? startCount + 1 : startCount), exitCount);
+            assertEquals((creating ? startCount + 1 : startCount), exitCount);
         }
-         LatencyUtil.updateLastWrote();
+
+        if( diffContentValue != null && ("true".equals(diffContentValue)||"false".equals(diffContentValue))) {
+            String contentHashValue = entryOut.getSimpleExtension(AtomServerConstants.CONTENT_HASH);
+            String contentUpdatedTag = entryOut.getSimpleExtension(AtomServerConstants.ENTRY_UPDATED);
+            assertNotNull(contentHashValue);
+            assertNotNull(contentUpdatedTag);
+            assertEquals(contentUpdatedTag, diffContentValue);
+        }
+
+        LatencyUtil.updateLastWrote();
      }
 
     // FIXME::  THESE 2 SHOULD BE destroyEntry !!!!
@@ -286,13 +310,17 @@ public class DBSTestCase extends AtomServerTestCase {
     }
 
     protected String createWidgetXMLFileString(String entryId) {
+       return createWidgetXMLFileString(entryId, 0); 
+    }
+
+    protected String createWidgetXMLFileString(String entryId, int revNo) {
         return "<property xmlns=\"http://schemas.atomserver.org/widgets/v1/rev0\" systemId=\"acme\" id=\"" + entryId + "\" inNetwork=\"false\">\n"
                + "<colors>"
                + "<color isDefault=\"true\">teal</color>"
                + "</colors>"
                + "<contact>"
                + "<contactId>1638</contactId>"
-               + "<displayName>This is an insert</displayName>"
+               + "<displayName>This is an insert " + revNo + "</displayName>"
                + "<hasEmail>true</hasEmail>"
                + "</contact>"
                + "</property>";

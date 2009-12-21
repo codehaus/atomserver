@@ -49,5 +49,10 @@
         <property name="sizeLimit" ref="org.atomserver-sizeLimit" />
     </bean>
 
+    <bean id="org.atomserver-MD5Hash"
+          class="org.atomserver.core.DateFilteredContentHashGenerator"
+          depends-on="org.atomserver-propertyConfigurer"
+          lazy-init="true">
+    </bean>
 
 </beans>
