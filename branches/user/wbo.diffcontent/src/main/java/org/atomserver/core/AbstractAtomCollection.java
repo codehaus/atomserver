@@ -28,6 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.*;
 import org.atomserver.core.etc.AtomServerConstants;
+import org.atomserver.core.utils.HashUtils;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.exceptions.BadContentException;
 import org.atomserver.exceptions.BadRequestException;
@@ -40,17 +41,8 @@ import org.perf4j.StopWatch;
 
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Locale;
-import java.util.HashMap;
 
 /**
  * The abstract, base AtomCollection implementation. Subclasses must implement several specific
@@ -108,10 +100,21 @@ abstract public class AbstractAtomCollection implements AtomCollection {
      * @return The EntryMetaData associated with the requested Entry.
      * @throws AtomServerException
      */
-    abstract protected EntryMetaData modifyEntry(Object internalId,
+    abstract protected EntryMetaDataStatus modifyEntry(Object internalId,
                                                  EntryTarget entryTarget,
                                                  boolean mustAlreadyExist) throws AtomServerException;
 
+    /**
+     * Second call to modify Entry after determining that the categories have changed even though the content
+     * has not. This is called only for the Entry already existing.
+     *
+     * @param internalId       The internalId of this Entry.
+     * @param entryTarget      EntryTarget to update
+     * @return
+     * @throws AtomServerException
+     */
+    abstract protected EntryMetaDataStatus reModifyEntry(Object internalId, EntryTarget entryTarget)
+                                                throws AtomServerException;
     /**
      * The deleteEntry() method on the AtomCollection API delegates to this method within the subclass
      * to do the real work.
@@ -196,8 +199,41 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         return ((AbstractAtomService)parentAtomWorkspace.getParentAtomService()).getCategoriesHandler();
     }
 
+    /**
+     * * A convenience method to obtain the ContentHashGenerator wired into this AtomCollection
+     * 
+     * @return ContentHashGenerator object
+     */
+    protected ContentHashGenerator getContentHashFunction() {
+        if (options != null && options.getContentHashGenerator() != null) {
+            return options.getContentHashGenerator();
+        } else {
+            ContentHashGenerator hashFunc = parentAtomWorkspace.getOptions().getDefaultContentHashFunction();
+            return (hashFunc != null) ? hashFunc : new SimpleContentHashGenerator();
+        }
+    }
+
+    /**
+     * Decode the Entry Target from the URI. Content hash code will not be set.
+     * @param request
+     * @return
+     */
     protected EntryTarget getEntryTarget(RequestContext request) {
         return getURIHandler().getEntryTarget(request, true);
+    }
+
+    /**
+     * Decode the Entry Target from the URI and set the content hash code. THe content hash code will be retrieved
+     * from the Entry if it is already there, or compute from the content itself if it is not in the Entry.
+     * @param request
+     * @param entry
+     * @param entryXml
+     * @return
+     */
+    protected EntryTarget getEntryTarget(RequestContext request, Entry entry, String entryXml) {
+        EntryTarget target = getEntryTarget(request);
+        setTargetContentHashCode(target, entry, entryXml);
+        return target;
     }
 
     protected boolean mustAlreadyExist() {
@@ -353,8 +389,8 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                 java.util.Collection<BatchEntryResult> beans = new ArrayList<BatchEntryResult>();
                 for (EntryTarget entryTarget : entriesURIData) {
                     try {
-                        EntryMetaData entryMetaData = modifyEntry(null, entryTarget, false);
-                        beans.add(new BatchEntryResult(entryTarget, entryMetaData));
+                        EntryMetaDataStatus metaDataStatus = modifyEntry(null, entryTarget, false);
+                        beans.add(new BatchEntryResult(entryTarget, metaDataStatus.getEntryMetaData(),metaDataStatus.isModified()));
                     } catch (Exception e) {
                         beans.add(new BatchEntryResult(entryTarget, e));
                     }
@@ -384,7 +420,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                 for (EntryTarget entryTarget : entriesURIData) {
                     try {
                         EntryMetaData entryMetaData = deleteEntry(entryTarget, true);
-                        beans.add(new BatchEntryResult(entryTarget, entryMetaData));
+                        beans.add(new BatchEntryResult(entryTarget, entryMetaData, true));
                     } catch (Exception e) {
                         beans.add(new BatchEntryResult(entryTarget, e));
                     }
@@ -492,14 +528,14 @@ abstract public class AbstractAtomCollection implements AtomCollection {
 
         ensureCollectionExists(collection);
 
-        Entry entry = parseEntry(entryTarget, request);
+        final Entry entry = parseEntry(entryTarget, request);
         final String entryXml = validateAndPreprocessEntryContents(entry, entryTarget);
 
-        EntryMetaData entryMetaData = executeTransactionally(
-                new TransactionalTask<EntryMetaData>() {
-                    public EntryMetaData execute() {
+        EntryMetaDataStatus entryMetaDataStatus = executeTransactionally(
+                new TransactionalTask<EntryMetaDataStatus>() {
+                    public EntryMetaDataStatus execute() {
 
-                        final EntryTarget target = getEntryTarget(request);
+                        EntryTarget target = getEntryTarget(request, entry, entryXml);
 
                         // determine if we are creating the entryId -- i.e. if this was a POST
                         if (EntryTarget.UNASSIGNED_ID.equals(target.getEntryId())) {
@@ -511,28 +547,53 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                             }
                         }
                         final Object internalId = getInternalId(target);
-                        EntryMetaData metaData = modifyEntry(internalId,
+                        EntryMetaDataStatus metaDataStatus = modifyEntry(internalId,
                                                              target,
                                                              mustAlreadyExist());
 
+                        // Update category to see if there are changes.
+                        // Assumption here: postProcessEntryContents method does not need entry revision or timestamps.
+                        boolean categoriesUpdated = postProcessEntryContents(entryXml, metaDataStatus.getEntryMetaData());
+
+                        // If both category and contents are not modified, no need to update.
+                        if(!metaDataStatus.isModified() && !categoriesUpdated) {
+                            return metaDataStatus;
+                        }
+
+                        // if content is not modified but the categories are, call reModifyEntry to update rev/timestamp
+                        if(!metaDataStatus.isModified()) {
+                            metaDataStatus = reModifyEntry(internalId, entryTarget);
+                        }
+                        
+                        // update contents
                         // Copy the new file contents into the File
                         //  do this as late as possible -- when we're completely sure that it has all passed
                         if (log.isTraceEnabled()) {
                             log.trace("ContentStorage = " + getContentStorage());
                         }
-                        getContentStorage().putContent(entryXml, metaData);
-                        postProcessEntryContents(entryXml, metaData);
+                        getContentStorage().putContent(entryXml, metaDataStatus.getEntryMetaData());
 
-                        return metaData;
+                        return metaDataStatus;
                     }
                 }
         );
 
         // For Create and Update, we always, by definition, return "full" Entries
+        EntryMetaData entryMetaData = entryMetaDataStatus.getEntryMetaData();
         entryMetaData.setWorkspace(entryTarget.getWorkspace());
-        entry = newEntry(abdera, entryMetaData, EntryType.full);
+        Entry newEntry = newEntry(abdera, entryMetaData, EntryType.full);
+        newEntry.addSimpleExtension(AtomServerConstants.CONTENT_HASH,
+                                    HashUtils.convertUUIDStandardToSimpleFormat(entryMetaData.getContentHashCode()));
+        newEntry.addSimpleExtension(AtomServerConstants.ENTRY_UPDATED,(entryMetaDataStatus.isModified()?"true":"false"));
 
-        return new UpdateCreateOrDeleteEntry.CreateOrUpdateEntry(entry, entryMetaData.isNewlyCreated());
+        if(log.isDebugEnabled()) {
+            log.debug(" ** EntryId:" + entryMetaData.getEntryId() + (entryMetaData.isNewlyCreated()?
+                                                                          " Inserted":" No-Insert") +
+                        ( entryMetaData.isNewlyCreated() ?  " " : " Modified:" +
+                          (entryMetaDataStatus.isModified() ? "Yes": "No") ) +
+                         " hashCode: " + entryMetaData.getContentHashCode());
+        }
+        return new UpdateCreateOrDeleteEntry.CreateOrUpdateEntry(newEntry, entryMetaData.isNewlyCreated());
     }
 
     /**
@@ -577,6 +638,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         final List<EntryTarget> entriesToUpdate = new ArrayList<EntryTarget>();
         final List<EntryTarget> entriesToDelete = new ArrayList<EntryTarget>();
         final EntryMap<String> entryXmlMap = new EntryMap<String>();
+        final Map<EntryTarget,Entry> entryMap = new HashMap<EntryTarget, Entry>();
         final HashMap<EntryTarget, Integer> orderMap = new HashMap<EntryTarget, Integer>();
 
         Operation defaultOperationExtension = document.getRoot().getExtension(AtomServerConstants.OPERATION);
@@ -645,6 +707,8 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                     relaxedEntryTargetSet.add(relaxedEntryTarget);
                 }
 
+                entryMap.put(entryTarget, entry);
+
                 // Add to the processing lists.
                 if ("delete".equalsIgnoreCase(operation)) {
                     entriesToDelete.add(entryTarget);
@@ -654,7 +718,9 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                     entriesToUpdate.add(entryTarget);
                     entryXmlMap.put(entryTarget, entryXml);
                     orderMap.put(entryTarget, order);
+                    setTargetContentHashCode(entryTarget, entry, entryXml);
                 }
+
             } catch (AtomServerException e) {
                 UpdateCreateOrDeleteEntry.CreateOrUpdateEntry updateEntry =
                         new UpdateCreateOrDeleteEntry.CreateOrUpdateEntry(entry, false);
@@ -675,14 +741,28 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                                     java.util.Collection<BatchEntryResult> results =
                                             modifyEntries(request, entriesToUpdate);
                                     for (BatchEntryResult result : results) {
+                                        boolean categoriesUpdated = false;
+                                        if (result.getMetaData() != null) {
+                                            categoriesUpdated = postProcessEntryContents(entryXmlMap.get(result.getMetaData()),
+                                                                     result.getMetaData());
+                                        }
+                                        if(!result.isModified() && !categoriesUpdated) {
+                                            // Same contents and categories
+                                            continue;
+                                        }
+                                        // if contents is the same but the categories have changed,
+                                        // go back and update the entry so that it'll have a new revision and timestamp.
+                                        if(!result.isModified()) {
+                                            EntryMetaDataStatus  mdStatus = reModifyEntry(null, result.getEntryTarget());
+                                            // update the result to indicate Entry has been modified.
+                                            result.setMetaData(mdStatus.getEntryMetaData());
+                                            result.setModified(true);
+                                        }
+
                                         if (result.getException() == null) {
                                             String entryXml = entryXmlMap.get(result.getEntryTarget());
                                             getContentStorage().putContent(entryXml,
                                                                            result.getMetaData());
-                                        }
-                                        if (result.getMetaData() != null) {
-                                            postProcessEntryContents(entryXmlMap.get(result.getMetaData()),
-                                                                     result.getMetaData());
                                         }
                                     }
                                     return results;
@@ -702,6 +782,11 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                 Entry entry = metaData == null ?
                               newEntryWithCommonContentOnly(abdera, result.getEntryTarget()) :
                               newEntry(abdera, metaData, EntryType.full);
+
+                entry.addSimpleExtension(AtomServerConstants.ENTRY_UPDATED, (result.isModified()) ? "true":"false");
+                if(metaData != null && metaData.getContentHashCode() != null) {
+                    entry.addSimpleExtension(AtomServerConstants.CONTENT_HASH, metaData.getContentHashCode());
+                }
 
                 UpdateCreateOrDeleteEntry.CreateOrUpdateEntry updateEntry =
                         new UpdateCreateOrDeleteEntry.CreateOrUpdateEntry(entry,
@@ -830,17 +915,18 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~
-    private void postProcessEntryContents(String entryXml, EntryMetaData entryMetaData) {
+    private boolean postProcessEntryContents(String entryXml, EntryMetaData entryMetaData) {
         EntryAutoTagger autoTagger = getAutoTagger();
         if (autoTagger != null) {
             StopWatch stopWatch = new AtomServerStopWatch();
             try {
-                autoTagger.tag(entryMetaData, entryXml);
+                return autoTagger.tag(entryMetaData, entryXml);
             } finally {
                 stopWatch.stop("XML.autoTagger", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryMetaData));
 
             }
         }
+        return false;
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~
@@ -1176,4 +1262,46 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         link.setRel(rel);
     }
 // </workaround>
+
+    protected boolean isContentChanged(EntryTarget entryTarget, EntryMetaData metaData) {
+        if((entryTarget == null) || (metaData == null) ||
+           (entryTarget.getContentHashCode() == null) || (metaData.getContentHashCode() == null)) {
+            return true;
+        }
+        return !metaData.getContentHashCode().equals(entryTarget.getContentHashCode());
+   }
+
+   protected void setTargetContentHashCode(EntryTarget target, final Entry entry, final String entryXml) {
+       String clientHash = entry.getSimpleExtension(AtomServerConstants.CONTENT_HASH);
+       if(clientHash == null && entryXml != null) {
+            clientHash = HashUtils.converToUUIDStandardFormat(getContentHashFunction().hashCode(entryXml));
+       } if(clientHash != null) {
+           clientHash = HashUtils.convertToUUIDStandardFormat(clientHash);
+       }
+       target.setContentHashCode(clientHash);
+   }
+
+    /**
+     * Wrapper class which holds EntryMetaData and a flag which indicates if it has been modified.
+     * This object is returned from modifyEntry and reModifyEntry method calls.
+     */
+   public class EntryMetaDataStatus {
+       private EntryMetaData entryMetaData;
+       private boolean modified;
+
+       public EntryMetaDataStatus(EntryMetaData entryMetaData, boolean modified) {
+           this.entryMetaData = entryMetaData;
+           this.modified = modified;
+       }
+
+       public EntryMetaData getEntryMetaData() {
+           return entryMetaData;
+       }
+
+       public boolean isModified() {
+           return modified;
+       }
+
+   }
+
 }

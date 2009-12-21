@@ -48,6 +48,8 @@ public class EntryMetaData extends BaseEntryDescriptor {
     private String country = "**";
     private List<EntryCategory> categories = null;
 
+    private String contentHashCode = null;
+
     public EntryMetaData() {}
 
     /**
@@ -192,6 +194,13 @@ public class EntryMetaData extends BaseEntryDescriptor {
     public boolean isNewlyCreated() { return isNewlyCreated; }
     public void setNewlyCreated(boolean isNewlyCreated) { this.isNewlyCreated = isNewlyCreated; }
 
+    public String getContentHashCode() {
+        return contentHashCode;
+    }
+    public void setContentHashCode(String contentHashCode) {
+        this.contentHashCode = contentHashCode;
+    }
+
     public Object clone() {
         EntryMetaData clone = new EntryMetaData();
         clone.setEntryStoreId( getEntryStoreId() );
@@ -208,7 +217,7 @@ public class EntryMetaData extends BaseEntryDescriptor {
         clone.setCategories( getCategories() );
 
         clone.setUpdateTimestamp( getUpdateTimestamp() );
-
+        clone.setContentHashCode(getContentHashCode());
         return clone;
     }
 
@@ -230,6 +239,7 @@ public class EntryMetaData extends BaseEntryDescriptor {
             .append(" <").append(publishedDate).append(">")
             .append(" ").append(isNewlyCreated)
             .append(" ").append(updateTimestamp)
+            .append(" ").append(contentHashCode)
             .append("]").toString();
     }
 }

@@ -132,6 +132,7 @@
                CAST(entries.UpdateTimestamp AS BIGINT) AS UpdateTimestamp,
                entries.DeleteFlag AS DeleteFlag,
                entries.RevisionNum AS RevisionNum,
+               entries.ContentHashCode AS contentHashCode,
                categories.Scheme AS Scheme,
                categories.Term AS Term,
                categories.Term AS Label

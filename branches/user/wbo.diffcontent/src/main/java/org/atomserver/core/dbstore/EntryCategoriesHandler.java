@@ -351,6 +351,10 @@ public class EntryCategoriesHandler
                 return descriptor.getRevision();
             }
 
+            public String getContentHashCode() {
+                return descriptor.getContentHashCode();
+            }
+
             public String toString() {
                 return new StringBuffer()
                     .append("EntryDescriptor:: [")

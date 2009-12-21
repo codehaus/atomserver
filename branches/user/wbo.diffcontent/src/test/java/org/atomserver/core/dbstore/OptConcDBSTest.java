@@ -102,7 +102,7 @@ public class OptConcDBSTest extends CRUDDBSTestCase {
         updateRev( 2, true, 200, 3 );
     }
 
-    public void testInsertNoRev() throws Exception {
+    public void  testInsertNoRev() throws Exception {
         log.debug( "########################################## testInsertNoRev " );
         insertRev( "", true , true, 1 );
 
@@ -148,7 +148,8 @@ public class OptConcDBSTest extends CRUDDBSTestCase {
 
         String srev = ( rev == -1 ) ? "/*" : ("/" + rev) ;
         String updateURL = fullURL + srev;
-        String editURI = update(id, updateURL, getFileXMLUpdate(), false, expectedStatus );
+        int fileRev = (rev >= 0) ? rev : -nextRev; // create a different content if rev = -1.
+        String editURI = update(id, updateURL, getFileXMLUpdate(fileRev), false, expectedStatus );
         log.debug( "########################################## editURI = " + editURI );
 
         int irev = extractRevisionFromURI(editURI);

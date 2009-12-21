@@ -35,10 +35,12 @@ public class MultiAutoTagger implements EntryAutoTagger {
     /**
      * {@inheritDoc}
      */
-    public void tag(EntryMetaData entry, String contentXML) {
+    public boolean tag(EntryMetaData entry, String contentXML) {
+        boolean modified = false;
         for (EntryAutoTagger tagger : taggers) {
-            tagger.tag(entry, contentXML);
+            modified |= tagger.tag(entry, contentXML);
         }
+        return modified;
     }
 
     /**
