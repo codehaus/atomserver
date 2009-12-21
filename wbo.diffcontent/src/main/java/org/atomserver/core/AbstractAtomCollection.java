@@ -27,6 +27,7 @@ import org.apache.abdera.util.Constants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.*;
+import org.atomserver.monitor.EntriesMonitor;
 import org.atomserver.core.etc.AtomServerConstants;
 import org.atomserver.core.utils.HashUtils;
 import org.atomserver.exceptions.AtomServerException;
@@ -371,6 +372,13 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     }
 
     /**
+     * Retrieve EntriesMonitor
+     */
+    protected EntriesMonitor getEntriesMonitor() {
+        return parentAtomWorkspace.getParentAtomService().getEntriesMonitor();
+    }
+
+    /**
      * A "batch method" which calls modifyEntry()
      * This method should be overriden whenever the concrete implementation can take advantage of batching to
      * do a better job, but this simple implementation will suffice for functional correctness, by simply iterating
@@ -531,6 +539,10 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         final Entry entry = parseEntry(entryTarget, request);
         final String entryXml = validateAndPreprocessEntryContents(entry, entryTarget);
 
+        if(getEntriesMonitor() != null) {
+            getEntriesMonitor().updateNumberOfEntriesToUpdate(1);
+        }
+
         EntryMetaDataStatus entryMetaDataStatus = executeTransactionally(
                 new TransactionalTask<EntryMetaDataStatus>() {
                     public EntryMetaDataStatus execute() {
@@ -557,6 +569,9 @@ abstract public class AbstractAtomCollection implements AtomCollection {
 
                         // If both category and contents are not modified, no need to update.
                         if(!metaDataStatus.isModified() && !categoriesUpdated) {
+                            if(getEntriesMonitor() != null) {
+                                getEntriesMonitor().updateNumberOfEntriesNotUpdatedDueToSameContent(1);
+                            }
                             return metaDataStatus;
                         }
 
@@ -572,6 +587,9 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                             log.trace("ContentStorage = " + getContentStorage());
                         }
                         getContentStorage().putContent(entryXml, metaDataStatus.getEntryMetaData());
+                        if(getEntriesMonitor() != null) {
+                            getEntriesMonitor().updateNumberOfEntriesActuallyUpdated(1);
+                        }
 
                         return metaDataStatus;
                     }
@@ -730,6 +748,10 @@ abstract public class AbstractAtomCollection implements AtomCollection {
             order++;
         }
 
+        // update entry count
+        if(getEntriesMonitor() != null) {
+            getEntriesMonitor().updateNumberOfEntriesToUpdate(entries.size());
+        }
         Abdera abdera = request.getServiceContext().getAbdera();
 
         // ---------------- process updates ------------------
@@ -748,6 +770,9 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                                         }
                                         if(!result.isModified() && !categoriesUpdated) {
                                             // Same contents and categories
+                                            if(getEntriesMonitor() != null) {
+                                                getEntriesMonitor().updateNumberOfEntriesNotUpdatedDueToSameContent(1);
+                                            }
                                             continue;
                                         }
                                         // if contents is the same but the categories have changed,
@@ -763,6 +788,9 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                                             String entryXml = entryXmlMap.get(result.getEntryTarget());
                                             getContentStorage().putContent(entryXml,
                                                                            result.getMetaData());
+                                        }
+                                        if(getEntriesMonitor() != null) {
+                                            getEntriesMonitor().updateNumberOfEntriesActuallyUpdated(1);
                                         }
                                     }
                                     return results;
