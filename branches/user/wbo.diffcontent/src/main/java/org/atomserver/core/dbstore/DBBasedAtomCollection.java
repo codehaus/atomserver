@@ -523,7 +523,6 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
      */
     protected EntryMetaDataStatus reModifyEntry(Object internalId, EntryTarget entryTarget)
             throws AtomServerException {
-        System.out.println(" RemodifyEntry EntryId=" + entryTarget.getEntryId());
         boolean writeFailed = true;
 
         int numRowsModified = getEntriesDAO().updateEntry( entryTarget, false );
