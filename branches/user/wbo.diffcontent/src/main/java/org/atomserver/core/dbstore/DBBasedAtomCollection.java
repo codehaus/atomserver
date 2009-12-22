@@ -122,6 +122,9 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                               Feed feed )
             throws AtomServerException {
 
+        if(getEntriesMonitor() != null) {
+            getEntriesMonitor().updateNumberOfGetEntriesRequests(1);
+        }
         String collection = feedTarget.getCollection();
         String workspace = feedTarget.getWorkspace();
 
@@ -131,6 +134,9 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             totalEntries = getEntriesDAO().getCountByLastModified(feedTarget, updatedMin);
 
             if (totalEntries <= 0) {
+                if(getEntriesMonitor() != null) {
+                    getEntriesMonitor().updateNumberOfGetEntriesRequestsReturningNone(1);
+                }
                 return 0L;
             }
         }
@@ -167,6 +173,9 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
 
         int numEntries = sortedList.size();
         if (numEntries <= 0) {
+            if(getEntriesMonitor() != null) {
+                getEntriesMonitor().updateNumberOfGetEntriesRequestsReturningNone(1);
+            }
             return 0L;
         }
 
