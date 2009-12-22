@@ -7,6 +7,14 @@
     </properties>
 
     <body>
+        <section name="Release 2.1.15">
+            <ul>
+              <li>
+                On entry update, the new contents will be compared against old contents a hash function, and
+                if the contents as well as the categories are the same, the entry will not be updated.
+              </li>
+            </ul>
+        </section>
         <section name="Release 2.1.14 (12/17/09)">
              <ul>
                  <li>Workaround for a bug in SQLServer where Prepared Statements are taking an innordinate

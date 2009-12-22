@@ -43,7 +43,7 @@ public class StripingAutoTagger extends BaseAutoTagger {
         return entry.getEntryId();
     }
 
-    public void tag(EntryMetaData entry, String content) {
+    public boolean tag(EntryMetaData entry, String content) {
         // compute what the stripe term SHOULD be
         String stripeTerm =
                 ShardedPathGenerator.computeShard(getStripeBasis(entry, content), numStripes, radix);
@@ -78,5 +78,6 @@ public class StripingAutoTagger extends BaseAutoTagger {
             category.setLabel(label);
             getCategoriesHandler().insertEntryCategoryBatch(Arrays.asList(category));
         }
+        return (!alreadyExists || !toDelete.isEmpty());
     }
 }

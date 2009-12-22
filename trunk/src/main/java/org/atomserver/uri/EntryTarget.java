@@ -36,6 +36,7 @@ public class EntryTarget extends URITarget implements EntryDescriptor {
     private final String collection;
     private final Integer revision;
     private final Locale locale;
+    private String contentHashCode;
 
     private String entryId;
 
@@ -109,6 +110,14 @@ public class EntryTarget extends URITarget implements EntryDescriptor {
         return locale;
     }
 
+    public String getContentHashCode() {
+        return contentHashCode;
+    }
+
+    public void setContentHashCode(String contentHashCode) {
+        this.contentHashCode = contentHashCode;
+    }
+    
     public EntryTarget cloneWithNewWorkspace(String workspace) {
         return new EntryTarget(this.requestContext,
                                workspace,

@@ -47,6 +47,8 @@ public class CollectionOptions {
 
     private EntryIdGenerator entryIdGenerator = null;
 
+    private ContentHashGenerator contentHashGenerator = null;
+
     private int maxLinkEntriesPerPage = -1;
     private int maxFullEntriesPerPage = -1;
 
@@ -128,7 +130,15 @@ public class CollectionOptions {
     public void setEntryIdGenerator(EntryIdGenerator entryIdGenerator) {
         this.entryIdGenerator = entryIdGenerator;
     }
-        
+
+    public ContentHashGenerator getContentHashGenerator() {
+        return contentHashGenerator;
+    }
+
+    public void setContentHashGenerator(ContentHashGenerator contentHashGenerator) {
+        this.contentHashGenerator = contentHashGenerator;
+    }
+
     //>>>>>>>>>>>>>>>>>>>>>>>>>>
     // DEPRECATED OPTIONS -- remove in 2.0.5
     /**

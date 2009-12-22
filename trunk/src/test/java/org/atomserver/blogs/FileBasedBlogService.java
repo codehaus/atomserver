@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.atomserver.AtomService;
 import org.atomserver.AtomWorkspace;
 import org.atomserver.VirtualWorkspaceHandler;
+import org.atomserver.monitor.EntriesMonitor;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.exceptions.BadRequestException;
 import org.atomserver.uri.URIHandler;
@@ -74,6 +75,10 @@ public class FileBasedBlogService implements AtomService {
 
     public long getMaxIndex(Date updatedMax)
     { return -1; }
+
+    public EntriesMonitor getEntriesMonitor() {
+        return null;  
+    }
 
     public int getNumberOfWorkspaces()
     { return 1; }
