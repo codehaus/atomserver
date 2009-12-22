@@ -32,6 +32,7 @@ public class BaseEntryDescriptor implements EntryDescriptor {
     private String collection = null;
     private String entryId = null;
     private Locale locale = null;
+    private String contentHashCode = null;
 
     private int revision = UNDEFINED_REVISION;
 
@@ -79,6 +80,10 @@ public class BaseEntryDescriptor implements EntryDescriptor {
 
     public void setRevision(int revision) { this.revision = revision; }
 
+    public String getContentHashCode() { return contentHashCode; }
+
+    public void setContentHashCode(String contentHashCode) { this.contentHashCode = contentHashCode; }
+
     public String toString() {
         StringBuffer buff = new StringBuffer();
         buff.append(super.toString());
@@ -86,7 +91,8 @@ public class BaseEntryDescriptor implements EntryDescriptor {
         buff.append(", " + collection);
         buff.append(", " + entryId);
         buff.append(", " + locale);
-        buff.append(", " + revision + "]");
+        buff.append(", " + revision);
+        buff.append(", " + contentHashCode +"]");
         return buff.toString();
     }
 }

@@ -58,6 +58,8 @@ public class WorkspaceOptions {
 
     private EntryIdGenerator entryIdGenerator = null;
 
+    private ContentHashGenerator defaultContentHashFunction = null;
+
     private Set<String> allowedVirtualWorkspaces = 
             new HashSet<String>(Arrays.asList(VirtualWorkspaceHandler.CATEGORIES));
 
@@ -163,6 +165,14 @@ public class WorkspaceOptions {
 
     public void setDefaultEntryIdGenerator(EntryIdGenerator entryIdGenerator) {
         this.entryIdGenerator = entryIdGenerator;
+    }
+
+    public ContentHashGenerator getDefaultContentHashFunction() {
+        return defaultContentHashFunction;
+    }
+
+    public void setDefaultContentHashFunction(ContentHashGenerator defaultContentHashFunction) {
+           this.defaultContentHashFunction = defaultContentHashFunction;
     }
 
     //>>>>>>>>>>>>>>>>>>>>>>>>>>

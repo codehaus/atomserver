@@ -49,5 +49,10 @@
         <property name="sizeLimit" ref="org.atomserver-sizeLimit" />
     </bean>
 
+    <bean id="org.atomserver-ContentHashGenerator"
+          class="org.atomserver.core.SimpleContentHashGenerator"
+          depends-on="org.atomserver-propertyConfigurer"
+          lazy-init="true">
+    </bean>
 
 </beans>

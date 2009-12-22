@@ -25,6 +25,7 @@ import org.atomserver.core.dbstore.DBBasedContentStorage;
 import org.atomserver.core.validators.RelaxNGValidator;
 import org.atomserver.server.servlet.AtomServerServlet;
 import org.atomserver.utils.hsql.HsqlBootstrapper;
+import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.ServletHolder;
@@ -266,12 +267,18 @@ public class TestingAtomServer {
         storage.setPropertyValues(propertyValues);
         appContext.registerBeanDefinition("org.atomserver-contentStorage", storage);
 
+        // clear the existing ENV
+        ConfigurationAwareClassLoader.invalidateENV();
+        
         // refresh the context to actually instantiate everything.
         appContext.refresh();
 
         // re-set the system properties
         System.setProperties(properties);
 
+         // clear the update ENV
+        ConfigurationAwareClassLoader.invalidateENV();
+        
         // put our app context into the servlet context
         context.setAttribute(
                 WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE,

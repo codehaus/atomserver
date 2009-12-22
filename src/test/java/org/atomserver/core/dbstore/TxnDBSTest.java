@@ -121,7 +121,7 @@ public class TxnDBSTest extends CRUDDBSTestCase {
 
         Entry entry = getFactory().newEntry();
         entry.setId(id);
-        entry.setContentAsXhtml( getFileXMLUpdate());
+        entry.setContentAsXhtml( getFileXMLUpdate(rev));
 
         ClientResponse response = client.put( (fullURL + "/1"), entry, options);
         assertEquals(500, response.getStatus());

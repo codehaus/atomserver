@@ -52,9 +52,9 @@
 
     <insert id="insertEntry-sqlserver" parameterClass="map">
         INSERT INTO EntryStore
-        (Workspace, Collection, LanCode, CountryCode, EntryId, UpdateDate, CreateDate, UpdateSeqNum, DeleteFlag, RevisionNum)
+        (Workspace, Collection, LanCode, CountryCode, EntryId, UpdateDate, CreateDate, UpdateSeqNum, DeleteFlag, RevisionNum, ContentHashCode)
         VALUES
-        (#workspace#, #collection#, #language#, #country#, #entryId#, ${db.getdate.func}, ${db.getdate.func}, 0, #deleted#, #revision#)
+        (#workspace#, #collection#, #language#, #country#, #entryId#, ${db.getdate.func}, ${db.getdate.func}, 0, #deleted#, #revision#, #contentHashCode#)
 
         <selectKey resultClass="int" keyProperty="entryStoreId" type="post">
             SELECT @@IDENTITY AS entryStoreId
@@ -68,16 +68,16 @@
         </selectKey>
         
          INSERT INTO EntryStore
-         (EntryStoreId, Workspace, Collection, LanCode, CountryCode, EntryId, UpdateDate, CreateDate, UpdateSeqNum, DeleteFlag, RevisionNum)
+         (EntryStoreId, Workspace, Collection, LanCode, CountryCode, EntryId, UpdateDate, CreateDate, UpdateSeqNum, DeleteFlag, RevisionNum, ContentHashCode)
          VALUES
-         (#entryStoreId#, #workspace#, #collection#, #language#, #country#, #entryId#, ${db.getdate.func}, ${db.getdate.func}, 0, #deleted#, #revision#)
+         (#entryStoreId#, #workspace#, #collection#, #language#, #country#, #entryId#, ${db.getdate.func}, ${db.getdate.func}, 0, #deleted#, #revision#, #contentHashCode#)
      </insert>
 
     <insert id="insertEntry-hsql" parameterClass="map">
          INSERT INTO EntryStore
-         (EntryStoreId, Workspace, Collection, LanCode, CountryCode, EntryId, UpdateDate, CreateDate, UpdateSeqNum, DeleteFlag, RevisionNum, UpdateTimestamp)
+         (EntryStoreId, Workspace, Collection, LanCode, CountryCode, EntryId, UpdateDate, CreateDate, UpdateSeqNum, DeleteFlag, RevisionNum,  ContentHashCode, UpdateTimestamp)
          VALUES
-         (#entryStoreId#, #workspace#, #collection#, #language#, #country#, #entryId#, ${db.getdate.func}, ${db.getdate.func}, 0, #deleted#, #revision#,
+         (#entryStoreId#, #workspace#, #collection#, #language#, #country#, #entryId#, ${db.getdate.func}, ${db.getdate.func}, 0, #deleted#, #revision#, #contentHashCode#,
           NEXT VALUE FOR entrystore_updatetimestamp_seq)
 
         <selectKey resultClass="int" keyProperty="entryStoreId" type="post">
@@ -87,9 +87,9 @@
 
     <insert id="insertEntrySeedingDB-sqlserver" parameterClass="map">
          INSERT INTO EntryStore
-         (Workspace, Collection, LanCode, CountryCode, EntryId, UpdateDate, CreateDate, UpdateSeqNum, DeleteFlag, RevisionNum)
+         (Workspace, Collection, LanCode, CountryCode, EntryId, UpdateDate, CreateDate, UpdateSeqNum, DeleteFlag, RevisionNum, ContentHashCode)
          VALUES
-         (#workspace#, #collection#, #language#, #country#, #entryId#, #updatedDate#, #publishedDate#, 0, #deleted#, #revision#)
+         (#workspace#, #collection#, #language#, #country#, #entryId#, #updatedDate#, #publishedDate#, 0, #deleted#, #revision#, #contentHashCode#)
      </insert>
 
     <insert id="insertEntrySeedingDB-postgres" parameterClass="map">
@@ -98,16 +98,16 @@
         </selectKey>
 
           INSERT INTO EntryStore
-         (EntryStoreId, Workspace, Collection, LanCode, CountryCode, EntryId, UpdateDate, CreateDate, UpdateSeqNum, DeleteFlag, RevisionNum)
+         (EntryStoreId, Workspace, Collection, LanCode, CountryCode, EntryId, UpdateDate, CreateDate, UpdateSeqNum, DeleteFlag, RevisionNum, ContentHashCode)
          VALUES
-         (#entryStoreId#, #workspace#, #collection#, #language#, #country#, #entryId#, #updatedDate#, #publishedDate#, 0, #deleted#, #revision#)
+         (#entryStoreId#, #workspace#, #collection#, #language#, #country#, #entryId#, #updatedDate#, #publishedDate#, 0, #deleted#, #revision#, #contentHashCode#)
      </insert>
 
     <insert id="insertEntrySeedingDB-hsql" parameterClass="map">
           INSERT INTO EntryStore
-         (EntryStoreId, Workspace, Collection, LanCode, CountryCode, EntryId, UpdateDate, CreateDate, UpdateSeqNum, DeleteFlag, RevisionNum, UpdateTimestamp)
+         (EntryStoreId, Workspace, Collection, LanCode, CountryCode, EntryId, UpdateDate, CreateDate, UpdateSeqNum, DeleteFlag, RevisionNum, ContentHashCode, UpdateTimestamp)
          VALUES
-         (#entryStoreId#, #workspace#, #collection#, #language#, #country#, #entryId#, #updatedDate#, #publishedDate#, 0, #deleted#, #revision#,
+         (#entryStoreId#, #workspace#, #collection#, #language#, #country#, #entryId#, #updatedDate#, #publishedDate#, 0, #deleted#, #revision#, #contentHashCode#,
           NEXT VALUE FOR entrystore_updatetimestamp_seq)
 
         <selectKey resultClass="int" keyProperty="entryStoreId" type="post">
@@ -120,7 +120,7 @@
              incrementing the RevisionNum.  The UpdateTimestamp is automatically handled by the
              DB -->
         UPDATE EntryStore
-           SET UpdateDate=${db.getdate.func}, DeleteFlag=#deleted#, RevisionNum=RevisionNum + 1
+           SET UpdateDate=${db.getdate.func}, DeleteFlag=#deleted#, ContentHashCode=#contentHashCode#, RevisionNum=RevisionNum + 1
          <dynamic>
             <isEqual prepend="," property="dbType" compareValue="postgres">
                UpdateTimestamp=nextval('entrystore_updatetimestamp_seq'::regclass)

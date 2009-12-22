@@ -30,6 +30,7 @@ public interface EntryAutoTagger {
      * written.
      * @param entry   The metadata about the entry being written
      * @param content The content of the entry
+     * @return a boolean flag set to true if the set of categories has changed and false otherwise.
      */
-    void tag(EntryMetaData entry, String content);
+    boolean tag(EntryMetaData entry, String content);
 }

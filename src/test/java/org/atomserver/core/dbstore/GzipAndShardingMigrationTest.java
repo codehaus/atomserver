@@ -13,9 +13,7 @@ import org.atomserver.utils.ShardedPathGenerator;
 import static org.atomserver.utils.ShardedPathGenerator.DEFAULT_RADIX;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 public class GzipAndShardingMigrationTest extends DBSTestCase {
     private static final ShardedPathGenerator SHARDED_PATH_GENERATOR =
@@ -53,34 +51,34 @@ public class GzipAndShardingMigrationTest extends DBSTestCase {
         // update widgets/acme/6002, widgets/acme/6003, and dummy/dumbo/6004 once each
         updateWidget("widgets", "acme", "6002",
                      Locale.ENGLISH.toString(),
-                     createWidgetXMLFileString("6002"), "*");
+                     createWidgetXMLFileString("6002",1), "*");
         updateWidget("widgets", "acme", "6003",
                      Locale.US.toString(),
-                     createWidgetXMLFileString("6003"), "*");
+                     createWidgetXMLFileString("6003",1), "*");
         updateWidget("dummy", "dumbo", "6004",
                      null,
-                     createWidgetXMLFileString("6004"), "*");
+                     createWidgetXMLFileString("6004",1), "*");
 
         // update widgets/acme/6000, widgets/acme/6001, and dummy/dumbo/6002 twice each
         updateWidget("widgets", "acme", "6000",
                      Locale.ENGLISH.toString(),
-                     createWidgetXMLFileString("6000"), "*");
+                     createWidgetXMLFileString("6000",1), "*");
         updateWidget("widgets", "acme", "6001",
                      Locale.US.toString(),
-                     createWidgetXMLFileString("6001"), "*");
+                     createWidgetXMLFileString("6001",1), "*");
         updateWidget("dummy", "dumbo", "6002",
                      null,
-                     createWidgetXMLFileString("6002"), "*");
+                     createWidgetXMLFileString("6002",1), "*");
         Thread.sleep(2000); // wait 2 seconds, so we will sweep to the trash
         updateWidget("widgets", "acme", "6000",
                      Locale.ENGLISH.toString(),
-                     createWidgetXMLFileString("6000"), "*");
+                     createWidgetXMLFileString("6000",2), "*");
         updateWidget("widgets", "acme", "6001",
                      Locale.US.toString(),
-                     createWidgetXMLFileString("6001"), "*");
+                     createWidgetXMLFileString("6001",2), "*");
         updateWidget("dummy", "dumbo", "6002",
                      null,
-                     createWidgetXMLFileString("6002"), "*");
+                     createWidgetXMLFileString("6002",2), "*");
 
         // for the ones that were modified once, r0 and r1 should still exist
         assertTrue(new File(TEST_DATA_DIR, "/widgets/acme/60/6002/en/6002.xml.r0").exists());
@@ -118,44 +116,44 @@ public class GzipAndShardingMigrationTest extends DBSTestCase {
 
         // insert some new entries
         createWidget("widgets", "acme", "7000", Locale.ENGLISH.toString(),
-                     createWidgetXMLFileString("7000"));
+                     createWidgetXMLFileString("7000",0));
         createWidget("widgets", "acme", "7001", Locale.US.toString(),
-                     createWidgetXMLFileString("7001"));
+                     createWidgetXMLFileString("7001",0));
         createWidget("dummy", "dumbo", "8000", null,
-                     createWidgetXMLFileString("8000"));
+                     createWidgetXMLFileString("8000",0));
 
         // update some entries that were at r0 (widgets/acme/6004, widgets/acme/6005, dummy/dumbo/6005)
         updateWidget("widgets", "acme", "6004",
                      Locale.ENGLISH.toString(),
-                     createWidgetXMLFileString("6004"), "*");
+                     createWidgetXMLFileString("6004",1), "*");
         updateWidget("widgets", "acme", "6005",
                      Locale.US.toString(),
-                     createWidgetXMLFileString("6005"), "*");
+                     createWidgetXMLFileString("6005",1), "*");
         updateWidget("dummy", "dumbo", "6005",
                      null,
-                     createWidgetXMLFileString("6005"), "*");
+                     createWidgetXMLFileString("6005",1), "*");
 
         // update some entries that were at r1 (widgets/acme/6002, widgets/acme/6003, dummy/dumbo/6004)
         updateWidget("widgets", "acme", "6002",
                      Locale.ENGLISH.toString(),
-                     createWidgetXMLFileString("6002"), "*");
+                     createWidgetXMLFileString("6002",2), "*");
         updateWidget("widgets", "acme", "6003",
                      Locale.US.toString(),
-                     createWidgetXMLFileString("6003"), "*");
+                     createWidgetXMLFileString("6003",2), "*");
         updateWidget("dummy", "dumbo", "6004",
                      null,
-                     createWidgetXMLFileString("6004"), "*");
+                     createWidgetXMLFileString("6004",2), "*");
 
         // update some entries that were at r2 (widgets/acme/6000, widgets/acme/6001, dummy/dumbo/6002)
         updateWidget("widgets", "acme", "6000",
                      Locale.ENGLISH.toString(),
-                     createWidgetXMLFileString("6000"), "*");
+                     createWidgetXMLFileString("6000",3), "*");
         updateWidget("widgets", "acme", "6001",
                      Locale.US.toString(),
-                     createWidgetXMLFileString("6001"), "*");
+                     createWidgetXMLFileString("6001",3), "*");
         updateWidget("dummy", "dumbo", "6002",
                      null,
-                     createWidgetXMLFileString("6002"), "*");
+                     createWidgetXMLFileString("6002",3), "*");
 
         generateShardedDir("widgets/acme", "6000", "en/6000.xml.gz");
 
@@ -202,31 +200,31 @@ public class GzipAndShardingMigrationTest extends DBSTestCase {
         // update all of the "migrated" entries one more time -- this should "clean up" the old directories
         updateWidget("widgets", "acme", "6004",
                      Locale.ENGLISH.toString(),
-                     createWidgetXMLFileString("6004"), "*");
+                     createWidgetXMLFileString("6004",2), "*");
         updateWidget("widgets", "acme", "6005",
                      Locale.US.toString(),
-                     createWidgetXMLFileString("6005"), "*");
+                     createWidgetXMLFileString("6005",2), "*");
         updateWidget("dummy", "dumbo", "6005",
                      null,
-                     createWidgetXMLFileString("6005"), "*");
+                     createWidgetXMLFileString("6005",2), "*");
         updateWidget("widgets", "acme", "6002",
                      Locale.ENGLISH.toString(),
-                     createWidgetXMLFileString("6002"), "*");
+                     createWidgetXMLFileString("6002",3), "*");
         updateWidget("widgets", "acme", "6003",
                      Locale.US.toString(),
-                     createWidgetXMLFileString("6003"), "*");
+                     createWidgetXMLFileString("6003",3), "*");
         updateWidget("dummy", "dumbo", "6004",
                      null,
-                     createWidgetXMLFileString("6004"), "*");
+                     createWidgetXMLFileString("6004",3), "*");
         updateWidget("widgets", "acme", "6000",
                      Locale.ENGLISH.toString(),
-                     createWidgetXMLFileString("6000"), "*");
+                     createWidgetXMLFileString("6000",4), "*");
         updateWidget("widgets", "acme", "6001",
                      Locale.US.toString(),
-                     createWidgetXMLFileString("6001"), "*");
+                     createWidgetXMLFileString("6001",4), "*");
         updateWidget("dummy", "dumbo", "6002",
                      null,
-                     createWidgetXMLFileString("6002"), "*");
+                     createWidgetXMLFileString("6002",4), "*");
 
         LatencyUtil.updateLastWrote();
 
@@ -291,24 +289,45 @@ public class GzipAndShardingMigrationTest extends DBSTestCase {
         // published to them...
         Feed feed;
         feed = getPage("widgets/acme?locale=en&entry-type=full");
+        Map<String,Integer> widgetsAcmeExpectedRev = new HashMap<String,Integer>();
+        widgetsAcmeExpectedRev.put("6000",4);
+        widgetsAcmeExpectedRev.put("6001",4);
+        widgetsAcmeExpectedRev.put("6002",3);
+        widgetsAcmeExpectedRev.put("6003",3);
+        widgetsAcmeExpectedRev.put("6004",2);
+        widgetsAcmeExpectedRev.put("6005",2);
+        widgetsAcmeExpectedRev.put("6006",0);
+        widgetsAcmeExpectedRev.put("7000",0);
+        widgetsAcmeExpectedRev.put("7001",0);
+
         assertEquals(4, feed.getEntries().size());
         for (Entry entry : feed.getEntries()) {
             String entryId = entry.getSimpleExtension(AtomServerConstants.ENTRY_ID);
-            assertEquals(createWidgetXMLFileString(entryId), entry.getContent());
+            assertEquals(createWidgetXMLFileString(entryId, widgetsAcmeExpectedRev.get(entryId)), entry.getContent());
         }
 
         feed = getPage("widgets/acme?locale=en_US&entry-type=full");
         assertEquals(4, feed.getEntries().size());
         for (Entry entry : feed.getEntries()) {
             String entryId = entry.getSimpleExtension(AtomServerConstants.ENTRY_ID);
-            assertEquals(createWidgetXMLFileString(entryId), entry.getContent());
+            assertEquals(createWidgetXMLFileString(entryId, widgetsAcmeExpectedRev.get(entryId)), entry.getContent());
         }
+
+        Map<String,Integer> dummyDumboExpectedRev = new HashMap<String,Integer>();
+        dummyDumboExpectedRev.put("6000",0);
+        dummyDumboExpectedRev.put("6001",0);
+        dummyDumboExpectedRev.put("6002",4);
+        dummyDumboExpectedRev.put("6003",0);
+        dummyDumboExpectedRev.put("6004",3);
+        dummyDumboExpectedRev.put("6005",2);
+        dummyDumboExpectedRev.put("6006",0);
+        dummyDumboExpectedRev.put("8000",0);
 
         feed = getPage("dummy/dumbo?entry-type=full");
         assertEquals(7, feed.getEntries().size());
         for (Entry entry : feed.getEntries()) {
             String entryId = entry.getSimpleExtension(AtomServerConstants.ENTRY_ID);
-            assertEquals(createWidgetXMLFileString(entryId), entry.getContent());
+            assertEquals(createWidgetXMLFileString(entryId, dummyDumboExpectedRev.get(entryId)), entry.getContent());
         }
 
         deleteEntry2("http://localhost:60080" +

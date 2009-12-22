@@ -41,6 +41,7 @@
         <result property="updateTimestamp" column="UpdateTimestamp"/>
         <result property="deleted" column="DeleteFlag"/>
         <result property="revision" column="RevisionNum"/>
+        <result property="contentHashCode" column="contentHashCode" />
     </resultMap>
 
     <resultMap class="entryMetaData" id="entryResult" groupBy="workspace,collection,language,country,entryId">
@@ -55,6 +56,7 @@
         <result property="updateTimestamp" column="UpdateTimestamp"/>
         <result property="deleted" column="DeleteFlag"/>
         <result property="revision" column="RevisionNum"/>
+        <result property="contentHashCode" column="contentHashCode" />
         <result property="categories" resultMap="entryCategoryResult"/>
     </resultMap>
 

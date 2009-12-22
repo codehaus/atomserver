@@ -72,7 +72,7 @@ public class CRUDDBSTest extends CRUDDBSTestCase {
                      + "</colors>"
                      + "<contact>"
                      + "<contactId>1638</contactId>"
-                     + "<displayName>This is an update</displayName>"
+                     + "<displayName>This is an update 3</displayName>"
                      + "<hasEmail>true</hasEmail>"
                      + "</contact>"
                      + "</property></deletion>",

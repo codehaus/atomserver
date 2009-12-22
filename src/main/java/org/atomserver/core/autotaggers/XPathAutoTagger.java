@@ -107,7 +107,7 @@ public class XPathAutoTagger
     /**
      * {@inheritDoc}
      */
-    public void tag(EntryMetaData entry, String contentXML) {
+    public boolean tag(EntryMetaData entry, String contentXML) {
         // this method selects the list of current categories for the entry from the DB, does all
         // modifications in memory, and then updates the DB as a batch at the end.  In the vast
         // majority of cases, these tags will not actually change as a result of auto-tagging, and
@@ -161,6 +161,7 @@ public class XPathAutoTagger
             }
             getCategoriesHandler().deleteEntryCategoryBatch(toDelete);
         }
+        return (!categoryMods.isEmpty() || !toDelete.isEmpty());
     }
 
     /**
