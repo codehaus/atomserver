@@ -38,20 +38,29 @@ public class EntriesMonitor {
         return numberOfEntriesWitheSameContent;
     }
 
+    @ManagedAttribute(description = "Number of getEntries requests on this Server.")
+    public long getNumberOfgetEntriesRequests() {
+        return this.numberOfgetEntriesRequests;
+    }
 
-// To be hooked up later:
-//    @ManagedAttribute(description = "Percentage of getEntries requests returning zero count on this Server (not implemented yet.")
+    @ManagedAttribute(description = "Number of getEntries requests returning zero count on this Server.")
+    public long getNumberOfgetEntriesReturningZeroCount() {
+        return this.entriesReturningZeroCount;
+    }
+
+    @ManagedAttribute(description = "Percentage of getEntries requests returning zero count on this Server.")
     public double getPercentOfNonZeroEntriesRequested() {
         if((entriesReturningZeroCount == 0) && (numberOfgetEntriesRequests == 0)) {
             return -1.0;
         }
         if(numberOfgetEntriesRequests > 0) {
             if(entriesReturningZeroCount > 0) {
-                return ( numberOfgetEntriesRequests - entriesReturningZeroCount )/numberOfgetEntriesRequests * 100.0;
+                return ( numberOfgetEntriesRequests - entriesReturningZeroCount )/((double)numberOfgetEntriesRequests) * 100.0;
             }
         }
         return 0.0;
     }
+
 
     // ========== Update methods ==========
     

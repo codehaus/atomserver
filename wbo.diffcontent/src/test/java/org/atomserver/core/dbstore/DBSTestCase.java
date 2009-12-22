@@ -40,6 +40,7 @@ import org.atomserver.testutils.client.MockRequestContext;
 import org.atomserver.testutils.latency.LatencyUtil;
 import org.atomserver.uri.EntryTarget;
 import org.atomserver.uri.URIHandler;
+import org.atomserver.monitor.EntriesMonitor;
 import org.springframework.context.ApplicationContext;
 
 import java.io.File;
@@ -54,6 +55,8 @@ public class DBSTestCase extends AtomServerTestCase {
     protected EntryCategoriesDAO entryCategoriesDAO = null;
 
     protected ContentDAO contentDAO = null;
+
+    protected EntriesMonitor entriesMonitor = null;
 
     protected int startCount = 0;
 
@@ -96,6 +99,7 @@ public class DBSTestCase extends AtomServerTestCase {
         entryCategoriesDAO = (EntryCategoriesDAO) springContext.getBean("org.atomserver-entryCategoriesDAO");
 
         contentDAO = (ContentDAO) springContext.getBean("org.atomserver-contentDAO");
+        entriesMonitor = (EntriesMonitor) springContext.getBean("org.atomserver-entriesMonitor");
 
         // we may need something in the DB to run these tests
         if ( requiresDBSeeding() ) {

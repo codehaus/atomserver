@@ -37,29 +37,46 @@ public class ContentDiffTest extends DBSTestCase {
 
     public void testContentDiff() throws Exception {
 
+        int entryCount = 0;
+        long [] beforeStats = getEntriesStats();
+
         // Add new entries
         for (int i = 3006; i < 3018; i++) {
             String entryId = "" + i;
             modifyEntry("lalas", "my", entryId, Locale.US.toString(), lalaXml(i,0), true, "0");
+            entryCount++;
             if (i % 2 == 0) {
                 modifyEntry("cuckoos", "my", entryId, null, cuckooXml(i,0), true, "0");
+                entryCount++;
             }
             if (i % 3 == 0) {
                 modifyEntry("aloos", "my", entryId, null, alooXml(i,0), true, "0");
+                entryCount++;
             }
         }
 
+        long [] afterStats = getEntriesStats();
+        assertEquals(beforeStats[0]+entryCount,afterStats[0]); // attempted modifies
+        assertEquals(beforeStats[1]+entryCount,afterStats[1]); // actual modified
+        assertEquals(beforeStats[2],afterStats[2]);            // same content - not modified
+
+
         // Update with the same contents and validate
+        beforeStats = afterStats;
+        entryCount = 0;
         List<String> entryTimestamps1 = getTimestampsForEntries();
         // Update with same content - the revision should not be updated and the hash code returned
         for (int i = 3006; i < 3018; i++) {
             String entryId = "" + i;
             modifyEntry("lalas", "my", entryId, Locale.US.toString(), lalaXml(i,0), false, "1", true, true, "false");
+            entryCount++;
             if (i % 2 == 0) {
                 modifyEntry("cuckoos", "my", entryId, null, cuckooXml(i,0), false, "1", true, true, "false");
+                entryCount++;
             }
             if (i % 3 == 0) {
                 modifyEntry("aloos", "my", entryId, null, alooXml(i,0), false, "1", true, true, "false");
+                entryCount++;
             }
         }
 
@@ -67,21 +84,36 @@ public class ContentDiffTest extends DBSTestCase {
         List<String> entryTimestamps2 = getTimestampsForEntries();
         assertTimestampsEqual(entryTimestamps1,entryTimestamps2);
 
+        afterStats = getEntriesStats();
+        assertEquals(beforeStats[0]+ entryCount,afterStats[0]); // attempted modifications
+        assertEquals(beforeStats[1], afterStats[1]);            // actual modifications == 0
+        assertEquals(beforeStats[2]+ entryCount,afterStats[2]); // same content
+
         // Update with modified content - the revision should be updated and the hash code returned.
-         for (int i = 3006; i < 3018; i++) {
+        beforeStats = afterStats;
+        entryCount = 0;
+        for (int i = 3006; i < 3018; i++) {
             String entryId = "" + i;
             modifyEntry("lalas", "my", entryId, Locale.US.toString(), lalaXml(i,1), false, "1", true, true, "true");
+            entryCount++;
             if (i % 2 == 0) {
                 modifyEntry("cuckoos", "my", entryId, null, cuckooXml(i,1), false, "1", true, true, "true");
+                entryCount++;
             }
             if (i % 3 == 0) {
                 modifyEntry("aloos", "my", entryId, null, alooXml(i,1), false, "1", true, true, "true");
+                entryCount++;
             }
         }
 
         // make sure timestamps have been changed
         List<String> entryTimestamps3 = getTimestampsForEntries();
         assertTimestampsNotEqual(entryTimestamps1, entryTimestamps3);
+
+        afterStats = getEntriesStats();
+        assertEquals(beforeStats[0]+ entryCount,afterStats[0]);
+        assertEquals(beforeStats[1]+ entryCount,afterStats[1]);
+        assertEquals(beforeStats[2],afterStats[2]);
 
     }
 
@@ -159,5 +191,12 @@ public class ContentDiffTest extends DBSTestCase {
         }
         stringBuilder.append("</aloo>");
         return stringBuilder.toString();
+    }
+
+    private long [] getEntriesStats() {
+        long updateRequests = entriesMonitor.getNumberOfEntriesToUpdate();
+        long actualUpdates  = entriesMonitor.getNumberOfEntriesActuallyUpdated();
+        long sameContentAndCategories = entriesMonitor.getNumberOfEntriesWitheSameContent();
+        return new long [] { updateRequests, actualUpdates, sameContentAndCategories};        
     }
 }
