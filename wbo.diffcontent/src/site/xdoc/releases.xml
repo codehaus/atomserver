@@ -7,7 +7,25 @@
     </properties>
 
     <body>
-	      <section name="Release 2.1.13 (8/14/09)">
+        <section name="Release 2.1.15">
+            <ul>
+              <li>
+                On entry update, the new contents will be compared against old contents a hash function, and
+                if the contents as well as the categories are the same, the entry will not be updated.
+              </li>
+            </ul>
+        </section>
+        <section name="Release 2.1.14 (12/17/09)">
+             <ul>
+                 <li>Workaround for a bug in SQLServer where Prepared Statements are taking an innordinate
+                 amount of time on very large datasets</li>
+                 <li>Added 2 statistics monitored on JMX console - Document-count and Max Index per Workspace-Collection.</li>
+                 <li>Bug fix for JMX obliterate function</li>
+                 <li>Check size based on database column size and return error code 400 if too large</li>
+            </ul>
+        </section>
+
+        <section name="Release 2.1.13 (8/14/09)">
              <ul>
                 <li>Update a non-aggregate feed query that could take significant amount of time when the pulled feed is far from the tip due to an invalid query hint. </li>
                 <li>Replaced built in logging with Perf4J to allow better performance monitoring.</li>
