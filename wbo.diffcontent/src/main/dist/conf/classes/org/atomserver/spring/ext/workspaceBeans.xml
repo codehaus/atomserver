@@ -38,7 +38,7 @@
                     </property>
                 </bean>
             </property>
-            <property name="defaultContentHashFunction" ref="org.atomserver-MD5Hash" />
+            <property name="defaultContentHashFunction" ref="org.atomserver-ContentHashGenerator" />
         </bean>
 
     </util:set>

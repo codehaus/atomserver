@@ -34,7 +34,7 @@
                     </property>
                 </bean>
             </property>
-            <property name="defaultContentHashFunction" ref="org.atomserver-MD5Hash" />
+            <property name="defaultContentHashFunction" ref="org.atomserver-ContentHashGenerator" />
         </bean>
 
         <bean class="org.atomserver.core.WorkspaceOptions">
@@ -61,7 +61,7 @@
                     </property>
                 </bean>
             </property>
-            <property name="defaultContentHashFunction" ref="org.atomserver-MD5Hash" />
+            <property name="defaultContentHashFunction" ref="org.atomserver-ContentHashGenerator" />
         </bean>
 
         <bean class="org.atomserver.core.WorkspaceOptions">
@@ -88,7 +88,7 @@
                     </property>
                 </bean>
             </property>
-            <property name="defaultContentHashFunction" ref="org.atomserver-MD5Hash" />
+            <property name="defaultContentHashFunction" ref="org.atomserver-ContentHashGenerator" />
         </bean>
 
     </util:set>
