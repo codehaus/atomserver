@@ -32,6 +32,8 @@ public class AggregateFeedsDBSTest extends DBSTestCase {
     private static final int NUM_ENTRIES = 10;
 
     public void setUp() throws Exception {
+        // TODO: FIXME
+        System.setProperty( "bootstrappers", "" );
         super.setUp();
         entryCategoriesDAO.deleteAllRowsFromEntryCategories();
         entriesDao.deleteAllRowsFromEntries();
