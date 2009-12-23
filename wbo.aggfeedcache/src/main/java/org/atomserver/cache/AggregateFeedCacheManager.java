@@ -75,11 +75,6 @@ public class AggregateFeedCacheManager {
      */
     private void init() {
 
-        // do actual initialize when all dependent fields have been injected.
-        if (cacheConfigList == null || cachedFeedDAO == null || transactionTemplate == null) {
-            return;
-        }
-
         // parse and initialize workspaceToCachedFeeds and cachedFeedIds
         parseConfigAndPopulateMaps(cacheConfigList);
 

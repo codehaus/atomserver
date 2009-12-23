@@ -20,7 +20,8 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
 
   <bean id="org.atomserver-aggregatefeedcachemanager"
-        class="org.atomserver.cache.AggregateFeedCacheManager">
+        class="org.atomserver.cache.AggregateFeedCacheManager"
+        init-method="init">
     <property name="cachedFeedDAO" ref="org.atomserver-feedCacheDAO"/>
     <property name="transactionTemplate">
       <bean class="org.springframework.transaction.support.TransactionTemplate">
