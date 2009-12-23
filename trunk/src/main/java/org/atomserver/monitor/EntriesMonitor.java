@@ -23,40 +23,38 @@ public class EntriesMonitor {
     // Number of getEntries requests which returns zero count .
     private long entriesReturningZeroCount = 0;
 
-    @ManagedAttribute(description = "Number of Entries to Add/Update On this Server")
+    @ManagedAttribute(description = "Number of Entries to Add/Update")
     public long getNumberOfEntriesToUpdate() {
         return numberOfEntriesToUpdate;
     }
 
-    @ManagedAttribute(description = "Number of Entries Actually Added/Updated on this Server")
+    @ManagedAttribute(description = "Number of Entries Actually Added/Updated")
     public long getNumberOfEntriesActuallyUpdated() {
         return numberOfEntriesActuallyUpdated;
     }
 
-    @ManagedAttribute(description = "Number of Entries With Same Content/Categories On this Server")
+    @ManagedAttribute(description = "Number of Entries With Same Content/Categories")
     public long getNumberOfEntriesWitheSameContent() {
         return numberOfEntriesWitheSameContent;
     }
 
-    @ManagedAttribute(description = "Number of getEntries requests on this Server.")
+    @ManagedAttribute(description = "Number of getEntries requests")
     public long getNumberOfgetEntriesRequests() {
         return this.numberOfgetEntriesRequests;
     }
 
-    @ManagedAttribute(description = "Number of getEntries requests returning zero count on this Server.")
+    @ManagedAttribute(description = "Number of getEntries requests returning zero count")
     public long getNumberOfgetEntriesReturningZeroCount() {
         return this.entriesReturningZeroCount;
     }
 
-    @ManagedAttribute(description = "Percentage of getEntries requests returning zero count on this Server.")
+    @ManagedAttribute(description = "Percentage of getEntries requests returning zero count")
     public double getPercentOfNonZeroEntriesRequested() {
         if((entriesReturningZeroCount == 0) && (numberOfgetEntriesRequests == 0)) {
             return -1.0;
         }
-        if(numberOfgetEntriesRequests > 0) {
-            if(entriesReturningZeroCount > 0) {
-                return ( numberOfgetEntriesRequests - entriesReturningZeroCount )/((double)numberOfgetEntriesRequests) * 100.0;
-            }
+        if(entriesReturningZeroCount > 0) {
+            return (entriesReturningZeroCount )/((double)numberOfgetEntriesRequests) * 100.0;
         }
         return 0.0;
     }
