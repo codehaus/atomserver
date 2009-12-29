@@ -10,8 +10,10 @@
         <section name="Release 2.1.15">
             <ul>
               <li>
-                On entry update, the new contents will be compared against old contents a hash function, and
-                if the contents as well as the categories are the same, the entry will not be updated.
+                On entry update, the new contents will be compared against old contents using a hash function, and
+                if the contents and the categories are the same, the entry will not be updated and the revision number
+                and timestamp will remain the same. Jmx EntriesMonitor page will display the number of PUT requests that
+                are actually updated.
               </li>
             </ul>
         </section>
