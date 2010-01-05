@@ -71,8 +71,12 @@ abstract public class CRUDDBSTestCase extends BaseCRUDDBSTestCase {
     }
 
     protected IRI getEntryIRI() {
+        return getEntryIRI(propId);
+    }
+
+    protected IRI getEntryIRI(String propertyId) {
         IRI entryIRI = IRI.create("http://localhost:8080/"
-                              + widgetURIHelper.constructURIString("widgets", "acme", propId, LocaleUtils.toLocale("en")));
+                              + widgetURIHelper.constructURIString("widgets", "acme", propertyId, LocaleUtils.toLocale("en")));
         return entryIRI;
     }
 
