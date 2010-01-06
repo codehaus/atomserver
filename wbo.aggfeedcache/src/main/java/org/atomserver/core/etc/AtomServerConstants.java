@@ -68,6 +68,11 @@ public final class AtomServerConstants {
     public static final String RESULTS_LN = "results";
     public static final QName RESULTS = new QName(ATOMSERVER_BATCH_NS, RESULTS_LN, ATOMSERVER_BATCH_NS_PREFIX);
 
+    public static final String CONTENT_HASH_LN = "hash";
+    public static final QName CONTENT_HASH = new QName(ATOMSERVER_NS, CONTENT_HASH_LN, ATOMSERVER_NS_PREFIX);
+
+    public static final String ENTRY_UPDATED_LN = "entryUpdated";
+    public static final QName ENTRY_UPDATED = new QName(ATOMSERVER_NS, ENTRY_UPDATED_LN, ATOMSERVER_NS_PREFIX);
 
     public static final Date ZERO_DATE = new Date( 0L );
     public static final Date FAR_FUTURE_DATE = AtomDate.parse( "2222-10-07T00.00.00.000Z");   

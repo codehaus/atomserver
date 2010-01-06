@@ -74,12 +74,12 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
 
         for (int i = 6006; i < 6018; i++) {
             String entryId = "" + i;
-            modifyEntry("reds", "shades", entryId, Locale.US.toString(), redXml(i), true, "0");
+            modifyEntry("reds", "shades", entryId, Locale.US.toString(), redXml(i,0), true, "0");
             if (i % 2 == 0) {
-                modifyEntry("greens", "shades", entryId, null, greenXml(i), true, "0");
+                modifyEntry("greens", "shades", entryId, null, greenXml(i,0), true, "0");
             }
             if (i % 3 == 0) {
-                modifyEntry("blues", "shades", entryId, null, blueXml(i), true, "0");
+                modifyEntry("blues", "shades", entryId, null, blueXml(i,0), true, "0");
             }
         }
     }
@@ -118,7 +118,7 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
         getPage("$join/urn:hue?start-index=" + endIndex, 304);
 
         // changing one red should result in a single entry in our aggregate feed
-        modifyEntry("reds", "shades", "6015", Locale.US.toString(), redXml(6015), false, "1");
+        modifyEntry("reds", "shades", "6015", Locale.US.toString(), redXml(6015,1), false, "1");
         feed = getPage("$join/urn:hue?start-index=" + endIndex);
         assertEquals(1, feed.getEntries().size());
         for (Entry entry : feed.getEntries()) {
@@ -134,7 +134,7 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
         endIndex = feed.getSimpleExtension(AtomServerConstants.END_INDEX);
 
         // changing one green should result in two entries in our aggregate feed
-        modifyEntry("greens", "shades", "6010", null, greenXml(6010), false, "1");
+        modifyEntry("greens", "shades", "6010", null, greenXml(6010,1), false, "1");
         feed = getPage("$join/urn:hue?start-index=" + endIndex);
         assertEquals(2, feed.getEntries().size());
         for (Entry entry : feed.getEntries()) {
@@ -154,7 +154,7 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
         endIndex = feed.getSimpleExtension(AtomServerConstants.END_INDEX);
 
         // changing one blue should result in three entries in our aggregate feed
-        modifyEntry("blues", "shades", "6009", null, blueXml(6009), false, "1");
+        modifyEntry("blues", "shades", "6009", null, blueXml(6009,1), false, "1");
         feed = getPage("$join/urn:hue?start-index=" + endIndex);
         assertEquals(3, feed.getEntries().size());
         for (Entry entry : feed.getEntries()) {
@@ -190,8 +190,8 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
 
         // in this case, we can solve the problem by REDUCING the page size from the requested 4
         // down to 3 - this is the usual case.
-        modifyEntry("blues", "shades", "6009", null, blueXml(6009), false, "2");
-        modifyEntry("blues", "shades", "6012", null, blueXml(6012), false, "1");
+        modifyEntry("blues", "shades", "6009", null, blueXml(6009,2), false, "2");
+        modifyEntry("blues", "shades", "6012", null, blueXml(6012,1), false, "1");
 
         feed = getPage("$join/urn:hue?max-results=4&start-index=" + endIndex);
         checkPageContainsExpectedEntries(feed, Arrays.asList("6009", "6010", "6011"));
@@ -202,8 +202,8 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
 
         // here, we have to double from the requested 2 up to 4, which is then reduced as above to
         // 3 before we return.
-        modifyEntry("blues", "shades", "6009", null, blueXml(6009), false, "3");
-        modifyEntry("blues", "shades", "6012", null, blueXml(6012), false, "2");
+        modifyEntry("blues", "shades", "6009", null, blueXml(6009,3), false, "3");
+        modifyEntry("blues", "shades", "6012", null, blueXml(6012,2), false, "2");
 
         feed = getPage("$join/urn:hue?max-results=2&start-index=" + endIndex);
         checkPageContainsExpectedEntries(feed, Arrays.asList("6009", "6010", "6011"));
@@ -214,8 +214,8 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
 
         // here, we have to double TWICE from the requested 1 to 2 and then to 4, which is then
         // reduced as above to 3 before we return.
-        modifyEntry("blues", "shades", "6009", null, blueXml(6009), false, "4");
-        modifyEntry("blues", "shades", "6012", null, blueXml(6012), false, "3");
+        modifyEntry("blues", "shades", "6009", null, blueXml(6009,4), false, "4");
+        modifyEntry("blues", "shades", "6012", null, blueXml(6012,3), false, "3");
 
         feed = getPage("$join/urn:hue?max-results=1&start-index=" + endIndex);
         checkPageContainsExpectedEntries(feed, Arrays.asList("6009", "6010", "6011"));
@@ -225,9 +225,9 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
         endIndex = feed.getSimpleExtension(AtomServerConstants.END_INDEX);
 
         // changing these "overlapping" objects should result in five entries in our aggregate feed
-        modifyEntry("reds", "shades", "6017", Locale.US.toString(), redXml(6017), false, "1");
-        modifyEntry("greens", "shades", "6014", null, greenXml(6014), false, "1");
-        modifyEntry("blues", "shades", "6012", null, blueXml(6012), false, "4");
+        modifyEntry("reds", "shades", "6017", Locale.US.toString(), redXml(6017,1), false, "1");
+        modifyEntry("greens", "shades", "6014", null, greenXml(6014,1), false, "1");
+        modifyEntry("blues", "shades", "6012", null, blueXml(6012,4), false, "4");
         feed = getPage("$join/urn:hue?start-index=" + endIndex);
         assertEquals(5, feed.getEntries().size());
         for (Entry entry : feed.getEntries()) {
@@ -276,7 +276,7 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
         endIndex = feed.getSimpleExtension(AtomServerConstants.END_INDEX);
 
         // changing one red should result in a single entry in our aggregate feed
-        modifyEntry("reds", "shades", "6015", Locale.US.toString(), redXml(6015), false, "2");
+        modifyEntry("reds", "shades", "6015", Locale.US.toString(), redXml(6015,2), false, "2");
         feed = getPage("$join/urn:hue?locale=en_US&start-index=" + endIndex);
         assertEquals(1, feed.getEntries().size());
         for (Entry entry : feed.getEntries()) {
@@ -292,7 +292,7 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
         endIndex = feed.getSimpleExtension(AtomServerConstants.END_INDEX);
 
         // changing one green should result in two entries in our aggregate feed
-        modifyEntry("greens", "shades", "6010", null, greenXml(6010), false, "2");
+        modifyEntry("greens", "shades", "6010", null, greenXml(6010,2), false, "2");
         feed = getPage("$join/urn:hue?locale=en_US&start-index=" + endIndex);
         assertEquals(2, feed.getEntries().size());
         for (Entry entry : feed.getEntries()) {
@@ -312,9 +312,9 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
         endIndex = feed.getSimpleExtension(AtomServerConstants.END_INDEX);
 
         // changing these "overlapping" objects should result in five entries in our aggregate feed
-        modifyEntry("reds", "shades", "6017", Locale.US.toString(), redXml(6017), false, "2");
-        modifyEntry("greens", "shades", "6014", null, greenXml(6014), false, "2");
-        modifyEntry("blues", "shades", "6012", null, blueXml(6012), false, "5");
+        modifyEntry("reds", "shades", "6017", Locale.US.toString(), redXml(6017,2), false, "2");
+        modifyEntry("greens", "shades", "6014", null, greenXml(6014,2), false, "2");
+        modifyEntry("blues", "shades", "6012", null, blueXml(6012,5), false, "5");
         feed = getPage("$join/urn:hue?locale=en_US&start-index=" + endIndex);
         assertEquals(5, feed.getEntries().size());
         for (Entry entry : feed.getEntries()) {
@@ -394,11 +394,11 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
         // modify all of the "odd" reds
         for (int i = 6007; i < 6018; i+=2) {
             String entryId = "" + i;
-            modifyEntry("reds", "shades", entryId, Locale.US.toString(), redXml(i), false, "*");
+            modifyEntry("reds", "shades", entryId, Locale.US.toString(), redXml(i,1000), false, "*");
         }
 
         // modify ONE "even" red
-        modifyEntry("reds", "shades", "6008", Locale.US.toString(), redXml(6008), false, "*");
+        modifyEntry("reds", "shades", "6008", Locale.US.toString(), redXml(6008,1000), false, "*");
 
         // we should see the one entry in the "even" feed
         feed = getPage("$join/urn:hue/-/(urn:tint)even?max-results=2&start-index=" + endIndex);
@@ -410,9 +410,9 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
         // ensures that we can reference such aggregates correctly.
 
         // set up a single aggregate entry in the locale=de feed
-        modifyEntry("reds", "shades", "90210", Locale.GERMAN.toString(), redXml(90210), true, "0");
-        modifyEntry("greens", "shades", "90210", null, greenXml(90210), true, "0");
-        modifyEntry("blues", "shades", "90210", null, blueXml(90210), true, "0");
+        modifyEntry("reds", "shades", "90210", Locale.GERMAN.toString(), redXml(90210,0), true, "0");
+        modifyEntry("greens", "shades", "90210", null, greenXml(90210,0), true, "0");
+        modifyEntry("blues", "shades", "90210", null, blueXml(90210,0), true, "0");
         // pull the feed - should get one result
         feed = getPage("$join/urn:hue?locale=de");
         assertEquals(1, feed.getEntries().size());
@@ -543,7 +543,7 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
         String beforeLast = AtomDate.format( new Date( lnow - 50 ) );
 
         // changing one red should result in a single entry in our aggregate feed
-        modifyEntry("reds", "shades", "6015", Locale.US.toString(), redXml(6015), false, "1");
+        modifyEntry("reds", "shades", "6015", Locale.US.toString(), redXml(6015,1), false, "1");
 
         // get all but the one we just modified
         feed = getPage( "$join/urn:hue?updated-max=" + beforeLast, 200 );
@@ -565,7 +565,7 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
         lnow = entriesDao.selectSysDate().getTime();
         String beforeAnother2 = AtomDate.format( new Date( lnow ) );
 
-        modifyEntry("greens", "shades", "6010", null, greenXml(6010), false, "1");
+        modifyEntry("greens", "shades", "6010", null, greenXml(6010,1), false, "1");
 
         // get just the first one we modified again
         feed = getPage( "$join/urn:hue?updated-min=" + beforeLast + "&updated-max=" + afterLast, 200 );
@@ -591,31 +591,34 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
         }
     }
 
-    private static String redXml(int id) {
+    private static String redXml(int id, int revNo) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<red xmlns='http://schemas.atomserver.org/aggregate-tests'>");
         stringBuilder.append("<id>").append(id).append("</id>");
+        stringBuilder.append("<rev>").append(revNo).append("</rev>");
         stringBuilder.append("<group>").append(id % 2 == 0 ? "even" : "odd").append("</group>");
         stringBuilder.append("</red>");
         return stringBuilder.toString();
     }
 
-    private static String greenXml(int id) {
+    private static String greenXml(int id, int revNo) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<green xmlns='http://schemas.atomserver.org/aggregate-tests'>");
         stringBuilder.append("<red>").append(id).append("</red>");
         stringBuilder.append("<red>").append(id + 1).append("</red>");
+        stringBuilder.append("<rev>").append(revNo).append("</rev>");
         stringBuilder.append("<group>").append(id % 3 == 0 ? "reds" : "blues").append("</group>");
         stringBuilder.append("</green>");
         return stringBuilder.toString();
     }
 
-    private static String blueXml(int id) {
+    private static String blueXml(int id, int revNo) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<blue xmlns='http://schemas.atomserver.org/aggregate-tests'>");
         stringBuilder.append("<red>").append(id).append("</red>");
         stringBuilder.append("<red>").append(id + 1).append("</red>");
         stringBuilder.append("<red>").append(id + 2).append("</red>");
+        stringBuilder.append("<rev>").append(revNo).append("</rev>");
         stringBuilder.append("<group>").append(id % 5 == 0 ? "heavy" : "light").append("</group>");
         stringBuilder.append("</blue>");
         return stringBuilder.toString();

@@ -34,7 +34,8 @@
                entry.CreateDate AS CreateDate,
                CAST(UpdateTimestamp AS BIGINT) AS UpdateTimestamp,
                entry.DeleteFlag AS DeleteFlag,
-               entry.RevisionNum AS RevisionNum
+               entry.RevisionNum AS RevisionNum,
+               entry.ContentHashCode AS contentHashCode
           FROM EntryStore entry
         <isNotNull property="categoryQuerySql">
         INNER JOIN EntryCategory searchCategories
@@ -45,9 +46,9 @@
         <isNotNull property="updatedMax">
             <![CDATA[ AND UpdateDate < #updatedMax# ]]>
         </isNotNull>
-           AND UpdateTimestamp > CAST(#startIndex# AS <include refid="timestampType"/>)
+           AND UpdateTimestamp > CAST($startIndex$ AS <include refid="timestampType"/>)
         <isNotEqual property="endIndex" compareValue="-1">
-            AND UpdateTimestamp &lt;= CAST(#endIndex# AS <include refid="timestampType"/>)
+            AND UpdateTimestamp &lt;= CAST($endIndex$ AS <include refid="timestampType"/>)
         </isNotEqual>
         <isNotNull property="latencySeconds">
            AND (
@@ -62,14 +63,14 @@
             </isEqual>
             )
         </isNotNull>
-           AND Workspace = #workspace#
+           AND Workspace = '$workspace$'
         <isNotNull property="collection">
-           AND Collection=#collection#
+           AND Collection = '$collection$'
         </isNotNull>
         <isNotNull property="language">
-           AND LanCode = #language#
+           AND LanCode = '$language$'
             <isNotNull property="country">
-           AND CountryCode = #country#
+           AND CountryCode = '$country$'
             </isNotNull>
         </isNotNull>
         GROUP BY entry.EntryStoreId,
@@ -82,7 +83,8 @@
                  entry.CreateDate,
                  entry.UpdateTimestamp,
                  entry.DeleteFlag,
-                 entry.RevisionNum
+                 entry.RevisionNum,
+                 entry.ContentHashCode
         <isNotNull property="categoryQuerySql">HAVING $categoryQuerySql$</isNotNull>
         ORDER BY entry.UpdateTimestamp
         <include refid="paginationSuffix"/>
@@ -129,6 +131,7 @@
                CAST(entry.UpdateTimestamp AS BIGINT) AS UpdateTimestamp,
                entry.DeleteFlag AS DeleteFlag,
                entry.RevisionNum AS RevisionNum,
+               entry.ContentHashCode as ContentHashCode,
                cat.Scheme AS Scheme,
                cat.Term AS Term,
                cat.Label AS Label

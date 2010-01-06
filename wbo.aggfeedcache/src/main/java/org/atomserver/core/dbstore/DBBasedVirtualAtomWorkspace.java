@@ -90,6 +90,12 @@ public class DBBasedVirtualAtomWorkspace extends DBBasedAtomWorkspace {
                         .cloneWithNewWorkspace(getEntriesWorkspaceName());
             }
 
+            protected EntryTarget getEntryTarget(RequestContext request, Entry entry, String entryXml) {
+                EntryTarget target = getEntryTarget(request);
+                setTargetContentHashCode(target,entry, entryXml);
+                return target;
+            }
+
             protected boolean mustAlreadyExist() {
                 return true;
             }
@@ -109,6 +115,12 @@ public class DBBasedVirtualAtomWorkspace extends DBBasedAtomWorkspace {
                 entryMetaData.setWorkspace(parentAtomWorkspace.getName());
 
                 return super.newEntry(abdera, entryMetaData, entryType);
+            }
+
+            protected boolean isContentChanged(EntryTarget entryTarget, EntryMetaData metaData) {
+                // For virtual workspaces, categories are updated, so the entry will be
+                // eventually mark as modified.
+                return true;
             }
 
         };

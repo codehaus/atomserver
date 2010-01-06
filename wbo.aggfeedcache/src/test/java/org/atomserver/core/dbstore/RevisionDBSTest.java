@@ -70,7 +70,7 @@ public class RevisionDBSTest extends CRUDDBSTestCase {
         assertNull(editURI);
 
         // UPDATE -- now we go to 1
-        editURI = update(id, fullURL1);
+        editURI = update(id, fullURL1, getFileXMLUpdate(0));
         log.debug("editURI= " + editURI);
         assertTrue(editURI.indexOf("/2") != -1);
 
@@ -82,7 +82,7 @@ public class RevisionDBSTest extends CRUDDBSTestCase {
         // UPDATE
         // This should fail -- there is no 3 yet
         String fullURL3 = fullURL + "/3";
-        editURI = update(id, fullURL3);
+        editURI = update(id, fullURL3, getFileXMLUpdate(1));
         log.debug("editURI= " + editURI);
         // this should return the proper edit URI
         assertTrue(editURI.indexOf("/2") != -1);

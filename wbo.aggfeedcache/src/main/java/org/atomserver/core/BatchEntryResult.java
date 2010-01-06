@@ -28,23 +28,27 @@ public class BatchEntryResult {
 
     private EntryTarget entryTarget;
     private EntryMetaData metaData;
+    private Boolean     modified;
     private Exception exception;
 
     public BatchEntryResult(EntryTarget entryTarget,
-                            EntryMetaData metaData) {
-        this(entryTarget, metaData, null);
+                            EntryMetaData metaData,
+                            Boolean modified) {
+        this(entryTarget, metaData, modified, null);
     }
 
     public BatchEntryResult(EntryTarget entryTarget,
                             Exception exception) {
-        this(entryTarget, null, exception);
+        this(entryTarget, null, true, exception);
     }
 
     public BatchEntryResult(EntryTarget entryTarget,
                             EntryMetaData metaData,
+                            Boolean modified,
                             Exception exception) {
         this.entryTarget = entryTarget;
         this.metaData = metaData;
+        this.modified = modified;
         this.exception = exception;
     }
 
@@ -58,5 +62,17 @@ public class BatchEntryResult {
 
     public Exception getException() {
         return exception;
+    }
+    
+    public boolean isModified() {
+        return modified;
+    }
+
+    public void setMetaData(EntryMetaData metaData) {
+        this.metaData = metaData;
+    }
+
+    public void setModified(boolean modified) {
+        this.modified = modified;
     }
 }

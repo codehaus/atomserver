@@ -121,6 +121,9 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                               Feed feed )
             throws AtomServerException {
 
+        if(getEntriesMonitor() != null) {
+            getEntriesMonitor().updateNumberOfGetEntriesRequests(1);
+        }
         String collection = feedTarget.getCollection();
         String workspace = feedTarget.getWorkspace();
 
@@ -130,6 +133,9 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             totalEntries = getEntriesDAO().getCountByLastModified(feedTarget, updatedMin);
 
             if (totalEntries <= 0) {
+                if(getEntriesMonitor() != null) {
+                    getEntriesMonitor().updateNumberOfGetEntriesRequestsReturningNone(1);
+                }
                 return 0L;
             }
         }
@@ -166,6 +172,9 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
 
         int numEntries = sortedList.size();
         if (numEntries <= 0) {
+            if(getEntriesMonitor() != null) {
+                getEntriesMonitor().updateNumberOfGetEntriesRequestsReturningNone(1);
+            }
             return 0L;
         }
 
@@ -289,7 +298,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                                                                         (metaData.getRevision() + 1) );
                     returnValue.add(new BatchEntryResult(entryTarget, new OptimisticConcurrencyException(msg, editURI)));
                 } else {
-                    returnValue.add(new BatchEntryResult(entryTarget, metaData));
+                    returnValue.add(new BatchEntryResult(entryTarget, metaData, true));
                 }
             }
         }
@@ -326,7 +335,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             List<EntryDescriptor> toInsert = new ArrayList<EntryDescriptor>();
             List<EntryDescriptor> toUpdate = new ArrayList<EntryDescriptor>();
             EntryMap<AtomServerException> failed = new EntryMap<AtomServerException>();
-
+            EntryMap<Boolean> unchangedEntries = new EntryMap<Boolean>();
 
             for (EntryTarget entryURIData : entriesURIData) {
                 String workspace = entryURIData.getWorkspace();
@@ -354,7 +363,12 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                     continue;
                 }
 
-                (entryMetaData == null ? toInsert : toUpdate).add(entryURIData);
+                boolean changed = isContentChanged(null, entryMetaData);
+                if(changed || entryMetaData != null && entryMetaData.getDeleted()) {
+                    (entryMetaData == null ? toInsert : toUpdate).add(entryURIData);
+                } else {
+                    unchangedEntries.put(entryURIData, changed);
+                }
             }
 
             EntryMap<EntryMetaData> metaDataAfterModified = new EntryMap<EntryMetaData>();
@@ -377,9 +391,11 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
 
             for (EntryTarget entry : entriesURIData) {
                 if (failed.get(entry) != null) {
-                    returnValue.add(new BatchEntryResult(entry, metaDataAfterModified.get(entry), failed.get(entry)));
+                    returnValue.add(new BatchEntryResult(entry, metaDataAfterModified.get(entry), false, failed.get(entry)));
+                } else if( unchangedEntries.get(entry) != null ) {
+                    returnValue.add(new BatchEntryResult(entry, metaData.get(entry), false));
                 } else {
-                    returnValue.add(new BatchEntryResult(entry, metaDataAfterModified.get(entry)));
+                    returnValue.add(new BatchEntryResult(entry, metaDataAfterModified.get(entry), true));
                 }
             }
         }
@@ -392,7 +408,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
      * <p/>
      * NOTE: A PUT will receive an EntryTarget which points at the NEXT revision
      */
-    protected EntryMetaData modifyEntry(Object internalId,
+    protected EntryMetaDataStatus modifyEntry(Object internalId,
                                         EntryTarget entryTarget,
                                         boolean mustAlreadyExist)
             throws AtomServerException {
@@ -411,11 +427,12 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         boolean writeFailed = true;
 
         if (!isNewEntry) {
-            if ( revision == 0 ) {
-                // SELECT -- we do this select to know what revision we actually had,
-                // so we can create the proper editURI
-                EntryMetaData metaData = getEntriesDAO().selectEntryByInternalId(internalId);
+            // SELECT -- we do this select to know what revision we actually had,
+            // and compare hash values so that we can check if it has been changed.
+            // so we can create the proper editURI
+            EntryMetaData metaData = getEntriesDAO().selectEntryByInternalId(internalId);
 
+            if ( revision == 0 ) {
                 String msg = "Entry [" + workspace + ", " + collection + ", " + entryId + ", " + locale
                     + "] You requested a write at revision 0, but this has already been written"
                     + " It should be " + (metaData.getRevision() + 1) + ")";
@@ -425,12 +442,29 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                 throw new OptimisticConcurrencyException(msg, editURI);
             }
 
-            int numRowsModified = getEntriesDAO().updateEntry( entryTarget, false );
-            if (numRowsModified > 0) {
-                writeFailed = false;
+            // check revision compatibility
+            boolean revisionError = (revision >= 0) && (metaData.getRevision() >= revision);
+
+            // if the entry is deleted or the content has changed, proceed with update.
+            if(!revisionError && !metaData.getDeleted() && !isContentChanged(entryTarget, metaData)) {
+               if( log.isDebugEnabled())
+                    log.debug(" CONTENT Hash is the same: [" + entryTarget.getEntryId() + "]");
+                    metaData.setNewlyCreated(false);
+                    // If content has not changed, do not update the Entry (unless the categories are changed).
+                    return new EntryMetaDataStatus(metaData,false);
             }
-            if (log.isDebugEnabled())
+
+            if(!revisionError) {
+                int numRowsModified = getEntriesDAO().updateEntry( entryTarget, false );
+                if (numRowsModified > 0) {
+                    writeFailed = false;
+                }
+                
+                if (log.isDebugEnabled())
                 log.debug( "AFTER UPDATE:: [" + entryTarget.getEntryId() + "] numRowsModified= " + numRowsModified );
+             } else {
+                writeFailed = true;
+            }
 
         } else {
             if (mustAlreadyExist) {
@@ -485,9 +519,51 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             }
         }
 
-        // SELECT -- We must select again
+        return postModifyEntry(internalId, entryTarget, isNewEntry, writeFailed);
+    }
+
+    /**
+     * Update the entry. This is called when the entry content has not changed but the categories have on update.
+     * @param internalId
+     * @param entryTarget
+     * @return <code>EntryMetaDataStatus</code> object
+     * @throws AtomServerException
+     */
+    protected EntryMetaDataStatus reModifyEntry(Object internalId, EntryTarget entryTarget)
+            throws AtomServerException {
+        boolean writeFailed = true;
+
+        int numRowsModified = getEntriesDAO().updateEntry( entryTarget, false );
+        if (numRowsModified > 0) {
+            writeFailed = false;
+        }
+        return postModifyEntry(internalId, entryTarget, false, writeFailed);
+
+    }
+
+    /**
+     * Post processing after update or insert of an entry.
+     * @param internalId
+     * @param entryTarget
+     * @param writeFailed
+     * @param isNewEntry
+     * @return
+     */
+    protected EntryMetaDataStatus postModifyEntry(Object internalId,
+                                                  EntryTarget entryTarget,
+                                                  boolean isNewEntry,
+                                                  boolean writeFailed) {
+
+         // SELECT -- We must select again
         //  because we need data that was set during the INSERT or UPDATE (e.g. published & lastModified)
         EntryMetaData bean = getEntriesDAO().selectEntryByInternalId(internalId);
+
+        String workspace = entryTarget.getWorkspace();
+        String collection = entryTarget.getCollection();
+        Locale locale = entryTarget.getLocale();
+        String entryId = entryTarget.getEntryId();
+        int revision = entryTarget.getRevision();
+
         if (bean == null) {
             String msg = "Entry [" + workspace + ", " + collection + ", " + entryId + ", " + locale
                          + "] returned an empty row (Null ResultSet) AFTER an INSERT or UPDATE!";
@@ -508,9 +584,8 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             throw new OptimisticConcurrencyException(msg, editURI);
         }
 
-        return bean;
+        return new EntryMetaDataStatus(bean,true);
     }
-
 
     /**
      * When we delete entry XML files, we write a new "deleted" file
@@ -754,4 +829,6 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             }
         }
     }
+
+
 }

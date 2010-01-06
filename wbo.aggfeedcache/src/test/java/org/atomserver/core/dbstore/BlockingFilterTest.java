@@ -17,15 +17,12 @@
 
 package org.atomserver.core.dbstore;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.protocol.client.AbderaClient;
 import org.apache.abdera.protocol.client.RequestOptions;
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.protocol.client.ClientResponse;
-import org.apache.commons.lang.StringUtils;
 import org.atomserver.testutils.client.MockRequestContext;
 import org.atomserver.uri.EntryTarget;
 import org.atomserver.server.servlet.BlockingFilterSettings;
@@ -38,14 +35,15 @@ public class BlockingFilterTest extends CRUDDBSTestCase {
     static final String REGX_PATH = "^\\/atomserver\\/v1\\/widgets\\/acme(.)*";
 
     private String editUrl = null;
+    private String propId2 = "A12345";
 
     public void setUp() throws Exception {
         super.setUp();
-        removeEntry(); // make sure data is clean
+        removeEntry(propId); // make sure data is clean
     }
 
     public void tearDown() throws Exception {
-        removeEntry();
+        removeEntry(propId);
         super.tearDown();
     }
 
@@ -58,6 +56,7 @@ public class BlockingFilterTest extends CRUDDBSTestCase {
         checkBlockedByContentLength();
         checkBlockedPath();
         checkBlockedUser();
+        checkBlockedWrites();
     }
 
     public void checkBlockedByContentLength() throws Exception {
@@ -77,7 +76,7 @@ public class BlockingFilterTest extends CRUDDBSTestCase {
         editUrl = addEntry(false, 201);
         assertNotNull(editUrl);
 
-        removeEntry();
+        removeEntry(propId);
 
         // addEntry with servlet request's content length not being set.
         editUrl = addEntry(true, 201);
@@ -121,24 +120,51 @@ public class BlockingFilterTest extends CRUDDBSTestCase {
 
     }
 
-    private String addEntry(boolean noContentLen, int expectedResponse) throws Exception {
-        String editLink = simpleInsert(noContentLen, expectedResponse);
+    public void checkBlockedWrites() throws Exception {
+
+        // Block Writes
+        getFilterSettings().setWritesDisabled(true);
+
+        // Try a write
+
+        String urlPath =  "widgets/acme/" + propId2 + ".en.xml";
+        addEntryWithURL(urlPath, 403);
+
+        // Unblock writes
+        getFilterSettings().setWritesDisabled(false);
+
+        // Try a write
+        addEntryWithURL(urlPath, 201);
+
+        // Clean  up
+        removeEntry(propId2);
+    }
+
+    private String addEntryWithURL(String urlPath, int expectedResponse) throws Exception {
+        String editLink = simpleInsert( false, expectedResponse, urlPath);
         if (editLink != null) {
             return getSelfUriFromEditUri(editLink);
         }
         return null;
     }
 
-    private void removeEntry() {
+    private String addEntry(boolean noContentLen, int expectedResponse) throws Exception {
+        String editLink = simpleInsert(noContentLen, expectedResponse, getURLPath());
+        if (editLink != null) {
+            return getSelfUriFromEditUri(editLink);
+        }
+        return null;
+    }
+
+    private void removeEntry(String propertyId) {
         EntryTarget entryTarget =
                 widgetURIHelper.getEntryTarget(
-                        new MockRequestContext(serviceContext, "GET", getEntryIRI().toString()), true);
+                        new MockRequestContext(serviceContext, "GET", getEntryIRI(propertyId).toString()), true);
         entriesDAO.obliterateEntry(entryTarget);
     }
 
-    protected String simpleInsert(boolean noContentLen, int expectedResponse) throws Exception {
+    protected String simpleInsert(boolean noContentLen, int expectedResponse, String urlPath) throws Exception {
 
-        String urlPath = getURLPath();
         String fullURL = getServerURL() + urlPath;
         String id = urlPath;
 

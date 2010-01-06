@@ -109,7 +109,7 @@ public class FileBasedAtomCollection
 
     /**
      */
-    protected EntryMetaData modifyEntry(Object internalId,
+    protected EntryMetaDataStatus modifyEntry(Object internalId,
                                         EntryTarget entryTarget,
                                         boolean mustAlreadyExist)
             throws AtomServerException {
@@ -128,7 +128,12 @@ public class FileBasedAtomCollection
             bean.setNewlyCreated(true);
         }
 
-        return bean;
+        return new EntryMetaDataStatus(bean,true);
+    }
+
+    protected EntryMetaDataStatus reModifyEntry(Object internalId,
+                                                EntryTarget entryTarget) {
+        return modifyEntry(internalId, entryTarget, true);
     }
 
     /**

@@ -112,7 +112,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         return fileXMLInsert;
     }
 
-    protected String getFileXMLUpdate() {
+    protected String getFileXMLUpdate(int updateNo) {
         String fileXMLUpdate =
             "<property xmlns=\"http://schemas.atomserver.org/widgets/v1/rev0\" systemId=\"acme\" id=\"12345\" inNetwork=\"false\">\n"
             + "<colors>"
@@ -120,7 +120,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
             + "</colors>"
             + "<contact>"
             + "<contactId>1638</contactId>"
-            + "<displayName>This is an update</displayName>"
+            + "<displayName>This is an update " + updateNo + "</displayName>"
             + "<hasEmail>true</hasEmail>"
             + "</contact>"
             + "</property>";
@@ -216,7 +216,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
 
         // UPDATE
         String updateURL = ( shouldCheckOptConc ) ? editURI : (fullURL + "/*") ;
-        editURI = update(id, updateURL, getFileXMLUpdate(), allowsAny);
+        editURI = update(id, updateURL, getFileXMLUpdate(0), allowsAny);
         log.debug( "########################################## editURI = " + editURI );
         if (  shouldCheckFile && contentStorage instanceof FileBasedContentStorage) {
             File propFile = getEntryFile(1);
@@ -239,6 +239,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         }
 
         // DELETE
+
         String deleteURL = ( shouldCheckOptConc ) ? editURI : (fullURL + "/*") ;
         editURI = delete(deleteURL);
         log.debug( "########################################## editURI = " + editURI );
@@ -254,6 +255,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         }
 
         if (getStoreName().equals("org.atomserver-atomService") && shouldCheckOptConc ) {
+
             // figure out what the last revision from the delete was
             int revision = extractRevisionFromURI(editURI);
 
@@ -261,11 +263,11 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
             String fullURLWithRevisionOverride = fullURL + "/*";
 
             // UPDATE (with override)
-            editURI = update(id, fullURLWithRevisionOverride);
+            editURI = update(id, fullURLWithRevisionOverride, getFileXMLUpdate(2));
             assertEquals(revision + 1, (revision = extractRevisionFromURI(editURI)));
 
             // UPDATE (with override) AGAIN
-            editURI = update(id, fullURLWithRevisionOverride);
+            editURI = update(id, fullURLWithRevisionOverride, getFileXMLUpdate(3));
             assertEquals(revision + 1, (revision = extractRevisionFromURI(editURI)));
 
             // DELETE (with override)
@@ -495,7 +497,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
     //    update 
     //=========================
     protected String update(String id, String fullURL) throws Exception {
-        return update(id, fullURL, getFileXMLUpdate() );
+        return update(id, fullURL, getFileXMLUpdate(0) );
     }
 
     protected String update(String id, String fullURL, String fileXML) throws Exception {
