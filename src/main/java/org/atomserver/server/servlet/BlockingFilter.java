@@ -39,8 +39,8 @@ import java.util.List;
 
 /**
  * BlockingFilter - A servlet filter to check for blocked users, blocked URI paths,
- * and contents that are blocked based on their length. The order of checking is
- * content-length, user, and paths.
+ * and contents that are blocked based on their length, and writes (PUT,GET,DELETE).
+ * The order of checking is content-length, user, paths, and writes.
  * <p/>
  * HTTP STATUS CODES on blocked state
  * Blocked By                   Status Code
@@ -73,7 +73,8 @@ public class BlockingFilter implements Filter {
         HttpServletResponse response = (HttpServletResponse) servletResponse;
         if (contentNotBlockedByLength(request, response) &&
             userNotBlocked(request, response) &&
-            pathNotBlocked(request, response)) {
+            pathNotBlocked(request, response) &&
+            writesNotBlocked(request, response)) {
             ServletRequest servRequest = (isContentLengthNotSet(request)) ? wrapServletRequest(request) : request;
             filterChain.doFilter(servRequest, servletResponse);
         }
@@ -130,6 +131,19 @@ public class BlockingFilter implements Filter {
                 setError(response, HttpServletResponse.SC_FORBIDDEN, message);
                 return false;
             }
+        }
+        return true;
+    }
+
+    private boolean writesNotBlocked(final HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        boolean isWrite = request.getMethod().equals("POST") || request.getMethod().equals("PUT") ||
+                          request.getMethod().equals("DELETE");
+
+        if( isWrite && settings.getWritesDisabled()) {
+            String message = " PUT, GET AND DELETE are currently blocked";
+            setError(response, HttpServletResponse.SC_FORBIDDEN, message);
+            return false;
         }
         return true;
     }
