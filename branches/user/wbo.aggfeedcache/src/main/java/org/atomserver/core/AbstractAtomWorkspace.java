@@ -27,6 +27,7 @@ import org.atomserver.AtomCollection;
 import org.atomserver.AtomServer;
 import org.atomserver.AtomService;
 import org.atomserver.AtomWorkspace;
+import org.atomserver.monitor.EntriesMonitor;
 import org.atomserver.exceptions.BadRequestException;
 
 import java.util.HashMap;
@@ -144,6 +145,10 @@ abstract public class AbstractAtomWorkspace implements AtomWorkspace {
      */
     public boolean collectionExists(String collection) {
         return listCollections().contains(collection);
+    }
+
+    protected EntriesMonitor getEntriesMonitor() {
+        return parentService.getEntriesMonitor();
     }
 }
 

@@ -38,4 +38,6 @@ public interface EntryDescriptor {
     Locale getLocale();
 
     int getRevision();
+
+    String getContentHashCode();
 }

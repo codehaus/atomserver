@@ -93,6 +93,9 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
                                             Date updatedMin, Date updatedMax, Feed feed,
                                             EntryType entryType, int pageSize) {
 
+                if(getEntriesMonitor() != null) {
+                    getEntriesMonitor().updateNumberOfGetEntriesRequests(1);
+                }
                 int startIndex = feedTarget.getStartIndexParam();
                 int endIndex = feedTarget.getEndIndexParam();
 
@@ -114,6 +117,9 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
                                                                     joinWorkspaces);
 
                 if (list.isEmpty()) {
+                    if(getEntriesMonitor() != null) {
+                        getEntriesMonitor().updateNumberOfGetEntriesRequestsReturningNone(1);
+                    }
                     return 0L;
                 }
 

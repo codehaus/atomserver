@@ -31,12 +31,12 @@ public class AggregateFeedsTest extends DBSTestCase {
 
         for (int i = 3006; i < 3018; i++) {
             String entryId = "" + i;
-            modifyEntry("lalas", "my", entryId, Locale.US.toString(), lalaXml(i), true, "0");
+            modifyEntry("lalas", "my", entryId, Locale.US.toString(), lalaXml(i,0), true, "0");
             if (i % 2 == 0) {
-                modifyEntry("cuckoos", "my", entryId, null, cuckooXml(i), true, "0");
+                modifyEntry("cuckoos", "my", entryId, null, cuckooXml(i,0), true, "0");
             }
             if (i % 3 == 0) {
-                modifyEntry("aloos", "my", entryId, null, alooXml(i), true, "0");
+                modifyEntry("aloos", "my", entryId, null, alooXml(i,0), true, "0");
             }
         }
     }
@@ -76,7 +76,7 @@ public class AggregateFeedsTest extends DBSTestCase {
         getPage("$join/urn:link?start-index=" + endIndex, 304);
 
         // changing one lala should result in a single entry in our aggregate feed
-        modifyEntry("lalas", "my", "3015", Locale.US.toString(), lalaXml(3015), false, "1");
+        modifyEntry("lalas", "my", "3015", Locale.US.toString(), lalaXml(3015,1), false, "1");
         feed = getPage("$join/urn:link?start-index=" + endIndex);
         assertEquals(1, feed.getEntries().size());
         for (Entry entry : feed.getEntries()) {
@@ -92,7 +92,7 @@ public class AggregateFeedsTest extends DBSTestCase {
         endIndex = feed.getSimpleExtension(AtomServerConstants.END_INDEX);
 
         // changing one cuckoo should result in two entries in our aggregate feed
-        modifyEntry("cuckoos", "my", "3010", null, cuckooXml(3010), false, "1");
+        modifyEntry("cuckoos", "my", "3010", null, cuckooXml(3010,1), false, "1");
         feed = getPage("$join/urn:link?start-index=" + endIndex);
         assertEquals(2, feed.getEntries().size());
         for (Entry entry : feed.getEntries()) {
@@ -112,7 +112,7 @@ public class AggregateFeedsTest extends DBSTestCase {
         endIndex = feed.getSimpleExtension(AtomServerConstants.END_INDEX);
 
         // changing one aloo should result in three entries in our aggregate feed
-        modifyEntry("aloos", "my", "3009", null, alooXml(3009), false, "1");
+        modifyEntry("aloos", "my", "3009", null, alooXml(3009,1), false, "1");
         feed = getPage("$join/urn:link?start-index=" + endIndex);
         assertEquals(3, feed.getEntries().size());
         for (Entry entry : feed.getEntries()) {
@@ -148,8 +148,8 @@ public class AggregateFeedsTest extends DBSTestCase {
 
         // in this case, we can solve the problem by REDUCING the page size from the requested 4
         // down to 3 - this is the usual case.
-        modifyEntry("aloos", "my", "3009", null, alooXml(3009), false, "2");
-        modifyEntry("aloos", "my", "3012", null, alooXml(3012), false, "1");
+        modifyEntry("aloos", "my", "3009", null, alooXml(3009,2), false, "2");
+        modifyEntry("aloos", "my", "3012", null, alooXml(3012,1), false, "1");
 
         feed = getPage("$join/urn:link?max-results=4&start-index=" + endIndex);
         checkPageContainsExpectedEntries(feed, Arrays.asList("3009", "3010", "3011"));
@@ -160,8 +160,8 @@ public class AggregateFeedsTest extends DBSTestCase {
 
         // here, we have to double from the requested 2 up to 4, which is then reduced as above to
         // 3 before we return.
-        modifyEntry("aloos", "my", "3009", null, alooXml(3009), false, "3");
-        modifyEntry("aloos", "my", "3012", null, alooXml(3012), false, "2");
+        modifyEntry("aloos", "my", "3009", null, alooXml(3009,3), false, "3");
+        modifyEntry("aloos", "my", "3012", null, alooXml(3012,2), false, "2");
 
         feed = getPage("$join/urn:link?max-results=2&start-index=" + endIndex);
         checkPageContainsExpectedEntries(feed, Arrays.asList("3009", "3010", "3011"));
@@ -172,8 +172,8 @@ public class AggregateFeedsTest extends DBSTestCase {
 
         // here, we have to double TWICE from the requested 1 to 2 and then to 4, which is then
         // reduced as above to 3 before we return.
-        modifyEntry("aloos", "my", "3009", null, alooXml(3009), false, "4");
-        modifyEntry("aloos", "my", "3012", null, alooXml(3012), false, "3");
+        modifyEntry("aloos", "my", "3009", null, alooXml(3009,4), false, "4");
+        modifyEntry("aloos", "my", "3012", null, alooXml(3012,3), false, "3");
 
         feed = getPage("$join/urn:link?max-results=1&start-index=" + endIndex);
         checkPageContainsExpectedEntries(feed, Arrays.asList("3009", "3010", "3011"));
@@ -183,9 +183,9 @@ public class AggregateFeedsTest extends DBSTestCase {
         endIndex = feed.getSimpleExtension(AtomServerConstants.END_INDEX);
 
         // changing these "overlapping" objects should result in five entries in our aggregate feed
-        modifyEntry("lalas", "my", "3017", Locale.US.toString(), lalaXml(3017), false, "1");
-        modifyEntry("cuckoos", "my", "3014", null, cuckooXml(3014), false, "1");
-        modifyEntry("aloos", "my", "3012", null, alooXml(3012), false, "4");
+        modifyEntry("lalas", "my", "3017", Locale.US.toString(), lalaXml(3017,1), false, "1");
+        modifyEntry("cuckoos", "my", "3014", null, cuckooXml(3014,1), false, "1");
+        modifyEntry("aloos", "my", "3012", null, alooXml(3012,4), false, "4");
         feed = getPage("$join/urn:link?start-index=" + endIndex);
         assertEquals(5, feed.getEntries().size());
         for (Entry entry : feed.getEntries()) {
@@ -234,7 +234,7 @@ public class AggregateFeedsTest extends DBSTestCase {
         endIndex = feed.getSimpleExtension(AtomServerConstants.END_INDEX);
 
         // changing one lala should result in a single entry in our aggregate feed
-        modifyEntry("lalas", "my", "3015", Locale.US.toString(), lalaXml(3015), false, "2");
+        modifyEntry("lalas", "my", "3015", Locale.US.toString(), lalaXml(3015,2), false, "2");
         feed = getPage("$join/urn:link?locale=en_US&start-index=" + endIndex);
         assertEquals(1, feed.getEntries().size());
         for (Entry entry : feed.getEntries()) {
@@ -250,7 +250,7 @@ public class AggregateFeedsTest extends DBSTestCase {
         endIndex = feed.getSimpleExtension(AtomServerConstants.END_INDEX);
 
         // changing one cuckoo should result in two entries in our aggregate feed
-        modifyEntry("cuckoos", "my", "3010", null, cuckooXml(3010), false, "2");
+        modifyEntry("cuckoos", "my", "3010", null, cuckooXml(3010,2), false, "2");
         feed = getPage("$join/urn:link?locale=en_US&start-index=" + endIndex);
         assertEquals(2, feed.getEntries().size());
         for (Entry entry : feed.getEntries()) {
@@ -271,9 +271,9 @@ public class AggregateFeedsTest extends DBSTestCase {
 
 
         // changing these "overlapping" objects should result in five entries in our aggregate feed
-        modifyEntry("lalas", "my", "3017", Locale.US.toString(), lalaXml(3017), false, "2");
-        modifyEntry("cuckoos", "my", "3014", null, cuckooXml(3014), false, "2");
-        modifyEntry("aloos", "my", "3012", null, alooXml(3012), false, "5");
+        modifyEntry("lalas", "my", "3017", Locale.US.toString(), lalaXml(3017,2), false, "2");
+        modifyEntry("cuckoos", "my", "3014", null, cuckooXml(3014,2), false, "2");
+        modifyEntry("aloos", "my", "3012", null, alooXml(3012,5), false, "5");
         feed = getPage("$join/urn:link?locale=en_US&start-index=" + endIndex);
         assertEquals(5, feed.getEntries().size());
         for (Entry entry : feed.getEntries()) {
@@ -353,11 +353,11 @@ public class AggregateFeedsTest extends DBSTestCase {
         // modify all of the "odd" lalas
         for (int i = 3007; i < 3018; i+=2) {
             String entryId = "" + i;
-            modifyEntry("lalas", "my", entryId, Locale.US.toString(), lalaXml(i), false, "*");
+            modifyEntry("lalas", "my", entryId, Locale.US.toString(), lalaXml(i,1000), false, "*");
         }
 
         // modify ONE "even" lala
-        modifyEntry("lalas", "my", "3008", Locale.US.toString(), lalaXml(3008), false, "*");
+        modifyEntry("lalas", "my", "3008", Locale.US.toString(), lalaXml(3008,1000), false, "*");
 
         // we should see the one entry in the "even" feed
         feed = getPage("$join/urn:link/-/(urn:group)even?max-results=2&start-index=" + endIndex);
@@ -369,9 +369,9 @@ public class AggregateFeedsTest extends DBSTestCase {
         // ensures that we can reference such aggregates correctly.
 
         // set up a single aggregate entry in the locale=de feed
-        modifyEntry("lalas", "my", "90210", Locale.GERMAN.toString(), lalaXml(90210), true, "0");
-        modifyEntry("cuckoos", "my", "90210", null, cuckooXml(90210), true, "0");
-        modifyEntry("aloos", "my", "90210", null, alooXml(90210), true, "0");
+        modifyEntry("lalas", "my", "90210", Locale.GERMAN.toString(), lalaXml(90210,0), true, "0");
+        modifyEntry("cuckoos", "my", "90210", null, cuckooXml(90210,0), true, "0");
+        modifyEntry("aloos", "my", "90210", null, alooXml(90210,0), true, "0");
         // pull the feed - should get one result
         feed = getPage("$join/urn:link?locale=de");
         assertEquals(1, feed.getEntries().size());
@@ -428,7 +428,7 @@ public class AggregateFeedsTest extends DBSTestCase {
 
         List<Entry> entriesCheck = feed.getEntries();
         int lastIndex = 0;
-        for (Entry entry : entriesCheck) {
+        for (Entry  entry : entriesCheck) {
             int thisIndex = Integer.parseInt( entry.getSimpleExtension(AtomServerConstants.UPDATE_INDEX) );
             assertTrue( thisIndex > indexes[2] );
             assertTrue( thisIndex > lastIndex );
@@ -487,7 +487,7 @@ public class AggregateFeedsTest extends DBSTestCase {
         String beforeLast = AtomDate.format( new Date( lnow - 50 ) );
 
         // changing one lala should result in a single entry in our aggregate feed
-        modifyEntry("lalas", "my", "3015", Locale.US.toString(), lalaXml(3015), false, "1");
+        modifyEntry("lalas", "my", "3015", Locale.US.toString(), lalaXml(3015,1), false, "1");
 
         // get all but the one we just modified
         feed = getPage( "$join/urn:link?updated-max=" + beforeLast, 200 );
@@ -509,7 +509,7 @@ public class AggregateFeedsTest extends DBSTestCase {
         lnow = entriesDao.selectSysDate().getTime();
         String beforeAnother2 = AtomDate.format( new Date( lnow ) );
 
-        modifyEntry("cuckoos", "my", "3010", null, cuckooXml(3010), false, "1");
+        modifyEntry("cuckoos", "my", "3010", null, cuckooXml(3010,1), false, "1");
 
         // get just the first one we modified again
         feed = getPage( "$join/urn:link?updated-min=" + beforeLast + "&updated-max=" + afterLast, 200 );
@@ -541,31 +541,34 @@ public class AggregateFeedsTest extends DBSTestCase {
         fileWriter.close();
     }
 
-    private static String lalaXml(int id) {
+    private static String lalaXml(int id, int revNo) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<lala xmlns='http://schemas.atomserver.org/aggregate-tests'>");
         stringBuilder.append("<id>").append(id).append("</id>");
+        stringBuilder.append("<rev>").append(revNo).append("</rev>");
         stringBuilder.append("<group>").append(id % 2 == 0 ? "even" : "odd").append("</group>");
         stringBuilder.append("</lala>");
         return stringBuilder.toString();
     }
 
-    private static String cuckooXml(int id) {
+    private static String cuckooXml(int id, int revNo) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<cuckoo xmlns='http://schemas.atomserver.org/aggregate-tests'>");
         stringBuilder.append("<lala>").append(id).append("</lala>");
         stringBuilder.append("<lala>").append(id + 1).append("</lala>");
+        stringBuilder.append("<rev>").append(revNo).append("</rev>");
         stringBuilder.append("<group>").append(id % 3 == 0 ? "red" : "blue").append("</group>");
         stringBuilder.append("</cuckoo>");
         return stringBuilder.toString();
     }
 
-    private static String alooXml(int id) {
+    private static String alooXml(int id, int revNo) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<aloo xmlns='http://schemas.atomserver.org/aggregate-tests'>");
         stringBuilder.append("<lala>").append(id).append("</lala>");
         stringBuilder.append("<lala>").append(id + 1).append("</lala>");
         stringBuilder.append("<lala>").append(id + 2).append("</lala>");
+        stringBuilder.append("<rev>").append(revNo).append("</rev>");
         stringBuilder.append("<group>").append(id % 5 == 0 ? "heavy" : "light").append("</group>");
         stringBuilder.append("</aloo>");
         return stringBuilder.toString();

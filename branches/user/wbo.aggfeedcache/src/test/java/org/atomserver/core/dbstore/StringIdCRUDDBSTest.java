@@ -71,14 +71,13 @@ public class StringIdCRUDDBSTest extends CRUDDBSTestCase {
 
         Document<Entry> doc = response.getDocument();
         Entry entryOut = doc.getRoot();
-
         assertEquals("<deletion xmlns=\"http://schemas.atomserver.org/atomserver/v1/rev0\" collection=\"ugga\" id=\"bugga\" locale=\"en\" workspace=\"dummy\"><property xmlns=\"http://schemas.atomserver.org/widgets/v1/rev0\" systemId=\"acme\" id=\"12345\" inNetwork=\"false\">\n"
                      + "<colors>"
                      + "<color isDefault=\"true\">teal</color>"
                      + "</colors>"
                      + "<contact>"
                      + "<contactId>1638</contactId>"
-                     + "<displayName>This is an update</displayName>"
+                     + "<displayName>This is an update 3</displayName>"
                      + "<hasEmail>true</hasEmail>"
                      + "</contact>"
                      + "</property></deletion>",

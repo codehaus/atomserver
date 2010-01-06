@@ -55,7 +55,7 @@ abstract public class CRUDDBSTestCase extends BaseCRUDDBSTestCase {
         return fileXMLInsert;
     }
 
-    protected String getFileXMLUpdate() {
+    protected String getFileXMLUpdate(int revno) {
         String fileXMLUpdate =
             "<property xmlns=\"http://schemas.atomserver.org/widgets/v1/rev0\" systemId=\"acme\" id=\"" + propId + "\" inNetwork=\"false\">\n"
             + "<colors>"
@@ -63,7 +63,7 @@ abstract public class CRUDDBSTestCase extends BaseCRUDDBSTestCase {
             + "</colors>"
             + "<contact>"
             + "<contactId>1638</contactId>"
-            + "<displayName>This is an update</displayName>"
+            + "<displayName>This is an update " + revno + "</displayName>"
             + "<hasEmail>true</hasEmail>"
             + "</contact>"
             + "</property>";
@@ -71,8 +71,12 @@ abstract public class CRUDDBSTestCase extends BaseCRUDDBSTestCase {
     }
 
     protected IRI getEntryIRI() {
+        return getEntryIRI(propId);
+    }
+
+    protected IRI getEntryIRI(String propertyId) {
         IRI entryIRI = IRI.create("http://localhost:8080/"
-                              + widgetURIHelper.constructURIString("widgets", "acme", propId, LocaleUtils.toLocale("en")));
+                              + widgetURIHelper.constructURIString("widgets", "acme", propertyId, LocaleUtils.toLocale("en")));
         return entryIRI;
     }
 

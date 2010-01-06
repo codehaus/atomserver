@@ -179,6 +179,8 @@
         <property name="uriHandler" ref="org.atomserver-uriHandler"/>
 
         <property name="workspaces" ref="org.atomserver-workspaces"/>
+
+        <property name="entriesMonitor" ref="org.atomserver-entriesMonitor" />
     </bean>
 
     <bean id="org.atomserver-atomServiceV2"
@@ -206,6 +208,8 @@
         <property name="uriHandler" ref="org.atomserver-uriHandlerV2"/>
 
         <property name="workspaces" ref="org.atomserver-workspaces"/>
+
+        <property name="entriesMonitor" ref="org.atomserver-entriesMonitor" />
     </bean>
 
     <bean id="org.atomserver-blockingFilter"
@@ -224,4 +228,6 @@
         <property name="statsMonitorDAO" ref="org.atomserver-statsMonitorDAO" />
     </bean>
 
+    <bean id="org.atomserver-entriesMonitor" class="org.atomserver.monitor.EntriesMonitor">
+    </bean>
 </beans>

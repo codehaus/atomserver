@@ -27,6 +27,7 @@ import org.atomserver.AtomService;
 import org.atomserver.AtomWorkspace;
 import org.atomserver.CategoriesHandler;
 import org.atomserver.VirtualWorkspaceHandler;
+import org.atomserver.monitor.EntriesMonitor;
 import org.atomserver.exceptions.BadRequestException;
 import org.atomserver.uri.ServiceTarget;
 import org.atomserver.uri.URIHandler;
@@ -68,6 +69,8 @@ abstract public class AbstractAtomService implements AtomService {
 
     private int maxLinkAggregateEntriesPerPage = DEFAULT_MAX_AGGREGATE_LINK_ENTRIES_PER_PAGE;
     private int maxFullAggregateEntriesPerPage = DEFAULT_MAX_AGGREGATE_FULL_ENTRIES_PER_PAGE;
+
+    private EntriesMonitor entriesMonitor = null;
 
     /**
      * {@inheritDoc}
@@ -269,4 +272,14 @@ abstract public class AbstractAtomService implements AtomService {
     public void setMaxFullAggregateEntriesPerPage(int maxFullAggregateEntriesPerPage) {
         this.maxFullAggregateEntriesPerPage = maxFullAggregateEntriesPerPage;
     }
+
+
+    public EntriesMonitor getEntriesMonitor() {
+        return entriesMonitor;
+    }
+
+    public void setEntriesMonitor(EntriesMonitor entriesMonitor) {
+        this.entriesMonitor = entriesMonitor;
+    }
+    
 }

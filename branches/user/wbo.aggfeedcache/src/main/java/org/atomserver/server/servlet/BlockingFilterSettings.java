@@ -37,6 +37,9 @@ public class BlockingFilterSettings {
     // Maximum content length
     private int maxContentLength = -1;
 
+    private boolean writesDisabled = false;
+
+
     /**
      * Constructor for BlockingFilterSettings
      */
@@ -133,5 +136,22 @@ public class BlockingFilterSettings {
         if(this.blockedPaths.contains(pathExp)) {
             this.blockedPaths.remove(pathExp);
         }
+    }
+
+    /**
+     * Check if the writes are not allowed or not.
+     */
+    @ManagedAttribute( description = "Block writes to the server")
+    public boolean getWritesDisabled() {
+        return writesDisabled;
+    }
+
+     /**
+     * Enable or disable writes to this server
+     * @return true if the writes are blocked, false otherwise.
+     */
+    @ManagedAttribute( description = "Block or Allow writes to the server", persistPolicy="OnUpdate")
+    public void setWritesDisabled(boolean writesEnabled) {
+        this.writesDisabled = writesEnabled;
     }
 }

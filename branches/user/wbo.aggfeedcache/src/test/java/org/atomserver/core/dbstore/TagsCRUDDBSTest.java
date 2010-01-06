@@ -128,7 +128,7 @@ public class TagsCRUDDBSTest extends CRUDDBSTestCase {
         String realEntryURL = getServerURL() + "widgets/acme/642.en.xml";
         String realId = urlPath;
         String realEditURI = insert( realId, realEntryURL );
-        
+
         // Now we should be able to actually add Categories
         editURI = insert(id, (fullURL + "/1"), categoriesXML, false );
 
@@ -144,7 +144,7 @@ public class TagsCRUDDBSTest extends CRUDDBSTestCase {
         log.debug( "************************************************************* SELECT ************************************" );
         editURI = select(fullURL, "urn:widgets/foo" );
 
-        // DELETE -- this delete only marked the EntryStore row as deleted 
+        // DELETE -- this delete only marked the EntryStore row as deleted
         //            BUT -- it also causes ALL Categories associated with this row to be deleted
         log.debug( "************************************************************* DELETE ************************************" );
         editURI = delete(editURI);

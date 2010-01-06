@@ -20,6 +20,7 @@ import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.protocol.server.RequestContext;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.uri.URIHandler;
+import org.atomserver.monitor.EntriesMonitor;
 
 import java.util.Date;
 
@@ -129,4 +130,9 @@ public interface AtomService {
      * @return the highest index number in the store
      */
     public long getMaxIndex(Date updatedMax);
+
+    /**
+     * get the EntiresMonitor
+     */
+    public EntriesMonitor getEntriesMonitor();
 }

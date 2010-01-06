@@ -72,11 +72,16 @@ public class EntryMap<V> extends HashMap<EntryDescriptor, V> {
             return descriptor.getRevision();
         }
 
+        public String getContentHashCode() {
+            return descriptor.getContentHashCode();
+        }
+
         EntryKey reuse(EntryDescriptor descriptor) {
             this.descriptor = descriptor;
             return this;
         }
 
+        // Note: contentHashCode is ignored in the hash
         public int hashCode() {
             return
                     descriptor.getWorkspace().hashCode() +

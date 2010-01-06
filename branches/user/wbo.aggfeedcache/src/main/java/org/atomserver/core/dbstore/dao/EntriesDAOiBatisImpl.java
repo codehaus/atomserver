@@ -343,6 +343,7 @@ public class EntriesDAOiBatisImpl
                 .param("entryId", entryQuery.getEntryId())
                 .param("revision", 0)
                 .param("deleted", false)
+                .param("contentHashCode", entryQuery.getContentHashCode())
                 .addLocaleInfo(entryQuery.getLocale());
 
         if (log.isDebugEnabled()) {
@@ -421,6 +422,7 @@ public class EntriesDAOiBatisImpl
             if (metaData == null) {
                 return 0;
             }
+            metaData.setContentHashCode(entryQuery.getContentHashCode());
 
             int rc = getSqlMapClientTemplate().update("updateEntry",
                                                      prepareUpdateParamMap(deleted,
@@ -440,7 +442,8 @@ public class EntriesDAOiBatisImpl
         ParamMap paramMap = paramMap()
                 .param("entryStoreId", entryMetaData.getEntryStoreId())
                 .param("revision", revision)
-                .param("deleted", deleted);
+                .param("deleted", deleted)
+                .param("contentHashCode", entryMetaData.getContentHashCode());
 
         if (log.isDebugEnabled()) {
             log.debug("EntriesDAOiBatisImpl UPDATE:: paramMap= " + paramMap);
