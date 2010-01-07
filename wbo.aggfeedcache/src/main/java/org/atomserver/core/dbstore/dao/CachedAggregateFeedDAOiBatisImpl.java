@@ -33,6 +33,8 @@ public class CachedAggregateFeedDAOiBatisImpl
         extends AbstractDAOiBatisImpl
         implements CachedAggregateFeedDAO {
 
+    public static final String CACHE_CFG_REVISION = "AggregateFeedCacheConfigRevision";
+
     //==============================
     // Cache updates
     //==============================
@@ -84,6 +86,21 @@ public class CachedAggregateFeedDAOiBatisImpl
 
     public List<CachedAggregateFeed> getExistingCachedFeeds() {
         return getSqlMapClientTemplate().queryForList("selectExistingCachedFeeds");
+    }
+
+    public long getCacheConfigRevision() {
+        ParamMap paramMap = paramMap().param("eventname", CACHE_CFG_REVISION);
+        Long updatedRev = (Long) getSqlMapClientTemplate().queryForObject("selectCacheConfigRevision", paramMap);
+        if(updatedRev == null) {
+            getSqlMapClientTemplate().insert("insertCacheConfigRevision", paramMap);
+            updatedRev = 0L;
+        }
+        return updatedRev;
+    }
+
+    public void updateCacheConfigRevision() {
+        ParamMap paramMap = paramMap().param("eventname", CACHE_CFG_REVISION);
+        getSqlMapClientTemplate().update("updateCacheConfigRevision", paramMap);
     }
 
     public CachedAggregateFeed getCachedFeedById(final String cachedFeedId) {

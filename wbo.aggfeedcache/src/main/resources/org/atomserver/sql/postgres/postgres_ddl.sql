@@ -1,4 +1,5 @@
 
+DROP TABLE IF EXISTS ChangedEvent CASCADE;
 DROP TABLE IF EXISTS AggregateFeedTimestamp CASCADE;
 DROP TABLE IF EXISTS CachedFeed CASCADE;
 DROP TABLE IF EXISTS EntryContent CASCADE;
@@ -123,7 +124,14 @@ UNIQUE (CachedFeedId, Term),
 FOREIGN KEY (CachedFeedId) REFERENCES CachedFeed(CachedFeedId)
 );
 
-
+/*==============================================================*/
+/* Table: ChangedEvent                                          */
+/*==============================================================*/
+CREATE TABLE ChangedEvent (
+EventName                varchar(64)             NOT NULL,
+EventValue               BIGINT                  NOT NULL Default 0,
+PRIMARY KEY (EventName)
+);
 
 /*==============================================================*/
 /* View: vw_EntryWithCategory                                   */

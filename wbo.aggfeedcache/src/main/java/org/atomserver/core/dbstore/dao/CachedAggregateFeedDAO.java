@@ -77,6 +77,17 @@ public interface CachedAggregateFeedDAO
      */
     List<CachedAggregateFeed> getExistingCachedFeeds();
 
+    /**
+     * Get Last Cache configuration revision which indicates if the
+     * cache configuration was changed.
+     * @return a counter value
+     */
+    long getCacheConfigRevision();
+
+    /**
+     * Update Cache configuration revision
+     */
+    void updateCacheConfigRevision();
     //========================================
     //   CRUD AggregateFeeds Timestamp Cache entries
     //========================================
