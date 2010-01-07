@@ -85,7 +85,7 @@ public class CachedAggregateFeedsTest extends DBSTestCase {
     }
 
     public void tearDown() throws Exception {
-//        cacheManager.removeCachedAggregateFeedsByFeedIds(cachedFeedIds);
+        cacheManager.removeCachedAggregateFeedsByFeedIds(cachedFeedIds);
         super.tearDown();
         TestConfUtil.postTearDown();
     }

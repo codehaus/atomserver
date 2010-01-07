@@ -341,5 +341,20 @@
         DELETE FROM CachedFeed
           WHERE CachedFeedId = #cachedfeedid#
     </delete>
+
+    <!-- ChangedEvents -->
+    <select id="selectCacheConfigRevision" resultClass="java.lang.Long">
+          SELECT EventValue
+            FROM ChangedEvent
+            WHERE EventName = #eventname#
+    </select>
+    <insert id="insertCacheConfigRevision">
+          INSERT INTO ChangedEvent ( EventName ) VALUES (#eventname#)
+     </insert>
+     <update id="updateCacheConfigRevision">
+          UPDATE ChangedEvent
+             SET EventValue = (Select EventValue + 1 From ChangedEvent WHERE EventName = #eventname# )
+           WHERE EventName = #eventname#
+     </update>
 </sqlMap>
 
