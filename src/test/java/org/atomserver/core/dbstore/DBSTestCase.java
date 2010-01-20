@@ -286,10 +286,9 @@ public class DBSTestCase extends AtomServerTestCase {
         log.debug("deleting IRI : " + iri);
 
         EntryTarget entryTarget = handler.getEntryTarget(new MockRequestContext(serviceContext, "GET", iri.toString()), true);
-        entryCategoriesDAO.deleteEntryCategories(entriesDao.selectEntry(entryTarget));
         contentStorage.deleteContent(null, entryTarget);
         entriesDao.obliterateEntry(entryTarget);
-
+        
         Thread.sleep( DB_CATCHUP_SLEEP );
     }
 

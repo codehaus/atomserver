@@ -17,6 +17,7 @@
 package org.atomserver.core.dbstore.dao;
 
 import org.atomserver.EntryDescriptor;
+import org.atomserver.cache.AggregateFeedCacheManager;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryMetaData;
 
@@ -62,6 +63,8 @@ public interface EntryCategoriesDAO
 
     void deleteEntryCategories(EntryDescriptor entryQuery);
 
+    void deleteEntryCategoriesWithoutCacheUpdate(EntryDescriptor entryQuery);
+
     void deleteEntryCategoriesInScheme(EntryMetaData entryQuery, String scheme);
 
     List<String> selectDistictCollections(String workspace);
@@ -83,4 +86,9 @@ public interface EntryCategoriesDAO
     int getTotalCount(String workspace);
 
     int getTotalCount(String workspace, String collection);
+
+    //======================================
+    //          OTHER
+    //======================================
+    void setCacheManager(AggregateFeedCacheManager cacheManager);
 }

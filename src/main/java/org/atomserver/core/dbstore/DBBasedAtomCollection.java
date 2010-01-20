@@ -84,7 +84,6 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             getTransactionTemplate().execute(new TransactionCallbackWithoutResult() {
                 protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
 
-                    getCategoriesHandler().deleteEntryCategories(entryMetaData);
                     getContentStorage().obliterateContent(entryMetaData);
                     getEntriesDAO().obliterateEntry(entryMetaData);
                 }

@@ -243,6 +243,7 @@ public class TestingAtomServer {
         xmlReader.loadBeanDefinitions(new ClassPathResource("org/atomserver/spring/logBeans.xml"));
         xmlReader.loadBeanDefinitions(new ClassPathResource("org/atomserver/spring/storageBeans.xml"));
         xmlReader.loadBeanDefinitions(new ClassPathResource("org/atomserver/spring/abderaBeans.xml"));
+        xmlReader.loadBeanDefinitions(new ClassPathResource("org/atomserver/spring/aggregateFeedCacheBeans.xml"));
 
         // if we were given a Spring config location, we use that -- otherwise we configure the
         // workspaces that were set up through the API
@@ -276,9 +277,9 @@ public class TestingAtomServer {
         // re-set the system properties
         System.setProperties(properties);
 
-         // clear the update ENV
+        // clear the update ENV
         ConfigurationAwareClassLoader.invalidateENV();
-        
+
         // put our app context into the servlet context
         context.setAttribute(
                 WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE,

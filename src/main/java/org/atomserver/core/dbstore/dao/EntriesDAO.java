@@ -20,6 +20,7 @@ import org.atomserver.AtomCategory;
 import org.atomserver.EntryDescriptor;
 import org.atomserver.FeedDescriptor;
 import org.atomserver.ServiceDescriptor;
+import org.atomserver.cache.AggregateFeedCacheManager;
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.AggregateEntryMetaData;
 import org.atomserver.exceptions.AtomServerException;
@@ -140,4 +141,7 @@ public interface EntriesDAO
     void acquireLock() throws AtomServerException;
 
     long selectMaxIndex(Date updatedMax);
+
+    void setCacheManager(AggregateFeedCacheManager manager);
+
 }
