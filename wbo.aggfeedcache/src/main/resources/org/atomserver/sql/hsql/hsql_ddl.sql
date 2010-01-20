@@ -1,5 +1,5 @@
 
-DROP TABLE IF EXISTS ChangedEvent CASCADE;
+DROP TABLE IF EXISTS AppServerSysParam CASCADE;
 DROP TABLE IF EXISTS AggregateFeedTimestamp CASCADE;
 DROP TABLE IF EXISTS CachedFeed CASCADE;
 DROP TABLE IF EXISTS EntryContent CASCADE;
@@ -122,12 +122,14 @@ FOREIGN KEY (CachedFeedId) REFERENCES CachedFeed(CachedFeedId)
 );
 
 /*==============================================================*/
-/* Table: ChangedEvent                                          */
+/* Table: AppServerEvent                                          */
 /*==============================================================*/
-CREATE TABLE ChangedEvent (
-EventName                varchar(64)             NOT NULL,
-EventValue               BIGINT                  DEFAULT 0 NOT NULL,
-PRIMARY KEY (EventName)
+CREATE TABLE AppServerSysParam (
+       AppServerSysParamId        INT         IDENTITY,
+       ParamName         varchar(64) NOT NULL,
+       ParamRevision     BIGINT default 0 NOT NULL,
+       PRIMARY KEY(AppServerSysParamId),
+       UNIQUE (ParamName)
 );
 
 /*==============================================================*/

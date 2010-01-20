@@ -164,7 +164,7 @@
                  </isNotNull>
 
              ) recentlyChangedEntries
-             <include refid="INNER_LOOP_JOIN"/>
+             INNER JOIN
                   (
                   SELECT siblings.Term,
                          MAX(siblings.UpdateTimestamp) AS MaxUpdateTimestamp
@@ -173,7 +173,7 @@
                   </isNotNull>
 
                   <isNotNull property="categoryQuerySql">
-                  , ( $categoryQuerySql$ ) As categoryMatch
+                  , ( CASE WHEN ( $categoryQuerySql$ ) THEN 1 ELSE 0 END ) As categoryMatch
                   </isNotNull>
 
                   FROM vw_EntryWithCategory siblings  <include refid="WITH_NOEXPAND"/>
@@ -205,7 +205,7 @@
               ON recentlyChangedEntries.Term = matchingSiblingEntries.Term
               AND recentlyChangedEntries.UpdateTimestamp = matchingSiblingEntries.MaxUpdateTimestamp
               <isNotNull property="categoryQuerySql">
-              AND categoryMatch = true
+              AND categoryMatch > 0
               </isNotNull>
               <isNotNull property="language">
               AND #language# = matchingSiblingEntries.LanCode
