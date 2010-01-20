@@ -20,7 +20,7 @@
 
     <!-- NOTE: This query is used for BOTH single Entry and Feed queries
     -->
-    <sql id="SELECT_modifiedAggregateEntries">
+    <sql id="SELECT_modifiedAggregateEntriesOrg">
         SELECT <include refid="paginationPrefix"/>
                recentlyChangedEntries.Term AS AggregateEntryId,
                recentlyChangedEntries.UpdateTimestamp
@@ -118,6 +118,101 @@
         <isNotNull property="categoryQuerySql">AND $categoryQuerySql$</isNotNull>
          ORDER BY recentlyChangedEntries.UpdateTimestamp ASC
         <include refid="paginationSuffix"/>
+    </sql>
+
+    <!-- restructured version of the above query to minimize group by-having processing -->
+    <sql id="SELECT_modifiedAggregateEntries">
+           SELECT <include refid="paginationPrefix"/>
+                  recentlyChangedEntries.Term AS AggregateEntryId,
+                  recentlyChangedEntries.UpdateTimestamp
+             FROM (
+
+                  SELECT Term, UpdateTimestamp FROM vw_EntryWithCategory  <include refid="WITH_NOEXPAND"/>
+                  WHERE Scheme = #collection#
+
+                  <isNotNull property="startIndex">
+                  AND UpdateTimestamp > CAST(#startIndex# AS <include refid="timestampType"/>)
+                    <isNotEqual property="endIndex" compareValue="-1">
+                    AND UpdateTimestamp &lt;= CAST(#endIndex# AS <include refid="timestampType"/>)
+                    </isNotEqual>
+                  </isNotNull>
+
+                 <isNotNull property="updatedMin" >
+                 AND UpdateDate >= #updatedMin#
+                 </isNotNull>
+
+                 <isNotNull property="updatedMax">
+                 <![CDATA[ AND UpdateDate < #updatedMax# ]]>
+                 </isNotNull>
+
+                 <isNotNull property="latencySeconds">
+                 AND (
+                   <isEqual property="dbType" compareValue="hsql">
+                   DATEDIFF('ss', UpdateDate, NOW()) >= $latencySeconds$
+                   </isEqual>
+                   <isEqual property="dbType" compareValue="sqlserver">
+                   DATEADD(s, -1 * $latencySeconds$, GETDATE()) >= UpdateDate
+                   </isEqual>
+                   <isEqual property="dbType" compareValue="postgres">
+                   NOW() - interval '$latencySeconds$ seconds' >= UpdateDate
+                   </isEqual>
+                 )
+                 </isNotNull>
+
+                 <isNotNull property="entryId">
+                 AND Term = #entryId#
+                 </isNotNull>
+
+             ) recentlyChangedEntries
+             INNER JOIN
+                  (
+                  SELECT siblings.Term,
+                         MAX(siblings.UpdateTimestamp) AS MaxUpdateTimestamp
+                  <isNotNull property="language">
+                  , MAX(siblings.LanCode) AS LanCode
+                  </isNotNull>
+
+                  <isNotNull property="categoryQuerySql">
+                  , ( CASE WHEN ( $categoryQuerySql$ ) THEN 1 ELSE 0 END ) As categoryMatch
+                  </isNotNull>
+
+                  FROM vw_EntryWithCategory siblings  <include refid="WITH_NOEXPAND"/>
+
+                  <isNotNull property="categoryQuerySql">
+                  LEFT OUTER JOIN EntryCategory searchCategories
+                  ON searchCategories.EntryStoreId = siblings.EntryStoreId
+                  </isNotNull>
+
+                  WHERE siblings.Scheme = #collection#
+
+                  <isNotNull property="language">
+                  AND ((siblings.LanCode = #language# AND siblings.CountryCode = #country#)
+                         OR (siblings.LanCode = '**' AND siblings.CountryCode = '**'))
+                  </isNotNull>
+
+                  <!-- If any joinWorkspaces were specified on the query, we need to limit our rows here
+                  to only include the right rows. -->
+                  <isNotNull property="joinWorkspaces">
+                  AND siblings.Workspace IN
+                     <iterate property="joinWorkspaces" open="(" close=")" conjunction=",">
+                       #joinWorkspaces[]#
+                     </iterate>
+                  </isNotNull>
+
+                  GROUP BY siblings.Term
+              ) matchingSiblingEntries
+
+              ON recentlyChangedEntries.Term = matchingSiblingEntries.Term
+              AND recentlyChangedEntries.UpdateTimestamp = matchingSiblingEntries.MaxUpdateTimestamp
+              <isNotNull property="categoryQuerySql">
+              AND categoryMatch > 0
+              </isNotNull>
+              <isNotNull property="language">
+              AND #language# = matchingSiblingEntries.LanCode
+              </isNotNull>
+      
+            ORDER BY recentlyChangedEntries.UpdateTimestamp ASC
+           <include refid="paginationSuffix"/>
     </sql>
 
     <select id="selectAggregateEntries" parameterClass="map" resultMap="entryResult">

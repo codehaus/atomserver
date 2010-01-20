@@ -20,26 +20,37 @@ import org.apache.abdera.model.Category;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
 import org.atomserver.core.etc.AtomServerConstants;
+import org.atomserver.cache.AggregateFeedCacheManager;
 
 import java.io.StringWriter;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class AggregateFeedsDBSTest extends DBSTestCase {
+public class CachedAggregateFeedsDBSTest extends DBSTestCase {
     private static final int BASE_WIDGET_ID = 88000;
     private static final int BASE_DUMMY_ID = 99000;
     private static final int NUM_ENTRIES = 10;
 
+    AggregateFeedCacheManager cacheManager = null;
+    String cachedFeedId = null;
+
     public void setUp() throws Exception {
-        // TODO: FIXME
-        System.setProperty( "bootstrappers", "" );
         super.setUp();
+        cacheManager = (AggregateFeedCacheManager) getSpringFactory().getBean("org.atomserver-aggregatefeedcachemanager");
+        String feedEntry = "$join,urn:myjoin";
+        cacheManager.removeCachedAggregateFeed(feedEntry);
+
         entryCategoriesDAO.deleteAllRowsFromEntryCategories();
         entriesDao.deleteAllRowsFromEntries();
+
+        cachedFeedId = cacheManager.cacheAggregateFeed(feedEntry);
     }
 
-    public void tearDown() throws Exception { super.tearDown(); }
+    public void tearDown() throws Exception { super.tearDown();
+        cacheManager.removeCachedAggregateFeedByFeedId(cachedFeedId);
+        super.tearDown();
+    }
 
     public void testAggregateFeeds() throws Exception {
 
@@ -91,6 +102,7 @@ public class AggregateFeedsDBSTest extends DBSTestCase {
             stringWriter = new StringWriter();
             categories.writeTo(stringWriter);
             categoriesXML = stringWriter.toString();
+
 
             modifyEntry("tags:dummy", "mydummies", dummyId, null,
                         categoriesXML, false, "*", false);

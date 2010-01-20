@@ -423,7 +423,7 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
                                  + entryURIHelper.constructURIString(workspace, sysId, propId, locale));
             EntryTarget entryTarget = entryURIHelper.getEntryTarget(new MockRequestContext(serviceContext, "GET", iri.toString()), true);
 
-            entryCategoriesDAO.deleteEntryCategories(entriesDAO.selectEntry(entryTarget));
+//            entryCategoriesDAO.deleteEntryCategories(entriesDAO.selectEntry(entryTarget));
             entriesDAO.obliterateEntry(entryTarget);
         }
 

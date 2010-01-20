@@ -97,7 +97,6 @@ public class EntryCategoriesDAOTest extends DAOTestCase {
         assertEquals( 2, colls.size() );
 
         for ( int ii = 0; ii < numRows; ii++ ) {
-            entryCategoriesDAO.deleteEntryCategories(entries.get(ii));
             entriesDAO.obliterateEntry(entries.get(ii));
         }
         // COUNT
@@ -149,7 +148,6 @@ public class EntryCategoriesDAOTest extends DAOTestCase {
         assertTrue( colls.contains( "betty" ));
 
         for ( int ii = 0; ii < numRows; ii++ ) {
-            entryCategoriesDAO.deleteEntryCategories(entries.get(ii));
             entriesDAO.obliterateEntry(entries.get(ii));
         }
         // COUNT

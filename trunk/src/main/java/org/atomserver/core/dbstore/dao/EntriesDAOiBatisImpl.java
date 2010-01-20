@@ -23,8 +23,10 @@ import org.atomserver.AtomCategory;
 import org.atomserver.EntryDescriptor;
 import org.atomserver.FeedDescriptor;
 import org.atomserver.ServiceDescriptor;
+import org.atomserver.cache.AggregateFeedCacheManager;
 import org.atomserver.core.AggregateEntryMetaData;
 import org.atomserver.core.EntryMetaData;
+import org.atomserver.core.EntryCategory;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
 import org.atomserver.utils.locale.LocaleUtils;
@@ -57,6 +59,7 @@ public class EntriesDAOiBatisImpl
     private EntryCategoriesDAO entryCategoriesDAO;
     private EntryCategoryLogEventDAO entryCategoryLogEventDAO;
     private int latencySeconds = UNDEFINED;
+    private AggregateFeedCacheManager cacheManager = null;
 
     public void setContentDAO(ContentDAO contentDAO) {
         this.contentDAO = contentDAO;
@@ -68,6 +71,14 @@ public class EntriesDAOiBatisImpl
 
     public void setEntryCategoryLogEventDAO(EntryCategoryLogEventDAO entryCategoryLogEventDAO) {
         this.entryCategoryLogEventDAO = entryCategoryLogEventDAO;
+    }
+
+    AggregateFeedCacheManager getCacheManager() {
+        return cacheManager;
+    }
+
+    public void setCacheManager(AggregateFeedCacheManager cacheManager) {
+        this.cacheManager = cacheManager;
     }
 
     @ManagedAttribute
@@ -126,12 +137,12 @@ public class EntriesDAOiBatisImpl
         }
 
         public Object doInSqlMapClient(SqlMapExecutor executor) throws SQLException {
+            Set<EntryDescriptor> invalidEntry = new HashSet<EntryDescriptor>();
             executor.startBatch();
             for (EntryDescriptor uriData : entryList) {
 
                 if (opType == OperationType.insert) {
                     Map<String, Object> paramMap = entriesDAO.prepareInsertParamMap(uriData);
-
                     executor.insert("insertEntry-" + entriesDAO.getDatabaseType(), paramMap);
 
                 } else if (opType == OperationType.update || opType == OperationType.delete) {
@@ -142,6 +153,8 @@ public class EntriesDAOiBatisImpl
                                          entriesDAO.prepareUpdateParamMap(deleted,
                                                                           uriData.getRevision(),
                                                                           metaData));
+                    } else {
+                        invalidEntry.add(uriData);
                     }
                 } else {
                     String msg = "Unknown OperationType";
@@ -149,7 +162,23 @@ public class EntriesDAOiBatisImpl
                     throw new SQLException(msg);
                 }
             }
-            return executor.executeBatch();
+            Object obj = executor.executeBatch();
+
+            // update cache as batch
+            if (entriesDAO.getCacheManager() != null) {
+                executor.startBatch();
+                for (EntryDescriptor uriData : entryList) {
+                    if(invalidEntry.contains(uriData)) {
+                        continue;
+                    }
+                    if (opType == OperationType.insert || opType == OperationType.update || opType == OperationType.delete ) {
+                         entriesDAO.updateCacheOnEntryAddOrUpdate(uriData);
+                    }
+                }
+                executor.executeBatch();
+            }
+
+            return obj;
         }
     }
 
@@ -293,9 +322,13 @@ public class EntriesDAOiBatisImpl
             if (isSeedingDB) {
                 paramMap.param("publishedDate", published)
                         .param("updatedDate", updated);
-                return getSqlMapClientTemplate().insert("insertEntrySeedingDB-" + getDatabaseType(), paramMap);
+                Object obj = getSqlMapClientTemplate().insert("insertEntrySeedingDB-" + getDatabaseType(), paramMap);
+                updateCacheOnEntryAddOrUpdate(entry);
+                return obj;
             } else {
-                return getSqlMapClientTemplate().insert("insertEntry-" + getDatabaseType(), paramMap);
+                Object obj = getSqlMapClientTemplate().insert("insertEntry-" + getDatabaseType(), paramMap);
+                updateCacheOnEntryAddOrUpdate(entry);
+                return obj;
             }
         }
         finally {
@@ -391,10 +424,12 @@ public class EntriesDAOiBatisImpl
             }
             metaData.setContentHashCode(entryQuery.getContentHashCode());
 
-            return getSqlMapClientTemplate().update("updateEntry",
+            int rc = getSqlMapClientTemplate().update("updateEntry",
                                                      prepareUpdateParamMap(deleted,
                                                                            entryQuery.getRevision(),
                                                                            metaData));
+            updateCacheOnEntryAddOrUpdate(entryQuery);
+            return rc;
         }
         finally {
             stopWatch.stop("DB.updateEntry", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryQuery));
@@ -424,11 +459,11 @@ public class EntriesDAOiBatisImpl
             }
 
             int revision = (resetRevision) ? 0 : -1;
-
             return getSqlMapClientTemplate().update("updateEntryOverwrite",
                                                     prepareUpdateParamMap(false, revision, entry)
                                                             .param("publishedDate", published)
                                                             .param("updatedDate", updated));
+
         }
         finally {
             stopWatch.stop("DB.updateEntryOverwrite", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
@@ -453,7 +488,7 @@ public class EntriesDAOiBatisImpl
         }
         return updateEntry(entryQuery, setDeletedFlag);
     }
-
+    
     /**
      * Obliterate this Entry DB entry.
      * This form does delete the actual record from the DB.
@@ -462,9 +497,15 @@ public class EntriesDAOiBatisImpl
      */
     public synchronized void obliterateEntry(EntryDescriptor entryQuery) {
         log.info("OBLITERATE EntriesDAOiBatisImpl [ " + entryQuery + " ]");
+        EntryMetaData metaData = null;
+        List<EntryCategory> categoriesToRemove = null;
 
-        if (contentDAO != null || entryCategoriesDAO != null) {
-            EntryMetaData metaData = selectEntry(entryQuery);
+        if (contentDAO != null || entryCategoriesDAO != null || getCacheManager() != null) {
+            metaData = (entryQuery instanceof EntryMetaData) ? (EntryMetaData) entryQuery : selectEntry(entryQuery);
+
+            if(metaData != null) {
+                categoriesToRemove = metaData.getCategories();
+            }
             if (metaData != null && entryCategoryLogEventDAO != null) {
                 entryCategoryLogEventDAO.deleteEntryCategoryLogEvent(entryQuery);
             }
@@ -472,7 +513,7 @@ public class EntriesDAOiBatisImpl
                 contentDAO.deleteContent(metaData);
             }
             if (metaData != null && entryCategoriesDAO != null) {
-                entryCategoriesDAO.deleteEntryCategories(metaData);
+                entryCategoriesDAO.deleteEntryCategoriesWithoutCacheUpdate(metaData);
             }
         }
 
@@ -482,6 +523,12 @@ public class EntriesDAOiBatisImpl
                                                  .param("collection", entryQuery.getCollection())
                                                  .param("entryId", entryQuery.getEntryId())
                                                  .addLocaleInfo(entryQuery.getLocale()));
+        // Update cache after delete
+        if(metaData != null && cacheManager != null) {
+            // This must be called after the categories have been deleted from EntryCategory in the database.
+            updateCacheOnEntryDelete(metaData, categoriesToRemove);
+        }
+
     }
 
 
@@ -538,8 +585,9 @@ public class EntriesDAOiBatisImpl
                 paramMap.param("latencySeconds", latencySeconds);
             }
 
-            List entries = getSqlMapClientTemplate().queryForList("selectAggregateEntries",
-                                                                  paramMap);
+            String sqlId = getSqlMapId (joinWorkspaces,locale,feed.getCollection(), "selectAggregateEntries",paramMap);
+
+            List entries = getSqlMapClientTemplate().queryForList(sqlId, paramMap);
 
             Map<String, AggregateEntryMetaData> map =
                     AggregateEntryMetaData.aggregate(feed.getWorkspace(), feed.getCollection(), locale, entries);
@@ -839,4 +887,57 @@ public class EntriesDAOiBatisImpl
             log.debug("NO NEED TO APPLOCK - using enforced latency instead.");
         }
     }
+
+    //==============================
+    // Updating Cache
+    //==============================
+    private void updateCacheOnEntryAddOrUpdate(final EntryDescriptor entryDescriptor) {
+        if (getCacheManager() != null) {
+            if (cacheManager.isWorkspaceInCachedFeeds(entryDescriptor.getWorkspace())) {
+                if(entryDescriptor instanceof EntryMetaData) {
+                    cacheManager.updateCacheOnEntryAddOrUpdate((EntryMetaData) entryDescriptor);
+                } else {
+                    EntryMetaData metaData = safeCastToEntryMetaData(entryDescriptor);
+                    cacheManager.updateCacheOnEntryAddOrUpdate(metaData);
+                }
+            }
+        }
+    }
+
+    private void updateCacheOnEntryDelete(final EntryDescriptor entryDescriptor, final List<EntryCategory> categories) {
+        if(getCacheManager() != null && categories != null && !categories.isEmpty() ) {
+            if (cacheManager.isWorkspaceInCachedFeeds(entryDescriptor.getWorkspace())) {
+                if(entryDescriptor instanceof EntryMetaData) {
+                    cacheManager.updateCacheOnEntryObliteration((EntryMetaData)entryDescriptor, categories);
+                } else {
+                    EntryMetaData metaData = safeCastToEntryMetaData(entryDescriptor);
+                    cacheManager.updateCacheOnEntryObliteration(metaData, categories);
+                }
+
+            }
+        }
+    }
+
+    // returns the correct sql to run if the feed is cached.
+    private String getSqlMapId(final List<String> joinWorkspaces,
+                               final Locale locale,
+                               final String collection,
+                               final String defaultSqlMapId,
+                               ParamMap paramMap) {
+        String sqlId = defaultSqlMapId;
+        if (getCacheManager() != null) {
+            // Note: Enable the line before not to use cache if category filter and category query is used.
+            if (paramMap.get("categoryFilterSql") == null && paramMap.get("categoryQuerySql") == null) {
+
+                // check if the joinWorkspaces, locale and scheme are cached.
+                String feedId = cacheManager.isFeedCached(joinWorkspaces, locale, collection);
+                if (feedId != null) {
+                    sqlId = "selectAggregateEntriesUsingCache";
+                    paramMap.param("cachedfeedid", feedId);
+                }
+            }
+        }
+        return sqlId;
+    }
+
 }
