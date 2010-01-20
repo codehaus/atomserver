@@ -89,7 +89,7 @@ public class CachedAggregateFeedDAOiBatisImpl
     }
 
     public long getCacheConfigRevision() {
-        ParamMap paramMap = paramMap().param("eventname", CACHE_CFG_REVISION);
+        ParamMap paramMap = paramMap().param("paramname", CACHE_CFG_REVISION);
         Long updatedRev = (Long) getSqlMapClientTemplate().queryForObject("selectCacheConfigRevision", paramMap);
         if(updatedRev == null) {
             getSqlMapClientTemplate().insert("insertCacheConfigRevision", paramMap);
@@ -99,7 +99,7 @@ public class CachedAggregateFeedDAOiBatisImpl
     }
 
     public void updateCacheConfigRevision() {
-        ParamMap paramMap = paramMap().param("eventname", CACHE_CFG_REVISION);
+        ParamMap paramMap = paramMap().param("paramname", CACHE_CFG_REVISION);
         getSqlMapClientTemplate().update("updateCacheConfigRevision", paramMap);
     }
 

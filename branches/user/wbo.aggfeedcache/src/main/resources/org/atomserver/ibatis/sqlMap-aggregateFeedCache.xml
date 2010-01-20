@@ -344,17 +344,18 @@
 
     <!-- ChangedEvents -->
     <select id="selectCacheConfigRevision" resultClass="java.lang.Long">
-          SELECT EventValue
-            FROM ChangedEvent
-            WHERE EventName = #eventname#
+          SELECT ParamRevision
+            FROM AppServerSysParam
+            WHERE ParamName = #paramname#
     </select>
     <insert id="insertCacheConfigRevision">
-          INSERT INTO ChangedEvent ( EventName ) VALUES (#eventname#)
+          INSERT INTO AppServerSysParam
+            (ParamName) VALUES (#paramname#)
      </insert>
      <update id="updateCacheConfigRevision">
-          UPDATE ChangedEvent
-             SET EventValue = (Select EventValue + 1 From ChangedEvent WHERE EventName = #eventname# )
-           WHERE EventName = #eventname#
+          UPDATE AppServerSysParam
+             SET ParamRevision = (Select ParamRevision + 1 From AppServerSysParam WHERE ParamName = #paramname# )
+           WHERE ParamName = #paramname#
      </update>
 </sqlMap>
 
