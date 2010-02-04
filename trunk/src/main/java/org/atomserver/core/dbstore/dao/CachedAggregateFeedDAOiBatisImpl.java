@@ -85,7 +85,7 @@ public class CachedAggregateFeedDAOiBatisImpl
     }
 
     public List<CachedAggregateFeed> getExistingCachedFeeds() {
-        return getSqlMapClientTemplate().queryForList("selectExistingCachedFeeds");
+        return getSqlMapClientTemplate().queryForList("selectExistingCachedFeeds", paramMap());
     }
 
     public long getCacheConfigRevision() {

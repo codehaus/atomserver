@@ -187,7 +187,7 @@
                  recentlyChangedEntries.Term AS AggregateEntryId,
                  recentlyChangedEntries.UpdateTimestamp
             FROM (
-                 SELECT Term, UpdateTimestamp FROM vw_EntryWithCategory
+                 SELECT Term, UpdateTimestamp FROM vw_EntryWithCategory <include refid="WITH_NOEXPAND"/>
                  WHERE Scheme = #collection#
             ) recentlyChangedEntries
             INNER JOIN
@@ -198,7 +198,7 @@
                  , MAX(siblings.LanCode) AS LanCode
                  </isNotNull>
 
-                 FROM vw_EntryWithCategory siblings
+                 FROM vw_EntryWithCategory siblings  <include refid="WITH_NOEXPAND"/>
 
                  WHERE siblings.Scheme = #collection#
 
@@ -265,7 +265,7 @@
       SELECT
           CachedFeedId AS cachedFeedId,
           Term as term
-        FROM AggregateFeedTimestamp
+        FROM AggregateFeedTimestamp <include refid="WITH_NOLOCK"/>
         WHERE
         CachedFeedId IN
         <iterate property="feedids" open="(" close=")" conjunction=",">
@@ -279,7 +279,7 @@
       SELECT
         CachedFeedId AS cachedFeedId,
         Term as term
-      FROM AggregateFeedTimestamp
+      FROM AggregateFeedTimestamp <include refid="WITH_NOLOCK"/>
       WHERE
       <iterate property="terms" open="(" close=")" conjunction="OR">
         CachedFeedId = #terms[].cachedFeedId# AND Term = #terms[].term#
@@ -311,7 +311,7 @@
                  JoinedWorkspaces as orderedJoinedWorkspaces,
                  Locale as locale,
                  Scheme as scheme
-            FROM CachedFeed
+            FROM CachedFeed <include refid="WITH_NOLOCK"/>
     </select>
 
     <!-- This query is used by the CacheManager during initialization to determine existing cache entries -->
@@ -333,7 +333,7 @@
                  JoinedWorkspaces as orderedJoinedWorkspaces,
                  Locale as locale,
                  Scheme as scheme
-            FROM CachedFeed
+            FROM CachedFeed  <include refid="WITH_NOLOCK"/>
             WHERE CachedFeedId = #cachedfeedid#
     </select>
 
@@ -345,7 +345,7 @@
     <!-- ChangedEvents -->
     <select id="selectCacheConfigRevision" resultClass="java.lang.Long">
           SELECT ParamRevision
-            FROM AppServerSysParam
+            FROM AppServerSysParam <include refid="WITH_NOLOCK"/>
             WHERE ParamName = #paramname#
     </select>
     <insert id="insertCacheConfigRevision">

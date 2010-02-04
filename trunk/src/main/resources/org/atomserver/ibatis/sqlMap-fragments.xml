@@ -134,6 +134,11 @@
         INNER <isEqual property="dbType" compareValue="sqlserver">LOOP</isEqual> JOIN
     </sql>
 
+  <!-- WITH(NOLOCK) is a SQL Server hint that we use to indicate that when selecting a view not to hold a lock. -->
+   <sql id="WITH_NOLOCK">
+        <isEqual property="dbType" compareValue="sqlserver">WITH (NOLOCK)</isEqual>
+    </sql>
+
     <select id="selectSysDate" resultClass="date">
         <dynamic>
             <isNotEqual property="dbType" compareValue="hsql">

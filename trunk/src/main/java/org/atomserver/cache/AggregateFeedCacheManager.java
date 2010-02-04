@@ -240,6 +240,10 @@ public class AggregateFeedCacheManager {
      */
     public void updateCacheOnEntryAddOrUpdate(final EntryMetaData entryMetaData) {
 
+        if(entryMetaData == null) {
+            return;
+        }
+        
         String workspace = entryMetaData.getWorkspace();
 
         if (isWorkspaceInCachedFeedsNosync(workspace)) {
