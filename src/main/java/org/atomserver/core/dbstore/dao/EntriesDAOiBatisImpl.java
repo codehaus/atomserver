@@ -166,7 +166,6 @@ public class EntriesDAOiBatisImpl
 
             // update cache as batch
             if (entriesDAO.getCacheManager() != null) {
-                executor.startBatch();
                 for (EntryDescriptor uriData : entryList) {
                     if(invalidEntry.contains(uriData)) {
                         continue;
@@ -175,7 +174,6 @@ public class EntriesDAOiBatisImpl
                          entriesDAO.updateCacheOnEntryAddOrUpdate(uriData);
                     }
                 }
-                executor.executeBatch();
             }
 
             return obj;
