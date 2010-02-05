@@ -242,12 +242,19 @@ public class CachedAggregateFeedDAOiBatisImpl
          int rc = 1;
          int rowsUpdated;
          if(updatesForCache != null && !updatesForCache.isEmpty()) {
-//            System.out.println(" updateCache :" + updatesForCache.size() + " -->" + updatesForCache);
+//             System.out.println(" updateCache :" + updatesForCache.size() + " -->" + updatesForCache);
              ParamMap paramMap = paramMap()
                      .param("feedterms", updatesForCache)
                      .param("timestamp", timestamp);
-
-             rowsUpdated = getSqlMapClientTemplate().update("updateTimestamps", paramMap);
+             try {
+                rowsUpdated = getSqlMapClientTemplate().update("updateTimestamps", paramMap);
+             } catch (org.springframework.dao.DataAccessResourceFailureException ex)      {
+                log.info(" CachedAggregateFeedDAO.updateCache :" + updatesForCache.size() + " -->" + updatesForCache);
+                throw ex;
+             } catch (org.springframework.dao.ConcurrencyFailureException ex) {
+                log.info(" CachedAggregateFeedDAO.updateCache :" + updatesForCache.size() + " -->" + updatesForCache);
+                throw ex;
+             }
              rc = updatesForCache.size() - rowsUpdated; //
          }
          return rc;
