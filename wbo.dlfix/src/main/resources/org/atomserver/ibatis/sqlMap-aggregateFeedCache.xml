@@ -143,6 +143,7 @@
          ORDER BY aggregateEntryIds.UpdateTimestamp, aggregateEntryIds.AggregateEntryId
     </select>
 
+
     <!-- This query is based on SELECT_modifiedAggregateEntries query to create entries to be (inserted into
          AggregateFeedTimestamp table) the Timestamps for Terms for a given aggregate feed and Scheme  -->
     <sql id="SELECT_AggregateEntriesForCacheOrg">
@@ -179,6 +180,7 @@
            AND #language# = MAX(matchingSiblingEntries.LanCode)
         </isNotNull>
     </sql>
+
 
     <!-- restructured version of the above query -->
     <sql id="SELECT_AggregateEntriesForCache">
@@ -234,22 +236,29 @@
              AND #language# = matchingSiblingEntries.LanCode
              </isNotNull>
     </sql>
-    
-    <!-- This query is used to insert into the cache a set of cache entries -->
-    <insert id="insertAggregateFeedCache" >
-        INSERT INTO AggregateFeedTimestamp
-        <include refid="SELECT_AggregateEntriesForCache"/>
-    </insert>
 
+  
   <!-- This query is used to update the cache table when an entry is added or updated -->
-    <update id="updateTimestamps">
+    <update id="updateTimestamp">
         UPDATE AggregateFeedTimestamp
            SET UpdateTimestampValue = #timestamp#
          WHERE
-          <iterate property="feedterms" open="(" close=")" conjunction="OR">
-            CachedFeedId = #feedterms[].cachedFeedId# AND
-            Term = #feedterms[].term#
-          </iterate>
+          <!-- 1. multiple updates -->
+          <isNotNull property="feedterms">
+            <iterate property="feedterms" open="(" close=")" conjunction="OR">
+              CachedFeedId = #feedterms[].cachedFeedId# AND
+              Term = #feedterms[].term#
+            </iterate>
+          </isNotNull>
+         <!-- 2. single update -->
+          <isNull property="feedterms">
+            CachedFeedId = #cachedfeedid# AND
+            Term = #term#
+          </isNull>
+          <!-- note: the clause below is to avoid update conflicts/deadlocks -->
+          <isNotNull property="timestamp">
+            AND UpdateTimestampValue &lt; #timestamp#
+          </isNotNull>
     </update>
 
 
@@ -260,31 +269,47 @@
         (#cachedfeedid#, #term#, #timestamp#)
     </insert>
 
-  <!-- Find entries in the given feeds with given time stamp -->
-    <select id="selectFeedIdTermsWithTimestamp" resultClass="org.atomserver.cache.AggregateFeedTerm">
-      SELECT
-          CachedFeedId AS cachedFeedId,
-          Term as term
-        FROM AggregateFeedTimestamp <include refid="WITH_NOLOCK"/>
-        WHERE
-        CachedFeedId IN
-        <iterate property="feedids" open="(" close=")" conjunction=",">
-          #feedids[]#
-        </iterate>
-        AND UpdateTimestampValue = #timestamp#
-    </select>
 
-  <!-- Find existing terms for the given cached feeds -->
+    <!-- Find existing terms for the given cached feeds (and terms) -->
     <select id="selectFeedIdTerms" resultClass="org.atomserver.cache.AggregateFeedTerm">
       SELECT
         CachedFeedId AS cachedFeedId,
         Term as term
       FROM AggregateFeedTimestamp <include refid="WITH_NOLOCK"/>
       WHERE
-      <iterate property="terms" open="(" close=")" conjunction="OR">
-        CachedFeedId = #terms[].cachedFeedId# AND Term = #terms[].term#
-      </iterate>
+      <!-- 1. with feed id and term-list -->
+         <!-- This clause filters existing terms that are subset of the given terms
+          Since a given cached feed can have thousands of terms, so this limit the amount of returned data
+          to the given set. -->
+      <isNotNull property="feedterms">
+          <iterate property="feedterms" conjunction="OR">
+            CachedFeedId = #feedterms[].feedId# AND Term IN
+            <iterate property="feedterms[].terms" open="(" close=")" conjunction=",">
+                     #feedterms[].terms[]#
+            </iterate>
+          </iterate>
+      </isNotNull>
+      <!-- 2. With feed ids -->
+      <isNotNull property="feedids">
+          CachedFeedId IN
+          <iterate property="feedids" open="(" close=")" conjunction=",">
+          #feedids[]#
+        </iterate>
+      </isNotNull>
+        <!-- Additional matching timestamp -->
+        <!-- this clause filters the terms in feeds with the existing timestamp -->
+      <isNotNull property="timestamp">
+        AND UpdateTimestampValue = #timestamp#
+      </isNotNull>
     </select>
+
+
+    <!-- This query is used to insert into the cache a set of cache entries -->
+    <insert id="insertAggregateFeedCache" >
+        INSERT INTO AggregateFeedTimestamp
+        <include refid="SELECT_AggregateEntriesForCache"/>
+    </insert>
+
 
     <!-- This query is used to delete a set of cached time stamps from a feed -->
     <delete id="deleteAggregateFeedCache" >
@@ -293,6 +318,7 @@
           WHERE CachedFeedId = #cachedfeedid#
         </isNotNull>
     </delete>
+
 
     <delete id="deleteAggregateFeedCacheByFeedIdTerm">
       DELETE FROM AggregateFeedTimestamp
@@ -313,6 +339,7 @@
                  Scheme as scheme
             FROM CachedFeed <include refid="WITH_NOLOCK"/>
     </select>
+
 
     <!-- This query is used by the CacheManager during initialization to determine existing cache entries -->
     <insert id="insertCachedFeed">
@@ -343,19 +370,23 @@
     </delete>
 
     <!-- ChangedEvents -->
+  
     <select id="selectCacheConfigRevision" resultClass="java.lang.Long">
           SELECT ParamRevision
             FROM AppServerSysParam <include refid="WITH_NOLOCK"/>
             WHERE ParamName = #paramname#
     </select>
+
     <insert id="insertCacheConfigRevision">
           INSERT INTO AppServerSysParam
             (ParamName) VALUES (#paramname#)
      </insert>
+
      <update id="updateCacheConfigRevision">
           UPDATE AppServerSysParam
              SET ParamRevision = (Select ParamRevision + 1 From AppServerSysParam WHERE ParamName = #paramname# )
            WHERE ParamName = #paramname#
      </update>
+
 </sqlMap>
 

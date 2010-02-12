@@ -137,13 +137,14 @@ public class EntriesDAOiBatisImpl
         }
 
         public Object doInSqlMapClient(SqlMapExecutor executor) throws SQLException {
-            Set<EntryDescriptor> invalidEntry = new HashSet<EntryDescriptor>();
+            List<EntryDescriptor> validEntries = new ArrayList<EntryDescriptor>();
             executor.startBatch();
             for (EntryDescriptor uriData : entryList) {
 
                 if (opType == OperationType.insert) {
                     Map<String, Object> paramMap = entriesDAO.prepareInsertParamMap(uriData);
                     executor.insert("insertEntry-" + entriesDAO.getDatabaseType(), paramMap);
+                    validEntries.add(uriData);
 
                 } else if (opType == OperationType.update || opType == OperationType.delete) {
                     boolean deleted = (opType == OperationType.delete);
@@ -153,9 +154,8 @@ public class EntriesDAOiBatisImpl
                                          entriesDAO.prepareUpdateParamMap(deleted,
                                                                           uriData.getRevision(),
                                                                           metaData));
-                    } else {
-                        invalidEntry.add(uriData);
-                    }
+                        validEntries.add(uriData);
+                    } 
                 } else {
                     String msg = "Unknown OperationType";
                     log.error(msg);
@@ -166,14 +166,7 @@ public class EntriesDAOiBatisImpl
 
             // update cache as batch
             if (entriesDAO.getCacheManager() != null) {
-                for (EntryDescriptor uriData : entryList) {
-                    if(invalidEntry.contains(uriData)) {
-                        continue;
-                    }
-                    if (opType == OperationType.insert || opType == OperationType.update || opType == OperationType.delete ) {
-                         entriesDAO.updateCacheOnEntryAddOrUpdate(uriData);
-                    }
-                }
+                entriesDAO.updateCacheOnEntryAddOrUpdateBatch(validEntries);
             }
 
             return obj;
@@ -899,6 +892,20 @@ public class EntriesDAOiBatisImpl
                     cacheManager.updateCacheOnEntryAddOrUpdate(metaData);
                 }
             }
+        }
+    }
+
+    private void updateCacheOnEntryAddOrUpdateBatch(final List<EntryDescriptor> entryList) {
+        if (getCacheManager() != null) {
+            List<EntryMetaData> entries = new ArrayList<EntryMetaData>();
+            boolean sync = true;
+            for(EntryDescriptor entry: entryList) {
+                if(cacheManager.isWorkspaceInCachedFeeds(entry.getWorkspace(),sync)) {
+                    entries.add(safeCastToEntryMetaData(entry));
+                }
+                sync = false;
+            }
+            cacheManager.updateCacheOnEntryAddOrUpdateBatch(entries);
         }
     }
 
