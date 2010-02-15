@@ -883,7 +883,8 @@ public class EntriesDAOiBatisImpl
     private void updateCacheOnEntryAddOrUpdate(final EntryDescriptor entryDescriptor) {
         if (getCacheManager() != null) {
             if (cacheManager.isWorkspaceInCachedFeeds(entryDescriptor.getWorkspace())) {
-                cacheManager.updateCacheOnEntryAddOrUpdate(safeCastToEntryMetaData(entryDescriptor));
+                // entry is selected here to get the up-to-date timestamp for update and insert.
+                cacheManager.updateCacheOnEntryAddOrUpdate(selectEntry(entryDescriptor));
             }
         }
     }
@@ -894,7 +895,7 @@ public class EntriesDAOiBatisImpl
             boolean sync = true;
             for(EntryDescriptor entry: entryList) {
                 if(cacheManager.isWorkspaceInCachedFeeds(entry.getWorkspace(),sync)) {
-                    entries.add(safeCastToEntryMetaData(entry));
+                    entries.add(selectEntry(entry)); //to get up-to-date timestamp
                 }
                 sync = false;
             }
@@ -905,13 +906,7 @@ public class EntriesDAOiBatisImpl
     private void updateCacheOnEntryDelete(final EntryDescriptor entryDescriptor, final List<EntryCategory> categories) {
         if(getCacheManager() != null && categories != null && !categories.isEmpty() ) {
             if (cacheManager.isWorkspaceInCachedFeeds(entryDescriptor.getWorkspace())) {
-                if(entryDescriptor instanceof EntryMetaData) {
-                    cacheManager.updateCacheOnEntryObliteration((EntryMetaData)entryDescriptor, categories);
-                } else {
-                    EntryMetaData metaData = safeCastToEntryMetaData(entryDescriptor);
-                    cacheManager.updateCacheOnEntryObliteration(metaData, categories);
-                }
-
+                cacheManager.updateCacheOnEntryObliteration(safeCastToEntryMetaData(entryDescriptor), categories);
             }
         }
     }
