@@ -165,9 +165,7 @@ public class EntriesDAOiBatisImpl
             Object obj = executor.executeBatch();
 
             // update cache as batch
-            if (entriesDAO.getCacheManager() != null) {
-                entriesDAO.updateCacheOnEntryAddOrUpdateBatch(validEntries);
-            }
+            entriesDAO.updateCacheOnEntryAddOrUpdateBatch(validEntries);
 
             return obj;
         }
@@ -515,7 +513,7 @@ public class EntriesDAOiBatisImpl
                                                  .param("entryId", entryQuery.getEntryId())
                                                  .addLocaleInfo(entryQuery.getLocale()));
         // Update cache after delete
-        if(metaData != null && cacheManager != null) {
+        if(metaData != null) {
             // This must be called after the categories have been deleted from EntryCategory in the database.
             updateCacheOnEntryDelete(metaData, categoriesToRemove);
         }
@@ -885,12 +883,7 @@ public class EntriesDAOiBatisImpl
     private void updateCacheOnEntryAddOrUpdate(final EntryDescriptor entryDescriptor) {
         if (getCacheManager() != null) {
             if (cacheManager.isWorkspaceInCachedFeeds(entryDescriptor.getWorkspace())) {
-                if(entryDescriptor instanceof EntryMetaData) {
-                    cacheManager.updateCacheOnEntryAddOrUpdate((EntryMetaData) entryDescriptor);
-                } else {
-                    EntryMetaData metaData = safeCastToEntryMetaData(entryDescriptor);
-                    cacheManager.updateCacheOnEntryAddOrUpdate(metaData);
-                }
+                cacheManager.updateCacheOnEntryAddOrUpdate(safeCastToEntryMetaData(entryDescriptor));
             }
         }
     }
