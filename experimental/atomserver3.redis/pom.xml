@@ -30,35 +30,20 @@
             </releases>
         </repository>
 
-        <repository>
-            <id>terracotta-repository</id>
-            <url>http://www.terracotta.org/download/reflector/maven2</url>
-        </repository>
-
-        <repository>
-            <id>compass-project.org</id>
-            <name>Compass</name>
-            <url>http://repo.compass-project.org</url>
-        </repository>
-
     </repositories>
-
-    <pluginRepositories>
-
-        <pluginRepository>
-            <id>terracotta-repository</id>
-            <url>http://www.terracotta.org/download/reflector/maven2</url>
-        </pluginRepository>
-
-    </pluginRepositories>
 
     <properties>
         <spring.version>2.5.6</spring.version>
         <jersey.version>1.0.2</jersey.version>
-        <terracotta.version>3.0.0</terracotta.version>
     </properties>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.jredis</groupId>
+            <artifactId>jredis-core-all</artifactId>
+            <version>a.0-SNAPSHOT</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>
@@ -76,18 +61,6 @@
             <groupId>com.sun.jersey.contribs</groupId>
             <artifactId>jersey-spring</artifactId>
             <version>${jersey.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-core</artifactId>
-            <version>2.4.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.compass-project</groupId>
-            <artifactId>compass</artifactId>
-            <version>2.1.2</version>
         </dependency>
 
         <dependency>
@@ -118,18 +91,6 @@
             <groupId>org.apache.abdera</groupId>
             <artifactId>abdera-parser</artifactId>
             <version>1.0-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.terracotta</groupId>
-            <artifactId>terracotta</artifactId>
-            <version>${terracotta.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.terracotta</groupId>
-            <artifactId>tcconfig</artifactId>
-            <version>${terracotta.version}</version>
         </dependency>
 
         <dependency>
@@ -181,153 +142,6 @@
                         </property>
                     </systemProperties>
                 </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.3</version>
-
-                <executions>
-
-                    <execution>
-                        <id>bootjar</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-
-                            <tasks>
-
-                                <echo>creating boot jar</echo>
-                                <java classname="com.tc.object.tools.BootJarTool" fork="true">
-                                    <jvmarg value="-Dtc.host=localhost"/>
-                                    <jvmarg value="-Dcom.tc.l1.modules.repositories=src/main/assembly/tc-modules"/>
-                                    <arg value="make"/>
-                                    <arg value="-f"/>
-                                    <arg value="src/main/assembly/bin/tc-config.xml"/>
-                                    <arg value="-o"/>
-                                    <arg value="${project.build.directory}/dso-boot.jar"/>
-                                    <classpath refid="maven.test.classpath"/>
-                                </java>
-
-                            </tasks>
-
-                        </configuration>
-
-                    </execution>
-
-                    <execution>
-                        <id>integration-test</id>
-                        <phase>integration-test</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-
-                            <tasks>
-
-                                <parallel>
-                                    <sequential>
-                                        <echo>starting Terracotta server</echo>
-                                        <java classname="com.tc.server.TCServerMain" fork="true">
-                                            <jvmarg value="-Xms512m"/>
-                                            <jvmarg value="-Xmx512m"/>
-                                            <jvmarg value="-XX:NewRatio=3"/>
-                                            <jvmarg value="-XX:MaxTenuringThreshold=15"/>
-                                            <jvmarg value="-XX:+HeapDumpOnOutOfMemoryError"/>
-                                            <jvmarg value="-Dcom.sun.management.jmxremote"/>
-                                            <jvmarg value="-Dtc.config=src/main/assembly/bin/tc-config.xml"/>
-                                            <jvmarg value="-Dtc.host=localhost"/>
-                                            <jvmarg value="-Dtc.home=${project.build.directory}/terracotta"/>
-                                            <classpath refid="maven.test.classpath"/>
-                                        </java>
-                                    </sequential>
-                                    <sequential>
-                                        <echo>starting AtomServer</echo>
-                                        <java classname="org.atomserver.AtomServer" fork="true">
-                                            <jvmarg value="-Xms512m"/>
-                                            <jvmarg value="-Xmx512m"/>
-                                            <jvmarg value="-Xbootclasspath/p:target/dso-boot.jar"/>
-                                            <jvmarg value="-Dtc.config=src/main/assembly/bin/tc-config.xml"/>
-                                            <jvmarg value="-Dcom.tc.l1.modules.repositories=src/main/assembly/tc-modules"/>
-                                            <jvmarg value="-Dorg.atomserver.HOSTNAME=localhost"/>
-                                            <jvmarg value="-Dtc.host=localhost"/>
-                                            <jvmarg value="-Dtc.home=${project.build.directory}/terracotta"/>
-                                            <classpath refid="maven.test.classpath"/>
-                                        </java>
-                                    </sequential>
-                                    <sequential>
-                                        <waitfor>
-                                            <http url="http://localhost:8000/app"/>
-                                        </waitfor>
-                                        <echo>running tests</echo>
-
-                                        <mkdir dir="${project.build.directory}/integration-tests"/>
-
-                                        <junit printsummary="on" showoutput="on" fork="yes"
-                                               failureproperty="test.failure">
-                                            <formatter type="plain"/>
-                                            <classpath refid="maven.test.classpath"/>
-                                            <sysproperty key="atomserver.test.tc" value="true"/>
-                                            <test name="org.atomserver.BasicTest"
-                                                  todir="${project.build.directory}/integration-tests"/>
-                                            <test name="org.atomserver.ManagementApiTest"
-                                                  todir="${project.build.directory}/integration-tests"/>
-                                            <test name="org.atomserver.PublishTest"
-                                                  todir="${project.build.directory}/integration-tests"/>
-                                            <!--
-                                                <batchtest todir="${project.build.directory}">
-                                                    <fileset dir="src/test/java">
-                                                        <include name="**/*Test*.java"/>
-                                                    </fileset>
-                                                </batchtest>
-                                            -->
-                                        </junit>
-                                        <!--stop AtomServer-->
-                                        <get src="http://localhost:8042/" dest="STOP" ignoreerrors="yes"/>
-                                        <!--sleep to let it die-->
-                                        <sleep seconds="5"/>
-                                        <!--stop TC server-->
-                                        <java classname="com.tc.admin.TCStop" fork="true">
-                                            <classpath refid="maven.test.classpath"/>
-                                        </java>
-
-                                        <fail if="test.failure">
-                                            One or more integration tests failed, look in ${project.build.directory}/integration-tests for details.
-                                        </fail>
-                                    </sequential>
-                                </parallel>
-
-                            </tasks>
-                        </configuration>
-                    </execution>
-
-                </executions>
-
-                <!-- We need to pull in the ant-junit package in order to get the ANT optional
-                     tasks for running JUnit tests - but it pulls in JUnit 3.8.2, so we need to
-                     exclude that jar, and explicitly pull in JUnit 4.5 -->
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.ant</groupId>
-                        <artifactId>ant-junit</artifactId>
-                        <version>1.7.1</version>
-                        <exclusions>
-                            <exclusion>
-                                <groupId>junit</groupId>
-                                <artifactId>junit</artifactId>
-                            </exclusion>
-                        </exclusions>
-                    </dependency>
-                    <dependency>
-                        <groupId>junit</groupId>
-                        <artifactId>junit</artifactId>
-                        <version>4.5</version>
-                    </dependency>
-                </dependencies>
-
             </plugin>
 
             <plugin>

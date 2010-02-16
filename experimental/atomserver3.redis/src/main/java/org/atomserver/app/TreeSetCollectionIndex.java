@@ -51,7 +51,7 @@ public abstract class TreeSetCollectionIndex<E extends EntryNode> implements Col
 
     public Iterator<E> buildIterator(final CategoryQuery categoryQuery, final long timestamp) {
         return new Iterator<E>() {
-            Iterator<Long> timestampIterator = buildTimestampIterator(categoryQuery, timestamp);
+            Iterator<Long> timestampIterator = buildTimestampIterator(categoryQuery, timestamp + 1);
 
             public boolean hasNext() {
                 return timestampIterator.hasNext();

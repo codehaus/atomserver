@@ -25,7 +25,6 @@
             <fileMode>0774</fileMode>
             <excludes>
                 <exclude>org.atomserver:atomserver</exclude>
-                <exclude>org.compass-project:compass</exclude>
             </excludes>
         </dependencySet>
 
@@ -35,19 +34,6 @@
         <fileSet>
             <directory>src/main/assembly/bin</directory>
             <outputDirectory>/bin</outputDirectory>
-            <fileMode>0774</fileMode>
-        </fileSet>
-        <fileSet>
-            <directory>src/main/assembly/tc-modules</directory>
-            <outputDirectory>/tc-modules</outputDirectory>
-            <fileMode>0774</fileMode>
-        </fileSet>
-        <fileSet>
-            <directory>target</directory>
-            <outputDirectory>/lib</outputDirectory>
-            <includes>
-                <include>dso-boot.jar</include>
-            </includes>
             <fileMode>0774</fileMode>
         </fileSet>
     </fileSets>

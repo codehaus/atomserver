@@ -1,5 +1,8 @@
 package org.atomserver.app;
 
+import java.io.IOException;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -9,7 +12,7 @@ import java.util.HashMap;
  * note: CategoryNode does NOT include a "label" value, because a label can be specified for each
  * USAGE of a category.  Labels are modeled on EntryCategory, which is the Category X Entry space.
  */
-public class CategoryNode {
+public class CategoryNode implements Serializable {
     private final String scheme;
     private final String term;
 
@@ -59,6 +62,15 @@ public class CategoryNode {
 
     private static final Map<String, Map<String, CategoryNode>> CATEGORIES =
             new HashMap<String, Map<String, CategoryNode>>();
+
+    private Object readResolve() throws ObjectStreamException {
+        // TODO: log this
+        return intern(this);
+    }
+
+    public static CategoryNode intern(CategoryNode categoryNode) {
+        return category(categoryNode.scheme, categoryNode.term);
+    }
 
     public static CategoryNode category(String scheme, String term) {
         Map<String, CategoryNode> schemeMap = CATEGORIES.get(scheme);

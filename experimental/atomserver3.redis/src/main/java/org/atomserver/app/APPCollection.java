@@ -5,7 +5,6 @@ import org.apache.abdera.model.Collection;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.log4j.Logger;
 import org.atomserver.AtomServerConstants;
-import static org.atomserver.app.APPResponses.feedResponse;
 import org.atomserver.app.jaxrs.AbderaMarshaller;
 import org.atomserver.categories.CategoryQuery;
 import org.atomserver.categories.CategoryQueryParseException;
@@ -16,8 +15,10 @@ import org.atomserver.util.ArraySet;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
-import static java.lang.String.format;
 import java.util.*;
+
+import static java.lang.String.format;
+import static org.atomserver.app.APPResponses.feedResponse;
 
 public class APPCollection extends BaseResource<Collection, APPWorkspace> {
 
@@ -25,14 +26,14 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
 
     private String title;
 
-    public APPCollection(APPWorkspace workspace,
+    public APPCollection(final APPWorkspace workspace,
                          String name,
                          Collection collection) {
         super(workspace, name);
-//        collectionIndex = new TreeSetCollectionIndex<SimpleEntryNode>() {
-        collectionIndex = new LuceneCollectionIndex<SimpleEntryNode>() {
+        collectionIndex = new TreeSetCollectionIndex<SimpleEntryNode>() {
             protected SimpleEntryNode newEntryNode(String entryId) {
-                return new SimpleEntryNode(APPCollection.this, entryId);
+                return new SimpleEntryNode(
+                        workspace.getName(), APPCollection.this.getName(), entryId);
             }
         };
         put(collection);

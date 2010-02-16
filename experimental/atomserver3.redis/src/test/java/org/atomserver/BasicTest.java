@@ -1,7 +1,7 @@
 package org.atomserver;
 
-import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.UniformInterfaceException;
 import org.apache.abdera.model.Collection;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Service;
@@ -9,12 +9,10 @@ import org.apache.abdera.model.Workspace;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.atomserver.domain.Widget;
-import org.atomserver.ext.Status;
 import org.atomserver.test.EntryChecker;
 import org.atomserver.test.FeedFollower;
-import static org.atomserver.AtomServerConstants.OPTIMISTIC_CONCURRENCY_OVERRIDE;
-import static org.junit.Assert.*;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.ws.rs.core.MediaType;
@@ -23,6 +21,9 @@ import java.io.StringWriter;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+
+import static org.atomserver.AtomServerConstants.OPTIMISTIC_CONCURRENCY_OVERRIDE;
+import static org.junit.Assert.*;
 
 public class BasicTest extends BaseAtomServerTestCase {
     private static final Logger log = Logger.getLogger(BasicTest.class);
@@ -93,8 +94,8 @@ public class BasicTest extends BaseAtomServerTestCase {
         FeedFollower follower = new FeedFollower(
                 root(),
                 String.format("%s/%s/%s/-/%s",
-                              SERVICE, WORKSPACE, COLLECTION,
-                              "(urn:parity)even"), 10, 0);
+                        SERVICE, WORKSPACE, COLLECTION,
+                        "(urn:parity)even"), 10, 0);
         assertEquals(50, follower.follow(
                 new EntryChecker() {
                     public void check(Entry entry) throws Exception {
@@ -107,8 +108,8 @@ public class BasicTest extends BaseAtomServerTestCase {
         follower = new FeedFollower(
                 root(),
                 String.format("%s/%s/%s/-/%s",
-                              SERVICE, WORKSPACE, COLLECTION,
-                              "AND/(urn:parity)even/(urn:div5)true"), 10, 0);
+                        SERVICE, WORKSPACE, COLLECTION,
+                        "AND/(urn:parity)even/(urn:div5)true"), 10, 0);
         assertEquals(10, follower.follow(
                 new EntryChecker() {
                     public void check(Entry entry) throws Exception {
@@ -122,8 +123,8 @@ public class BasicTest extends BaseAtomServerTestCase {
         follower = new FeedFollower(
                 root(),
                 String.format("%s/%s/%s/-/%s",
-                              SERVICE, WORKSPACE, COLLECTION,
-                              "NOT/AND/(urn:parity)even/(urn:div5)true"), 10, 0);
+                        SERVICE, WORKSPACE, COLLECTION,
+                        "NOT/AND/(urn:parity)even/(urn:div5)true"), 10, 0);
         assertEquals(90, follower.follow(
                 new EntryChecker() {
                     public void check(Entry entry) throws Exception {
@@ -138,7 +139,7 @@ public class BasicTest extends BaseAtomServerTestCase {
         int id = 17;
         Entry entry = root()
                 .path(String.format("%s/%s/%s/%s",
-                                    SERVICE, WORKSPACE, COLLECTION, String.valueOf(id)))
+                        SERVICE, WORKSPACE, COLLECTION, String.valueOf(id)))
                 .accept(MediaType.APPLICATION_XML).get(Entry.class);
         Widget widget = PERSISTER.read(Widget.class, entry.getContent());
         assertEquals(id, widget.getId());
@@ -155,7 +156,7 @@ public class BasicTest extends BaseAtomServerTestCase {
             ClientResponse response = e.getResponse();
             assertEquals(404, response.getStatus());
             assertEquals(String.format("%s NOT FOUND", entryId),
-                         response.getEntity(String.class));
+                    response.getEntity(String.class));
         }
     }
 

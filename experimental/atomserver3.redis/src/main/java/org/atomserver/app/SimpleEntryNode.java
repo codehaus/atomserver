@@ -7,7 +7,8 @@ import java.util.Set;
 import java.util.Collections;
 
 public class SimpleEntryNode implements EntryNode {
-    private final APPCollection collection;
+    private final String workspace;
+    private final String collection;
     private final String entryId;
 
     private boolean deleted;
@@ -19,7 +20,8 @@ public class SimpleEntryNode implements EntryNode {
 
     private final Set<AggregateNode> aggregates = new ArraySet<AggregateNode>();
 
-    public SimpleEntryNode(APPCollection collection, String entryId) {
+    public SimpleEntryNode(String workspace, String collection, String entryId) {
+        this.workspace = workspace;
         this.collection = collection;
         this.entryId = entryId;
         this.deleted = false;
@@ -33,7 +35,11 @@ public class SimpleEntryNode implements EntryNode {
         return deleted;
     }
 
-    public APPCollection getCollection() {
+    public String getWorkspace() {
+        return workspace;
+    }
+
+    public String getCollection() {
         return collection;
     }
 

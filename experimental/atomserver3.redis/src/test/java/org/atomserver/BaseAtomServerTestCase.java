@@ -13,8 +13,6 @@ import org.junit.*;
 import org.simpleframework.xml.core.Persister;
 
 import java.io.StringWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Collections;
 import java.util.Set;
 
@@ -28,33 +26,12 @@ public class BaseAtomServerTestCase {
     // TODO: this isn't quite the right name for this constant, with the /app - fix it.
     public static final String ROOT_URL =
             System.getProperty("atomserver.test.url", "http://localhost:8000/app");
-    public static final boolean TC =
-            Boolean.valueOf(System.getProperty("atomserver.test.tc", "false"));
 
     @BeforeClass
     public static void setUp() throws Exception {
-        if (TC) {
-            log.debug("running tests against a terracotta-enabled server at " + ROOT_URL);
-            int retries = 30;
-            boolean connected = false;
-            while (!connected && retries-- > 0) {
-                Thread.sleep(1000);
-                try {
-                    HttpURLConnection conn = (HttpURLConnection) new URL(ROOT_URL).openConnection();
-                    connected = conn.getResponseCode() < 300;
-                } catch (Exception e) {
-                    log.debug("server not responding...");
-                    // okay - retrying again...
-                }
-            }
-            if (!connected) {
-                throw new IllegalStateException("server not available at " + ROOT_URL);
-            }
-        } else {
-            log.debug("creating an in-memory server at " + ROOT_URL);
-            server = AtomServer.create();
-            server.start();
-        }
+        log.debug("creating an in-memory server at " + ROOT_URL);
+        server = AtomServer.create();
+        server.start();
 
         Client client = Client.create(new DefaultClientConfig() {
             public Set getClasses() {
@@ -77,12 +54,8 @@ public class BaseAtomServerTestCase {
 
     @AfterClass
     public static void tearDown() {
-        if (TC) {
-            // nothing to do - the TC server will be stopped externally
-        } else {
-            log.debug("stopping in-memory server at " + ROOT_URL);
-            server.stop();
-        }
+        log.debug("stopping in-memory server at " + ROOT_URL);
+        server.stop();
     }
 
     /**

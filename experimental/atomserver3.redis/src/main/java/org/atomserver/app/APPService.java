@@ -125,7 +125,8 @@ public class APPService extends ContainerResource<Service, Workspace, APPRoot, A
                 AbderaMarshaller.factory().newElement(AtomServerConstants.AGGREGATE_CONTENT);
 
         for (SimpleEntryNode entryNode : aggregateEntryNode.getMembers()) {
-            Entry memberEntry = entryNode.getCollection().convertToEntry(entryNode);
+            Entry memberEntry = getChild(entryNode.getWorkspace())
+                    .getChild(entryNode.getCollection()).convertToEntry(entryNode);
             ((OMElement) aggregateContent).addChild((OMNode) memberEntry);
         }
         for (EntryCategory entryCategory : aggregateEntryNode.getCategories()) {
@@ -179,8 +180,7 @@ public class APPService extends ContainerResource<Service, Workspace, APPRoot, A
                     aggregateCollectionIndices.get(collection);
             if (index == null) {
                 aggregateCollectionIndices.put(collection, index =
-//                        new TreeSetCollectionIndex<AggregateEntryNode>() {
-                        new LuceneCollectionIndex<AggregateEntryNode>() {
+                        new TreeSetCollectionIndex<AggregateEntryNode>() {
                             protected AggregateEntryNode newEntryNode(String entryId) {
                                 return new AggregateEntryNode(entryId);
                             }

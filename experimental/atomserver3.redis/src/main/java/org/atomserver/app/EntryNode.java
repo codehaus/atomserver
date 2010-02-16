@@ -1,12 +1,13 @@
 package org.atomserver.app;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
 /**
  * Represents the metadata for a single entry in AtomServer.
  */
-public interface EntryNode {
+public interface EntryNode extends Serializable {
     /**
      * getter for entryId.
      *
