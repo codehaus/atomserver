@@ -47,7 +47,7 @@ import java.util.concurrent.*;
  * Note that your Servlet container - or perhaps an Apache front-end - most likely already
  * does this same sort of throttling of its HTTP Connection load. But this ThrottledAtomServer is still useful.
  * Because our GETs are all "snapshot reads", they are very fast, and this design allows us to separate
- * read load from write loREADMEad, and thus, to always provide some database capacity for GETs.
+ * read load from write load, and thus, to always provide some database capacity for GETs.
  */
 @ManagedResource(description = "Throttled AtomServer")
 public class ThrottledAtomServer extends AtomServerWrapper {
