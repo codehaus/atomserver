@@ -37,25 +37,35 @@ So you'll need XCode tools installed, and you'll have to install Fink, etc.
 But don't get discouraged, it's not really hard, just a bit labourious
 And ultimately, worth the trouble!!
 
+NOTE - as of 2/18/2010 there is a download of the Postgres install for MAC.  http://www.postgresql.org/download/macosx
+
 B) Start Postgres;
 ``````````````
 $ su postgres;
 $ pg-ctl start;   (Or possibly pg-ctl reload;)
+
+If you install the new Postgres, it will likely be running as your user.  You can use the ui to stop and start it
+or the command line.
 
 C) Create the DB;  (Note: postgres.properties is currently setup for to use the local "atomserver" user)
 ``````````````
 $ su postgres;
 $ createdb atomserver_dev;
 
+Depending on how you set things up, you may need to create an "atomserver" user.  Log into psql and run:
+
+CREATE USER atomserver WITH password 'atomserver';
+GRANT ALL PRIVILEGES ON DATABASE atomserver_dev TO atomserver;
+
 D) Install the tables 
 ``````````````
-$ psql atomserver_dev -f ./src/main/resources/postgres_ddl.sql
-$ psql atomserver_dev -f ./src/main/resources/grant_perms.sql
+$ psql atomserver_dev -f ./src/main/resources/org/atomserver/sql/postgres/postgres_ddl.sql
+$ psql atomserver_dev -f ./src/main/resources/org/atomserver/sql/postgres/grant_perms.sql
 
 E) Verify
 $ psql atomserver_dev
-# /d EntryStore;
-# /q
+# \d EntryStore;
+# \q
 
 F) Seed the DB
 ``````````
