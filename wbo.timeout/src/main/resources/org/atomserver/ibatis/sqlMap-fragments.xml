@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE sqlMap
+        PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<!--
+ Copyright (c) 2007 HomeAway, Inc.
+  All rights reserved.  http://www.atomserver.org
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<!--  iBatis SQL Map for Entries -->
+<sqlMap>
+
+    <!-- #################### common definitions ############### -->
+    <typeAlias type="org.atomserver.core.EntryMetaData" alias="entryMetaData"/>
+    <typeAlias type="org.atomserver.core.EntryCategory" alias="entryCategory"/>
+    <typeAlias type="org.atomserver.EntryDescriptor" alias="entryDescriptor"/>
+    <typeAlias type="org.atomserver.core.EntryCategoryLogEvent" alias="entryCategoryLogEvent"/>
+
+
+    <resultMap class="entryMetaData" id="entryResultSansCategories">
+        <result property="entryStoreId" column="EntryStoreId"/>
+        <result property="workspace" column="Workspace"/>
+        <result property="collection" column="Collection"/>
+        <result property="language" column="LanCode"/>
+        <result property="country" column="CountryCode"/>
+        <result property="entryId" column="EntryId"/>
+        <result property="updatedDate" column="UpdateDate" javaType="Date" jdbcType="DATETIME"/>
+        <result property="publishedDate" column="CreateDate" javaType="Date" jdbcType="DATETIME"/>
+        <result property="updateTimestamp" column="UpdateTimestamp"/>
+        <result property="deleted" column="DeleteFlag"/>
+        <result property="revision" column="RevisionNum"/>
+        <result property="contentHashCode" column="contentHashCode" />
+    </resultMap>
+
+    <resultMap class="entryMetaData" id="entryResult" groupBy="workspace,collection,language,country,entryId">
+        <result property="entryStoreId" column="EntryStoreId"/>
+        <result property="workspace" column="Workspace"/>
+        <result property="collection" column="Collection"/>
+        <result property="language" column="LanCode"/>
+        <result property="country" column="CountryCode"/>
+        <result property="entryId" column="EntryId"/>
+        <result property="updatedDate" column="UpdateDate" javaType="Date" jdbcType="DATETIME"/>
+        <result property="publishedDate" column="CreateDate" javaType="Date" jdbcType="DATETIME"/>
+        <result property="updateTimestamp" column="UpdateTimestamp"/>
+        <result property="deleted" column="DeleteFlag"/>
+        <result property="revision" column="RevisionNum"/>
+        <result property="contentHashCode" column="contentHashCode" />
+        <result property="categories" resultMap="entryCategoryResult"/>
+    </resultMap>
+
+    <resultMap class="entryCategory" id="entryCategoryResult">
+        <result property="entryStoreId" column="EntryStoreId"/>
+        <result property="workspace" column="Workspace"/>
+        <result property="collection" column="Collection"/>
+        <result property="entryId" column="EntryId"/>
+        <result property="scheme" column="Scheme"/>
+        <result property="term" column="Term"/>
+        <result property="label" column="Label"/>
+    </resultMap>
+
+    <resultMap class="entryCategoryLogEvent" id="entryCategoryLogEventResult">
+        <result property="entryStoreId" column="EntryStoreId"/>
+        <result property="workspace" column="Workspace"/>
+        <result property="collection" column="Collection"/>
+        <result property="entryId" column="EntryId"/>
+        <result property="scheme" column="Scheme"/>
+        <result property="term" column="Term"/>
+        <result property="label" column="Label"/>
+        <result property="createDate" column="CreateDate"/>
+    </resultMap>
+
+    <sql id="paginationPrefix">
+        <dynamic>
+            <isNotNull property="pageSize">
+                <isNotEqual property="pageSize" compareValue="0">
+                    <isEqual property="dbType" compareValue="sqlserver">
+                        TOP $pageSize$
+                    </isEqual>
+                </isNotEqual>
+            </isNotNull>
+        </dynamic>
+    </sql>
+
+    <sql id="paginationSuffix">
+        <dynamic>
+            <isNotNull property="pageSize">
+                <isNotEqual property="pageSize" compareValue="0">
+                    <isNotEqual property="dbType" compareValue="sqlserver">
+                        LIMIT #pageSize#
+                    </isNotEqual>
+                </isNotEqual>
+            </isNotNull>
+        </dynamic>
+    </sql>
+
+    <sql id="timestampType">
+        <isEqual property="dbType" compareValue="sqlserver">TIMESTAMP</isEqual>
+        <isNotEqual property="dbType" compareValue="sqlserver">BIGINT</isNotEqual>
+    </sql>
+
+    <sql id="updateLock_Table">
+        <isEqual property="dbType" compareValue="sqlserver">
+            (UPDLOCK)
+        </isEqual>
+    </sql>
+
+    <sql id="updateLock_Query">
+        <isEqual property="dbType" compareValue="mysql">
+            FOR UPDATE
+        </isEqual>
+    </sql>
+
+    <!-- WITH(NOEXPAND) is a SQL Server hint that we use to indicate that when accessing a view
+         that has an index, the index should be used. -->
+    <sql id="WITH_NOEXPAND">
+        <isEqual property="dbType" compareValue="sqlserver">WITH (NOEXPAND)</isEqual>
+    </sql>
+
+    <!-- SQL Server supports an INNER LOOP JOIN with different performance characteristics from a
+         normal INNER JOIN - on other DBs, we use an INNER JOIN which has the same semantics. -->
+    <sql id="INNER_LOOP_JOIN">
+        INNER <isEqual property="dbType" compareValue="sqlserver">LOOP</isEqual> JOIN
+    </sql>
+
+  <!-- WITH(NOLOCK) is a SQL Server hint that we use to indicate that when selecting a view not to hold a lock. -->
+   <sql id="WITH_NOLOCK">
+        <isEqual property="dbType" compareValue="sqlserver">WITH (NOLOCK)</isEqual>
+    </sql>
+
+    <select id="selectSysDate" resultClass="date">
+        <dynamic>
+            <isNotEqual property="dbType" compareValue="hsql">
+                SELECT ${db.getdate.func} AS ServerDateTime
+            </isNotEqual>
+            <isEqual property="dbType" compareValue="hsql">
+                CALL ${db.getdate.func}
+            </isEqual>
+        </dynamic>
+    </select>
+
+</sqlMap>
+
