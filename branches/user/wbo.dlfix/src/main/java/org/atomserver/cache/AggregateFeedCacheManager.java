@@ -73,6 +73,8 @@ public class AggregateFeedCacheManager {
 
     private long cacheConfigRevision = -1;
 
+    private boolean clustered = true;
+
     //==============================
     // Local maps for quick lookups
     //==============================
@@ -107,20 +109,20 @@ public class AggregateFeedCacheManager {
         // parse and initialize workspaceToCachedFeeds and cachedFeedIds
         parseConfigAndPopulateMaps(cacheConfigList);
 
-        if (this.workspaceToCachedFeeds.isEmpty() || cachedFeedById.isEmpty()) {
+        // Look up existing Feed Caches from CachedFeed table and compare them with the configured caches.
+        List<CachedAggregateFeed> existingCacheList = cachedFeedDAO.getExistingCachedFeeds();
+
+        if ((this.workspaceToCachedFeeds.isEmpty() || cachedFeedById.isEmpty()) && existingCacheList.isEmpty()) {
             return;
         }
 
-        // Look up existing Feed Caches from CachedFeed table and compare them with the configured caches.
-        List<CachedAggregateFeed> existingCacheList = cachedFeedDAO.getExistingCachedFeeds();
         Set<String> existingCacheSet = new HashSet<String>();
         for (CachedAggregateFeed f : existingCacheList) {
             existingCacheSet.add(f.getCachedFeedId());
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug("Number of existing cached feeds:" + existingCacheSet.size());
-        }
+        log.info("Number of existing cached feeds:" + existingCacheSet.size());
+
         Set<String> configuredCacheSet = new HashSet<String>();
         configuredCacheSet.addAll(cachedFeedById.keySet());
 
@@ -132,10 +134,8 @@ public class AggregateFeedCacheManager {
         Set<String> addedSet = new HashSet<String>(configuredCacheSet);
         addedSet.removeAll(existingCacheSet);
 
-        if (log.isDebugEnabled()) {
-            log.debug("Number of old cached feeds to delete:" + deletedSet.size());
-            log.debug("Number of new cached feeds to add:" + addedSet.size());
-        }
+        log.info("Number of old cached feeds to delete:" + deletedSet.size());
+        log.info("Number of new cached feeds to add:" + addedSet.size());
 
         // remove the missing caches
         for (String deletedCache : deletedSet) {
@@ -149,7 +149,7 @@ public class AggregateFeedCacheManager {
             long start = System.currentTimeMillis();
             if (addFeedToCacheInDB(cfeed)) {
                 long elapse = System.currentTimeMillis() - start;
-                log.info("Added cache:" + cfeed.toString() + "  takes " + (elapse/1000) + " secs.");
+                log.debug("Added cache:" + cfeed.toString() + "  takes " + (elapse/1000) + " secs.");
             } else { // failed to add
                 log.warn("Failed to add feed cache : " + cfeed.toString());
                 removeCachedFeedFromMaps(cfeed.getCachedFeedId());
@@ -190,6 +190,13 @@ public class AggregateFeedCacheManager {
         this.entryCategoriesDAO.setCacheManager(this);
     }
 
+    public boolean getClustered() {
+        return clustered;
+    }
+
+    public void setClustered(boolean clustered) {
+        this.clustered = clustered;
+    }
 
     /**
      * Returns true if the given joined worksapces, locale and scheme are being cached.
@@ -585,9 +592,11 @@ public class AggregateFeedCacheManager {
     }
 
     private void syncCacheConfigMaps() {
-        long currentRevision = cachedFeedDAO.getCacheConfigRevision();
-        if( this.cacheConfigRevision != currentRevision) {
-            reloadCacheConfigMaps(currentRevision);
+        if(this.clustered) {
+            long currentRevision = cachedFeedDAO.getCacheConfigRevision();
+            if( this.cacheConfigRevision != currentRevision) {
+                reloadCacheConfigMaps(currentRevision);
+            }
         }
     }
 

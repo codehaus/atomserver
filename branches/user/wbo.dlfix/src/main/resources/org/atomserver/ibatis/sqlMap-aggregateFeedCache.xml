@@ -74,6 +74,9 @@
         <isNotNull property="cachedfeedid">
            AND timestampCache.CachedFeedId = #cachedfeedid#
         </isNotNull>
+        <isNotNull property="entryId">
+           AND recentlyChangedEntries.Term = #entryId#
+        </isNotNull>
         <isNotNull property="categoryQuerySql">
           <!-- matchineSiblingEntries was join again to get the EntryStoreId to join against EntryCategory.
                Although this is an extra join, the performance does not seems to have suffered in the performance tests -->
@@ -143,46 +146,8 @@
          ORDER BY aggregateEntryIds.UpdateTimestamp, aggregateEntryIds.AggregateEntryId
     </select>
 
-
-    <!-- This query is based on SELECT_modifiedAggregateEntries query to create entries to be (inserted into
-         AggregateFeedTimestamp table) the Timestamps for Terms for a given aggregate feed and Scheme  -->
-    <sql id="SELECT_AggregateEntriesForCacheOrg">
-        SELECT
-               #cachedfeedid# AS CachedFeedId,
-               recentlyChangedEntries.Term AS AggregateEntryId,
-               recentlyChangedEntries.UpdateTimestamp
-          FROM vw_EntryWithCategory recentlyChangedEntries
-          INNER JOIN vw_EntryWithCategory matchingSiblingEntries
-            ON recentlyChangedEntries.Scheme = #collection#
-           AND matchingSiblingEntries.Scheme = #collection#
-           AND matchingSiblingEntries.Term = recentlyChangedEntries.Term
-        <isNotNull property="terms">
-       <!-- This parameter terms is used to select cached feed timestamps for a specific cached feed and terms
-            It is used for rebuilding a subset of the cached timestamps on category removal -->
-           AND matchingSiblingEntries.Term IN
-          <iterate property="terms" open="(" close=")" conjunction=",">
-              #terms[]#
-          </iterate>
-        </isNotNull>
-        <isNotNull property="language">
-           AND ((matchingSiblingEntries.LanCode = #language# AND matchingSiblingEntries.CountryCode = #country#)
-                OR (matchingSiblingEntries.LanCode = '**' AND matchingSiblingEntries.CountryCode = '**'))
-        </isNotNull>
-        <isNotNull property="joinWorkspaces">
-           AND matchingSiblingEntries.Workspace IN
-            <iterate property="joinWorkspaces" open="(" close=")" conjunction=",">
-               #joinWorkspaces[]#
-            </iterate>
-        </isNotNull>
-        GROUP BY recentlyChangedEntries.Scheme, recentlyChangedEntries.UpdateTimestamp, recentlyChangedEntries.Term
-        HAVING recentlyChangedEntries.UpdateTimestamp = MAX(matchingSiblingEntries.UpdateTimestamp)
-        <isNotNull property="language">
-           AND #language# = MAX(matchingSiblingEntries.LanCode)
-        </isNotNull>
-    </sql>
-
-
-    <!-- restructured version of the above query -->
+    <!-- This query return entries to be inserted in the AggregateFeedTimestamp table
+     for a given feed, scheme and locale. It is also used for update a subset of the entries. -->
     <sql id="SELECT_AggregateEntriesForCache">
           SELECT
                  #cachedfeedid# AS CachedFeedId,

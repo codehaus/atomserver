@@ -41,6 +41,16 @@ public class CachedAggregateFeedDAOiBatisImpl
 
     private static final String CACHE_CFG_REVISION = "AggregateFeedCacheConfigRevision";
 
+    private static final Comparator feedTermComparator =
+            new Comparator<AggregateFeedTerm>() {
+                public int compare(AggregateFeedTerm o1, AggregateFeedTerm o2) {
+                    if(o1.getCachedFeedId().equals(o2.getCachedFeedId())) {
+                        return o1.getTerm().compareTo(o2.getTerm());
+                }
+                return o1.getCachedFeedId().compareTo(o2.getCachedFeedId());
+            }
+    };
+
     //==============================
     // Cache updates
     //==============================
@@ -101,8 +111,13 @@ public class CachedAggregateFeedDAOiBatisImpl
                 new SqlMapClientCallback() {
                    public Object doInSqlMapClient(SqlMapExecutor executor) throws SQLException {
                         // existing terms
-                        for(String feedId: existingTerms.keySet()) {
-                            for(String term: existingTerms.get(feedId)) {
+                       // Order feed and terms to avoid deadlock on updates
+                        List<String> feeds = new ArrayList(existingTerms.keySet());
+                        Collections.sort(feeds);
+                        for(String feedId: feeds) {
+                            List<String> terms = new ArrayList(existingTerms.get(feedId));
+                            Collections.sort(terms);
+                            for(String term: terms) {
                                 Long timestamp = maxTimestampMap.get(feedId+term);
                                 if(timestamp != null) {
                                     ParamMap paramMap = paramMap()
@@ -126,7 +141,7 @@ public class CachedAggregateFeedDAOiBatisImpl
                                 }
                             }
                         }
-                        executor.executeBatch();
+                       executor.executeBatch();
                        return null;
                    }
                 }
@@ -329,6 +344,7 @@ public class CachedAggregateFeedDAOiBatisImpl
                  }
              }
          }
+         Collections.sort(updatesForCache, feedTermComparator);
          return updatesForCache;
      }
 
@@ -338,14 +354,22 @@ public class CachedAggregateFeedDAOiBatisImpl
         // updates are not the same as the terms actually updated
         // We need to update the timestamp of terms already in the cache and add terms not yet in the cache.
         // This method updates the existing ones only.
-         int rc = 1;
-         int rowsUpdated;
+         int rc = 0;
          if(updatesForCache != null && !updatesForCache.isEmpty()) {
-//             System.out.println(" updateCache :" + updatesForCache.size() + " -->" + updatesForCache);
-             ParamMap paramMap = paramMap()
-                     .param("feedterms", updatesForCache)
-                     .param("timestamp", timestamp);
-             rowsUpdated = getSqlMapClientTemplate().update("updateTimestamp", paramMap);
+
+             int rowsUpdated = (Integer)getSqlMapClientTemplate().execute(
+                new SqlMapClientCallback() {
+                   public Object doInSqlMapClient(SqlMapExecutor executor) throws SQLException {
+                       for(AggregateFeedTerm aft: updatesForCache) {
+                           ParamMap paramMap = paramMap()
+                                        .param("cachedfeedid", aft.getCachedFeedId())
+                                        .param("term", aft.getTerm())
+                                        .param("timestamp", timestamp);
+                           executor.update("updateTimestamp", paramMap);
+                       }
+                       return executor.executeBatch();
+                   }
+                });
              rc = updatesForCache.size() - rowsUpdated; //
          }
          return rc;
@@ -437,27 +461,27 @@ public class CachedAggregateFeedDAOiBatisImpl
          }
      }
 
-    private List<FeedTermList> convertToFeedTermList(final Map<String, Set<String>> feedTerms ) {
-         List<FeedTermList> feedterms = new ArrayList<FeedTermList>();
+    private List<AggregateFeedTermList> convertToFeedTermList(final Map<String, Set<String>> feedTerms ) {
+         List<AggregateFeedTermList> feedterms = new ArrayList<AggregateFeedTermList>();
          for(String t: feedTerms.keySet()) {
              Set<String> terms = feedTerms.get(t);
              if(!terms.isEmpty()) {
-                feedterms.add(new FeedTermList(t, new ArrayList<String>(terms)));
+                feedterms.add(new AggregateFeedTermList(t, new ArrayList<String>(terms)));
              }
          }
          return feedterms;
      }
 
-    private List<FeedTermList> convertToFeedTermList(final List<AggregateFeedTerm> aggFeedTerms) {
-        List<FeedTermList> feedterms = new ArrayList<FeedTermList>();
-        Map<String, FeedTermList> feedToFeedTermList = new HashMap<String, FeedTermList>(); // for quick look up
+    private List<AggregateFeedTermList> convertToFeedTermList(final List<AggregateFeedTerm> aggFeedTerms) {
+        List<AggregateFeedTermList> feedterms = new ArrayList<AggregateFeedTermList>();
+        Map<String, AggregateFeedTermList> feedToFeedTermList = new HashMap<String, AggregateFeedTermList>(); // for quick look up
         
         for(AggregateFeedTerm aft: aggFeedTerms) {
             String feedId = aft.getCachedFeedId();
             String term = aft.getTerm();
-            FeedTermList ftermlist = feedToFeedTermList.get(feedId);
+            AggregateFeedTermList ftermlist = feedToFeedTermList.get(feedId);
             if(ftermlist == null) {
-                ftermlist = new FeedTermList(feedId, new ArrayList<String>());
+                ftermlist = new AggregateFeedTermList(feedId, new ArrayList<String>());
                 feedToFeedTermList.put(feedId, ftermlist);
                 feedterms.add(ftermlist);
             }
@@ -468,11 +492,11 @@ public class CachedAggregateFeedDAOiBatisImpl
     }
 
     // class which maps a feed to its list of terms.
-    static class FeedTermList {
+    static class AggregateFeedTermList {
         final String feedId;
         List<String> terms = null;
 
-        public FeedTermList(String feedId, List<String> terms) {
+        public AggregateFeedTermList(String feedId, List<String> terms) {
             this.feedId = feedId;
             this.terms = terms;
         }

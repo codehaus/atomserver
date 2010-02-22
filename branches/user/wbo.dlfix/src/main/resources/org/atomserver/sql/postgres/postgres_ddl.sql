@@ -1,5 +1,4 @@
-
-DROP TABLE IF EXISTS AppServerEvent CASCADE;
+DROP TABLE IF EXISTS AppServerSysParam CASCADE;
 DROP TABLE IF EXISTS AggregateFeedTimestamp CASCADE;
 DROP TABLE IF EXISTS CachedFeed CASCADE;
 DROP TABLE IF EXISTS EntryContent CASCADE;
@@ -49,7 +48,7 @@ DeleteFlag          BOOLEAN,
 RevisionNum         INT                     NOT NULL,
 UpdateSeqNum        BIGINT                  NOT NULL,
 UpdateTimestamp     SERIAL,
-ContentHashCode     VARCHAR(36)        NULL
+ContentHashCode     VARCHAR(36)        NULL,
 PRIMARY KEY (EntryStoreId),
 UNIQUE (UpdateTimestamp, Workspace),
 UNIQUE (Workspace, Collection, EntryId, LanCode, CountryCode),
