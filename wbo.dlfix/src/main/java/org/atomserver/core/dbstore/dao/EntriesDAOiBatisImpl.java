@@ -533,12 +533,13 @@ public class EntriesDAOiBatisImpl
             paramMap.param("joinWorkspaces", joinWorkspaces);
         }
 
+        String sqlId = getSqlMapId (joinWorkspaces,entryDescriptor.getLocale(),entryDescriptor.getCollection(), "selectAggregateEntries",paramMap);
+
         Map<String, AggregateEntryMetaData> map =
                 AggregateEntryMetaData.aggregate(entryDescriptor.getWorkspace(),
                                                  entryDescriptor.getCollection(),
                                                  entryDescriptor.getLocale(),
-                                                 getSqlMapClientTemplate().queryForList("selectAggregateEntries",
-                                                                                        paramMap));
+                                                 getSqlMapClientTemplate().queryForList(sqlId, paramMap));
 
         return map.get(entryDescriptor.getEntryId());
     }
