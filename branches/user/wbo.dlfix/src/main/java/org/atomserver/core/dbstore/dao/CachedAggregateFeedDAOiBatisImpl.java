@@ -110,13 +110,11 @@ public class CachedAggregateFeedDAOiBatisImpl
             getSqlMapClientTemplate().execute(
                 new SqlMapClientCallback() {
                    public Object doInSqlMapClient(SqlMapExecutor executor) throws SQLException {
-                        // existing terms
+                       // existing terms
                        // Order feed and terms to avoid deadlock on updates
-                        List<String> feeds = new ArrayList(existingTerms.keySet());
-                        Collections.sort(feeds);
+                        SortedSet<String> feeds = new TreeSet(existingTerms.keySet());
                         for(String feedId: feeds) {
-                            List<String> terms = new ArrayList(existingTerms.get(feedId));
-                            Collections.sort(terms);
+                            SortedSet<String> terms = new TreeSet(existingTerms.get(feedId));
                             for(String term: terms) {
                                 Long timestamp = maxTimestampMap.get(feedId+term);
                                 if(timestamp != null) {
