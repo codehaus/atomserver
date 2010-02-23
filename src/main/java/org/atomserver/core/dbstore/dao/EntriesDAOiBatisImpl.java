@@ -137,13 +137,14 @@ public class EntriesDAOiBatisImpl
         }
 
         public Object doInSqlMapClient(SqlMapExecutor executor) throws SQLException {
-            Set<EntryDescriptor> invalidEntry = new HashSet<EntryDescriptor>();
+            List<EntryDescriptor> validEntries = new ArrayList<EntryDescriptor>();
             executor.startBatch();
             for (EntryDescriptor uriData : entryList) {
 
                 if (opType == OperationType.insert) {
                     Map<String, Object> paramMap = entriesDAO.prepareInsertParamMap(uriData);
                     executor.insert("insertEntry-" + entriesDAO.getDatabaseType(), paramMap);
+                    validEntries.add(uriData);
 
                 } else if (opType == OperationType.update || opType == OperationType.delete) {
                     boolean deleted = (opType == OperationType.delete);
@@ -153,9 +154,8 @@ public class EntriesDAOiBatisImpl
                                          entriesDAO.prepareUpdateParamMap(deleted,
                                                                           uriData.getRevision(),
                                                                           metaData));
-                    } else {
-                        invalidEntry.add(uriData);
-                    }
+                        validEntries.add(uriData);
+                    } 
                 } else {
                     String msg = "Unknown OperationType";
                     log.error(msg);
@@ -165,16 +165,7 @@ public class EntriesDAOiBatisImpl
             Object obj = executor.executeBatch();
 
             // update cache as batch
-            if (entriesDAO.getCacheManager() != null) {
-                for (EntryDescriptor uriData : entryList) {
-                    if(invalidEntry.contains(uriData)) {
-                        continue;
-                    }
-                    if (opType == OperationType.insert || opType == OperationType.update || opType == OperationType.delete ) {
-                         entriesDAO.updateCacheOnEntryAddOrUpdate(uriData);
-                    }
-                }
-            }
+            entriesDAO.updateCacheOnEntryAddOrUpdateBatch(validEntries);
 
             return obj;
         }
@@ -522,7 +513,7 @@ public class EntriesDAOiBatisImpl
                                                  .param("entryId", entryQuery.getEntryId())
                                                  .addLocaleInfo(entryQuery.getLocale()));
         // Update cache after delete
-        if(metaData != null && cacheManager != null) {
+        if(metaData != null) {
             // This must be called after the categories have been deleted from EntryCategory in the database.
             updateCacheOnEntryDelete(metaData, categoriesToRemove);
         }
@@ -542,12 +533,13 @@ public class EntriesDAOiBatisImpl
             paramMap.param("joinWorkspaces", joinWorkspaces);
         }
 
+        String sqlId = getSqlMapId (joinWorkspaces,entryDescriptor.getLocale(),entryDescriptor.getCollection(), "selectAggregateEntries",paramMap);
+
         Map<String, AggregateEntryMetaData> map =
                 AggregateEntryMetaData.aggregate(entryDescriptor.getWorkspace(),
                                                  entryDescriptor.getCollection(),
                                                  entryDescriptor.getLocale(),
-                                                 getSqlMapClientTemplate().queryForList("selectAggregateEntries",
-                                                                                        paramMap));
+                                                 getSqlMapClientTemplate().queryForList(sqlId, paramMap));
 
         return map.get(entryDescriptor.getEntryId());
     }
@@ -892,26 +884,30 @@ public class EntriesDAOiBatisImpl
     private void updateCacheOnEntryAddOrUpdate(final EntryDescriptor entryDescriptor) {
         if (getCacheManager() != null) {
             if (cacheManager.isWorkspaceInCachedFeeds(entryDescriptor.getWorkspace())) {
-                if(entryDescriptor instanceof EntryMetaData) {
-                    cacheManager.updateCacheOnEntryAddOrUpdate((EntryMetaData) entryDescriptor);
-                } else {
-                    EntryMetaData metaData = safeCastToEntryMetaData(entryDescriptor);
-                    cacheManager.updateCacheOnEntryAddOrUpdate(metaData);
-                }
+                // entry is selected here to get the up-to-date timestamp for update and insert.
+                cacheManager.updateCacheOnEntryAddOrUpdate(selectEntry(entryDescriptor));
             }
+        }
+    }
+
+    private void updateCacheOnEntryAddOrUpdateBatch(final List<EntryDescriptor> entryList) {
+        if (getCacheManager() != null) {
+            List<EntryMetaData> entries = new ArrayList<EntryMetaData>();
+            boolean sync = true;
+            for(EntryDescriptor entry: entryList) {
+                if(cacheManager.isWorkspaceInCachedFeeds(entry.getWorkspace(),sync)) {
+                    entries.add(selectEntry(entry)); //to get up-to-date timestamp
+                }
+                sync = false;
+            }
+            cacheManager.updateCacheOnEntryAddOrUpdateBatch(entries);
         }
     }
 
     private void updateCacheOnEntryDelete(final EntryDescriptor entryDescriptor, final List<EntryCategory> categories) {
         if(getCacheManager() != null && categories != null && !categories.isEmpty() ) {
             if (cacheManager.isWorkspaceInCachedFeeds(entryDescriptor.getWorkspace())) {
-                if(entryDescriptor instanceof EntryMetaData) {
-                    cacheManager.updateCacheOnEntryObliteration((EntryMetaData)entryDescriptor, categories);
-                } else {
-                    EntryMetaData metaData = safeCastToEntryMetaData(entryDescriptor);
-                    cacheManager.updateCacheOnEntryObliteration(metaData, categories);
-                }
-
+                cacheManager.updateCacheOnEntryObliteration(safeCastToEntryMetaData(entryDescriptor), categories);
             }
         }
     }

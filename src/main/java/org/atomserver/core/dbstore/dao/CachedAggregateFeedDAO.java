@@ -43,39 +43,56 @@ public interface CachedAggregateFeedDAO
 
     /**
      * Retrieves feed ids from a given list and terms matching a given timestamp.
-     * @param feedIds
-     * @param timestamp
-     * @return
+     * @param feedIds       Ids of feend to search in
+     * @param timestamp     timestamp to match
+     * @return  a list of Feed and Term values
      */
     List<AggregateFeedTerm> getFeedTermsWithMatchingTimestamp(List<String> feedIds, long timestamp);
 
+    /**
+     * Batch updates and inserts of cached timestamps.
+     * @param existingTerms  list of feedId and corresponding terms to update
+     * @param newTerms       list of feedId and corresponding terms to add
+     * @param maxTimestampMap   timestamp for each feedId and term.
+     */
+    void updateFeedCacheBatch(Map<String, Set<String>> existingTerms,
+                              Map<String, Set<String>> newTerms,
+                              Map<String, Long> maxTimestampMap);
+    
     //========================================
     //  CRUD for mapping of feed id and aggregate feeds
     //========================================
     /**
      * Add an aggregate feed (joinedWorkspaces, locale, scheme) to be cached.
-     * @param cachedFeed
+     * @param cachedFeed a new feed to cache
      */
     void addNewFeedToCache(CachedAggregateFeed cachedFeed);
 
     /**
      * Retrieve a cached aggregate feed by feed id.
-     * @param cachedFeedId
-     * @return
+     * @param cachedFeedId  id of cached feed
+     * @return <code>CachedAggregateFedd</code> object.
      */
     CachedAggregateFeed getCachedFeedById(String cachedFeedId);
 
     /**
      * Remove a cached aggregate feed by id from the CachedFeed table.
-     * @param cachedFeedId
+     * @param cachedFeedId id of cached feed
      */
     void removeFeedFromCacheById(String cachedFeedId);
 
     /**
      * Retrieve a list of currently existing cached aggregate feeds
-     * @return
+     * @return  a list of Cached Aggregate feed objects.
      */
     List<CachedAggregateFeed> getExistingCachedFeeds();
+
+    /**
+     * Get Existing Terms in the feed from the given set of terms.
+     * @param feedIdTerms A map of feedId to a corresponding set of terms in the feed
+     * @return a map with feedIds and their corresponding terms.
+     */
+    Map<String, Set<String>> getTermsInFeed(Map<String,Set<String>> feedIdTerms);
 
     /**
      * Get Last Cache configuration revision which indicates if the
@@ -94,34 +111,34 @@ public interface CachedAggregateFeedDAO
 
     /**
      * Populate AggregateFeedTimestamp Cache table for a new feed
-     * @param workspaces
-     * @param locale
-     * @param scheme
-     * @param feedId
+     * @param workspaces   list of workspace in the feed
+     * @param locale       locale of the cached feed
+     * @param scheme       scheme of the cached feed
+     * @param feedId       id of cached feed
      */
     void cacheAggregateFeedTimestamps(List<String> workspaces, String locale, String scheme, String feedId);
 
     /**
      * Populate AggregateFeedTimestamp Cache table with entries for a given feed and terms.
      *
-     * @param workspaces
-     * @param locale
-     * @param scheme
-     * @param feedId
-     * @param terms
+     * @param workspaces   list of workspace in the feed
+     * @param locale       locale of the cached feed
+     * @param scheme       scheme of the cached feed
+     * @param feedId       id of cached feed
+     * @param terms        terms to cache
      */
     void cacheAggregateFeedTimestampsByTerms(List<String> workspaces, String locale, String scheme, String feedId,
                                       List<String> terms);
 
     /**
      * Remove cached aggregate feed timestamp entries from AggregateFeedTimestamp table.
-     * @param cachedFeedId
+     * @param cachedFeedId Id of cached feed
      */
     void removeAggregateFeedTimestampsById(String cachedFeedId);
 
     /**
      * Remove cached aggregate feed timestamp entries with the given list of <code>AggregateFeedTerm</code>.
-     * @param feedTerms
+     * @param feedTerms    a list of Cached Feed-Term pairs.
      */
     void removeAggregateFeedTimestampsByTerms(List<AggregateFeedTerm> feedTerms);
 
