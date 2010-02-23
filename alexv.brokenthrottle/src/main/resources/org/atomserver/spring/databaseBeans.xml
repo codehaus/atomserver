@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2007 HomeAway, Inc.
+  All rights reserved.  http://www.atomserver.org
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+
+    <!-- NOTE: defaultAutoCommit must remain true here (the default)
+               Otherwise, the Transaction (withing Spring's TransactionManager) will NOT commit --> 
+    <bean id="org.atomserver-dataSource"
+          class="org.apache.commons.dbcp.BasicDataSource"
+          destroy-method="close"
+          lazy-init="true"
+          depends-on="org.atomserver-propertyConfigurer">
+
+        <property name="driverClassName" value="${db.driver}"/>
+        <property name="url" value="${db.url}"/>
+        <property name="username" value="${db.username}"/>
+        <property name="password" value="${db.password}"/>
+
+        <!-- The maximum number of active connections that can be allocated from this pool at the same time,
+              or non-positive for no limit. -->
+        <property name="maxActive" value="${db.poolsize.max}"/>
+
+        <!-- The maximum number of milliseconds that the pool will wait (when there are no available connections)
+              for a connection to be returned before throwing an exception, or -1 to wait indefinitely. -->
+        <property name="maxWait" value="10000"/>
+    </bean>
+
+    <bean id="org.atomserver-sqlMapClient"
+          class="org.springframework.orm.ibatis.SqlMapClientFactoryBean"
+          depends-on="org.atomserver-propertyConfigurer">
+        <property name="configLocation" value="classpath:org/atomserver/ibatis/sqlMapConfig-${db.type}.xml"/>
+        <property name="sqlMapClientProperties">
+            <props>
+                <prop key="db.getdate.func">${db.getdate.func}</prop>
+                <prop key="db.timeout.sql.stmts">${db.timeout.sql.stmts}</prop>
+                <prop key="db.timeout.txn.put">${db.timeout.txn.put}</prop>
+                <prop key="db.timeout.applock">${db.timeout.applock}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="org.atomserver-entriesDAO"
+          class="org.atomserver.core.dbstore.dao.EntriesDAOiBatisImpl"
+          depends-on="org.atomserver-propertyConfigurer">
+        <property name="dataSource" ref="org.atomserver-dataSource"/>
+        <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
+        <property name="databaseType" value="${db.type}"/>
+        <property name="contentDAO" ref="org.atomserver-contentDAO"/>
+        <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO" />
+        <property name="entryCategoryLogEventDAO" ref="org.atomserver-entryCategoryLogEventDAO" />
+        <property name="latencySeconds" value="${db.latency.seconds}"/>
+    </bean>
+
+    <bean id="org.atomserver-contentDAO"
+          class="org.atomserver.core.dbstore.dao.ContentDAOiBatisImpl"
+          depends-on="org.atomserver-propertyConfigurer">
+        <property name="dataSource" ref="org.atomserver-dataSource"/>
+        <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
+        <property name="databaseType" value="${db.type}"/>
+    </bean>
+
+    <bean id="org.atomserver-entryCategoriesDAO"
+          class="org.atomserver.core.dbstore.dao.EntryCategoriesDAOiBatisImpl"
+          depends-on="org.atomserver-propertyConfigurer">
+        <property name="dataSource" ref="org.atomserver-dataSource"/>
+        <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
+        <property name="databaseType" value="${db.type}"/>
+    </bean>
+
+    <bean id="org.atomserver-entryCategoryLogEventDAO"
+          class="org.atomserver.core.dbstore.dao.EntryCategoryLogEventDAOiBatisImpl"
+          depends-on="org.atomserver-propertyConfigurer">
+        <property name="dataSource" ref="org.atomserver-dataSource"/>
+        <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
+        <property name="databaseType" value="${db.type}"/>
+    </bean>
+
+    <bean id="org.atomserver-feedCacheDAO"
+          class="org.atomserver.core.dbstore.dao.CachedAggregateFeedDAOiBatisImpl"
+          depends-on="org.atomserver-propertyConfigurer">
+        <property name="dataSource" ref="org.atomserver-dataSource"/>
+        <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
+        <property name="databaseType" value="${db.type}"/>
+    </bean>
+
+    <bean id="org.atomserver-statsMonitorDAO"
+          class="org.atomserver.core.dbstore.dao.StatisticsMonitorDAOiBatisImpl"
+          depends-on="org.atomserver-propertyConfigurer">
+        <property name="dataSource" ref="org.atomserver-dataSource"/>
+        <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
+        <property name="databaseType" value="${db.type}"/>
+    </bean>
+
+    <bean class="org.atomserver.utils.spring.StartupConstraints"
+          depends-on="org.atomserver-entriesDAO">
+        <property name="constraints">
+            <value>
+                <![CDATA[
+                entriesDAO = context.getBean("org.atomserver-entriesDAO");
+                if (entriesDAO.latencySeconds > 0 &&
+                    entriesDAO.latencySeconds <= ${db.timeout.txn.put}) {
+                    reject("ERROR: latencySeconds set to " + entriesDAO.latencySeconds +
+                           ", but transaction timeout is ${db.timeout.txn.put}.");
+                }
+                ]]>
+            </value>
+        </property>
+    </bean>
+
+    <bean id="org.atomserver-sizeLimit"
+          class="org.atomserver.core.dbstore.utils.SizeLimit"
+          depends-on="org.atomserver-propertyConfigurer">
+         <property name="dataSource" ref="org.atomserver-dataSource"/>
+    </bean>
+
+</beans>
