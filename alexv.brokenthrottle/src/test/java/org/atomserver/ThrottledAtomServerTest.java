@@ -13,9 +13,6 @@ import org.atomserver.testutils.latency.LatencyUtil;
 import org.atomserver.utils.thread.ManagedThreadPoolTaskExecutor;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Future;
 
 /**
  * Tests different aspects of the ThrottledAtomServer
@@ -48,7 +45,6 @@ public class ThrottledAtomServerTest extends BaseCRUDDBSTestCase {
         ManagedThreadPoolTaskExecutor executor = (ManagedThreadPoolTaskExecutor) getSpringFactory().getBean("org.atomserver-taskExecutor");
         long startingNumberOfCompletedTasks = executor.getCompletedTaskCount();
 
-        List<Future> futures = new ArrayList<Future>();
         for (int i = 0; i < 2; i++) {
             String url = getServerURL() + "widgets/acme/99" + i + ".en_US.xml";
             log.info("Putting " + url);
