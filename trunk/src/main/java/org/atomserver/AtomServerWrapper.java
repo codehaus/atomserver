@@ -1,17 +1,22 @@
 package org.atomserver;
 
-import org.apache.abdera.protocol.server.Provider;
-import org.apache.abdera.protocol.server.ResponseContext;
 import org.apache.abdera.protocol.server.RequestContext;
+import org.apache.abdera.protocol.server.ResponseContext;
 import org.apache.abdera.protocol.server.TargetType;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * AtomServerWrapper - an Abdera provider that delegates methods to an AtomServer instance.
- *
+ * <p/>
  * This object wraps an AtomServer, and delegates all Abdera Provider methods to it - subclasses
  * can extend this class and override just the required methods.
+ * <p/>
+ * We explicitly extend AtomServer so we can duplicate the functionality of the request() method
+ * without having to copy a bunch of code.
  */
-public abstract class AtomServerWrapper implements Provider {
+public abstract class AtomServerWrapper extends AtomServer {
+    static protected Log log = LogFactory.getLog(AtomServerWrapper.class);
 
     private AtomServer atomServer;
 
@@ -69,10 +74,6 @@ public abstract class AtomServerWrapper implements Provider {
 
     public ResponseContext mediaPost(RequestContext requestContext) {
         return atomServer.mediaPost(requestContext);
-    }
-
-    public ResponseContext request(RequestContext requestContext) {
-        return atomServer.request(requestContext);
     }
 
     public String[] getAllowedMethods(TargetType targetType) {
