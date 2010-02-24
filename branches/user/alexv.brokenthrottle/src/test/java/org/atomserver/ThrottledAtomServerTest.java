@@ -31,7 +31,6 @@ public class ThrottledAtomServerTest extends BaseCRUDDBSTestCase {
         destroyEntry("widgets", "acme", "991", "en_US", true);
     }
 
-    @Override
     protected String getURLPath() {
         return null;
     }
