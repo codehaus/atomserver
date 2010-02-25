@@ -73,7 +73,9 @@ public class AggregateFeedCacheManager {
 
     private long cacheConfigRevision = -1;
 
-    private boolean clustered = true;
+    // !!NOTE: Use this flag only if the cache will NEVER be used in the clustered environment.
+    // Otherwise, all writes on all servers must be disabled before any server can turn on caching.
+    private boolean noCache = false;
 
     //==============================
     // Local maps for quick lookups
@@ -190,12 +192,12 @@ public class AggregateFeedCacheManager {
         this.entryCategoriesDAO.setCacheManager(this);
     }
 
-    public boolean getClustered() {
-        return clustered;
+    public boolean getNoCache() {
+        return this.noCache;
     }
 
-    public void setClustered(boolean clustered) {
-        this.clustered = clustered;
+    public void setNoCache(boolean noCache) {
+        this.noCache = noCache;
     }
 
     /**
@@ -207,7 +209,7 @@ public class AggregateFeedCacheManager {
      * @return feed id corresponding to the aggregate feed that is cached, or null if it is not cached.
      */
     public String isFeedCached(final List<String> workspaces, final Locale locale, final String scheme) {
-        if (workspaces == null) {
+        if (noCache || workspaces == null) {
             return null;
         }
         List<String> wkspaces = workspaces;
@@ -232,6 +234,9 @@ public class AggregateFeedCacheManager {
      * @return true if it does and false otherwise.
      */
     public boolean isWorkspaceInCachedFeeds(final String workspace) {
+        if(this.noCache) {
+            return false;
+        }
         syncCacheConfigMaps();
         return isWorkspaceInCachedFeedsNosync(workspace);
     }
@@ -244,6 +249,9 @@ public class AggregateFeedCacheManager {
      * @return   true if the workspace belongs to one or more cached feeds.
      */
     public boolean isWorkspaceInCachedFeeds(final String workspace, final boolean sync) {
+        if(this.noCache) {
+            return false;
+        }
         if(sync) {
             syncCacheConfigMaps();
         }
@@ -592,7 +600,7 @@ public class AggregateFeedCacheManager {
     }
 
     private void syncCacheConfigMaps() {
-        if(this.clustered) {
+        if(!this.noCache) {
             long currentRevision = cachedFeedDAO.getCacheConfigRevision();
             if( this.cacheConfigRevision != currentRevision) {
                 reloadCacheConfigMaps(currentRevision);
