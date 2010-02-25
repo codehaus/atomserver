@@ -363,11 +363,16 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                     continue;
                 }
 
-                boolean changed = isContentChanged(null, entryMetaData);
-                if(changed || entryMetaData != null && entryMetaData.getDeleted()) {
+                if(this.alwaysUpdateEntry()) {
                     (entryMetaData == null ? toInsert : toUpdate).add(entryURIData);
                 } else {
-                    unchangedEntries.put(entryURIData, changed);
+                    // compare old and new contents
+                    boolean changed = isContentChanged(null, entryMetaData);
+                    if(changed || entryMetaData != null && entryMetaData.getDeleted()) {
+                        (entryMetaData == null ? toInsert : toUpdate).add(entryURIData);
+                    } else {
+                        unchangedEntries.put(entryURIData, changed);
+                    }
                 }
             }
 
