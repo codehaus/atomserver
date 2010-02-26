@@ -60,6 +60,8 @@ public class WorkspaceOptions {
 
     private ContentHashGenerator defaultContentHashFunction = null;
 
+    private boolean alwaysUpdateEntry = false;
+
     private Set<String> allowedVirtualWorkspaces = 
             new HashSet<String>(Arrays.asList(VirtualWorkspaceHandler.CATEGORIES));
 
@@ -173,6 +175,14 @@ public class WorkspaceOptions {
 
     public void setDefaultContentHashFunction(ContentHashGenerator defaultContentHashFunction) {
            this.defaultContentHashFunction = defaultContentHashFunction;
+    }
+
+    public boolean isAlwaysUpdateEntry() {
+        return alwaysUpdateEntry;
+    }
+
+    public void setAlwaysUpdateEntry(boolean alwaysUpdateEntry) {
+        this.alwaysUpdateEntry = alwaysUpdateEntry;
     }
 
     //>>>>>>>>>>>>>>>>>>>>>>>>>>
