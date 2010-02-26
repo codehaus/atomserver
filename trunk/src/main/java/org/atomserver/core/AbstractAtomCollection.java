@@ -379,6 +379,16 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     }
 
     /**
+     * Spring configured flag on workspace indicating if the entry should be updated regardless of the content being
+     * the same or not.
+     * @return true if the entry is to be updated when the content is the same.
+     */
+    public boolean alwaysUpdateEntry() {
+        return parentAtomWorkspace.getOptions().isAlwaysUpdateEntry();
+    }
+
+
+    /**
      * A "batch method" which calls modifyEntry()
      * This method should be overriden whenever the concrete implementation can take advantage of batching to
      * do a better job, but this simple implementation will suffice for functional correctness, by simply iterating
@@ -542,76 +552,81 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         if(getEntriesMonitor() != null) {
             getEntriesMonitor().updateNumberOfEntriesToUpdate(1);
         }
+        EntryMetaData entryMetaData = null;
+        StopWatch stopWatch = new AtomServerStopWatch();
+        try {
+            EntryMetaDataStatus entryMetaDataStatus = executeTransactionally(
+                    new TransactionalTask<EntryMetaDataStatus>() {
+                        public EntryMetaDataStatus execute() {
+                            EntryTarget target = getEntryTarget(request, entry, entryXml);
 
-        EntryMetaDataStatus entryMetaDataStatus = executeTransactionally(
-                new TransactionalTask<EntryMetaDataStatus>() {
-                    public EntryMetaDataStatus execute() {
-
-                        EntryTarget target = getEntryTarget(request, entry, entryXml);
-
-                        // determine if we are creating the entryId -- i.e. if this was a POST
-                        if (EntryTarget.UNASSIGNED_ID.equals(target.getEntryId())) {
-                            if (getEntryIdGenerator() == null) {
-                                throw new AtomServerException("No EntryIdGenerator was wired into the Collection (" +
-                                                              target.toString() + ")");
-                            } else {
-                                target.setEntryId(getEntryIdGenerator().generateId());
+                            // determine if we are creating the entryId -- i.e. if this was a POST
+                            if (EntryTarget.UNASSIGNED_ID.equals(target.getEntryId())) {
+                                if (getEntryIdGenerator() == null) {
+                                    throw new AtomServerException("No EntryIdGenerator was wired into the Collection (" +
+                                                                  target.toString() + ")");
+                                } else {
+                                    target.setEntryId(getEntryIdGenerator().generateId());
+                                }
                             }
-                        }
-                        final Object internalId = getInternalId(target);
-                        EntryMetaDataStatus metaDataStatus = modifyEntry(internalId,
-                                                             target,
-                                                             mustAlreadyExist());
+                            final Object internalId = getInternalId(target);
+                            EntryMetaDataStatus metaDataStatus = modifyEntry(internalId,
+                                                                 target,
+                                                                 mustAlreadyExist());
 
-                        // Update category to see if there are changes.
-                        // Assumption here: postProcessEntryContents method does not need entry revision or timestamps.
-                        boolean categoriesUpdated = postProcessEntryContents(entryXml, metaDataStatus.getEntryMetaData());
+                            // Update category to see if there are changes.
+                            // Assumption here: postProcessEntryContents method does not need entry revision or timestamps.
+                            boolean categoriesUpdated = postProcessEntryContents(entryXml, metaDataStatus.getEntryMetaData());
 
-                        // If both category and contents are not modified, no need to update.
-                        if(!metaDataStatus.isModified() && !categoriesUpdated) {
+                            // If both category and contents are not modified, no need to update.
+                            if(!metaDataStatus.isModified() && !categoriesUpdated) {
+                                if(getEntriesMonitor() != null) {
+                                    getEntriesMonitor().updateNumberOfEntriesNotUpdatedDueToSameContent(1);
+                                }
+                                return metaDataStatus;
+                            }
+
+                            // if content is not modified but the categories are, call reModifyEntry to update rev/timestamp
+                            if(!metaDataStatus.isModified()) {
+                                metaDataStatus = reModifyEntry(internalId, entryTarget);
+                            }
+
+                            // update contents
+                            // Copy the new file contents into the File
+                            //  do this as late as possible -- when we're completely sure that it has all passed
+                            if (log.isTraceEnabled()) {
+                                log.trace("ContentStorage = " + getContentStorage());
+                            }
+                            getContentStorage().putContent(entryXml, metaDataStatus.getEntryMetaData());
                             if(getEntriesMonitor() != null) {
-                                getEntriesMonitor().updateNumberOfEntriesNotUpdatedDueToSameContent(1);
+                                getEntriesMonitor().updateNumberOfEntriesActuallyUpdated(1);
                             }
+
                             return metaDataStatus;
                         }
-
-                        // if content is not modified but the categories are, call reModifyEntry to update rev/timestamp
-                        if(!metaDataStatus.isModified()) {
-                            metaDataStatus = reModifyEntry(internalId, entryTarget);
-                        }
-                        
-                        // update contents
-                        // Copy the new file contents into the File
-                        //  do this as late as possible -- when we're completely sure that it has all passed
-                        if (log.isTraceEnabled()) {
-                            log.trace("ContentStorage = " + getContentStorage());
-                        }
-                        getContentStorage().putContent(entryXml, metaDataStatus.getEntryMetaData());
-                        if(getEntriesMonitor() != null) {
-                            getEntriesMonitor().updateNumberOfEntriesActuallyUpdated(1);
-                        }
-
-                        return metaDataStatus;
                     }
-                }
-        );
+            );
 
-        // For Create and Update, we always, by definition, return "full" Entries
-        EntryMetaData entryMetaData = entryMetaDataStatus.getEntryMetaData();
-        entryMetaData.setWorkspace(entryTarget.getWorkspace());
-        Entry newEntry = newEntry(abdera, entryMetaData, EntryType.full);
-        newEntry.addSimpleExtension(AtomServerConstants.CONTENT_HASH,
-                                    HashUtils.convertUUIDStandardToSimpleFormat(entryMetaData.getContentHashCode()));
-        newEntry.addSimpleExtension(AtomServerConstants.ENTRY_UPDATED,(entryMetaDataStatus.isModified()?"true":"false"));
 
-        if(log.isDebugEnabled()) {
-            log.debug(" ** EntryId:" + entryMetaData.getEntryId() + (entryMetaData.isNewlyCreated()?
-                                                                          " Inserted":" No-Insert") +
-                        ( entryMetaData.isNewlyCreated() ?  " " : " Modified:" +
-                          (entryMetaDataStatus.isModified() ? "Yes": "No") ) +
-                         " hashCode: " + entryMetaData.getContentHashCode());
+            // For Create and Update, we always, by definition, return "full" Entries
+            entryMetaData = entryMetaDataStatus.getEntryMetaData();
+            entryMetaData.setWorkspace(entryTarget.getWorkspace());
+            Entry newEntry = newEntry(abdera, entryMetaData, EntryType.full);
+            newEntry.addSimpleExtension(AtomServerConstants.CONTENT_HASH,
+                                        HashUtils.convertUUIDStandardToSimpleFormat(entryMetaData.getContentHashCode()));
+            newEntry.addSimpleExtension(AtomServerConstants.ENTRY_UPDATED,(entryMetaDataStatus.isModified()?"true":"false"));
+
+            if(log.isDebugEnabled()) {
+                log.debug(" ** EntryId:" + entryMetaData.getEntryId() + (entryMetaData.isNewlyCreated()?
+                                                                              " Inserted":" No-Insert") +
+                            ( entryMetaData.isNewlyCreated() ?  " " : " Modified:" +
+                              (entryMetaDataStatus.isModified() ? "Yes": "No") ) +
+                             " hashCode: " + entryMetaData.getContentHashCode());
+            }
+            return new UpdateCreateOrDeleteEntry.CreateOrUpdateEntry(newEntry, entryMetaData.isNewlyCreated());
+        } finally {
+            stopWatch.stop("Collection.updateEntry", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryMetaData));
         }
-        return new UpdateCreateOrDeleteEntry.CreateOrUpdateEntry(newEntry, entryMetaData.isNewlyCreated());
     }
 
     /**
