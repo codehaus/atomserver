@@ -38,7 +38,7 @@
                entry.ContentHashCode AS contentHashCode
           FROM EntryStore entry
         <isNotNull property="categoryQuerySql">
-        INNER JOIN EntryCategory searchCategories
+        <include refid="INNER_LOOP_JOIN"/> EntryCategory searchCategories
             ON searchCategories.EntryStoreId = entry.EntryStoreId
         <isNotNull property="categoryFilterSql">AND ($categoryFilterSql$)</isNotNull>
         </isNotNull>
