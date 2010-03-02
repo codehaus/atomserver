@@ -67,6 +67,11 @@ public class AutoTaggingDBSTest extends CRUDAtomServerTestCase {
                     Arrays.asList("pink", "red", "DEFAULT:red"),
                     true, "acmeBRYON", "23450");
 
+            // test for case difference in terms.
+            publishAndTestVersionWithCaseDifference(
+                    "/testwidget2.xml", "dummy/acme/23450.xml", 1,
+                    Arrays.asList("Pink", "red", "DEFAULT:red"),
+                    false, "acmeBRYON", "23450");
 
         } finally {
             obliterateTestEntry();
@@ -161,6 +166,21 @@ public class AutoTaggingDBSTest extends CRUDAtomServerTestCase {
                                        List<String> colors, boolean insert,
                                        String system, String id) throws Exception {
         String xml = IOUtils.toString(getClass().getResourceAsStream(dataFileName));
+        publishAndTestVersionXml(xml, urlPath, rev, colors, insert, system, id);
+    }
+
+    private void publishAndTestVersionWithCaseDifference(String dataFileName, String urlPath, int rev,
+                                       List<String> colors, boolean insert,
+                                       String system, String id) throws Exception {
+        String xml = IOUtils.toString(getClass().getResourceAsStream(dataFileName));
+        xml = xml.replace("pink", "Pink");
+        publishAndTestVersionXml(xml, urlPath, rev, colors, insert, system, id);
+    }
+
+
+    private void publishAndTestVersionXml(String xml, String urlPath, int rev,
+                                       List<String> colors, boolean insert,
+                                       String system, String id) throws Exception {
         if (insert) {
             insert(urlPath, getServerURL() + urlPath + "/" + rev, xml);
         } else {
