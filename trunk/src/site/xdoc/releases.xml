@@ -7,11 +7,22 @@
     </properties>
 
     <body>
-        <section name="Release 2.1.17 (??/??/??)">
+        <section name="Release 2.1.17 (03/02/10)">
         <ul>
             <li>
                 Fixed ThrottledAtomServer.  Since the addition of the v2 interface, ThrottledAtomServer has not
                 worked.  It is now turned on again by default.
+            </li>
+            <li>
+                Added an option on the workspace to be able to turn off comparing old contents and new contents on
+                entry update.
+            </li>
+            <li>
+                Added back previously removed query hints to improve feeds query performance.
+            </li>
+            <li>
+                Fixed category update so that it will handle case-sensitive values for term correctly when the
+                new term has same value as the old one except for its case.
             </li>
         </ul>
         </section>
