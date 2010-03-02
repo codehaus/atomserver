@@ -1,0 +1,27 @@
+  ---------
+  Downloads
+  ---------
+
+Download Project Artifacts
+
+* Release Versions
+
+  <All release versions of AtomServer are available from the maven repository at:>
+  <<{{http://repository.codehaus.org/org/atomserver/atomserver/}}>>
+
+  * <<2.1.16>>
+
+     * {{{http://repository.codehaus.org/org/atomserver/atomserver/2.1.16/atomserver-2.1.16-install.tar.gz}installer}}
+       ({{{http://repository.codehaus.org/org/atomserver/atomserver/2.1.16/atomserver-2.1.16-install.tar.gz.md5}MD5}})
+
+  []
+
+* Snapshot Versions
+
+  <All SNAPSHOT versions built from the development trunk are available in the snapshot repository at:>
+  <<{{http://snapshots.repository.codehaus.org/org/atomserver/atomserver/}}>>
+
+  * <<2.1.17-SNAPSHOT>>
+
+    * {{{http://snapshots.repository.codehaus.org/org/atomserver/atomserver/2.1.17-SNAPSHOT/atomserver-2.1.17-SNAPSHOT-install.tar.gz}installer}}
+      ({{{http://snapshots.repository.codehaus.org/org/atomserver/atomserver/2.1.17-SNAPSHOT/atomserver-2.1.17-SNAPSHOT-install.tar.gz.md5}MD5}})
