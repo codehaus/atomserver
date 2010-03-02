@@ -144,6 +144,16 @@ public class XPathAutoTagger
                 toDelete.add(entryCategory);
             }
         }
+
+        // delete anything that needs to be deleted. Delete should be done first to avoid
+        // database case-sensitivity.
+        if (!toDelete.isEmpty()) {
+            if (log.isDebugEnabled()) {
+                log.debug("autotagger performing " + toDelete.size() + " deletes");
+            }
+            getCategoriesHandler().deleteEntryCategoryBatch(toDelete);
+        }
+
         // if there is anything left over in the mods set, it must be inserted.
         if (!categoryMods.isEmpty()) {
             if (log.isDebugEnabled()) {
@@ -154,13 +164,7 @@ public class XPathAutoTagger
             }
             getCategoriesHandler().insertEntryCategoryBatch(new ArrayList<EntryCategory>(categoryMods));
         }
-        // delete anything that needs to be deleted
-        if (!toDelete.isEmpty()) {
-            if (log.isDebugEnabled()) {
-                log.debug("autotagger performing " + toDelete.size() + " deletes");
-            }
-            getCategoriesHandler().deleteEntryCategoryBatch(toDelete);
-        }
+
         return (!categoryMods.isEmpty() || !toDelete.isEmpty());
     }
 
