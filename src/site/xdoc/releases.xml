@@ -7,6 +7,12 @@
     </properties>
 
     <body>
+        <section name="Release 2.1.18 (??/??/10)">
+        <ul>
+            <li>Enabled rollup statistics on the perf4j collaescingstatistics appender</li>
+        </ul>
+        </section>
+
         <section name="Release 2.1.17 (03/02/10)">
         <ul>
             <li>
