@@ -22,7 +22,7 @@
 <!--  iBatis SQL Map for EntryStore -->
 <sqlMap>
 
-    <select id="selectFeedPage" parameterClass="map" resultMap="entryResultSansCategories">
+    <sql id="selectFeedPageNorm">
         SELECT <include refid="paginationPrefix"/>
                entry.EntryStoreId AS EntryStoreId,
                entry.Workspace AS Workspace,
@@ -73,7 +73,8 @@
            AND CountryCode = '$country$'
             </isNotNull>
         </isNotNull>
-        GROUP BY entry.EntryStoreId,
+        <isNotNull property="categoryQuerySql">
+           GROUP BY entry.EntryStoreId,
                  entry.Workspace,
                  entry.Collection,
                  entry.LanCode,
@@ -85,9 +86,83 @@
                  entry.DeleteFlag,
                  entry.RevisionNum,
                  entry.ContentHashCode
-        <isNotNull property="categoryQuerySql">HAVING $categoryQuerySql$</isNotNull>
+           HAVING $categoryQuerySql$
+        </isNotNull>
         ORDER BY entry.UpdateTimestamp
         <include refid="paginationSuffix"/>
+    </sql>
+
+    <!-- The following query is to improve performance on SQL Server by reducing columns in
+    GROUP BY-HAVING and joining with EntryStore using a SQL server query join hint. -->
+    <sql id="selectFeedPageSqlserver" >
+        SELECT 
+               entry.EntryStoreId AS EntryStoreId,
+               entry.Workspace AS Workspace,
+               entry.Collection AS Collection,
+               entry.LanCode AS LanCode,
+               entry.CountryCode AS CountryCode,
+               entry.EntryId AS EntryId,
+               entry.UpdateDate AS UpdateDate,
+               entry.CreateDate AS CreateDate,
+               CAST(UpdateTimestamp AS BIGINT) AS UpdateTimestamp,
+               entry.DeleteFlag AS DeleteFlag,
+               entry.RevisionNum AS RevisionNum,
+               entry.ContentHashCode AS contentHashCode
+          FROM (
+          SELECT <include refid="paginationPrefix"/>
+              entry.EntryStoreId
+              FROM entryStore entry
+              <isNotNull property="categoryQuerySql">
+              <include refid="INNER_LOOP_JOIN"/> EntryCategory searchCategories
+                  ON searchCategories.EntryStoreId = entry.EntryStoreId
+              <isNotNull property="categoryFilterSql">AND ($categoryFilterSql$)</isNotNull>
+              </isNotNull>
+               WHERE UpdateDate >= #updatedMin#
+              <isNotNull property="updatedMax">
+                  <![CDATA[ AND UpdateDate < #updatedMax# ]]>
+              </isNotNull>
+                 AND UpdateTimestamp > CAST($startIndex$ AS <include refid="timestampType"/>)
+              <isNotEqual property="endIndex" compareValue="-1">
+                  AND UpdateTimestamp &lt;= CAST($endIndex$ AS <include refid="timestampType"/>)
+              </isNotEqual>
+              <isNotNull property="latencySeconds">
+                 AND (
+                   DATEADD(s, -1 * $latencySeconds$, GETDATE()) >= UpdateDate
+                  )
+              </isNotNull>
+                 AND Workspace = '$workspace$'
+              <isNotNull property="collection">
+                 AND Collection = '$collection$'
+              </isNotNull>
+              <isNotNull property="language">
+                 AND LanCode = '$language$'
+                  <isNotNull property="country">
+                 AND CountryCode = '$country$'
+                  </isNotNull>
+              </isNotNull>
+              GROUP BY entry.EntryStoreId,
+                       entry.UpdateTimestamp
+              <isNotNull property="categoryQuerySql">HAVING $categoryQuerySql$</isNotNull>
+                ORDER BY entry.UpdateTimestamp <include refid="paginationSuffix"/>
+       ) matchEntries
+       <!-- having an inner loop join here is important for performance -->
+       <include refid="INNER_LOOP_JOIN"/> EntryStore entry
+       ON entry.EntryStoreId = matchEntries.EntryStoreId
+       ORDER BY entry.Updatetimestamp
+     </sql>
+  
+    <select id="selectFeedPage" parameterClass="map" resultMap="entryResultSansCategories">
+      <isEqual property="dbType"  compareValue="sqlserver">
+        <isNotNull property="categoryQuerySql">
+          <include refid="selectFeedPageSqlserver"/>
+        </isNotNull>
+        <isNull property="categoryQuerySql">
+          <include refid="selectFeedPageNorm"/>
+        </isNull>
+      </isEqual>
+      <isNotEqual property="dbType" compareValue="sqlserver">
+        <include refid="selectFeedPageNorm"/>
+      </isNotEqual>
     </select>
 
     <!-- SELECT the EntryStoreId for an entry by it's 5-tuple key -->
