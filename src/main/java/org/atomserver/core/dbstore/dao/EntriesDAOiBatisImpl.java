@@ -23,7 +23,6 @@ import org.atomserver.AtomCategory;
 import org.atomserver.EntryDescriptor;
 import org.atomserver.FeedDescriptor;
 import org.atomserver.ServiceDescriptor;
-import org.atomserver.cache.AggregateFeedCacheManager;
 import org.atomserver.core.AggregateEntryMetaData;
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.EntryCategory;
@@ -59,7 +58,6 @@ public class EntriesDAOiBatisImpl
     private EntryCategoriesDAO entryCategoriesDAO;
     private EntryCategoryLogEventDAO entryCategoryLogEventDAO;
     private int latencySeconds = UNDEFINED;
-    private AggregateFeedCacheManager cacheManager = null;
 
     public void setContentDAO(ContentDAO contentDAO) {
         this.contentDAO = contentDAO;
@@ -71,14 +69,6 @@ public class EntriesDAOiBatisImpl
 
     public void setEntryCategoryLogEventDAO(EntryCategoryLogEventDAO entryCategoryLogEventDAO) {
         this.entryCategoryLogEventDAO = entryCategoryLogEventDAO;
-    }
-
-    AggregateFeedCacheManager getCacheManager() {
-        return cacheManager;
-    }
-
-    public void setCacheManager(AggregateFeedCacheManager cacheManager) {
-        this.cacheManager = cacheManager;
     }
 
     @ManagedAttribute
@@ -163,9 +153,6 @@ public class EntriesDAOiBatisImpl
                 }
             }
             Object obj = executor.executeBatch();
-
-            // update cache as batch
-            entriesDAO.updateCacheOnEntryAddOrUpdateBatch(validEntries);
 
             return obj;
         }
@@ -312,11 +299,9 @@ public class EntriesDAOiBatisImpl
                 paramMap.param("publishedDate", published)
                         .param("updatedDate", updated);
                 Object obj = getSqlMapClientTemplate().insert("insertEntrySeedingDB-" + getDatabaseType(), paramMap);
-                updateCacheOnEntryAddOrUpdate(entry);
                 return obj;
             } else {
                 Object obj = getSqlMapClientTemplate().insert("insertEntry-" + getDatabaseType(), paramMap);
-                updateCacheOnEntryAddOrUpdate(entry);
                 return obj;
             }
         }
@@ -417,7 +402,6 @@ public class EntriesDAOiBatisImpl
                                                      prepareUpdateParamMap(deleted,
                                                                            entryQuery.getRevision(),
                                                                            metaData));
-            updateCacheOnEntryAddOrUpdate(entryQuery);
             return rc;
         }
         finally {
@@ -489,7 +473,7 @@ public class EntriesDAOiBatisImpl
         EntryMetaData metaData = null;
         List<EntryCategory> categoriesToRemove = null;
 
-        if (contentDAO != null || entryCategoriesDAO != null || getCacheManager() != null) {
+        if (contentDAO != null || entryCategoriesDAO != null) {
             metaData = (entryQuery instanceof EntryMetaData) ? (EntryMetaData) entryQuery : selectEntry(entryQuery);
 
             if(metaData != null) {
@@ -512,12 +496,6 @@ public class EntriesDAOiBatisImpl
                                                  .param("collection", entryQuery.getCollection())
                                                  .param("entryId", entryQuery.getEntryId())
                                                  .addLocaleInfo(entryQuery.getLocale()));
-        // Update cache after delete
-        if(metaData != null) {
-            // This must be called after the categories have been deleted from EntryCategory in the database.
-            updateCacheOnEntryDelete(metaData, categoriesToRemove);
-        }
-
     }
 
 
@@ -533,13 +511,11 @@ public class EntriesDAOiBatisImpl
             paramMap.param("joinWorkspaces", joinWorkspaces);
         }
 
-        String sqlId = getSqlMapId (joinWorkspaces,entryDescriptor.getLocale(),entryDescriptor.getCollection(), "selectAggregateEntries",paramMap);
-
         Map<String, AggregateEntryMetaData> map =
                 AggregateEntryMetaData.aggregate(entryDescriptor.getWorkspace(),
                                                  entryDescriptor.getCollection(),
                                                  entryDescriptor.getLocale(),
-                                                 getSqlMapClientTemplate().queryForList(sqlId, paramMap));
+                                                 getSqlMapClientTemplate().queryForList("selectAggregateEntries", paramMap));
 
         return map.get(entryDescriptor.getEntryId());
     }
@@ -575,9 +551,7 @@ public class EntriesDAOiBatisImpl
                 paramMap.param("latencySeconds", latencySeconds);
             }
 
-            String sqlId = getSqlMapId (joinWorkspaces,locale,feed.getCollection(), "selectAggregateEntries",paramMap);
-
-            List entries = getSqlMapClientTemplate().queryForList(sqlId, paramMap);
+            List entries = getSqlMapClientTemplate().queryForList("selectAggregateEntries", paramMap);
 
             Map<String, AggregateEntryMetaData> map =
                     AggregateEntryMetaData.aggregate(feed.getWorkspace(), feed.getCollection(), locale, entries);
@@ -876,62 +850,6 @@ public class EntriesDAOiBatisImpl
         } else {
             log.debug("NO NEED TO APPLOCK - using enforced latency instead.");
         }
-    }
-
-    //==============================
-    // Updating Cache
-    //==============================
-    private void updateCacheOnEntryAddOrUpdate(final EntryDescriptor entryDescriptor) {
-        if (getCacheManager() != null) {
-            if (cacheManager.isWorkspaceInCachedFeeds(entryDescriptor.getWorkspace())) {
-                // entry is selected here to get the up-to-date timestamp for update and insert.
-                cacheManager.updateCacheOnEntryAddOrUpdate(selectEntry(entryDescriptor));
-            }
-        }
-    }
-
-    private void updateCacheOnEntryAddOrUpdateBatch(final List<EntryDescriptor> entryList) {
-        if (getCacheManager() != null) {
-            List<EntryMetaData> entries = new ArrayList<EntryMetaData>();
-            boolean sync = true;
-            for(EntryDescriptor entry: entryList) {
-                if(cacheManager.isWorkspaceInCachedFeeds(entry.getWorkspace(),sync)) {
-                    entries.add(selectEntry(entry)); //to get up-to-date timestamp
-                }
-                sync = false;
-            }
-            cacheManager.updateCacheOnEntryAddOrUpdateBatch(entries);
-        }
-    }
-
-    private void updateCacheOnEntryDelete(final EntryDescriptor entryDescriptor, final List<EntryCategory> categories) {
-        if(getCacheManager() != null && categories != null && !categories.isEmpty() ) {
-            if (cacheManager.isWorkspaceInCachedFeeds(entryDescriptor.getWorkspace())) {
-                cacheManager.updateCacheOnEntryObliteration(safeCastToEntryMetaData(entryDescriptor), categories);
-            }
-        }
-    }
-
-    // returns the correct sql to run if the feed is cached.
-    private String getSqlMapId(final List<String> joinWorkspaces,
-                               final Locale locale,
-                               final String collection,
-                               final String defaultSqlMapId,
-                               ParamMap paramMap) {
-        String sqlId = defaultSqlMapId;
-        if (getCacheManager() != null) {
-            // Note: Enable the line before not to use cache if category filter and category query is used.
-            if (paramMap.get("categoryFilterSql") == null && paramMap.get("categoryQuerySql") == null) {
-
-                // check if the joinWorkspaces, locale and scheme are cached.
-                String feedId = cacheManager.isFeedCached(joinWorkspaces, locale, collection);
-                if (feedId != null) {
-                    sqlId = "selectAggregateEntriesUsingCache";
-                    paramMap.param("cachedfeedid", feedId);
-                }
-            }
-        }
-        return sqlId;
     }
 
 }
