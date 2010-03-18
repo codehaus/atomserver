@@ -99,40 +99,6 @@ FOREIGN KEY (EntryStoreId) REFERENCES EntryStore(EntryStoreId)
 );
 
 /*==============================================================*/
-/* Table: CachedFeed                                 */
-/*==============================================================*/
-CREATE TABLE CachedFeed (
-CachedFeedId             varchar(36)             NOT NULL,
-JoinedWorkspaces         VARCHAR(512)            NOT NULL,
-Locale                   VARCHAR(5),
-Scheme                   VARCHAR(128)            NOT NULL,
-PRIMARY KEY (CachedFeedId)
-);
-
-/*==============================================================*/
-/* Table: AggregateFeedTimestamp                                 */
-/*==============================================================*/
-CREATE TABLE AggregateFeedTimestamp (
-CachedFeedId             varchar(36)             NOT NULL,
-Term                     varchar(32)             NOT NULL,
-UpdateTimestampValue     BIGINT                  NOT NULL,
-PRIMARY KEY (CachedFeedId, Term),
-UNIQUE (CachedFeedId, Term),
-FOREIGN KEY (CachedFeedId) REFERENCES CachedFeed(CachedFeedId)
-);
-
-/*==============================================================*/
-/* Table: AppServerEvent                                          */
-/*==============================================================*/
-CREATE TABLE AppServerSysParam (
-       AppServerSysParamId        INT         IDENTITY,
-       ParamName         varchar(64) NOT NULL,
-       ParamRevision     BIGINT default 0 NOT NULL,
-       PRIMARY KEY(AppServerSysParamId),
-       UNIQUE (ParamName)
-);
-
-/*==============================================================*/
 /* View: vw_EntryWithCategory                                   */
 /* NOTE: in SQL Server, we get a significant performance boost  */
 /*       by indexing this view -- since HSQLDB does not         */

@@ -243,7 +243,6 @@ public class TestingAtomServer {
         xmlReader.loadBeanDefinitions(new ClassPathResource("org/atomserver/spring/logBeans.xml"));
         xmlReader.loadBeanDefinitions(new ClassPathResource("org/atomserver/spring/storageBeans.xml"));
         xmlReader.loadBeanDefinitions(new ClassPathResource("org/atomserver/spring/abderaBeans.xml"));
-        xmlReader.loadBeanDefinitions(new ClassPathResource("org/atomserver/spring/aggregateFeedCacheBeans.xml"));
 
         // if we were given a Spring config location, we use that -- otherwise we configure the
         // workspaces that were set up through the API

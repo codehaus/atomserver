@@ -29,6 +29,5 @@
   <import resource="classpath:/org/atomserver/spring/abderaBeans.xml" />
   <import resource="classpath:/org/atomserver/spring/databaseBeans.xml" />
   <import resource="classpath:/org/atomserver/spring/jmxBeans.xml" /> 
-  <import resource="classpath:/org/atomserver/spring/aggregateFeedCacheBeans.xml" /> 
 
 </beans>
