@@ -332,5 +332,15 @@
         </isNull>
     </select>
 
+    <select id="selectEntryStats" parameterClass="map" resultMap="entryStatsResult">
+      SELECT (CASE WHEN maxTimestamp is NULL THEN 0 ELSE maxTimestamp END) AS maxTimestamp,
+             (CASE WHEN minTimestamp is NULL THEN 0 ELSE minTimestamp END) AS minTimestamp
+      FROM (
+              SELECT CAST(MAX(entry.UpdateTimestamp) as BIGINT) AS maxTimestamp,
+                     CAST(MIN(entry.UpdateTimestamp) as BIGINT) AS minTimeStamp
+              FROM EntryStore entry
+      ) entries
+    </select>
+
 </sqlMap>
 

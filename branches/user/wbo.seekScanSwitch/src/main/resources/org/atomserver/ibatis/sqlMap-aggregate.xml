@@ -20,7 +20,7 @@
 
     <!-- NOTE: This query is used for BOTH single Entry and Feed queries
     -->
-    <sql id="SELECT_modifiedAggregateEntries">
+    <sql id="SELECT_modifiedAggregateEntriesIndexSeek">
         SELECT <include refid="paginationPrefix"/>
                recentlyChangedEntries.Term AS AggregateEntryId,
                recentlyChangedEntries.UpdateTimestamp
@@ -123,7 +123,7 @@
     <!-- restructured version of the above query to minimize group by-having processing. This query
      behaves well when the index is far from the tip but does not run as fast when the tip and start
      index are closer. -->
-    <sql id="SELECT_modifiedAggregateEntriesAlt">
+    <sql id="SELECT_modifiedAggregateEntriesIndexScan">
            SELECT <include refid="paginationPrefix"/>
                   recentlyChangedEntries.Term AS AggregateEntryId,
                   recentlyChangedEntries.UpdateTimestamp
@@ -217,6 +217,25 @@
            <include refid="paginationSuffix"/>
     </sql>
 
+
+  <!--
+      Optimized for SQL Server: If dbType is not sql server, use Index Seek version.
+      if sql server, use Index Seek or Index Scan version based on the parameter setting.
+    -->
+    <sql id="SELECT_modifiedAggregateEntries" >
+      <isEqual property="dbType"  compareValue="sqlserver">
+        <isEqual property="usequery" compareValue="indexSeek">
+          <include refid="SELECT_modifiedAggregateEntriesIndexSeek"/>
+        </isEqual>
+        <isEqual property="usequery" compareValue="indexScan">
+          <include refid="SELECT_modifiedAggregateEntriesIndexScan"/>
+        </isEqual>
+      </isEqual>
+       <isNotEqual property="dbType" compareValue="sqlserver">
+         <include refid="SELECT_modifiedAggregateEntriesIndexSeek"/>
+       </isNotEqual>
+    </sql>
+  
     <select id="selectAggregateEntries" parameterClass="map" resultMap="entryResult">
         SELECT entries.EntryStoreId AS EntryStoreId,
                entries.Workspace AS Workspace,
@@ -275,6 +294,6 @@
         SELECT COUNT(AggregateEntryId) AS entryCount
           FROM (<include refid="SELECT_modifiedAggregateEntries"/>)
     </select>
-    
+
 </sqlMap>
 
