@@ -34,7 +34,7 @@
 
     <properties>
         <spring.version>2.5.6</spring.version>
-        <jersey.version>1.0.2</jersey.version>
+        <jersey.version>1.0.3.1</jersey.version>
     </properties>
 
     <dependencies>
@@ -61,6 +61,12 @@
             <groupId>com.sun.jersey.contribs</groupId>
             <artifactId>jersey-spring</artifactId>
             <version>${jersey.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-beans</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -139,6 +145,11 @@
                         <property>
                             <name>org.atomserver.HOSTNAME</name>
                             <value>localhost</value>
+                        </property>
+                        <property>
+                            <name>org.atomserver.core.Substrate</name>
+                            <!--<value>atomserver:org.atomserver.core.MemSubstrate</value>-->
+                            <value>atomserver:org.atomserver.core.RedisSubstrate;host=localhost;port=6379</value>
                         </property>
                     </systemProperties>
                 </configuration>

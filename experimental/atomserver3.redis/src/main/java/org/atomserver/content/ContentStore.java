@@ -15,6 +15,6 @@ public interface ContentStore {
 
         void abort();
 
-        String etag();
+        byte[] digest();
     }
 }

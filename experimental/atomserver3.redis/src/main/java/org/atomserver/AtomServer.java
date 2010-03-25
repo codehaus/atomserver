@@ -7,19 +7,35 @@ import com.sun.jersey.spi.spring.container.SpringComponentProviderFactory;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import org.atomserver.app.ServiceStateSynchronizationFilter;
+import org.atomserver.core.RedisSubstrate;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.MutablePropertyValues;
+import org.springframework.beans.factory.support.PropertiesBeanDefinitionReader;
+import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import static java.lang.String.format;
+import java.io.UnsupportedEncodingException;
 import java.net.*;
-import java.util.concurrent.Executors;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static java.lang.String.format;
 
 @Component(AtomServer.BEAN_NAME)
 @ManagedResource(objectName = "bean:name=AtomServer")
@@ -28,6 +44,10 @@ public class AtomServer implements ApplicationContextAware {
     public static final String APP_CONTEXT = "/app";
     public static final int PORT = 8000;
     public static final String HOSTNAME = computeHostname();
+    private static final Pattern CONFIG_URI_PATTERN =
+//            Pattern.compile("atomserver:([a-zA-Z_]\\w*(\\.[a-zA-Z_]\\w*))(.*)");
+            Pattern.compile("atomserver:([a-zA-Z_]\\w*(?:\\.[a-zA-Z_]\\w*)*)((?:;[a-zA-Z_]\\w*=[^;]*)*)");
+
     private static String computeHostname() {
         String hostname;
         try {
@@ -48,6 +68,10 @@ public class AtomServer implements ApplicationContextAware {
 
     public void start() {
         ResourceConfig resourceConfig = new PackagesResourceConfig("org.atomserver.app");
+        resourceConfig.setPropertiesAndFeatures(
+                Collections.<String, Object>singletonMap(
+                        ResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS,
+                        ServiceStateSynchronizationFilter.class.getName()));
         SpringComponentProviderFactory factory =
                 new SpringComponentProviderFactory(
                         resourceConfig,
@@ -72,8 +96,55 @@ public class AtomServer implements ApplicationContextAware {
 
 
     public static AtomServer create() {
-        return (AtomServer) new ClassPathXmlApplicationContext(
-                "/org/atomserver/applicationContext.xml").getBean(BEAN_NAME);
+
+        Matcher matcher = CONFIG_URI_PATTERN.matcher(System.getProperty("org.atomserver.core.Substrate"));
+        if (!matcher.matches()) {
+            throw new IllegalStateException("illegal config URI!");
+        }
+        String className = matcher.group(1);
+        String[] parts = matcher.group(2).split(";");
+
+
+//        String[] parts = configUri.getSchemeSpecificPart().split("[;]");
+//        String className = parts[0];
+        Map<String, String> propMap = new HashMap<String, String>();
+        for (int i = 1; i < parts.length; i++) {
+            String[] nameAndValue = parts[i].split("=", 2);
+            if (nameAndValue.length  > 1) {
+                try {
+                    String name = URLDecoder.decode(nameAndValue[0], "UTF-8");
+                    String value = URLDecoder.decode(nameAndValue[1], "UTF-8");
+                    propMap.put(name, value);
+                    System.out.println("BKJ::name = " + name);
+                    System.out.println("BKJ::value = " + value);
+                } catch (UnsupportedEncodingException e) {
+                    throw new IllegalStateException(e); // TODO: handle
+                }
+            }
+        }
+        Class<?> clazz = null;
+        try {
+            clazz = Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException(e); // TODO: handle
+        }
+
+
+        GenericApplicationContext context = new GenericApplicationContext();
+        XmlBeanDefinitionReader xmlReader = new XmlBeanDefinitionReader(context);
+        xmlReader.loadBeanDefinitions(
+                new ClassPathResource("/org/atomserver/applicationContext.xml"));
+        context.registerBeanDefinition("substrate",
+                new RootBeanDefinition(clazz, new MutablePropertyValues(propMap)));
+        context.refresh();
+
+
+//        ClassPathXmlApplicationContext context =
+//                new ClassPathXmlApplicationContext(
+//                        new String[]{"/org/atomserver/applicationContext.xml"}, false);
+
+
+        return (AtomServer) context.getBean(BEAN_NAME);
     }
 
     public static void main(String[] args) {
@@ -112,7 +183,7 @@ public class AtomServer implements ApplicationContextAware {
             manage.stop(2);
 
             System.exit(0);
-            
+
         } catch (Exception e) {
             e.printStackTrace();
         }

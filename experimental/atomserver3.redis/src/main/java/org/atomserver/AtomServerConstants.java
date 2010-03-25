@@ -21,8 +21,6 @@ public interface AtomServerConstants {
 
     public static final QName NAME = new QName(NAMESPACE, "name", PREFIX);
     public static final QName CATEGORY_QUERY = new QName(NAMESPACE, "category-query", PREFIX);
-    public static final QName AGGREGATE = new QName(NAMESPACE, "aggregate", PREFIX);
-    public static final QName AGGREGATE_CONTENT = new QName(NAMESPACE, "aggregate-content", PREFIX);
     public static final QName FILTER = new QName(NAMESPACE, "filter", PREFIX);
     public static final QName STATUS = new QName(NAMESPACE, "status", PREFIX);
     public static final QName TIMESTAMP = new QName(NAMESPACE, "timestamp", PREFIX);

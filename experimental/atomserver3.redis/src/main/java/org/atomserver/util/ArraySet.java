@@ -1,5 +1,6 @@
 package org.atomserver.util;
 
+import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -17,7 +18,7 @@ import java.util.*;
  * allows you to use the friendly semantics of java.util.Set with the space constraints of a
  * single array containing the elements, plus four bytes for the object pointer.
  */
-public class ArraySet<T> extends AbstractSet<T> {
+public class ArraySet<T> extends AbstractSet<T> implements Serializable {
 
     private static final Object[] EMPTY = new Object[0];
 

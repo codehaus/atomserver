@@ -22,8 +22,8 @@ public class DefaultContentStore implements ContentStore {
                 // do nothing...
             }
 
-            public String etag() {
-                return DigestUtils.md5Hex(bytes);
+            public byte[] digest() {
+                return DigestUtils.md5(bytes);
             }
         };
     }

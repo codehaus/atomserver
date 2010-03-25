@@ -10,7 +10,10 @@ import org.atomserver.categories.CategoryQuery;
 import org.atomserver.categories.CategoryQueryParseException;
 import org.atomserver.categories.CategoryQueryParser;
 import org.atomserver.content.*;
-import org.atomserver.ext.Aggregate;
+import org.atomserver.core.CategoryTuple;
+import org.atomserver.core.EntryTuple;
+import org.atomserver.core.Substrate;
+import org.atomserver.core.SubstrateCollectionIndex;
 import org.atomserver.util.ArraySet;
 
 import javax.ws.rs.*;
@@ -28,14 +31,10 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
 
     public APPCollection(final APPWorkspace workspace,
                          String name,
-                         Collection collection) {
-        super(workspace, name);
-        collectionIndex = new TreeSetCollectionIndex<SimpleEntryNode>() {
-            protected SimpleEntryNode newEntryNode(String entryId) {
-                return new SimpleEntryNode(
-                        workspace.getName(), APPCollection.this.getName(), entryId);
-            }
-        };
+                         Collection collection,
+                         Substrate substrate) {
+        super(workspace, name, substrate);
+        collectionIndex = new SubstrateCollectionIndex(getPath(), getSubstrate());
         put(collection);
     }
 
@@ -63,7 +62,7 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
         CategoryQuery categoryQuery;
         try {
             categoryQuery = categoryQueryParam == null ? null :
-                            CategoryQueryParser.parse(categoryQueryParam);
+                    CategoryQueryParser.parse(categoryQueryParam);
         } catch (CategoryQueryParseException e) {
             throw new WebApplicationException();// TODO: what?
         }
@@ -72,26 +71,21 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
             feed.addSimpleExtension(AtomServerConstants.CATEGORY_QUERY, categoryQuery.toString());
         }
 
-        getService().lock.readLock().lock();
-        Iterator<SimpleEntryNode> entryIterator;
-        try {
-            entryIterator = collectionIndex.buildIterator(categoryQuery, timestamp);
-            int countdown = maxResults;
-            long endIndex = timestamp; // TODO: scroll to the end when feed is empty
-            StringBuffer entryEtagsConcatenated = new StringBuffer();
-            while (entryIterator.hasNext() && countdown-- > 0) {
-                SimpleEntryNode entryNode = entryIterator.next();
-                Entry entry = convertToEntry(entryNode);
-                feed.addEntry(entry);
-                endIndex = entryNode.getTimestamp();
-                entryEtagsConcatenated.append(entryNode.getEtag());
-            }
-            feed.addSimpleExtension(AtomServerConstants.END_INDEX, String.valueOf(endIndex));
-            feed.addSimpleExtension(AtomServerConstants.ETAG,
-                                    DigestUtils.md5Hex(entryEtagsConcatenated.toString()));
-        } finally {
-            getService().lock.readLock().unlock();
+        Iterator<EntryTuple> entryIterator;
+        entryIterator = collectionIndex.buildIterator(categoryQuery, timestamp);
+        int countdown = maxResults;
+        long endIndex = timestamp; // TODO: scroll to the end when feed is empty
+        StringBuffer entryEtagsConcatenated = new StringBuffer();
+        while (entryIterator.hasNext() && countdown-- > 0) {
+            EntryTuple entryNode = entryIterator.next();
+            Entry entry = convertToEntry(entryNode);
+            feed.addEntry(entry);
+            endIndex = entryNode.timestamp;
+            entryEtagsConcatenated.append(toHexString(entryNode.digest));
         }
+        feed.addSimpleExtension(AtomServerConstants.END_INDEX, String.valueOf(endIndex));
+        feed.addSimpleExtension(AtomServerConstants.ETAG,
+                DigestUtils.md5Hex(entryEtagsConcatenated.toString()));
 
         return feedResponse(feed);
     }
@@ -141,7 +135,7 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
     @GET
     @Path("/{entryId : [^\\$][^/]*}")
     public Response getEntry(@PathParam("entryId") String entryId) {
-        SimpleEntryNode entryNode = collectionIndex.getEntry(entryId);
+        EntryTuple entryNode = collectionIndex.getEntry(entryId);
         if (entryNode == null) {
             throw new NotFoundException(String.format("%s NOT FOUND", getFullEntryId(entryId)));
         }
@@ -175,8 +169,8 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
         } else {
             throw new BadRequestException(
                     format("Header ETag (%s) and XML Body Etag (%s) differ - please remove the " +
-                           "incorrect one and retry",
-                           etagHeader, etagXml));
+                            "incorrect one and retry",
+                            etagHeader, etagXml));
         }
 
     }
@@ -202,8 +196,8 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
         try {
             // TODO: not all content is strings, some is links and some is base64-ed
             contentTxn = getContentStore().put(getEntryKey(entryId),
-                                               "text/plain",
-                                               ContentUtils.toChannel(entry.getContent()));
+                    "text/plain",
+                    ContentUtils.toChannel(entry.getContent()));
         } catch (ContentStoreException e) {
             // TODO: handle for real
             throw new WebApplicationException(e);
@@ -213,54 +207,53 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
         newEntry.setId(getFullEntryId(entryId));
 
         log.debug(String.format("acquiring service %s write lock", getService().getName()));
-        getService().lock.writeLock().lock(); // TODO: timeouts
+        lock.lock();
 
         try {
             try {
-                SimpleEntryNode entryNode = collectionIndex.removeEntryNodeFromIndices(entryId);
+                EntryTuple entryNode = collectionIndex.removeEntryNodeFromIndices(entryId);
+                if (entryNode == null) {
+                    if (etag != null &&
+                            !AtomServerConstants.OPTIMISTIC_CONCURRENCY_OVERRIDE.equals(etag)) {
+                        throw new OptimisticConcurrencyException(
+                                format("Optimistic Concurrency Exception - ETag (%s) provided, " +
+                                        "but this is a new Entry",
+                                        etag));
+                    }
+                    long now = new Date().getTime();
+                    entryNode = new EntryTuple(
+                            entryId, getSubstrate().getNextTimestamp(getPath()), now, now, contentTxn.digest(),
+                            convertCategories(entry.getCategories()));
+                } else {
+                    if (!AtomServerConstants.OPTIMISTIC_CONCURRENCY_OVERRIDE.equals(etag) &&
+                            !(entryNode.digest == null ?
+                                    etag == null :
+                                    toHexString(entryNode.digest).equals(etag))) {
 
-                if (!AtomServerConstants.OPTIMISTIC_CONCURRENCY_OVERRIDE.equals(etag) &&
-                    !(entryNode.getEtag() == null ?
-                      etag == null :
-                      entryNode.getEtag().equals(etag))) {
+                        throw new OptimisticConcurrencyException(
+                                format("Optimistic Concurrency Exception - provided ETag (%s) does " +
+                                        "not match previous ETag value of (%s)",
+                                        etag, toHexString(entryNode.digest)));
+                    }
 
-                    throw new OptimisticConcurrencyException(
-                            format("Optimistic Concurrency Exception - provided ETag (%s) does " +
-                                   "not match previous ETag value of (%s)",
-                                   etag, entryNode.getEtag()));
+                    entryNode = entryNode.update(getSubstrate().getNextTimestamp(getPath()),
+                            new Date().getTime(),
+                            contentTxn.digest(),
+                            convertCategories(entry.getCategories()));
                 }
-
-                entryNode.update(getService().timestamp.getAndIncrement(),
-                                 new Date(),
-                                 convertCategories(entry.getCategories()),
-                                 contentTxn.etag());
-
                 collectionIndex.updateEntryNodeIntoIndices(entryNode);
 
-                List<Aggregate> aggregates = entry.getExtensions(AtomServerConstants.AGGREGATE);
-                if (!entryNode.getAggregates().isEmpty() ||
-                    (aggregates != null && !aggregates.isEmpty())) {
-                    Set<AggregateNode> newAggregateNodes = new HashSet<AggregateNode>();
-                    for (Aggregate aggregate : aggregates) {
-                        newAggregateNodes.add(new AggregateNode(aggregate.getCollection(),
-                                                                aggregate.getEntryId()));
-                    }
-                    updateAggregates(entryNode, newAggregateNodes);
-                }
-
-                newEntry.setEdited(entryNode.getLastUpdated());
-                newEntry.setPublished(entryNode.getPublished());
-                newEntry.setUpdated(entryNode.getLastUpdated());
+                Date updated = new Date(entryNode.updated);
+                newEntry.setEdited(updated);
+                newEntry.setUpdated(updated);
+                newEntry.setPublished(new Date(entryNode.created));
                 newEntry.setContent(entry.getContent(), entry.getContentType()); // TODO: deal with content...
                 newEntry.addSimpleExtension(AtomServerConstants.ENTRY_ID, entryId);
                 for (Category category : entry.getCategories()) {
                     newEntry.addCategory(category);
                 }
-                for (Aggregate aggregate : aggregates) {
-                    newEntry.addExtension(aggregate);
-                }
                 // TODO: should ETags hash the content only, or the metadata of an entry, too?
-                newEntry.addSimpleExtension(AtomServerConstants.ETAG, entryNode.getEtag());
+                newEntry.addSimpleExtension(AtomServerConstants.ETAG, toHexString(entryNode.digest));
                 // TODO: we need to preserve "unknown" extensions
 
                 contentTxn.commit();
@@ -279,68 +272,24 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
             }
 
         } finally {
-            getService().lock.writeLock().unlock();
+            lock.unlock();
             log.debug(String.format("released service %s write lock", getService().getName()));
-        }
-    }
-
-    private void updateAggregates(SimpleEntryNode entryNode, Set<AggregateNode> newAggregateNodes) {
-        Set<AggregateNode> allAggregateNodes =
-                new HashSet<AggregateNode>(entryNode.getAggregates());
-        allAggregateNodes.addAll(newAggregateNodes);
-
-        Map<AggregateNode, AggregateEntryNode> agMap =
-                new HashMap<AggregateNode, AggregateEntryNode>();
-        for (AggregateNode aggregateNode : allAggregateNodes) {
-            CollectionIndex<AggregateEntryNode> index =
-                    getService().getAggregateCollectionIndex(
-                            aggregateNode.getCollection());
-            agMap.put(aggregateNode,
-                      index.removeEntryNodeFromIndices(aggregateNode.getEntryId()));
-        }
-        for (AggregateNode aggregateNode : allAggregateNodes) {
-            CollectionIndex<AggregateEntryNode> index =
-                    getService().getAggregateCollectionIndex(
-                            aggregateNode.getCollection());
-
-            AggregateEntryNode aggregateEntryNode = agMap.get(aggregateNode);
-            if (newAggregateNodes.contains(aggregateNode)) {
-                aggregateEntryNode.getMembers().add(entryNode);
-                entryNode.getAggregates().add(aggregateNode);
-            } else {
-                aggregateEntryNode.getMembers().remove(entryNode);
-                entryNode.getAggregates().remove(aggregateNode);
-            }
-
-            Set<EntryCategory> aggregateCategories = new HashSet<EntryCategory>();
-            for (SimpleEntryNode member : aggregateEntryNode.getMembers()) {
-                for (EntryCategory entryCategory : member.getCategories()) {
-                    aggregateCategories.add(
-                            new EntryCategory(entryCategory.getCategory(), null));
-                }
-            }
-
-            aggregateEntryNode.update(entryNode.getTimestamp(),
-                                      entryNode.getLastUpdated(),
-                                      new ArraySet(aggregateCategories),
-                                      null);
-            index.updateEntryNodeIntoIndices(aggregateEntryNode);
         }
     }
 
     private EntryKey getEntryKey(String entryId) {
         return new EntryKey(getService().getName(),
-                            getWorkspace().getName(),
-                            getName(),
-                            entryId);
+                getWorkspace().getName(),
+                getName(),
+                entryId);
     }
 
     private String getFullEntryId(String entryId) {
         return format("%s/%s/%s/%s",
-                      getService().getName(),
-                      getWorkspace().getName(),
-                      getName(),
-                      entryId);
+                getService().getName(),
+                getWorkspace().getName(),
+                getName(),
+                entryId);
     }
 
     public Categories putCategories(String entryId, Categories categories) {
@@ -355,48 +304,44 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
         return getRoot().getDefaultContentStore();
     }
 
-    private APPRoot getRoot() {return getService().getParent();}
+    private APPRoot getRoot() {
+        return getService().getParent();
+    }
 
-    private APPService getService() {return getWorkspace().getParent();}
+    private APPService getService() {
+        return getWorkspace().getParent();
+    }
 
-    private APPWorkspace getWorkspace() {return getParent();}
+    private APPWorkspace getWorkspace() {
+        return getParent();
+    }
 
     // -----------------------
-    private Set<EntryCategory> convertCategories(List<Category> categories) {
+    private Set<CategoryTuple> convertCategories(List<Category> categories) {
         if (categories == null || categories.isEmpty()) {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
-        EntryCategory[] entryCategories = new EntryCategory[categories.size()];
+        CategoryTuple[] entryCategories = new CategoryTuple[categories.size()];
         int i = 0;
         for (Category category : categories) {
-            entryCategories[i++] = new EntryCategory(
-                    new CategoryNode(category.getScheme().toString(), category.getTerm()),
+            entryCategories[i++] = new CategoryTuple(
+                    category.getScheme().toString(),
+                    category.getTerm(),
                     category.getLabel());
         }
-        return new ArraySet(entryCategories);
+        return new ArraySet<CategoryTuple>(entryCategories);
     }
 
-    private Set<AggregateNode> convertAggregates(List<Aggregate> aggregates) {
-        if (aggregates == null || aggregates.isEmpty()) {
-            return Collections.EMPTY_SET;
-        }
-        AggregateNode[] aggregateNodes = new AggregateNode[aggregates.size()];
-        int i = 0;
-        for (Aggregate aggregate : aggregates) {
-            aggregateNodes[i++] = new AggregateNode(
-                    aggregate.getCollection(), aggregate.getEntryId());
-        }
-        return new ArraySet<AggregateNode>(aggregateNodes);
-    }
-
-    protected Entry convertToEntry(SimpleEntryNode entryNode) {
+    protected Entry convertToEntry(EntryTuple entryNode) {
         // TODO: make this a method on EntryNode?
         Entry entry = AbderaMarshaller.factory().newEntry();
 
-        entry.setId(getFullEntryId(entryNode.getEntryId()));
-        entry.setEdited(entryNode.getLastUpdated());
-        entry.setUpdated(entryNode.getLastUpdated());
-        EntryKey key = getEntryKey(entryNode.getEntryId());
+        entry.setId(getFullEntryId(entryNode.entryId));
+        Date updated = new Date(entryNode.updated);
+        entry.setEdited(updated);
+        entry.setUpdated(updated);
+        entry.setPublished(new Date(entryNode.created));
+        EntryKey key = getEntryKey(entryNode.entryId);
         try {
             EntryContent entryContent = getContentStore().get(key);
             // TODO: not all content is strings, some is links and some is base64-ed
@@ -404,25 +349,19 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
         } catch (ContentStoreException e) {
             throw new WebApplicationException(e);
         }
-        for (EntryCategory entryCategory : entryNode.getCategories()) {
+        for (CategoryTuple entryCategory : entryNode.categories) {
             Category category = AbderaMarshaller.factory().newCategory();
-            category.setScheme(entryCategory.getCategory().getScheme());
-            category.setTerm(entryCategory.getCategory().getTerm());
-            category.setLabel(entryCategory.getLabel());
+            category.setScheme(entryCategory.scheme);
+            category.setTerm(entryCategory.term);
+            category.setLabel(entryCategory.label);
             entry.addCategory(category);
         }
-        for (AggregateNode aggregateNode : entryNode.getAggregates()) {
-            Aggregate aggregate = AbderaMarshaller.factory().newExtensionElement(AtomServerConstants.AGGREGATE);
-            aggregate.setCollection(aggregateNode.getCollection());
-            aggregate.setEntryId(aggregateNode.getEntryId());
-            entry.addExtension(aggregate);
-        }
-        entry.addSimpleExtension(AtomServerConstants.TIMESTAMP, String.valueOf(entryNode.getTimestamp()));
-        entry.addSimpleExtension(AtomServerConstants.ETAG, entryNode.getEtag());
+        entry.addSimpleExtension(AtomServerConstants.TIMESTAMP, String.valueOf(entryNode.timestamp));
+        entry.addSimpleExtension(AtomServerConstants.ETAG, toHexString(entryNode.digest));
         return entry;
     }
 
     // -----------------------
 
-    private final CollectionIndex<SimpleEntryNode> collectionIndex;
+    private final SubstrateCollectionIndex collectionIndex;
 }

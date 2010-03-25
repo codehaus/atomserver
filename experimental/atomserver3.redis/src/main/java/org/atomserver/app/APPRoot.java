@@ -7,15 +7,16 @@ import org.apache.abdera.model.Service;
 import org.atomserver.content.ContentStore;
 import org.atomserver.AtomServerConstants;
 import org.atomserver.app.jaxrs.AbderaMarshaller;
+import org.atomserver.core.Substrate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
+
 import static javax.ws.rs.core.MediaType.*;
-import javax.ws.rs.core.Response;
+
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.Comparator;
@@ -25,11 +26,12 @@ import java.util.Comparator;
 @Component(APPRoot.BEAN_NAME)
 public class APPRoot extends ContainerResource<Feed, Service, ContainerResource, APPService> {
     public static final String BEAN_NAME = "org.atomserver.app.APPRoot";
-    private final ContentStore defaultContentStore;
+    protected final ContentStore defaultContentStore;
 
     @Autowired
-    public APPRoot(ContentStore defaultContentStore) {
-        super(null, null);
+    public APPRoot(Substrate substrate,
+                   ContentStore defaultContentStore) {
+        super(null, null, substrate);
         this.defaultContentStore = defaultContentStore;
     }
 
@@ -109,7 +111,7 @@ public class APPRoot extends ContainerResource<Feed, Service, ContainerResource,
 
     protected APPService createChild(String name,
                                      Service service) {
-        return new APPService(this, name, service);
+        return new APPService(this, name, service, getSubstrate());
     }
 
     protected ContentStore getDefaultContentStore() {

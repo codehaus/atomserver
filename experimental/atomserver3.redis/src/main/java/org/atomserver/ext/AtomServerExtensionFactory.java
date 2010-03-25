@@ -6,7 +6,6 @@ import org.atomserver.AtomServerConstants;
 public class AtomServerExtensionFactory extends AbstractExtensionFactory {
     public AtomServerExtensionFactory() {
         super(AtomServerConstants.NAMESPACE);
-        addImpl(AtomServerConstants.AGGREGATE, Aggregate.class);
         addImpl(AtomServerConstants.FILTER, Filter.class);
         addImpl(AtomServerConstants.STATUS, Status.class);
     }

@@ -2,19 +2,21 @@ package org.atomserver.app;
 
 import org.apache.abdera.model.ExtensibleElement;
 import org.atomserver.AtomServerConstants;
+import org.atomserver.core.Substrate;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import static java.lang.String.format;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
+
+import static java.lang.String.format;
 
 public abstract class ContainerResource<
         S extends ExtensibleElement,
@@ -56,8 +58,9 @@ public abstract class ContainerResource<
     private final SortedMap<String, C> children = new TreeMap<String, C>();
 
     protected ContainerResource(P parent,
-                                String name) {
-        super(parent, name);
+                                String name,
+                                Substrate substrate) {
+        super(parent, name, substrate);
     }
 
     protected static void validateName(String name) {
@@ -76,29 +79,29 @@ public abstract class ContainerResource<
         String name = getChildName(childStaticRepresentation);
 
         C child;
-        lock.writeLock().lock();
+        lock.lock();
         try {
             child = children.get(name);
             if (child != null) {
                 throw new DuplicateException(
                         format("Duplicate error - %s already exists in %s.",
-                               name, getPath()));
+                                name, getPath()));
             }
             child = createChild(name, childStaticRepresentation);
             children.put(name, child);
         } finally {
-            lock.writeLock().unlock();
+            lock.unlock();
         }
 
         return child;
     }
 
     protected void deleteChild(C child) {
-        lock.writeLock().lock();
+        lock.lock();
         try {
             children.remove(child.getName());
         } finally {
-            lock.writeLock().unlock();
+            lock.unlock();
         }
     }
 

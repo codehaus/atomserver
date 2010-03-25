@@ -76,4 +76,8 @@ public class FeedFollower {
     public void reset() {
         reset(0);
     }
+
+    public int getTimestamp() {
+        return timestamp;
+    }
 }

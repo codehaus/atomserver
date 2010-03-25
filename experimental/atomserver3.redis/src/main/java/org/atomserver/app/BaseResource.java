@@ -5,6 +5,7 @@ import org.apache.abdera.model.ExtensibleElement;
 import org.apache.log4j.Logger;
 import org.atomserver.AtomServer;
 import org.atomserver.AtomServerConstants;
+import org.atomserver.core.Substrate;
 import org.atomserver.ext.Filter;
 import org.atomserver.filter.EntryFilter;
 import org.atomserver.filter.EntryFilterChain;
@@ -14,7 +15,6 @@ import javax.ws.rs.core.Response;
 import java.lang.reflect.Constructor;
 import java.net.URI;
 import java.util.*;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public abstract class BaseResource<S extends ExtensibleElement, P extends ContainerResource> {
 
@@ -32,22 +32,25 @@ public abstract class BaseResource<S extends ExtensibleElement, P extends Contai
 
     private final P parent;
     private final String name;
+    protected Substrate substrate;
+    protected Substrate.Lock lock;
 
     private final List<EntryFilter> entryFilters;
-
-    public final ReentrantReadWriteLock lock;
 
     // TODO: I don't think this way of dealing with updated will work -- locks are acquired at the
     // service level, but this extends to the ROOT.  
     private Date updated;
 
     protected BaseResource(P parent,
-                           String name) {
+                           String name,
+                           Substrate substrate) {
         this.parent = parent;
         this.name = name;
         entryFilters = new ArrayList<EntryFilter>();
-        this.lock = new ReentrantReadWriteLock();
         setUpdated(new Date());
+        
+        this.substrate = substrate;
+        lock = substrate.getLock(getPath());
     }
 
     public P getParent() {
@@ -64,7 +67,7 @@ public abstract class BaseResource<S extends ExtensibleElement, P extends Contai
 
     public String getPath() {
         return getParent() == null ? "/" :
-               String.format("%s%s/", getParent().getPath(), getName());
+                String.format("%s%s/", getParent().getPath(), getName());
     }
 
     public URI getUri() {
@@ -142,4 +145,18 @@ public abstract class BaseResource<S extends ExtensibleElement, P extends Contai
             setEntryFilters(entryFilters);
         }
     }
+
+    protected Substrate getSubstrate() {
+        return substrate;
+    }
+
+
+    public static String toHexString(byte[] bytes) {
+        StringBuilder builder = new StringBuilder();
+        for (byte b : bytes) {
+            builder.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
+        }
+        return builder.toString();
+    }
+
 }

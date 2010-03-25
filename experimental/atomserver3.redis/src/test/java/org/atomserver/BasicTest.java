@@ -12,10 +12,10 @@ import org.atomserver.domain.Widget;
 import org.atomserver.test.EntryChecker;
 import org.atomserver.test.FeedFollower;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.HashSet;
@@ -78,15 +78,15 @@ public class BasicTest extends BaseAtomServerTestCase {
         final Set<String> allNames = new HashSet<String>(names);
         FeedFollower follower = new FeedFollower(
                 root(), collectionPath(), 10, 0);
-        assertEquals(100, follower.follow(
+        assertEquals(allNames.toString(), 100, follower.follow(
                 new EntryChecker() {
                     public void check(Entry entry) throws Exception {
                         Widget widget = PERSISTER.read(Widget.class, entry.getContent());
-                        assertTrue(allNames.remove(widget.getName()));
+                        assertTrue(widget.getName(), allNames.remove(widget.getName()));
                     }
                 },
                 null));
-        assertTrue(allNames.isEmpty());
+        assertTrue(allNames.toString(), allNames.isEmpty());
     }
 
     public void testCategorizedFeeds() throws Exception {
@@ -181,11 +181,13 @@ public class BasicTest extends BaseAtomServerTestCase {
             names.add(name);
             Entry widgetEntry = createWidgetEntry(id, colors[id % colors.length], name);
             widgetEntry.addCategory("urn:div5", id % 5 == 0 ? "true" : "false", null);
-            root().path(collectionPath()).path(String.valueOf(id)).type(MediaType.APPLICATION_XML)
+            ClientResponse response = root().path(collectionPath()).path(String.valueOf(id)).type(MediaType.APPLICATION_XML)
                     .entity(widgetEntry)
                     .header("ETag", OPTIMISTIC_CONCURRENCY_OVERRIDE)
-                    .put(Entry.class);
+                    .put(ClientResponse.class);
+            assertEquals(Response.Status.Family.SUCCESSFUL, response.getResponseStatus().getFamily());
         }
+
 
         assertEquals(20, follower.follow(
                 new EntryChecker() {

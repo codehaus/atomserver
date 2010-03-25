@@ -6,6 +6,8 @@ import org.apache.abdera.model.Service;
 import org.apache.commons.lang.StringUtils;
 import org.atomserver.AtomServerConstants;
 import org.atomserver.app.jaxrs.AbderaMarshaller;
+import org.atomserver.core.Substrate;
+
 import static org.atomserver.AtomServerConstants.APPLICATION_APP_XML;
 
 import javax.ws.rs.GET;
@@ -21,8 +23,9 @@ public class APPWorkspace extends ContainerResource<Workspace, Collection, APPSe
 
     public APPWorkspace(APPService service,
                         String name,
-                        Workspace workspace) {
-        super(service, name);
+                        Workspace workspace,
+                           Substrate substrate) {
+        super(service, name, substrate);
         put(workspace);
     }
 
@@ -63,7 +66,7 @@ public class APPWorkspace extends ContainerResource<Workspace, Collection, APPSe
 
     protected APPCollection createChild(String name,
                                         Collection staticRepresentation) {
-        return new APPCollection(this, name, staticRepresentation);
+        return new APPCollection(this, name, staticRepresentation, substrate);
     }
 
     protected void validateChildStaticRepresentation(Collection collection) {

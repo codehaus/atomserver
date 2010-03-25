@@ -66,14 +66,10 @@ public class PublishTest extends BaseAtomServerTestCase {
                      response.getEntityTag().getValue(),
                      responseEntry.getSimpleExtension(AtomServerConstants.ETAG));
 
-        checkCategoryPresent(responseEntry, false);
-        checkAggregatePresent(responseEntry);
-
+        checkCategoryPresent(responseEntry);
 
         checkForEntriesInFeed(acme, "atomserver-test/widgets/acme/1234");
         checkForEntriesInFeed(categorized, "atomserver-test/widgets/acme/1234");
-        checkForEntriesInFeed(root().path("atomserver-test").path("$join").path("test.agg"),
-                              "atomserver-test/$join/test.agg/myagg");
 
         // TEST RE-PUBLISHING THE ENTRY
         response =
@@ -101,8 +97,7 @@ public class PublishTest extends BaseAtomServerTestCase {
         assertEquals("expected MD5 Etag Element",
                      response.getEntityTag().getValue(),
                      responseEntry.getSimpleExtension(AtomServerConstants.ETAG));
-        checkCategoryPresent(responseEntry, false);
-        checkAggregatePresent(responseEntry);
+        checkCategoryPresent(responseEntry);
         checkForEntriesInFeed(acme, "atomserver-test/widgets/acme/1234");
         checkForEntriesInFeed(categorized, "atomserver-test/widgets/acme/1234");
 
@@ -133,8 +128,7 @@ public class PublishTest extends BaseAtomServerTestCase {
                      response.getEntityTag().getValue(),
                      responseEntry.getSimpleExtension(AtomServerConstants.ETAG));
 
-        checkCategoryPresent(responseEntry, false);
-        checkAggregatePresent(responseEntry);
+        checkCategoryPresent(responseEntry);
         checkForEntriesInFeed(acme,
                               "atomserver-test/widgets/acme/1234",
                               responseEntry.getId().toString());
@@ -351,22 +345,13 @@ public class PublishTest extends BaseAtomServerTestCase {
     }
 
 
-    private void checkAggregatePresent(Entry entry) {
-        assertEquals("expected our aggregate marker to be preserved",
-                     1,
-                     entry.getExtensions(AtomServerConstants.AGGREGATE).size());
-        assertEquals("expected our aggregate marker to be preserved",
-                     AGGREGATE,
-                     entry.getExtensions(AtomServerConstants.AGGREGATE).get(0));
-    }
-
-    private void checkCategoryPresent(Entry entry, boolean ignoreNullLabel) {
+    private void checkCategoryPresent(Entry entry) {
         assertEquals("expected our category to be preserved",
                      1,
                      entry.getCategories().size());
         assertCategoriesEqual("expected to preserve the category applied to the entry",
                               CATEGORY,
-                              entry.getCategories().get(0), ignoreNullLabel);
+                              entry.getCategories().get(0), false);
     }
 
     private void checkForEntriesInFeed(WebResource feedResource,
@@ -389,11 +374,7 @@ public class PublishTest extends BaseAtomServerTestCase {
                                        expectedIds[i], i),
                          expectedIds[i],
                          entry.getId().toString());
-            boolean isAggregateFeed = feedResource.toString().contains("$join");
-            checkCategoryPresent(entry, isAggregateFeed);
-            if (!isAggregateFeed) {
-                checkAggregatePresent(entry);
-            }
+            checkCategoryPresent(entry);
             assertTrue("expected MD5 ETag Header",
                        entry.getSimpleExtension(AtomServerConstants.ETAG).matches("[a-f0-9]{32}"));
         }
