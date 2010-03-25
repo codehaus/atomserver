@@ -19,6 +19,7 @@ import org.atomserver.util.ArraySet;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.util.*;
+import java.util.concurrent.Callable;
 
 import static java.lang.String.format;
 import static org.atomserver.app.APPResponses.feedResponse;
@@ -175,7 +176,7 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
 
     }
 
-    public Entry updateEntry(String entryId, String etag, Entry entry) {
+    public Entry updateEntry(final String entryId, final String etag, final Entry entry) {
 
         log.debug(String.format("PUTting entry %s", entryId));
 
@@ -192,7 +193,7 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
         // TODO: validate the <id> element (e.g. against the path)
 
 
-        ContentStore.Transaction contentTxn;
+        final ContentStore.Transaction contentTxn;
         try {
             // TODO: not all content is strings, some is links and some is base64-ed
             contentTxn = getContentStore().put(getEntryKey(entryId),
@@ -203,78 +204,76 @@ public class APPCollection extends BaseResource<Collection, APPWorkspace> {
             throw new WebApplicationException(e);
         }
 
-        Entry newEntry = AbderaMarshaller.factory().newEntry();
+        final Entry newEntry = AbderaMarshaller.factory().newEntry();
         newEntry.setId(getFullEntryId(entryId));
 
         log.debug(String.format("acquiring service %s write lock", getService().getName()));
-        lock.lock();
 
-        try {
-            try {
-                EntryTuple entryNode = collectionIndex.removeEntryNodeFromIndices(entryId);
-                if (entryNode == null) {
-                    if (etag != null &&
-                            !AtomServerConstants.OPTIMISTIC_CONCURRENCY_OVERRIDE.equals(etag)) {
-                        throw new OptimisticConcurrencyException(
-                                format("Optimistic Concurrency Exception - ETag (%s) provided, " +
-                                        "but this is a new Entry",
-                                        etag));
+        return sync(new Callable<Entry>() {
+
+            public Entry call() throws Exception {
+                try {
+                    EntryTuple entryNode = collectionIndex.removeEntryNodeFromIndices(entryId);
+                    if (entryNode == null) {
+                        if (etag != null &&
+                                !AtomServerConstants.OPTIMISTIC_CONCURRENCY_OVERRIDE.equals(etag)) {
+                            throw new OptimisticConcurrencyException(
+                                    format("Optimistic Concurrency Exception - ETag (%s) provided, " +
+                                            "but this is a new Entry",
+                                            etag));
+                        }
+                        long now = new Date().getTime();
+                        entryNode = new EntryTuple(
+                                entryId, getSubstrate().getNextTimestamp(getPath()), now, now, contentTxn.digest(),
+                                convertCategories(entry.getCategories()));
+                    } else {
+                        if (!AtomServerConstants.OPTIMISTIC_CONCURRENCY_OVERRIDE.equals(etag) &&
+                                !(entryNode.digest == null ?
+                                        etag == null :
+                                        toHexString(entryNode.digest).equals(etag))) {
+
+                            throw new OptimisticConcurrencyException(
+                                    format("Optimistic Concurrency Exception - provided ETag (%s) does " +
+                                            "not match previous ETag value of (%s)",
+                                            etag, toHexString(entryNode.digest)));
+                        }
+
+                        entryNode = entryNode.update(getSubstrate().getNextTimestamp(getPath()),
+                                new Date().getTime(),
+                                contentTxn.digest(),
+                                convertCategories(entry.getCategories()));
                     }
-                    long now = new Date().getTime();
-                    entryNode = new EntryTuple(
-                            entryId, getSubstrate().getNextTimestamp(getPath()), now, now, contentTxn.digest(),
-                            convertCategories(entry.getCategories()));
-                } else {
-                    if (!AtomServerConstants.OPTIMISTIC_CONCURRENCY_OVERRIDE.equals(etag) &&
-                            !(entryNode.digest == null ?
-                                    etag == null :
-                                    toHexString(entryNode.digest).equals(etag))) {
+                    collectionIndex.updateEntryNodeIntoIndices(entryNode);
 
-                        throw new OptimisticConcurrencyException(
-                                format("Optimistic Concurrency Exception - provided ETag (%s) does " +
-                                        "not match previous ETag value of (%s)",
-                                        etag, toHexString(entryNode.digest)));
+                    Date updated = new Date(entryNode.updated);
+                    newEntry.setEdited(updated);
+                    newEntry.setUpdated(updated);
+                    newEntry.setPublished(new Date(entryNode.created));
+                    newEntry.setContent(entry.getContent(), entry.getContentType()); // TODO: deal with content...
+                    newEntry.addSimpleExtension(AtomServerConstants.ENTRY_ID, entryId);
+                    for (Category category : entry.getCategories()) {
+                        newEntry.addCategory(category);
                     }
+                    // TODO: should ETags hash the content only, or the metadata of an entry, too?
+                    newEntry.addSimpleExtension(AtomServerConstants.ETAG, toHexString(entryNode.digest));
+                    // TODO: we need to preserve "unknown" extensions
 
-                    entryNode = entryNode.update(getSubstrate().getNextTimestamp(getPath()),
-                            new Date().getTime(),
-                            contentTxn.digest(),
-                            convertCategories(entry.getCategories()));
+                    contentTxn.commit();
+
+                    log.debug(String.format("successfully PUT entry %s", entryId));
+                    return newEntry;
+                } catch (WebApplicationException e) {
+                    contentTxn.abort();
+                    throw e;
+                } catch (AtompubException e) {
+                    contentTxn.abort();
+                    throw e;
+                } catch (Exception e) {
+                    contentTxn.abort();
+                    throw new WebApplicationException(e); // TODO: more specific
                 }
-                collectionIndex.updateEntryNodeIntoIndices(entryNode);
-
-                Date updated = new Date(entryNode.updated);
-                newEntry.setEdited(updated);
-                newEntry.setUpdated(updated);
-                newEntry.setPublished(new Date(entryNode.created));
-                newEntry.setContent(entry.getContent(), entry.getContentType()); // TODO: deal with content...
-                newEntry.addSimpleExtension(AtomServerConstants.ENTRY_ID, entryId);
-                for (Category category : entry.getCategories()) {
-                    newEntry.addCategory(category);
-                }
-                // TODO: should ETags hash the content only, or the metadata of an entry, too?
-                newEntry.addSimpleExtension(AtomServerConstants.ETAG, toHexString(entryNode.digest));
-                // TODO: we need to preserve "unknown" extensions
-
-                contentTxn.commit();
-
-                log.debug(String.format("successfully PUT entry %s", entryId));
-                return newEntry;
-            } catch (WebApplicationException e) {
-                contentTxn.abort();
-                throw e;
-            } catch (AtompubException e) {
-                contentTxn.abort();
-                throw e;
-            } catch (Exception e) {
-                contentTxn.abort();
-                throw new WebApplicationException(e); // TODO: more specific
             }
-
-        } finally {
-            lock.unlock();
-            log.debug(String.format("released service %s write lock", getService().getName()));
-        }
+        });
     }
 
     private EntryKey getEntryKey(String entryId) {

@@ -15,6 +15,7 @@ import javax.ws.rs.core.Response;
 import java.lang.reflect.Constructor;
 import java.net.URI;
 import java.util.*;
+import java.util.concurrent.Callable;
 
 public abstract class BaseResource<S extends ExtensibleElement, P extends ContainerResource> {
 
@@ -33,7 +34,6 @@ public abstract class BaseResource<S extends ExtensibleElement, P extends Contai
     private final P parent;
     private final String name;
     protected Substrate substrate;
-    protected Substrate.Lock lock;
 
     private final List<EntryFilter> entryFilters;
 
@@ -50,7 +50,6 @@ public abstract class BaseResource<S extends ExtensibleElement, P extends Contai
         setUpdated(new Date());
         
         this.substrate = substrate;
-        lock = substrate.getLock(getPath());
     }
 
     public P getParent() {
@@ -159,4 +158,22 @@ public abstract class BaseResource<S extends ExtensibleElement, P extends Contai
         return builder.toString();
     }
 
+    protected void sync(final Runnable runnable) {
+        sync(new Callable<Object>() {
+            public Object call() throws Exception {
+                runnable.run();
+                return null;
+            }
+        });
+    }
+
+    protected <T> T sync(Callable<T> callable) {
+        try {
+            return substrate.sync(getPath(), callable);
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+    }
 }

@@ -14,6 +14,7 @@ import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
 import static java.lang.String.format;
@@ -74,35 +75,32 @@ public abstract class ContainerResource<
         return childStaticRepresentation.getSimpleExtension(AtomServerConstants.NAME);
     }
 
-    public C createChild(CS childStaticRepresentation) {
+    public C createChild(final CS childStaticRepresentation) {
         validateChildStaticRepresentation(childStaticRepresentation);
-        String name = getChildName(childStaticRepresentation);
+        final String name = getChildName(childStaticRepresentation);
 
-        C child;
-        lock.lock();
-        try {
-            child = children.get(name);
-            if (child != null) {
-                throw new DuplicateException(
-                        format("Duplicate error - %s already exists in %s.",
-                                name, getPath()));
+        return sync(new Callable<C>() {
+            public C call() throws Exception {
+                C child;
+                child = children.get(name);
+                if (child != null) {
+                    throw new DuplicateException(
+                            format("Duplicate error - %s already exists in %s.",
+                                    name, getPath()));
+                }
+                child = createChild(name, childStaticRepresentation);
+                children.put(name, child);
+                return child;
             }
-            child = createChild(name, childStaticRepresentation);
-            children.put(name, child);
-        } finally {
-            lock.unlock();
-        }
-
-        return child;
+        });
     }
 
-    protected void deleteChild(C child) {
-        lock.lock();
-        try {
-            children.remove(child.getName());
-        } finally {
-            lock.unlock();
-        }
+    protected void deleteChild(final C child) {
+        sync(new Runnable() {
+            public void run() {
+                children.remove(child.getName());
+            }
+        });
     }
 
     protected Collection<String> getChildNames() {

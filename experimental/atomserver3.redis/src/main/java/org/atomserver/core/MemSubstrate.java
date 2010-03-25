@@ -7,6 +7,7 @@ import org.atomserver.AtomServerConstants;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -15,7 +16,6 @@ public class MemSubstrate implements Substrate {
 
     private final Map<String, ServiceMetadata> serviceMetadata =
             new HashMap<String, ServiceMetadata>();
-    private final Map<String, Lock> locks = new HashMap<String, Lock>();
     private final Map<String, AtomicLong> timestampMap = new HashMap<String, AtomicLong>();
     private final Map<String, Index> indices = new HashMap<String, Index>();
     private final Map<String, KeyValueStore<Long, EntryTuple>> entryByTimestampStores =
@@ -72,13 +72,12 @@ public class MemSubstrate implements Substrate {
         return metadata;
     }
 
-    public Lock getLock(String key) {
-        class JvmLock extends ReentrantLock implements Lock {}
-        Lock lock = locks.get(key);
-        if (lock == null) {
-            locks.put(key, lock = new JvmLock());
+    public <T> T sync(String lockName, Callable<T> callable) throws Exception {
+        T returnValue;
+        synchronized (lockName.intern()) {
+            returnValue = callable.call();
         }
-        return lock;
+        return returnValue;
     }
 
     public synchronized long getNextTimestamp(String key) {

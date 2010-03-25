@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
 
 //@Component
@@ -63,7 +64,6 @@ public class RedisSubstrate implements Substrate {
 
     private final Map<String, ServiceMetadata> serviceMetadata =
             new HashMap<String, ServiceMetadata>();
-    private final Map<String, Lock> locks = new HashMap<String, Lock>();
     private final Map<String, AtomicLong> timestampMap = new HashMap<String, AtomicLong>();
     private final Map<String, Index> indices = new HashMap<String, Index>();
     private final Map<String, KeyValueStore<Long, EntryTuple>> entryByTimestampStores =
@@ -141,50 +141,42 @@ public class RedisSubstrate implements Substrate {
         return metadata;
     }
 
-    public Lock getLock(String key) {
-        final String lockName = "LOCK:" + key;
-        Lock lock = locks.get(key);
-        if (lock == null) {
-            // This lock is implemented according to the suggestions at:
-            //  http://code.google.com/p/redis/wiki/SetnxCommand
-            locks.put(key, lock = new Lock() {
-                public void lock() {
-                    try {
-                        long now = System.currentTimeMillis();
-                        // see if we can get the lock outright
-                        boolean acquired = redis.setnx(lockName, now + 1001L);
-                        while (!acquired) {
-                            // if not, let's see if the lock has expired
-                            Long timestamp = Convert.toLong(redis.get(lockName));
-                            if (timestamp < now) {
-                                // if it HAS expired, atomically GETSET to acquire it
-                                timestamp = Convert.toLong(redis.getset(lockName, now + 1001L));
-                                // make damn sure that someone else didn't acquire in the meantime
-                                acquired = timestamp < now;
-                            }
-                            if (!acquired) {
-                                // if, after all that, we still haven't acquired the lock, sleep
-                                // for a bit before retrying
-                                Thread.sleep(500L);
-                            }
-                        }
-                    } catch (RedisException e) {
-                        throw new IllegalStateException(e); // TODO: handle
-                    } catch (InterruptedException e) {
-                        throw new IllegalStateException(e); // TODO: handle
-                    }
+    public <T> T sync(String lockName, Callable<T> callable) throws Exception {
+        try {
+            long now = System.currentTimeMillis();
+            // see if we can get the lock outright
+            boolean acquired = redis.setnx(lockName, now + 1001L);
+            while (!acquired) {
+                // if not, let's see if the lock has expired
+                Long timestamp = Convert.toLong(redis.get(lockName));
+                if (timestamp < now) {
+                    // if it HAS expired, atomically GETSET to acquire it
+                    timestamp = Convert.toLong(redis.getset(lockName, now + 1001L));
+                    // make damn sure that someone else didn't acquire in the meantime
+                    acquired = timestamp < now;
                 }
-
-                public void unlock() {
-                    try {
-                        redis.del(lockName);
-                    } catch (RedisException e) {
-                        throw new IllegalStateException(e); // TODO: handle
-                    }
+                if (!acquired) {
+                    // if, after all that, we still haven't acquired the lock, sleep
+                    // for a bit before retrying
+                    Thread.sleep(500L);
                 }
-            });
+            }
+        } catch (RedisException e) {
+            throw new IllegalStateException(e); // TODO: handle
+        } catch (InterruptedException e) {
+            throw new IllegalStateException(e); // TODO: handle
         }
-        return lock;
+        T returnValue;
+        try {
+            returnValue = callable.call();
+        } finally {
+            try {
+                redis.del(lockName);
+            } catch (RedisException e) {
+                throw new IllegalStateException(e); // TODO: handle
+            }
+        }
+        return returnValue;
     }
 
     public synchronized long getNextTimestamp(String key) {

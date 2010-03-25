@@ -3,6 +3,7 @@ package org.atomserver.core;
 import org.apache.abdera.model.Service;
 
 import java.util.Collection;
+import java.util.concurrent.Callable;
 
 public interface Substrate {
 
@@ -18,12 +19,7 @@ public interface Substrate {
 
     ServiceMetadata putService(Service service);
 
-    interface Lock {
-        void lock();
-        void unlock();
-    }
-
-    Lock getLock(String name);
+    public <T> T sync(String lockName, Callable<T> callable) throws Exception;
 
     long getNextTimestamp(String key);
 
