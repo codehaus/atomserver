@@ -22,7 +22,7 @@
 <!--  iBatis SQL Map for EntryStore -->
 <sqlMap>
 
-    <sql id="selectFeedPageNorm">
+    <sql id="selectFeedPageIndexScan">
         SELECT <include refid="paginationPrefix"/>
                entry.EntryStoreId AS EntryStoreId,
                entry.Workspace AS Workspace,
@@ -38,7 +38,7 @@
                entry.ContentHashCode AS contentHashCode
           FROM EntryStore entry
         <isNotNull property="categoryQuerySql">
-        <include refid="INNER_LOOP_JOIN"/> EntryCategory searchCategories
+        INNER JOIN EntryCategory searchCategories
             ON searchCategories.EntryStoreId = entry.EntryStoreId
         <isNotNull property="categoryFilterSql">AND ($categoryFilterSql$)</isNotNull>
         </isNotNull>
@@ -94,7 +94,7 @@
 
     <!-- The following query is to improve performance on SQL Server by reducing columns in
     GROUP BY-HAVING and joining with EntryStore using a SQL server query join hint. -->
-    <sql id="selectFeedPageSqlserver" >
+    <sql id="selectFeedPageIndexSeek" >
         SELECT 
                entry.EntryStoreId AS EntryStoreId,
                entry.Workspace AS Workspace,
@@ -150,20 +150,20 @@
        ON entry.EntryStoreId = matchEntries.EntryStoreId
        ORDER BY entry.Updatetimestamp
      </sql>
-  
+
+    <!--
+      Optimized for SQL Server: If dbType is not sql server, use Index Seek version.
+      if sql server, use Index Seek or Index Scan version based on the parameter setting.
+    -->
     <select id="selectFeedPage" parameterClass="map" resultMap="entryResultSansCategories">
-      <isEqual property="dbType"  compareValue="sqlserver">
-        <isNotNull property="categoryQuerySql">
-          <include refid="selectFeedPageSqlserver"/>
-        </isNotNull>
-        <isNull property="categoryQuerySql">
-          <include refid="selectFeedPageNorm"/>
-        </isNull>
-      </isEqual>
-      <isNotEqual property="dbType" compareValue="sqlserver">
-        <include refid="selectFeedPageNorm"/>
-      </isNotEqual>
+        <isEqual property="usequery" compareValue="indexSeek">
+          <include refid="selectFeedPageIndexSeek"/>
+        </isEqual>
+        <isEqual property="usequery" compareValue="indexScan">
+          <include refid="selectFeedPageIndexScan"/>
+        </isEqual>
     </select>
+
 
     <!-- SELECT the EntryStoreId for an entry by it's 5-tuple key -->
     <select id="selectEntryInternalId" parameterClass="map" resultClass="int">
@@ -336,8 +336,8 @@
       SELECT (CASE WHEN maxTimestamp is NULL THEN 0 ELSE maxTimestamp END) AS maxTimestamp,
              (CASE WHEN minTimestamp is NULL THEN 0 ELSE minTimestamp END) AS minTimestamp
       FROM (
-              SELECT CAST(MAX(entry.UpdateTimestamp) as BIGINT) AS maxTimestamp,
-                     CAST(MIN(entry.UpdateTimestamp) as BIGINT) AS minTimeStamp
+              SELECT CAST(MAX(entry.UpdateTimestamp) AS BIGINT) AS maxTimestamp,
+                     CAST(MIN(entry.UpdateTimestamp) AS BIGINT) AS minTimeStamp
               FROM EntryStore entry
       ) entries
     </select>

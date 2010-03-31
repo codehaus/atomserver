@@ -223,17 +223,12 @@
       if sql server, use Index Seek or Index Scan version based on the parameter setting.
     -->
     <sql id="SELECT_modifiedAggregateEntries" >
-      <isEqual property="dbType"  compareValue="sqlserver">
         <isEqual property="usequery" compareValue="indexSeek">
           <include refid="SELECT_modifiedAggregateEntriesIndexSeek"/>
         </isEqual>
         <isEqual property="usequery" compareValue="indexScan">
           <include refid="SELECT_modifiedAggregateEntriesIndexScan"/>
         </isEqual>
-      </isEqual>
-       <isNotEqual property="dbType" compareValue="sqlserver">
-         <include refid="SELECT_modifiedAggregateEntriesIndexSeek"/>
-       </isNotEqual>
     </sql>
   
     <select id="selectAggregateEntries" parameterClass="map" resultMap="entryResult">
