@@ -60,12 +60,12 @@ public class EntriesDAOiBatisImpl
     private EntryCategoryLogEventDAO entryCategoryLogEventDAO;
     private int latencySeconds = UNDEFINED;
 
-    private static AggregateFeedQueryHelper queryHelper = null;
+    private static FeedQueryHeuristicsHelper heuristicsHelper = null;
 
 
     protected void initDao() throws Exception {
         super.initDao();
-        queryHelper = new AggregateFeedQueryHelper();
+        heuristicsHelper = new FeedQueryHeuristicsHelper();
     }
 
     public void setContentDAO(ContentDAO contentDAO) {
@@ -82,32 +82,37 @@ public class EntriesDAOiBatisImpl
 
     @ManagedAttribute(description="Maximum index")
     public long getMaxIndex() {
-        return queryHelper.maxIndex;
+        return heuristicsHelper.maxIndex;
     }
 
     @ManagedAttribute(description="Minimum index")
     public long getMinIndex() {
-        return queryHelper.minIndex;
+        return heuristicsHelper.minIndex;
+    }
+
+    @ManagedAttribute(description="Switch-over timestamp")
+    public long getSwitchOverTimestamp() {
+        return heuristicsHelper.switchOverTimestamp;
     }
 
     @ManagedAttribute(description="Latency for updating Entry statistics (minutes).")
     public int getEntryStatisticsLatency() {
-        return queryHelper.getEntryStatisticsLatency();
+        return heuristicsHelper.getEntryStatisticsLatency();
     }
 
     @ManagedAttribute(description="Latency for updating Entry statistics(minutes).")
     public void setEntryStatisticsLatency(int entryStatisticsLatency) {
-       queryHelper.setEntryStatisticsLatency(entryStatisticsLatency);
+       heuristicsHelper.setEntryStatisticsLatency(entryStatisticsLatency);
     }
 
     @ManagedAttribute(description="Percentage of index span to switch index scan to seek in aggregate feed query. (0 is always seek)")
     public double getSwitchOverPercent() {
-        return queryHelper.getSwitchOverPercent();
+        return heuristicsHelper.getSwitchOverPercent();
     }
 
     @ManagedAttribute(description="Percentage of index span to switch index scan to seek in aggregate feed query. (0 is always seek)")
     public void setSwitchOverPercent(double switchOverPercent) {
-        queryHelper.setSwitchOverPercent(switchOverPercent);
+        heuristicsHelper.setSwitchOverPercent(switchOverPercent);
     }
 
     @ManagedAttribute
@@ -143,9 +148,9 @@ public class EntriesDAOiBatisImpl
         this.latencySeconds = latencySeconds;
     }
 
-     @ManagedOperation(description = "update entry statistics used for calculating switch over timestamp.")
+     @ManagedOperation(description = "force update of entry statistics used for calculating switch over timestamp.")
      public synchronized void updateEntryStats() {
-        queryHelper.readStats();     
+        heuristicsHelper.readStats();
      }
 
     //======================================
@@ -555,7 +560,7 @@ public class EntriesDAOiBatisImpl
             paramMap.param("joinWorkspaces", joinWorkspaces);
         }
 
-        queryHelper.applyHeuristics(paramMap);
+        paramMap.put("usequery", FeedQueryHeuristicsHelper.SEEK); // Always use seek
         Map<String, AggregateEntryMetaData> map =
                 AggregateEntryMetaData.aggregate(entryDescriptor.getWorkspace(),
                                                  entryDescriptor.getCollection(),
@@ -596,7 +601,7 @@ public class EntriesDAOiBatisImpl
                 paramMap.param("latencySeconds", latencySeconds);
             }
 
-            queryHelper.applyHeuristics(paramMap);
+            heuristicsHelper.applyHeuristics(paramMap, FeedQueryHeuristicsHelper.SEEK);
             List entries = getSqlMapClientTemplate().queryForList("selectAggregateEntries", paramMap);
 
             Map<String, AggregateEntryMetaData> map =
@@ -634,6 +639,7 @@ public class EntriesDAOiBatisImpl
                 paramMap.param("latencySeconds", latencySeconds);
             }
 
+            heuristicsHelper.applyHeuristics(paramMap, FeedQueryHeuristicsHelper.SCAN);
             return getSqlMapClientTemplate().queryForList("selectFeedPage", paramMap);
         }
         finally {
@@ -925,21 +931,24 @@ public class EntriesDAOiBatisImpl
         public void setMinTimestamp(Long minTimestamp) {
             this.minTimestamp = minTimestamp;
         }
-
     }
 
 
     /*
-     * Helper class apply EntryStats to decide if index seek or index scan should be used.
+     * Helper class apply entry statistics to decide if index seek or index scan should be used.
      * Generally, seek is better than scan, but when the feed query start index is too
      * far away from the tip, SQL server needs to bring in a lot of matching rows and in
      * this case, scan helps.
      */
-    class AggregateFeedQueryHelper {
+    class FeedQueryHeuristicsHelper {
 
         // configuration settings
         static final int DEAULT_STATS_LATENCY = 15; // minutes
-        static final double DEFAULT_SWITCHOVERPERCENT = 25.0; // % of overall timestamp span to switch to index seek.
+        static final double DEFAULT_SWITCHOVERPERCENT = 50.0; // % of overall timestamp span to switch to index seek.
+        // query mode
+        static final String SEEK = "indexSeek";
+        static final String SCAN = "indexScan";
+
 
         private int entryStatisticsLatency = DEAULT_STATS_LATENCY; // minutes
         private double switchOverPercent = DEFAULT_SWITCHOVERPERCENT; // percentage to switch over to indexSeek
@@ -952,7 +961,8 @@ public class EntriesDAOiBatisImpl
         long switchOverTimestamp = 0;
         private long nextSyncTime = 0;
 
-        AggregateFeedQueryHelper() {
+
+        FeedQueryHeuristicsHelper() {
             readStats();
         }
 
@@ -960,11 +970,15 @@ public class EntriesDAOiBatisImpl
             return switchOverPercent;
         }
 
-        public int getEntryStatisticsLatency() {
+        long getSwitchOverTimestamp() {
+             return switchOverTimestamp;
+         }
+
+        int getEntryStatisticsLatency() {
             return entryStatisticsLatency;
         }
 
-        public void setEntryStatisticsLatency(int entryStatisticsLatency) {
+        void setEntryStatisticsLatency(int entryStatisticsLatency) {
             if(entryStatisticsLatency <= 0) {
                 this.entryStatisticsLatency = DEAULT_STATS_LATENCY; // default
             }
@@ -997,8 +1011,8 @@ public class EntriesDAOiBatisImpl
                         minIndex = entryStats.getMinTimestamp();
                     }
                     computeSwitchOverTimestamp();
-                    nextSyncTime = currentTime + entryStatisticsLatency * 60 * 1000;
                 }
+                nextSyncTime = currentTime + entryStatisticsLatency * 60 * 1000;
             }
         }
 
@@ -1016,25 +1030,27 @@ public class EntriesDAOiBatisImpl
         // Apply heuristics for adjusting the aggregate feed query for MS SQL Server.
         // Currently, it looks at the timestamp only. It can be extended to look at
         // other parameter vaues such as updateDate as well.
-        void applyHeuristics(HashMap<String, Object> paramMap) {
+        void applyHeuristics(HashMap<String, Object> paramMap, String defaultMode) {
 
-            paramMap.put("usequery", "indexSeek"); // default to seek
+            paramMap.put("usequery", defaultMode); // default to seek
             Long startIndex = (Long) paramMap.get("startIndex");
 
             // no need to handle it if there is no start index or not sql server
             if (startIndex != null && "sqlserver".equals(getDatabaseType())) {
 
-                // update stats if needed
-                readStats();
                 if (startIndex < minIndex) {
                     startIndex = minIndex;
                     paramMap.put("startIndex", startIndex);
                 }
 
                 String entryId = (String) paramMap.get("entryId");    // use seek when EntryId is not null
-                if (entryId == null && (startIndex < switchOverTimestamp)) {
-                    paramMap.put("usequery", "indexScan");
+                if(entryId == null) {
+                    readStats();
+                    paramMap.put("usequery", (startIndex < switchOverTimestamp) ? SCAN: SEEK);
                 }
+            }
+            if(log.isDebugEnabled()) {
+                log.debug(" usequery = " + paramMap.get("usequery"));
             }
         }
 
