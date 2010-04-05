@@ -78,6 +78,9 @@ public class FileBasedContentStorage implements ContentStorage {
 
     private int sweepToTrashLagTimeSecs = SWEEP_TO_TRASH_LAG_TIME_SECS_DEFAULT;
 
+    static private final String TRASH_LOG_NAME = "org.atomserver.trash";
+    static private Log trashLog = LogFactory.getLog(TRASH_LOG_NAME);
+
     //=========================
     // The following methods are for testing purposes ONLY
     private boolean successfulAvailabiltyFileWrite = false;
@@ -98,7 +101,14 @@ public class FileBasedContentStorage implements ContentStorage {
         return successfulAvailabiltyFileWrite;
     }
 
-    //====================================
+    public static Log getTrashLog() {
+        return trashLog;
+    }//====================================
+
+    public static void setTrashLog(Log trashLog) {
+        FileBasedContentStorage.trashLog = trashLog;
+    }
+
     /**
      * This method is used by the isAliveHandler to determine if the ContentStorage is alive and well
      */
@@ -623,12 +633,19 @@ public class FileBasedContentStorage implements ContentStorage {
                     // so we make sure that exists
                     trashDir.mkdirs();
 
+                    File root = getRootDir();
+                    int rootDirLen = (root != null) ? root.getCanonicalPath().length() : 0;
                     // and move the files into it
                     for (File file : toDelete) {
                         File moveTo = new File(trashDir, file.getName());
                         if (!file.renameTo(moveTo)) {
                             throw new IOException("When cleaning up excess revisions, could not move the file ("
                                                   + file + ") to (" + moveTo + ")");
+                        }
+                        // log the deleted files so that external scripts can locate them
+                        if(trashLog != null) {
+                            String relativePath = moveTo.getCanonicalPath().substring(rootDirLen + 1) ; // get relateivePath
+                            trashLog.info(System.currentTimeMillis()/1000 + " " + relativePath); // seconds timestamp 
                         }
                     }
                     cleanUpToCollection(descriptor, directoryToClean);
