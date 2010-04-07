@@ -4,6 +4,7 @@ import org.apache.abdera.model.Service;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.atomserver.AtomServerConstants;
 import org.jredis.ClientRuntimeException;
+import org.jredis.JRedis;
 import org.jredis.ProviderException;
 import org.jredis.RedisException;
 import org.jredis.connector.ConnectionSpec;
@@ -12,6 +13,7 @@ import org.jredis.protocol.MultiBulkResponse;
 import org.jredis.ri.alphazero.JRedisClient;
 import org.jredis.ri.alphazero.support.Convert;
 import org.jredis.ri.alphazero.support.DefaultCodec;
+import org.jredis.ri.alphazero.support.Opts;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -22,45 +24,9 @@ import java.util.concurrent.atomic.AtomicLong;
 
 //@Component
 public class RedisSubstrate implements Substrate {
+    private static final long INTERNAL_PAGE_SIZE = 5L;
 
-    static class ExtJRedisClient extends JRedisClient {
-        ExtJRedisClient(String host, int port, int db) throws ClientRuntimeException {
-            super(host, port, null, db);
-        }
-
-        public List<byte[]> zrangebyscore(String key,
-                                          double minScore,
-                                          double maxScore,
-                                          long offset,
-                                          long count) throws RedisException {
-            byte[] keybytes = null;
-            byte[] bytes = new byte[0];
-            try {
-                bytes = key.getBytes(DefaultCodec.SUPPORTED_CHARSET_NAME);
-            } catch (UnsupportedEncodingException e) {
-                throw new IllegalStateException(e); // TODO: handle
-            }
-            if ((keybytes = bytes) == null)
-                throw new IllegalArgumentException("invalid key => [" + key + "]");
-
-            byte[] fromBytes = Convert.toBytes(minScore);
-            byte[] toBytes = Convert.toBytes(maxScore);
-
-            List<byte[]> multiBulkData = null;
-            try {
-                MultiBulkResponse MultiBulkResponse = (MultiBulkResponse) this.serviceRequest(
-                        Command.ZRANGEBYSCORE, keybytes, fromBytes, toBytes,
-                        (" LIMIT " + offset + count).getBytes());
-                multiBulkData = MultiBulkResponse.getMultiBulkData();
-            }
-            catch (ClassCastException e) {
-                throw new ProviderException("Expecting a MultiBulkResponse here => " + e.getLocalizedMessage(), e);
-            }
-            return multiBulkData;
-        }
-    }
-
-    ExtJRedisClient redis;
+    JRedis redis;
 
     private final Map<String, ServiceMetadata> serviceMetadata =
             new HashMap<String, ServiceMetadata>();
@@ -89,7 +55,7 @@ public class RedisSubstrate implements Substrate {
 
     @PostConstruct
     public void init() {
-        this.redis = new ExtJRedisClient(host, port, db);
+        this.redis = new JRedisClient(host, port, null /* TODO: password */, db);
     }
 
     public Collection<ServiceMetadata> getAllServices() {
@@ -225,8 +191,12 @@ public class RedisSubstrate implements Substrate {
                                 private void lookahead() {
                                     if ((page == null || !page.hasNext()) && !lastPage) {
                                         try {
-                                            List<byte[]> response = redis.zrangebyscore("IDX::" + key, from.doubleValue(), 1000L /*TODO:MAX*/, 0L, 101L);
-                                            lastPage = response.size() < 101;
+                                            List<byte[]> response = redis.zrangebyscore(
+                                                    "IDX::" + key,
+                                                    current == null ? from.doubleValue() : current + 1,
+                                                    1000L /*TODO:MAX*/,
+                                                    Opts.LIMIT(0L, INTERNAL_PAGE_SIZE));
+                                            lastPage = response.size() < INTERNAL_PAGE_SIZE;
                                             page = response.iterator(); // TODO: max index
                                         } catch (RedisException e) {
                                             throw new IllegalStateException(e);
