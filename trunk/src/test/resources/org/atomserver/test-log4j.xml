@@ -121,6 +121,16 @@
   </appender>
   <!-- end of Perf4j appenders -->
 
+  <appender name="Trashlog" class="org.apache.log4j.RollingFileAppender" >
+     <param name="File" value="${atomserver.logdir}/${atomserver.logfilename}.trash.log" />
+     <param name="Append" value="true" />
+     <param name="MaxFileSize"  value="20MB" />
+     <param name="MaxBackupIndex" value="50" />
+     <layout class="org.apache.log4j.PatternLayout">
+         <param name="ConversionPattern" value="%m%n" />
+     </layout>
+  </appender>
+
   <!-- Loggers -->
   <logger name="org.springframework">
       <level value="WARN"/>
@@ -149,6 +159,11 @@
    <logger name="org.atomserver.http500errors" additivity="false">
       <level value="INFO"/>
       <appender-ref ref="Http500log"/>
+  </logger>
+
+   <logger name="org.atomserver.trash" additivity="false">
+      <level value="INFO"/>
+      <appender-ref ref="Trashlog"/>
   </logger>
 
   <!-- perf4J Loggers  -->
