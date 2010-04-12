@@ -12,6 +12,7 @@
             <li>Enabled rollup statistics on the perf4j collaescingstatistics appender</li>
             <li>Added heuristics to adjust MS SQL Server queries for getting feed pages and aggregate feeds based on the position of the index. When
 the index is near the tip, the query with index seek is used and when it is far,  the query with index scan is used. </li>
+	    <li>Added a logger which tracks the files that were moved to the trash directories for removal and a shell script to clean up those files </li>
         </ul>
         </section>
 
