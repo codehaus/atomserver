@@ -4,23 +4,23 @@
     <as:name>atomserver-test</as:name>
     <workspace>
         <as:name>widgets</as:name>
-        <atom:title>Widgets</atom:title>
+        <atom:title>widgets</atom:title>
         <collection>
             <as:name>acme</as:name>
-            <atom:title>ACME Widgets</atom:title>
+            <atom:title>acme</atom:title>
         </collection>
         <collection>
             <as:name>bigcorp</as:name>
-            <atom:title>BigCorp Widgets</atom:title>
+            <atom:title>bigcorp</atom:title>
         </collection>
         <as:filter class="org.atomserver.test.TestingContentFilter"/>
     </workspace>
     <workspace>
         <as:name>whizbangs</as:name>
-        <atom:title>Whizbangs</atom:title>
+        <atom:title>whizbangs</atom:title>
         <collection>
             <as:name>all</as:name>
-            <atom:title>all Whizbangs</atom:title>
+            <atom:title>all</atom:title>
         </collection>
     </workspace>
 </service>

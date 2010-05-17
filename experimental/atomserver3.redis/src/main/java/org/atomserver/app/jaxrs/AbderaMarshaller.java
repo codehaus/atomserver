@@ -1,18 +1,15 @@
 package org.atomserver.app.jaxrs;
 
+import org.apache.abdera.Abdera;
 import org.apache.abdera.model.ExtensibleElement;
-import org.apache.abdera.parser.Parser;
-import org.apache.abdera.parser.stax.FOMFactory;
-import org.apache.abdera.parser.stax.FOMParser;
 import org.apache.commons.io.IOUtils;
-import static org.atomserver.AtomServerConstants.APPLICATION_APP_XML;
 import org.atomserver.app.BadRequestException;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
-import static javax.ws.rs.core.MediaType.*;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
@@ -24,22 +21,28 @@ import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
+import static javax.ws.rs.core.MediaType.*;
+import static org.atomserver.AtomServerConstants.APPLICATION_APP_XML;
+
 @Provider
+@Component
 @Produces({APPLICATION_ATOM_XML, APPLICATION_APP_XML, APPLICATION_XML, TEXT_XML})
 @Consumes({APPLICATION_ATOM_XML, APPLICATION_APP_XML, APPLICATION_XML, TEXT_XML})
-public class AbderaMarshaller implements MessageBodyWriter, MessageBodyReader {
+public class AbderaMarshaller
+        implements MessageBodyWriter<ExtensibleElement>, MessageBodyReader<ExtensibleElement> {
+    public static final Abdera ABDERA = new Abdera();
 
-    public void writeTo(Object o, Class aClass, Type type, Annotation[] annotations,
-                        MediaType mediaType, MultivaluedMap multivaluedMap,
-                        OutputStream outputStream)
+    public void writeTo(ExtensibleElement element, Class clazz, Type type,
+                        Annotation[] annotations, MediaType mediaType,
+                        MultivaluedMap multivaluedMap, OutputStream outputStream)
             throws IOException, WebApplicationException {
 
-        ((ExtensibleElement) o).writeTo(outputStream);
+        element.writeTo(outputStream);
     }
 
-    public Object readFrom(Class aClass, Type type, Annotation[] annotations,
-                           MediaType mediaType, MultivaluedMap multivaluedMap,
-                           InputStream inputStream)
+    public ExtensibleElement readFrom(Class clazz, Type type, Annotation[] annotations,
+                                      MediaType mediaType, MultivaluedMap multivaluedMap,
+                                      InputStream inputStream)
             throws IOException, WebApplicationException {
         // parse doesn't completely drain the InputStream before returning, so for large enough
         // documents, we were getting a "stream is closed" exception while traversing the object.
@@ -49,44 +52,26 @@ public class AbderaMarshaller implements MessageBodyWriter, MessageBodyReader {
         if (bytes.length == 0) {
             throw new BadRequestException("Empty request body is not valid for this request.");
         }
-        return parser().parse(new ByteArrayInputStream(bytes)).getRoot();
+        return ABDERA.getParser().<ExtensibleElement>parse(
+                new ByteArrayInputStream(bytes)).getRoot();
     }
 
-    public boolean isWriteable(Class aClass, Type type, Annotation[] annotations, MediaType mediaType) {
-        return isAbderaExtensibleElement(aClass);
+    public boolean isWriteable(Class clazz, Type type,
+                               Annotation[] annotations, MediaType mediaType) {
+        return isAbderaExtensibleElement(clazz);
     }
 
-    public long getSize(Object o, Class aClass, Type type, Annotation[] annotations, MediaType mediaType) {
+    public long getSize(ExtensibleElement element, Class clazz, Type type,
+                        Annotation[] annotations, MediaType mediaType) {
         return -1;
     }
 
-    public boolean isReadable(Class aClass, Type type, Annotation[] annotations, MediaType mediaType) {
-        return isAbderaExtensibleElement(aClass);
+    public boolean isReadable(Class clazz, Type type,
+                              Annotation[] annotations, MediaType mediaType) {
+        return isAbderaExtensibleElement(clazz);
     }
 
     private boolean isAbderaExtensibleElement(Class clazz) {
         return ExtensibleElement.class.isAssignableFrom((Class<?>) clazz);
     }
-
-    private static final transient ThreadLocal<Parser> PARSER = new ThreadLocal<Parser>() {
-        protected Parser initialValue() {
-            return new FOMParser();
-        }
-    };
-
-    public static Parser parser() {
-        return PARSER.get();
-    }
-
-    private static final transient ThreadLocal<FOMFactory> FACTORY =
-            new ThreadLocal<FOMFactory>() {
-                protected FOMFactory initialValue() {
-                    return new FOMFactory();
-                }
-            };
-
-    public static FOMFactory factory() {
-        return FACTORY.get();
-    }
-
 }

@@ -10,6 +10,7 @@ public class EntryTuple implements Serializable {
     public final long created;
     public final long updated;
     public final byte[] digest;
+    public final boolean deleted;
     public final Set<CategoryTuple> categories;
 
     public EntryTuple(String entryId,
@@ -18,19 +19,38 @@ public class EntryTuple implements Serializable {
                       long updated,
                       byte[] digest,
                       Set<CategoryTuple> categories) {
+        this(entryId, timestamp, created, updated, digest, categories, false);
+    }
+
+    private EntryTuple(String entryId,
+                      long timestamp,
+                      long created,
+                      long updated,
+                      byte[] digest,
+                      Set<CategoryTuple> categories,
+                      boolean deleted) {
         this.entryId = entryId;
         this.timestamp = timestamp;
         this.created = created;
         this.updated = updated;
         this.digest = digest;
         this.categories = categories;
+        this.deleted = deleted;
     }
 
     public EntryTuple update(long timestamp,
                              long updated,
                              byte[] digest,
                              Set<CategoryTuple> categories) {
-        return new EntryTuple(entryId, timestamp, created, updated, digest, categories);
+        return update(timestamp, updated, digest, categories, false);
+    }
+    
+    public EntryTuple update(long timestamp,
+                             long updated,
+                             byte[] digest,
+                             Set<CategoryTuple> categories,
+                             boolean deleted) {
+        return new EntryTuple(entryId, timestamp, created, updated, digest, categories, deleted);
     }
 
     public boolean equals(Object o) {

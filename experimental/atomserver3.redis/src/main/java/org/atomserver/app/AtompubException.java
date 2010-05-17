@@ -1,14 +1,18 @@
 package org.atomserver.app;
 
+import javax.ws.rs.core.Response;
+
+
 public class AtompubException extends RuntimeException {
-    public enum Type {
-        BAD_REQUEST, DUPLICATE, NOT_FOUND, OPTIMISTIC_CONCURRENCY
+    public final Response.Status status;
+
+    protected AtompubException(Response.Status status, String message) {
+        super(message);
+        this.status = status;
     }
 
-    public final Type type;
-
-    protected AtompubException(Type type, String message) {
-        super(message);
-        this.type = type;
+    protected AtompubException(Response.Status status, String message, Throwable cause) {
+        super(message, cause);
+        this.status = status;
     }
 }

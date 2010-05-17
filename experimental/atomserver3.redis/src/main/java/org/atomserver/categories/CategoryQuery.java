@@ -9,6 +9,10 @@ public class CategoryQuery {
 
     public final Type type;
 
+    public static CategoryQuery valueOf(String queryString) throws CategoryQueryParseException {
+        return queryString == null ? null : CategoryQueryParser.parse(queryString);
+    }
+
     private CategoryQuery(Type type) {
         this.type = type;
     }

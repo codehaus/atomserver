@@ -1,36 +1,23 @@
 package org.atomserver.core;
 
-import org.apache.abdera.model.Service;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.atomserver.AtomServerConstants;
-import org.jredis.ClientRuntimeException;
 import org.jredis.JRedis;
-import org.jredis.ProviderException;
 import org.jredis.RedisException;
-import org.jredis.connector.ConnectionSpec;
-import org.jredis.protocol.Command;
-import org.jredis.protocol.MultiBulkResponse;
 import org.jredis.ri.alphazero.JRedisClient;
 import org.jredis.ri.alphazero.support.Convert;
-import org.jredis.ri.alphazero.support.DefaultCodec;
 import org.jredis.ri.alphazero.support.Opts;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ObjectInputStream;
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicLong;
 
 //@Component
 public class RedisSubstrate implements Substrate {
-    private static final long INTERNAL_PAGE_SIZE = 5L;
+    private static final long INTERNAL_PAGE_SIZE = 5L; // TODO: should be bigger than 5, probably 2x default page size
 
-    JRedis redis;
+    private JRedis redis;
 
-    private final Map<String, ServiceMetadata> serviceMetadata =
-            new HashMap<String, ServiceMetadata>();
-    private final Map<String, AtomicLong> timestampMap = new HashMap<String, AtomicLong>();
     private final Map<String, Index> indices = new HashMap<String, Index>();
     private final Map<String, KeyValueStore<Long, EntryTuple>> entryByTimestampStores =
             new HashMap<String, KeyValueStore<Long, EntryTuple>>();
@@ -56,55 +43,6 @@ public class RedisSubstrate implements Substrate {
     @PostConstruct
     public void init() {
         this.redis = new JRedisClient(host, port, null /* TODO: password */, db);
-    }
-
-    public Collection<ServiceMetadata> getAllServices() {
-        return serviceMetadata.values();
-    }
-
-    private static class SimpleServiceMetadata implements ServiceMetadata {
-        final String name;
-        final Service service;
-        final byte[] digest;
-
-        private SimpleServiceMetadata(Service service) {
-            this.name = service.getSimpleExtension(AtomServerConstants.NAME);
-            this.service = service;
-            ByteArrayOutputStream os = new ByteArrayOutputStream();
-            try {
-                service.writeTo(os);
-                os.close();
-                this.digest = DigestUtils.md5(os.toByteArray());
-            } catch (IOException e) {
-                throw new IllegalStateException(e); // TODO: is this good?
-            }
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public Service getService() {
-            return service;
-        }
-
-        public byte[] getDigest() {
-            return digest;
-        }
-    }
-
-    public ServiceMetadata getService(String name, byte[] digest) {
-        ServiceMetadata service = this.serviceMetadata.get(name);
-        return service == null ? null :
-                digest == null ? service :
-                        Arrays.equals(digest, service.getDigest()) ? null : service;
-        // TODO: how to handle removed service?
-    }
-
-    public ServiceMetadata putService(Service service) {
-        SimpleServiceMetadata metadata = new SimpleServiceMetadata(service);
-        this.serviceMetadata.put(metadata.getName(), metadata);
-        return metadata;
     }
 
     public <T> T sync(String lockName, Callable<T> callable) throws Exception {
@@ -145,10 +83,18 @@ public class RedisSubstrate implements Substrate {
         return returnValue;
     }
 
+    private String timestampKey(String key) {
+        return String.format("TS::%s", key);
+    }
+
+    private String indexKey(String key) {
+        return String.format("IX::%s", key);
+    }
+
     public synchronized long getNextTimestamp(String key) {
         try {
-            redis.setnx("INCR:" + key, 0L); // TODO: can we avoid making this call each time?
-            return redis.incr("INCR:" + key);
+            redis.setnx(timestampKey(key), 0L); // TODO: can we avoid making this call each time?
+            return redis.incr(timestampKey(key));
         } catch (RedisException e) {
             throw new IllegalStateException(e); // TODO: handle
         }
@@ -161,7 +107,7 @@ public class RedisSubstrate implements Substrate {
 
                 public void add(Long value) {
                     try {
-                        boolean b = redis.zadd("IDX::" + key, value.doubleValue(), value);
+                        boolean b = redis.zadd(indexKey(key), value.doubleValue(), value);
                     } catch (RedisException e) {
                         throw new IllegalStateException(e); // TODO: handle
                     }
@@ -169,7 +115,7 @@ public class RedisSubstrate implements Substrate {
 
                 public void remove(Long value) {
                     try {
-                        redis.zrem("IDX::" + key, value);
+                        redis.zrem(indexKey(key), value);
                     } catch (RedisException e) {
                         throw new IllegalStateException(e); // TODO: handle
                     }
@@ -192,7 +138,7 @@ public class RedisSubstrate implements Substrate {
                                     if ((page == null || !page.hasNext()) && !lastPage) {
                                         try {
                                             List<byte[]> response = redis.zrangebyscore(
-                                                    "IDX::" + key,
+                                                    indexKey(key),
                                                     current == null ? from.doubleValue() : current + 1,
                                                     1000L /*TODO:MAX*/,
                                                     Opts.LIMIT(0L, INTERNAL_PAGE_SIZE));
@@ -202,8 +148,7 @@ public class RedisSubstrate implements Substrate {
                                             throw new IllegalStateException(e);
                                         }
                                     }
-                                    current = !page.hasNext() ? null :
-                                            Convert.toLong(page.next());
+                                    current = !page.hasNext() ? null : Convert.toLong(page.next());
                                 }
 
                                 public boolean hasNext() {
@@ -234,40 +179,7 @@ public class RedisSubstrate implements Substrate {
     public KeyValueStore<Long, EntryTuple> getEntriesByTimestamp(final String key) {
         KeyValueStore<Long, EntryTuple> store = entryByTimestampStores.get(key);
         if (store == null) {
-            entryByTimestampStores.put(key, store = new KeyValueStore<Long, EntryTuple>() {
-                String ns = key;
-                @Override
-                public EntryTuple put(Long key, EntryTuple value) {
-                    try {
-                        String key1 = ns + ":TS:" + key;
-                        redis.set(key1, value);
-                    } catch (RedisException e) {
-                        throw new IllegalStateException(e); // TODO: handle
-                    }
-                    return get(key);
-                }
-
-                public EntryTuple get(Long key) {
-                    try {
-                        byte[] bytes = redis.get(ns + ":TS:" + key);
-                        if (bytes == null) return null;
-                        ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes));
-                        return (EntryTuple) ois.readObject();
-                    } catch (Exception e) {
-                        throw new IllegalStateException(e); // TODO: handle
-                    }
-                }
-
-                public EntryTuple remove(Long key) {
-                    EntryTuple value = get(key);
-                    try {
-                        redis.del(ns + ":TS:" + key);
-                    } catch (RedisException e) {
-                        throw new IllegalStateException(e); // TODO: handle
-                    }
-                    return value;
-                }
-            });
+            entryByTimestampStores.put(key, store = new RedisTupleStore<Long>("TS", key));
         }
         return store;
     }
@@ -275,39 +187,52 @@ public class RedisSubstrate implements Substrate {
     public KeyValueStore<String, EntryTuple> getEntriesById(final String key) {
         KeyValueStore<String, EntryTuple> store = entryByIdStores.get(key);
         if (store == null) {
-            entryByIdStores.put(key, store = new KeyValueStore<String, EntryTuple>() {
-                String ns = key;
-                public EntryTuple put(String key, EntryTuple value) {
-                    try {
-                        redis.set(ns + ":KEY:" + key, value);
-                    } catch (RedisException e) {
-                        throw new IllegalStateException(e); // TODO: handle
-                    }
-                    return get(key);
-                }
-
-                public EntryTuple get(String key) {
-                    try {
-                        byte[] bytes = redis.get(ns + ":KEY:" + key);
-                        if (bytes == null) return null;
-                        ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes));
-                        return (EntryTuple) ois.readObject();
-                    } catch (Exception e) {
-                        throw new IllegalStateException(e); // TODO: handle
-                    }
-                }
-
-                public EntryTuple remove(String key) {
-                    EntryTuple value = get(key);
-                    try {
-                        redis.del(ns + ":KEY:" + key);
-                    } catch (RedisException e) {
-                        throw new IllegalStateException(e); // TODO: handle
-                    }
-                    return value;
-                }
-            });
+            entryByIdStores.put(key, store = new RedisTupleStore<String>("ID", key));
         }
         return store;
+    }
+
+    private class RedisTupleStore<T> implements KeyValueStore<T, EntryTuple> {
+        final String type;
+        final String ns;
+
+        public RedisTupleStore(String type, String ns) {
+            this.type = type;
+            this.ns = ns;
+        }
+
+        public EntryTuple put(T key, EntryTuple value) {
+            try {
+                redis.set(mapKey(key), value);
+            } catch (RedisException e) {
+                throw new IllegalStateException(e); // TODO: handle
+            }
+            return get(key);
+        }
+
+        public EntryTuple get(T key) {
+            try {
+                byte[] bytes = redis.get(mapKey(key));
+                if (bytes == null) return null;
+                ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes));
+                return (EntryTuple) ois.readObject();
+            } catch (Exception e) {
+                throw new IllegalStateException(e); // TODO: handle
+            }
+        }
+
+        public EntryTuple remove(T key) {
+            EntryTuple value = get(key);
+            try {
+                redis.del(mapKey(key));
+            } catch (RedisException e) {
+                throw new IllegalStateException(e); // TODO: handle
+            }
+            return value;
+        }
+
+        private String mapKey(T key) {
+            return String.format("%s::%s::%s", ns, type, key);
+        }
     }
 }

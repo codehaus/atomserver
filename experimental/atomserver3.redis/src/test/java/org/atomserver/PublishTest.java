@@ -21,9 +21,12 @@ public class PublishTest extends BaseAtomServerTestCase {
     @Before
     public void setupTestService() throws Exception {
         // before each test, set up the test service
-        root().type(MediaType.APPLICATION_XML)
+        root().path("atomserver-test").type(MediaType.APPLICATION_XML)
                 .entity(parse("org/atomserver/atomserver-test-service.xml"))
-                .post(ClientResponse.class);
+                .put(ClientResponse.class);
+//        root().type(MediaType.APPLICATION_XML)
+//                .entity(parse("org/atomserver/atomserver-test-service.xml"))
+//                .post(ClientResponse.class);
     }
 
 

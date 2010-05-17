@@ -7,18 +7,6 @@ import java.util.concurrent.Callable;
 
 public interface Substrate {
 
-    interface ServiceMetadata {
-        Service getService();
-        byte[] getDigest();
-        String getName();
-    }
-
-    Collection<ServiceMetadata> getAllServices();
-
-    ServiceMetadata getService(String name, byte[] digest);
-
-    ServiceMetadata putService(Service service);
-
     public <T> T sync(String lockName, Callable<T> callable) throws Exception;
 
     long getNextTimestamp(String key);

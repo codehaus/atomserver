@@ -1,6 +1,9 @@
 package org.atomserver;
 
 import javax.xml.namespace.QName;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import static java.lang.String.format;
 
 public interface AtomServerConstants {
@@ -13,13 +16,9 @@ public interface AtomServerConstants {
 
     public static final QName END_INDEX = new QName(NAMESPACE, "endIndex", PREFIX);
     public static final QName ENTRY_ID = new QName(NAMESPACE, "entryId", PREFIX);
-    public static final QName SERVER = new QName(NAMESPACE, "server", PREFIX);
-    public static final QName SERVICE = new QName(NAMESPACE, "service", PREFIX);
-    public static final QName WORKSPACE = new QName(NAMESPACE, "workspace", PREFIX);
-    public static final QName COLLECTION = new QName(NAMESPACE, "collection", PREFIX);
-    public static final QName LOCALE = new QName(NAMESPACE, "locale", PREFIX);
 
     public static final QName NAME = new QName(NAMESPACE, "name", PREFIX);
+    public static final QName UPDATED = new QName(NAMESPACE, "updated", PREFIX);
     public static final QName CATEGORY_QUERY = new QName(NAMESPACE, "category-query", PREFIX);
     public static final QName FILTER = new QName(NAMESPACE, "filter", PREFIX);
     public static final QName STATUS = new QName(NAMESPACE, "status", PREFIX);
@@ -29,8 +28,8 @@ public interface AtomServerConstants {
     public interface Batch {
 
         public static final String NAMESPACE = format("%s/%s",
-                                                      AtomServerConstants.NAMESPACE,
-                                                      "batch");
+                AtomServerConstants.NAMESPACE,
+                "batch");
 
         public static final String PREFIX = "asbatch";
 
@@ -42,8 +41,8 @@ public interface AtomServerConstants {
     public interface XPath {
 
         public static final String NAMESPACE = format("%s/%s",
-                                                      AtomServerConstants.NAMESPACE,
-                                                      "xpath");
+                AtomServerConstants.NAMESPACE,
+                "xpath");
 
         public static final String PREFIX = "asxpath";
 
@@ -58,4 +57,19 @@ public interface AtomServerConstants {
     public static final String APPLICATION_APP_XML = "application/atomsvc+xml";
 
     public static final String OPTIMISTIC_CONCURRENCY_OVERRIDE = "*";
+
+    public static final String HOSTNAME = Util.computeHostname();
+
+    static class Util {
+        static String computeHostname() {
+            String hostname;
+            try {
+                hostname = InetAddress.getLocalHost().getCanonicalHostName();
+            } catch (UnknownHostException e) {
+                hostname = "localhost";
+            }
+            return System.getProperty("org.atomserver.HOSTNAME", hostname);
+        }
+    }
+
 }

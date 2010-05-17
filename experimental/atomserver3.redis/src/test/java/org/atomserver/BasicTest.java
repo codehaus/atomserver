@@ -38,8 +38,10 @@ public class BasicTest extends BaseAtomServerTestCase {
         log.debug("BasicTest.setUpTestService");
         InputStream stream = BasicTest.class.getClassLoader().getResourceAsStream(
                 "org/atomserver/BasicTest.xml");
-        Service service = root().type(MediaType.APPLICATION_XML)
-                .entity(IOUtils.toString(stream)).post(Service.class);
+        Service service = root().path("test").type(MediaType.APPLICATION_XML)
+                .entity(IOUtils.toString(stream)).put(Service.class);
+//        Service service = root().type(MediaType.APPLICATION_XML)
+//                .entity(IOUtils.toString(stream)).post(Service.class);
         SERVICE = service.getSimpleExtension(AtomServerConstants.NAME);
         Workspace workspace = service.getWorkspaces().get(0);
         WORKSPACE = workspace.getSimpleExtension(AtomServerConstants.NAME);
