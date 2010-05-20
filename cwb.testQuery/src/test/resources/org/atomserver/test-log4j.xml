@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration debug="false" xmlns:log4j="http://jakarta.apache.org/log4j/">
+  <!-- Appenders -->
+  <appender name="Stdout" class="org.apache.log4j.ConsoleAppender">
+    <layout class="org.apache.log4j.PatternLayout">
+      <param name="ConversionPattern" value="[%d{MM/dd/yy HH:mm:ss:S}](%t) %-5p - %-26.26c{1} - %m%n"  />
+    </layout>
+  </appender>
+
+  <appender name="StdoutFile" class="org.apache.log4j.RollingFileAppender" >
+     <param name="File" value="${atomserver.logdir}/${atomserver.logfilename}.stdout.log" />
+     <param name="Append" value="true" />
+     <param name="MaxFileSize"  value="20MB" />
+     <param name="MaxBackupIndex" value="10" />
+     <layout class="org.apache.log4j.PatternLayout">
+         <param name="ConversionPattern" value="[%d{MM/dd/yy HH:mm:ss:S}](%t) %-5p - %-26.26c{1} - %m%n" />
+     </layout>
+  </appender>
+
+  <appender name="Http500log" class="org.apache.log4j.RollingFileAppender" >
+     <param name="File" value="${atomserver.logdir}/${atomserver.logfilename}.500errors.log" />
+     <param name="Append" value="true" />
+     <param name="MaxFileSize"  value="20MB" />
+     <param name="MaxBackupIndex" value="10" />
+     <layout class="org.apache.log4j.PatternLayout">
+         <param name="ConversionPattern" value="[%d{MM/dd/yy HH:mm:ss:S}](%t) %-5p - %-26.26c{1} - %m%n" />
+     </layout>
+  </appender>
+
+  <!-- perf4j appenders -->
+  <appender name="Perf4JLog" class="org.apache.log4j.RollingFileAppender" >
+     <param name="File" value="${atomserver.logdir}/${atomserver.logfilename}.perf4j.log" />
+     <param name="Append" value="true" />
+     <param name="MaxFileSize"  value="20MB" />
+     <param name="MaxBackupIndex" value="10" />
+     <layout class="org.apache.log4j.PatternLayout">
+         <param name="ConversionPattern" value="%m%n" />
+     </layout>
+  </appender>
+
+  <!--
+       This AsyncCoalescingStatisticsAppender groups StopWatch log messages
+       into GroupedTimingStatistics messages which it sends on the
+       file appender defined below
+  -->
+  <appender name="CoalescingStatistics" class="org.perf4j.log4j.AsyncCoalescingStatisticsAppender">
+      <!--
+        The TimeSlice option is used to determine the time window for which
+        all received StopWatch logs are aggregated to create a single
+        GroupedTimingStatistics log.
+      -->
+      <param name="TimeSlice" value="30000"/>
+      <!--
+        Note how the GraphingStatisticsAppenders have been attached to the
+        CoalescingStatistics here.
+      -->
+      <appender-ref ref="graphExecutionTimes"/>
+      <appender-ref ref="graphExecutionTPS"/>
+      <!-- JMX Appender -->
+      <appender-ref ref="perf4jJmxAppender"/> 
+  </appender>
+
+  <!--
+    This first GraphingStatisticsAppender graphs Mean execution times
+  -->
+  <appender name="graphExecutionTimes" class="org.perf4j.log4j.GraphingStatisticsAppender">
+      <!-- Possible GraphTypes are Mean, Min, Max, StdDev, Count and TPS -->
+      <param name="GraphType" value="Mean"/>
+      <!-- The tags of the timed execution blocks to graph are specified here.
+      If you want user specific tags, put the user id at the end of the tag seperated by a dot,
+      e.g., GET.feed.john  for user with id john.
+      -->
+      <param name="TagNamesToGraph" value="GET.feed,GET.entry,POST.entry,DELETE.entry,PUT.entry"/>
+      <!-- appender-ref ref="graphsFileAppender"/> -->
+  </appender>
+
+  <!--
+    This second GraphingStatisticsAppender graphs transactions per second
+  -->
+  <appender name="graphExecutionTPS" class="org.perf4j.log4j.GraphingStatisticsAppender">
+      <param name="GraphType" value="TPS"/>
+      <param name="TagNamesToGraph" value="GET.feed,GET.entry,POST.entry,DELETE.entry,PUT.entry"/>
+      <!-- appender-ref ref="graphsFileAppender"/> -->
+  </appender>
+
+  <!--
+    This JMX appender creates an MBean and publishes it to the platform MBean server by
+      default.
+    -->
+    <appender name="perf4jJmxAppender" class="org.perf4j.log4j.JmxAttributeStatisticsAppender">
+        <!--
+          You must specify the tag names whose statistics should be exposed as
+          MBean attributes. Following are sample tags.
+        -->
+        <param name="TagNamesToExpose" value="GET.feed,GET.entry,POST.entry,DELETE.entry,PUT.entry"/>
+        <!--
+          The NotificationThresholds param configures the sending of JMX notifications
+          when statistic values exceed specified thresholds. This config states that
+          the firstBlock max value should be between 0 and 800ms, and the secondBlock max
+          value should be less than 1500 ms. You can also set thresholds on the Min,
+          Mean, StdDev, Count and TPS statistics - e.g. firstBlockMean(<600).
+        -->
+        <!-- param name="NotificationThresholds" value="GET.feedMax(0-1000)"/> -->
+        <!--
+          You can also specify an optional MBeanName param, which overrides
+          the default MBean name of org.perf4j:type=StatisticsExposingMBean,name=Perf4J
+        -->
+    </appender>
+
+ <!--
+    This file appender is used to output the graph URLs generated
+    by the GraphingStatisticsAppenders
+  -->
+  <appender name="graphsFileAppender" class="org.apache.log4j.FileAppender">
+      <param name="File" value="${atomserver.logdir}/perfGraphs.log"/>
+      <layout class="org.apache.log4j.PatternLayout">
+          <param name="ConversionPattern" value="%m%n"/>
+      </layout>
+  </appender>
+  <!-- end of Perf4j appenders -->
+
+  <appender name="Trashlog" class="org.apache.log4j.RollingFileAppender" >
+     <param name="File" value="${atomserver.logdir}/${atomserver.logfilename}.trash.log" />
+     <param name="Append" value="true" />
+     <param name="MaxFileSize"  value="20MB" />
+     <param name="MaxBackupIndex" value="50" />
+     <layout class="org.apache.log4j.PatternLayout">
+         <param name="ConversionPattern" value="%m%n" />
+     </layout>
+  </appender>
+
+  <!-- Loggers -->
+  <logger name="org.springframework">
+      <level value="WARN"/>
+  </logger>
+
+  <logger name="org.apache.abdera">
+      <level value="INHERITED"/>
+  </logger>
+
+  <logger name="org.mortbay">
+      <level value="INHERITED"/>
+  </logger>
+
+  <logger name="org.acegisecurity.event.authentication.LoggerListener">
+      <level value="WARN"/>
+  </logger>
+
+  <logger name="org.acegisecurity.event.authorization.LoggerListener">
+      <level value="WARN"/>
+  </logger>
+
+   <logger name="org.atomserver">
+      <level value="${atomserver.loglevel}"/>
+  </logger>
+
+   <logger name="org.atomserver.http500errors" additivity="false">
+      <level value="INFO"/>
+      <appender-ref ref="Http500log"/>
+  </logger>
+
+   <logger name="org.atomserver.trash" additivity="false">
+      <level value="INFO"/>
+      <appender-ref ref="Trashlog"/>
+  </logger>
+
+  <!-- perf4J Loggers  -->
+  <logger name="org.perf4j.TimingLogger" additivity="false">
+    <level value="INFO"/>
+    <appender-ref ref="Perf4JLog"/>
+  </logger>
+
+  <root>
+    <level value="${root.loglevel}"/>
+    <!-- appender-ref ref="${root.appender}" />  log4j 1.2.13 does not substitute -->
+    <appender-ref ref="StdoutFile" /> 
+  </root>
+</log4j:configuration>
