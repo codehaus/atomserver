@@ -42,11 +42,13 @@
             ON searchCategories.EntryStoreId = entry.EntryStoreId
         <isNotNull property="categoryFilterSql">AND ($categoryFilterSql$)</isNotNull>
         </isNotNull>
-         WHERE UpdateDate >= #updatedMin#
+        WHERE UpdateTimestamp > CAST($startIndex$ AS <include refid="timestampType"/>)
+        <isNotNull property="updatedMin">
+            AND UpdateDate >= #updatedMin#
+        </isNotNull>
         <isNotNull property="updatedMax">
             <![CDATA[ AND UpdateDate < #updatedMax# ]]>
         </isNotNull>
-           AND UpdateTimestamp > CAST($startIndex$ AS <include refid="timestampType"/>)
         <isNotEqual property="endIndex" compareValue="-1">
             AND UpdateTimestamp &lt;= CAST($endIndex$ AS <include refid="timestampType"/>)
         </isNotEqual>
@@ -117,12 +119,14 @@
                   ON searchCategories.EntryStoreId = entry.EntryStoreId
               <isNotNull property="categoryFilterSql">AND ($categoryFilterSql$)</isNotNull>
               </isNotNull>
-               WHERE UpdateDate >= #updatedMin#
+              WHERE UpdateTimestamp > CAST($startIndex$ AS <include refid="timestampType"/>)
+              <isNotNull property="updatedMin">
+                  AND UpdateDate >= #updatedMin#
+              </isNotNull>
               <isNotNull property="updatedMax">
                   <![CDATA[ AND UpdateDate < #updatedMax# ]]>
               </isNotNull>
-                 AND UpdateTimestamp > CAST($startIndex$ AS <include refid="timestampType"/>)
-              <isNotEqual property="endIndex" compareValue="-1">
+               <isNotEqual property="endIndex" compareValue="-1">
                   AND UpdateTimestamp &lt;= CAST($endIndex$ AS <include refid="timestampType"/>)
               </isNotEqual>
               <isNotNull property="latencySeconds">

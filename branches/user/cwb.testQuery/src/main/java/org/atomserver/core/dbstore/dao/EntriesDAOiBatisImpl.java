@@ -652,6 +652,11 @@ public class EntriesDAOiBatisImpl
     ParamMap prepareParamMapForSelectEntries(Date updatedMin, Date updatedMax,
                                              int startIndex, int endIndex,
                                              int pageSize, String locale, FeedDescriptor feed) {
+
+        if ( updatedMin.equals(ZERO_DATE) ) {
+            updatedMin = null;
+        }
+
         ParamMap paramMap = paramMap()
                 .param("workspace", feed.getWorkspace())
                 .param("updatedMin", updatedMin)
