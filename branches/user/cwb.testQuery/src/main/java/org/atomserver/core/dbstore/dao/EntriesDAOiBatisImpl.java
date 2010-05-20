@@ -630,16 +630,16 @@ public class EntriesDAOiBatisImpl
                                                                 pageSize, locale, feed);
 
             if (categoryQuery != null && !categoryQuery.isEmpty()) {
-                if (categoryQuery.size() > 1) {
+                BooleanExpression<AtomCategory> firstExpression = categoryQuery.iterator().next();
+                if (categoryQuery.size() == 1 && firstExpression instanceof BooleanTerm) {
+                    BooleanTerm<AtomCategory> singleTermQuery = (BooleanTerm<AtomCategory>) firstExpression;
+                    paramMap.param("categoryQueryScheme", singleTermQuery.getValue().getScheme());
+                    paramMap.param("categoryQueryTerm", singleTermQuery.getValue().getTerm());
+                } else {
                     paramMap.param("categoryFilterSql",
                                    CategoryQueryGenerator.generateCategoryFilter(categoryQuery));
                     paramMap.param("categoryQuerySql",
                                    CategoryQueryGenerator.generateCategorySearch(categoryQuery));
-                } else {
-                    final BooleanTerm<AtomCategory> singleTermQuery = 
-                            (BooleanTerm<AtomCategory>) categoryQuery.iterator().next();
-                    paramMap.param("categoryQueryScheme", singleTermQuery.getValue().getScheme());
-                    paramMap.param("categoryQueryTerm", singleTermQuery.getValue().getTerm());
                 }
             }
 
