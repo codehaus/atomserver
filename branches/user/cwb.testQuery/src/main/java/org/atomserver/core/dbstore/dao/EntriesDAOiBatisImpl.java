@@ -30,6 +30,7 @@ import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
 import org.atomserver.utils.locale.LocaleUtils;
 import org.atomserver.utils.logic.BooleanExpression;
+import org.atomserver.utils.logic.BooleanTerm;
 import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
 import org.atomserver.utils.perf.AtomServerStopWatch;
 import org.perf4j.StopWatch;
@@ -629,10 +630,17 @@ public class EntriesDAOiBatisImpl
                                                                 pageSize, locale, feed);
 
             if (categoryQuery != null && !categoryQuery.isEmpty()) {
-                paramMap.param("categoryFilterSql",
-                               CategoryQueryGenerator.generateCategoryFilter(categoryQuery));
-                paramMap.param("categoryQuerySql",
-                               CategoryQueryGenerator.generateCategorySearch(categoryQuery));
+                if (categoryQuery.size() > 1) {
+                    paramMap.param("categoryFilterSql",
+                                   CategoryQueryGenerator.generateCategoryFilter(categoryQuery));
+                    paramMap.param("categoryQuerySql",
+                                   CategoryQueryGenerator.generateCategorySearch(categoryQuery));
+                } else {
+                    final BooleanTerm<AtomCategory> singleTermQuery = 
+                            (BooleanTerm<AtomCategory>) categoryQuery.iterator().next();
+                    paramMap.param("categoryQueryScheme", singleTermQuery.getValue().getScheme());
+                    paramMap.param("categoryQueryTerm", singleTermQuery.getValue().getTerm());
+                }
             }
 
             if (latencySeconds > 0) {
