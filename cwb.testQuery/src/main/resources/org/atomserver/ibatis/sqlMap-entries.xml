@@ -42,6 +42,12 @@
             ON searchCategories.EntryStoreId = entry.EntryStoreId
         <isNotNull property="categoryFilterSql">AND ($categoryFilterSql$)</isNotNull>
         </isNotNull>
+        <isNotNull property="categoryQueryScheme">
+        INNER JOIN EntryCategory searchCategories
+            ON searchCategories.EntryStoreId = entry.EntryStoreId
+           AND searchCategories.Scheme = '$categoryQueryScheme$'
+           AND searchCategories.Term = '$categoryQueryTerm$'
+        </isNotNull>
         WHERE UpdateTimestamp > CAST($startIndex$ AS <include refid="timestampType"/>)
         <isNotNull property="updatedMin">
             AND UpdateDate >= #updatedMin#
@@ -118,6 +124,12 @@
               <include refid="INNER_LOOP_JOIN"/> EntryCategory searchCategories
                   ON searchCategories.EntryStoreId = entry.EntryStoreId
               <isNotNull property="categoryFilterSql">AND ($categoryFilterSql$)</isNotNull>
+              </isNotNull>
+              <isNotNull property="categoryQueryScheme">
+               <include refid="INNER_LOOP_JOIN"/> EntryCategory searchCategories
+                  ON searchCategories.EntryStoreId = entry.EntryStoreId
+                 AND searchCategories.Scheme = '$categoryQueryScheme$'
+                 AND searchCategories.Term = '$categoryQueryTerm$'
               </isNotNull>
               WHERE UpdateTimestamp > CAST($startIndex$ AS <include refid="timestampType"/>)
               <isNotNull property="updatedMin">
