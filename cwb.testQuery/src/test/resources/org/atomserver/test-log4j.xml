@@ -144,6 +144,17 @@
       <level value="INHERITED"/>
   </logger>
 
+    <logger name="com.ibatis">
+        <level value="DEBUG"/>
+    </logger>
+    <logger name="org.springframework.orm.ibatis">
+        <level value="DEBUG"/>
+    </logger>
+    <logger name="java.sql">
+        <level value="DEBUG"/>
+    </logger>
+
+
   <logger name="org.acegisecurity.event.authentication.LoggerListener">
       <level value="WARN"/>
   </logger>
@@ -153,8 +164,10 @@
   </logger>
 
    <logger name="org.atomserver">
-      <level value="${atomserver.loglevel}"/>
+      <level value="DEBUG"/>
   </logger>
+
+
 
    <logger name="org.atomserver.http500errors" additivity="false">
       <level value="INFO"/>
@@ -175,6 +188,6 @@
   <root>
     <level value="${root.loglevel}"/>
     <!-- appender-ref ref="${root.appender}" />  log4j 1.2.13 does not substitute -->
-    <appender-ref ref="StdoutFile" /> 
+    <appender-ref ref="Stdout" /> 
   </root>
 </log4j:configuration>
