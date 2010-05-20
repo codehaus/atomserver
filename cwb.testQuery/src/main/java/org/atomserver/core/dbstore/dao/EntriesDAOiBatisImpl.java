@@ -653,7 +653,7 @@ public class EntriesDAOiBatisImpl
                                              int startIndex, int endIndex,
                                              int pageSize, String locale, FeedDescriptor feed) {
 
-        if ( updatedMin.equals(ZERO_DATE) ) {
+        if ( updatedMin != null && updatedMin.equals(ZERO_DATE) ) {
             updatedMin = null;
         }
 
