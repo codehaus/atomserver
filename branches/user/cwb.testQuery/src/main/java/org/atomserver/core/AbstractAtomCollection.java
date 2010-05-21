@@ -1074,7 +1074,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     protected Entry newEntry(Abdera abdera, EntryMetaData entryMetaData, EntryType entryType)
             throws AtomServerException {
 
-        StopWatch stopWatch = new AtomServerStopWatch();
+        StopWatch outerStopWatch = new AtomServerStopWatch();
         try {
             Entry entry = newEntryWithCommonContentOnly(abdera, entryMetaData);
 
@@ -1095,17 +1095,22 @@ abstract public class AbstractAtomCollection implements AtomCollection {
 
             addCategoriesToEntry(entry, entryMetaData, abdera);
 
-            if (entryType == EntryType.full) {
-                addFullEntryContent(abdera, entryMetaData, entry);
-            } else if (entryType == EntryType.link) {
-                addLinkToEntry(AtomServer.getFactory(abdera), entry, fileURI, "alternate");
-            } else {
-                throw new AtomServerException("Must define the EntryType -- full or link");
+            StopWatch contentStopWatch = new AtomServerStopWatch();
+            try {
+                if (entryType == EntryType.full) {
+                    addFullEntryContent(abdera, entryMetaData, entry);
+                } else if (entryType == EntryType.link) {
+                    addLinkToEntry(AtomServer.getFactory(abdera), entry, fileURI, "alternate");
+                } else {
+                    throw new AtomServerException("Must define the EntryType -- full or link");
+                }
+            } finally {
+                contentStopWatch.stop("XML.fine.addContent", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryMetaData));
             }
 
             return entry;
         } finally {
-            stopWatch.stop("XML.fine.entry", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryMetaData));
+            outerStopWatch.stop("XML.fine.entry", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryMetaData));
         }
     }
 
