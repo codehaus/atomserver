@@ -174,6 +174,14 @@ public class RedisSubstrate implements Substrate {
                         }
                     };
                 }
+
+                public Long max() {
+                    try {
+                        return Convert.toLong(redis.zrevrange(indexKey(key), 0, 0).get(0)); // TODO: size check
+                    } catch (RedisException e) {
+                        throw new IllegalStateException(e); // TODO: handle
+                    }
+                }
             });
         }
         return index;

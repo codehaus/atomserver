@@ -4,10 +4,10 @@ import java.nio.channels.ReadableByteChannel;
 
 public interface ContentStore {
 
-    Transaction put(EntryKey key, String type, ReadableByteChannel channel)
+    Transaction put(EntryKey key, ReadableByteChannel channel)
             throws ContentStoreException;
 
-    EntryContent get(EntryKey key)
+    ReadableByteChannel get(EntryKey key)
             throws ContentStoreException;
 
     public interface Transaction {

@@ -17,6 +17,8 @@ public interface Substrate {
         void remove(Long value);
 
         Iterable<Long> tail(Long from);
+
+        Long max();
     }
 
     Index getIndex(String key);

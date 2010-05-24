@@ -21,7 +21,7 @@ public class FileContentStore implements ContentStore {
         this.root.mkdirs();
     }
 
-    public Transaction put(final EntryKey key, String type, ReadableByteChannel channel) throws ContentStoreException {
+    public Transaction put(final EntryKey key, ReadableByteChannel channel) throws ContentStoreException {
         try {
             final File tempFile = File.createTempFile("entry" + key.entryId, ".temp", root);
             DigestOutputStream os = new DigestOutputStream(
@@ -57,10 +57,9 @@ public class FileContentStore implements ContentStore {
         }
     }
 
-    public EntryContent get(EntryKey key) throws ContentStoreException {
+    public ReadableByteChannel get(EntryKey key) throws ContentStoreException {
         try {
-            return new EntryContent("application/xml",
-                    ContentUtils.toChannel(FileUtils.readFileToByteArray(getFile(key))));
+            return ContentUtils.toChannel(FileUtils.readFileToByteArray(getFile(key)));
         } catch (IOException e) {
             throw new ContentStoreException(e);
         }

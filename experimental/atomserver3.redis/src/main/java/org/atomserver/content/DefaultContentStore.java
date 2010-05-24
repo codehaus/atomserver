@@ -10,12 +10,12 @@ import java.util.Map;
 @Component
 public class DefaultContentStore implements ContentStore {
 
-    public Transaction put(final EntryKey key, final String type, ReadableByteChannel channel)
+    public Transaction put(final EntryKey key, ReadableByteChannel channel)
             throws ContentStoreException {
         final byte[] bytes = ContentUtils.toBytes(channel);
         return new Transaction() {
             public void commit() {
-                contentMap.put(key, new ContentBytes(type, bytes));
+                contentMap.put(key, bytes);
             }
 
             public void abort() {
@@ -28,23 +28,10 @@ public class DefaultContentStore implements ContentStore {
         };
     }
 
-    public EntryContent get(EntryKey key) throws ContentStoreException {
-        ContentBytes contentBytes;
-        contentBytes = contentMap.get(key);
-        return contentBytes == null ? null :
-                new EntryContent(contentBytes.type, ContentUtils.toChannel(contentBytes.bytes));
+    public ReadableByteChannel get(EntryKey key) throws ContentStoreException {
+        byte[] contentBytes = contentMap.get(key);
+        return contentBytes == null ? null : ContentUtils.toChannel(contentBytes);
     }
 
-    private final Map<EntryKey, ContentBytes> contentMap =
-            new HashMap<EntryKey, ContentBytes>();
-
-    private class ContentBytes {
-        String type;
-        byte[] bytes;
-
-        private ContentBytes(String type, byte[] bytes) {
-            this.type = type;
-            this.bytes = bytes;
-        }
-    }
+    private final Map<EntryKey, byte[]> contentMap = new HashMap<EntryKey, byte[]>();
 }

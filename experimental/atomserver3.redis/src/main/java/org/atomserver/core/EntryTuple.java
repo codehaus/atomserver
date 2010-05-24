@@ -12,6 +12,7 @@ public class EntryTuple implements Serializable {
     public final byte[] digest;
     public final boolean deleted;
     public final String contentSrc;
+    public final String contentType;
     public final Set<CategoryTuple> categories;
 
     public EntryTuple(String entryId,
@@ -20,8 +21,9 @@ public class EntryTuple implements Serializable {
                       long updated,
                       byte[] digest,
                       String contentSrc,
+                      String contentType,
                       Set<CategoryTuple> categories) {
-        this(entryId, timestamp, created, updated, digest, contentSrc, categories, false);
+        this(entryId, timestamp, created, updated, digest, contentSrc, contentType, categories, false);
     }
 
     private EntryTuple(String entryId,
@@ -30,6 +32,7 @@ public class EntryTuple implements Serializable {
                       long updated,
                       byte[] digest,
                       String contentSrc,
+                      String contentType,
                       Set<CategoryTuple> categories,
                       boolean deleted) {
         this.entryId = entryId;
@@ -37,6 +40,7 @@ public class EntryTuple implements Serializable {
         this.created = created;
         this.updated = updated;
         this.digest = digest;
+        this.contentType = contentType;
         this.contentSrc = contentSrc;
         this.categories = categories;
         this.deleted = deleted;
@@ -46,17 +50,19 @@ public class EntryTuple implements Serializable {
                              long updated,
                              byte[] digest,
                              String contentSrc,
+                             String contentType,
                              Set<CategoryTuple> categories) {
-        return update(timestamp, updated, digest, contentSrc, categories, false);
+        return update(timestamp, updated, digest, contentSrc, contentType, categories, false);
     }
     
     public EntryTuple update(long timestamp,
                              long updated,
                              byte[] digest,
                              String contentSrc,
+                             String contentType,
                              Set<CategoryTuple> categories,
                              boolean deleted) {
-        return new EntryTuple(entryId, timestamp, created, updated, digest, contentSrc, categories, deleted);
+        return new EntryTuple(entryId, timestamp, created, updated, digest, contentSrc, contentType, categories, deleted);
     }
 
     public boolean equals(Object o) {
@@ -69,6 +75,7 @@ public class EntryTuple implements Serializable {
                 timestamp == that.timestamp &&
                 updated == that.updated &&
                 contentSrc == null ? that.contentSrc == null : contentSrc.equals(that.contentSrc) &&
+                contentType == null ? that.contentType == null : contentType.equals(that.contentType) &&
                 categories.equals(that.categories) &&
                 Arrays.equals(digest, that.digest) &&
                 entryId.equals(that.entryId);
@@ -82,6 +89,7 @@ public class EntryTuple implements Serializable {
         result = 31 * result + (int) (updated ^ (updated >>> 32));
         result = 31 * result + Arrays.hashCode(digest);
         result = 31 * result + (contentSrc == null ? 0 : contentSrc.hashCode());
+        result = 31 * result + (contentType == null ? 0 : contentType.hashCode());
         result = 31 * result + categories.hashCode();
         return result;
     }
@@ -94,6 +102,7 @@ public class EntryTuple implements Serializable {
                 ", updated=" + updated +
                 ", digest=" + digest +   // TODO: tostring this digest better
                 ", contentSrc=" + contentSrc +
+                ", contentType=" + contentType +
                 ", categories=" + categories +
                 '}';
     }

@@ -50,6 +50,10 @@ public class MemSubstrate implements Substrate {
                 public Iterable<Long> tail(Long from) {
                     return _index.tailSet(from);
                 }
+
+                public Long max() {
+                    return _index.last();
+                }
             });
         }
         return index;

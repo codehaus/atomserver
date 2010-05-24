@@ -20,6 +20,7 @@ import org.atomserver.util.UnionIterator;
 import javax.ws.rs.WebApplicationException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.channels.ReadableByteChannel;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.*;
@@ -51,20 +52,19 @@ public class CollectionOperations {
             contentTxn =
                     entry.getContentSrc() != null ?
                             new OutOfLineContentTransaction(entry.getContentSrc()) :
-                            contentStore.put(getEntryKey(entryId),
-                                    entry.getContentMimeType().toString(),
-                                    ContentUtils.toChannel(entry.getContent()));
+                            contentStore.put(getEntryKey(entryId), ContentUtils.toChannel(entry.getContent()));
         } catch (ContentStoreException e) {
-            // TODO: handle for real
-            throw new WebApplicationException(e);
+            final String message = "error writing content to the content store";
+            log.error(message, e);
+            throw new AtompubServerException(message);
         }
 
         final Entry newEntry = atompubFactory.newEntry();
         newEntry.setId(String.format("%s/%s", collectionKey, entryId));
 
-        return sync(new Callable<Entry>() {
-            public Entry call() throws Exception {
-                try {
+        try {
+            return sync(new Callable<Entry>() {
+                public Entry call() throws Exception {
                     EntryTuple entryTuple = removeEntryNodeFromIndices(entryId);
                     if (entryTuple == null) {
                         if (etag != null &&
@@ -81,6 +81,7 @@ public class CollectionOperations {
                         entryTuple = new EntryTuple(
                                 entryId, getNextTimestamp(), now, now, contentTxn.digest(),
                                 entry.getContentSrc() == null ? null : entry.getContentSrc().toString(),
+                                entry.getContentMimeType().toString(),
                                 convertCategories(entry.getCategories()));
                     } else {
                         if (!AtomServerConstants.OPTIMISTIC_CONCURRENCY_OVERRIDE.equals(etag) &&
@@ -98,6 +99,7 @@ public class CollectionOperations {
                                 new Date().getTime(),
                                 contentTxn.digest(),
                                 entry.getContentSrc() == null ? null : entry.getContentSrc().toString(),
+                                entry.getContentMimeType().toString(),
                                 convertCategories(entry.getCategories()),
                                 delete);
                     }
@@ -110,7 +112,7 @@ public class CollectionOperations {
                     if (entry.getContentSrc() != null) {
                         newEntry.setContent(entry.getContentSrc(), entry.getContentMimeType().toString());
                     } else {
-                        newEntry.setContent(entry.getContent(), entry.getContentType()); // TODO: deal with content...
+                        newEntry.setContent(entry.getContent(), entry.getContentType());
                     }
                     newEntry.addSimpleExtension(AtomServerConstants.ENTRY_ID, entryId);
                     for (Category category : entry.getCategories()) {
@@ -124,30 +126,25 @@ public class CollectionOperations {
 
                     log.debug(String.format("successfully PUT entry %s", entryId));
                     return newEntry;
-                } catch (WebApplicationException e) {
-                    contentTxn.abort();
-                    throw e;
-                } catch (AtompubException e) {
-                    contentTxn.abort();
-                    throw e;
-                } catch (Exception e) {
-                    contentTxn.abort();
-                    throw new WebApplicationException(e); // TODO: more specific
                 }
+            });
+        } catch (Exception e) {
+            try {
+                contentTxn.abort();
+            } catch (ContentStoreException inner) {
+                log.error("exception aborting content transaction", inner);
             }
-        });
+            if (e instanceof AtompubException) {
+                throw (AtompubException)e;
+            }
+            final String message = "unknown internal exception";
+            log.error(message, e);
+            throw new AtompubServerException(message);
+        }
     }
 
-    private Entry sync(Callable<Entry> callable) {
-        try {
-            return substrate.sync(collectionKey, callable);
-        } catch (WebApplicationException e) {
-            throw e; // TODO: handle
-        } catch (AtompubException e) {
-            throw e; // TODO: handle
-        } catch (Exception e) {
-            throw new IllegalStateException(e); // TODO: handle
-        }
+    private Entry sync(Callable<Entry> callable) throws Exception {
+        return substrate.sync(collectionKey, callable);
     }
 
     Entry getEntry(String entryId) {
@@ -163,9 +160,9 @@ public class CollectionOperations {
         }
 
         Iterator<EntryTuple> entryIterator;
+        long endIndex = entryIndex.max(); // if the iterator is empty, we use the highest index value
         entryIterator = buildIterator(categoryQuery, timestamp);
         int countdown = maxResults;
-        long endIndex = timestamp; // TODO: scroll to the end when feed is empty
         StringBuffer entryEtagsConcatenated = new StringBuffer();
         while (entryIterator.hasNext() && countdown-- > 0) {
             EntryTuple entryNode = entryIterator.next();
@@ -353,11 +350,11 @@ public class CollectionOperations {
         entry.setPublished(new Date(entryTuple.created));
         EntryKey key = getEntryKey(entryTuple.entryId);
         if (entryTuple.contentSrc != null) {
-            entry.setContent(new IRI(entryTuple.contentSrc), "application/xml"); // TODO: content type
+            entry.setContent(new IRI(entryTuple.contentSrc), entryTuple.contentType);
         } else {
             try {
-                EntryContent entryContent = contentStore.get(key);
-                entry.setContent(ContentUtils.toString(entryContent.getChannel()), entryContent.getType());
+                ReadableByteChannel entryContent = contentStore.get(key);
+                entry.setContent(ContentUtils.toString(entryContent), entryTuple.contentType);
             } catch (ContentStoreException e) {
                 throw new WebApplicationException(e);
             }
