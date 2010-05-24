@@ -13,6 +13,7 @@ import org.atomserver.content.*;
 import org.atomserver.core.CategoryTuple;
 import org.atomserver.core.EntryTuple;
 import org.atomserver.core.Substrate;
+import org.atomserver.util.HexUtil;
 import org.atomserver.util.IntersectionIterator;
 import org.atomserver.util.SubtractIterator;
 import org.atomserver.util.UnionIterator;
@@ -87,12 +88,12 @@ public class CollectionOperations {
                         if (!AtomServerConstants.OPTIMISTIC_CONCURRENCY_OVERRIDE.equals(etag) &&
                                 !(entryTuple.digest == null ?
                                         etag == null :
-                                        toHexString(entryTuple.digest).equals(etag))) {
+                                        HexUtil.toHexString(entryTuple.digest).equals(etag))) {
 
                             throw new OptimisticConcurrencyException(
                                     format("Optimistic Concurrency Exception - provided ETag (%s) does " +
                                             "not match previous ETag value of (%s)",
-                                            etag, toHexString(entryTuple.digest)));
+                                            etag, HexUtil.toHexString(entryTuple.digest)));
                         }
 
                         entryTuple = entryTuple.update(getNextTimestamp(),
@@ -119,7 +120,7 @@ public class CollectionOperations {
                         newEntry.addCategory(category);
                     }
                     // TODO: should ETags hash the content only, or the metadata of an entry, too?
-                    newEntry.addSimpleExtension(AtomServerConstants.ETAG, toHexString(entryTuple.digest));
+                    newEntry.addSimpleExtension(AtomServerConstants.ETAG, HexUtil.toHexString(entryTuple.digest));
                     // TODO: we need to preserve "unknown" extensions
 
                     contentTxn.commit();
@@ -169,7 +170,7 @@ public class CollectionOperations {
             Entry entry = convertToEntry(entryNode);
             feed.addEntry(entry);
             endIndex = entryNode.timestamp;
-            entryEtagsConcatenated.append(toHexString(entryNode.digest));
+            entryEtagsConcatenated.append(HexUtil.toHexString(entryNode.digest));
         }
         feed.addSimpleExtension(AtomServerConstants.END_INDEX, String.valueOf(endIndex));
         feed.addSimpleExtension(AtomServerConstants.ETAG,
@@ -294,8 +295,6 @@ public class CollectionOperations {
     }
 
 
-    //    -------utility methods
-
     private static class OutOfLineContentTransaction implements ContentStore.Transaction {
         byte[] digest;
 
@@ -367,18 +366,11 @@ public class CollectionOperations {
             entry.addCategory(category);
         }
         entry.addSimpleExtension(AtomServerConstants.TIMESTAMP, String.valueOf(entryTuple.timestamp));
-        entry.addSimpleExtension(AtomServerConstants.ETAG, toHexString(entryTuple.digest));
+        entry.addSimpleExtension(AtomServerConstants.ETAG, HexUtil.toHexString(entryTuple.digest));
         return entry;
     }
 
-    private EntryKey getEntryKey(String entryId) {return new EntryKey(serviceId, workspaceId, collectionId, entryId);}
-
-    public static String toHexString(byte[] bytes) {
-        StringBuilder builder = new StringBuilder();
-        for (byte b : bytes) {
-            builder.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
-        }
-        return builder.toString();
+    private EntryKey getEntryKey(String entryId) {
+        return new EntryKey(serviceId, workspaceId, collectionId, entryId);
     }
-
 }

@@ -28,7 +28,7 @@ import static org.atomserver.AtomServerConstants.*;
 @Produces({APPLICATION_ATOM_XML, APPLICATION_XML, TEXT_XML})
 public class Atompub {
     private static final Logger log = Logger.getLogger(Atompub.class);
-    
+
     public static final String APP_CONTEXT = "/app";
     @Autowired
     private Substrate substrate;
@@ -140,8 +140,6 @@ public class Atompub {
                 public Response post(
                         @HeaderParam("ETag") String etagHeader,
                         Entry entry) {
-                    // TODO: pluggable strategies for id generation
-                    // TODO: etag should not necessarily always be null here - we need to check for errors
                     return entry(UUID.randomUUID().toString().replaceAll("\\W", "")).put(etagHeader, entry);
                 }
 
@@ -198,9 +196,7 @@ public class Atompub {
     }
 
 
-// -- utility methods
-
-    private String extractEtag(String etagHeader, ExtensibleElement element) {
+    private static String extractEtag(String etagHeader, ExtensibleElement element) {
         String etagXml = element.getSimpleExtension(AtomServerConstants.ETAG);
         if (etagHeader == null) {
             return etagXml;

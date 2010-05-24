@@ -1,5 +1,7 @@
 package org.atomserver.core;
 
+import org.atomserver.util.HexUtil;
+
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Set;
@@ -51,15 +53,6 @@ public class EntryTuple implements Serializable {
                              byte[] digest,
                              String contentSrc,
                              String contentType,
-                             Set<CategoryTuple> categories) {
-        return update(timestamp, updated, digest, contentSrc, contentType, categories, false);
-    }
-    
-    public EntryTuple update(long timestamp,
-                             long updated,
-                             byte[] digest,
-                             String contentSrc,
-                             String contentType,
                              Set<CategoryTuple> categories,
                              boolean deleted) {
         return new EntryTuple(entryId, timestamp, created, updated, digest, contentSrc, contentType, categories, deleted);
@@ -100,7 +93,7 @@ public class EntryTuple implements Serializable {
                 ", timestamp=" + timestamp +
                 ", created=" + created +
                 ", updated=" + updated +
-                ", digest=" + digest +   // TODO: tostring this digest better
+                ", digest=" + HexUtil.toHexString(digest) +
                 ", contentSrc=" + contentSrc +
                 ", contentType=" + contentType +
                 ", categories=" + categories +
