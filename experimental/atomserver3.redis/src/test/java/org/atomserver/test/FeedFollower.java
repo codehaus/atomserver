@@ -36,6 +36,7 @@ public class FeedFollower {
         MultivaluedMap params = new MultivaluedMapImpl();
         params.add("max-results", String.valueOf(pageSize));
         params.add("timestamp", String.valueOf(timestamp));
+        params.add("feed-type", "full");
         Feed page =
                 root.path(path).queryParams(params)
                         .accept(MediaType.APPLICATION_XML).get(Feed.class);

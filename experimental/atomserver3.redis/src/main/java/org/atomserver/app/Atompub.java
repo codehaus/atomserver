@@ -39,6 +39,8 @@ public class Atompub {
     @Autowired
     private AtompubFactory atompubFactory;
 
+    public enum FeedType { link, full }
+
     @GET
     public Feed get() {
         final Feed serviceFeed = atompubFactory.newFeed("/", "Service Feed", "/");
@@ -122,8 +124,9 @@ public class Atompub {
                 @GET
                 public Response get(
                         @QueryParam("timestamp") @DefaultValue("0") long timestamp,
-                        @QueryParam("max-results") @DefaultValue("100") int maxResults) {
-                    return get(timestamp, maxResults, null);
+                        @QueryParam("max-results") @DefaultValue("100") int maxResults,
+                        @QueryParam("feed-type") @DefaultValue("link") FeedType feedType) {
+                    return get(timestamp, maxResults, feedType, null);
                 }
 
                 @Path("-/{categoryQuery : .*}")
@@ -131,8 +134,9 @@ public class Atompub {
                 public Response get(
                         @QueryParam("timestamp") @DefaultValue("0") long timestamp,
                         @QueryParam("max-results") @DefaultValue("100") int maxResults,
+                        @QueryParam("feed-type") @DefaultValue("link") FeedType feedType,
                         @PathParam("categoryQuery") CategoryQuery categoryQuery) {
-                    final Feed feed = getFeed(timestamp, maxResults, categoryQuery);
+                    final Feed feed = getFeed(timestamp, maxResults, categoryQuery, feedType == FeedType.full);
                     return feedResponse(feed);
                 }
 

@@ -136,7 +136,7 @@ public class CollectionOperations {
                 log.error("exception aborting content transaction", inner);
             }
             if (e instanceof AtompubException) {
-                throw (AtompubException)e;
+                throw (AtompubException) e;
             }
             final String message = "unknown internal exception";
             log.error(message, e);
@@ -150,10 +150,10 @@ public class CollectionOperations {
 
     Entry getEntry(String entryId) {
         final EntryTuple entryTuple = entries.get(entryId);
-        return entryTuple == null ? null : convertToEntry(entryTuple);
+        return entryTuple == null ? null : convertToEntry(entryTuple, true);
     }
 
-    Feed getFeed(long timestamp, int maxResults, CategoryQuery categoryQuery) {
+    Feed getFeed(long timestamp, int maxResults, CategoryQuery categoryQuery, boolean fullEntries) {
         Feed feed = atompubFactory.newFeed(collectionKey, collectionKey, collectionKey);
 
         if (categoryQuery != null) {
@@ -167,7 +167,7 @@ public class CollectionOperations {
         StringBuffer entryEtagsConcatenated = new StringBuffer();
         while (entryIterator.hasNext() && countdown-- > 0) {
             EntryTuple entryNode = entryIterator.next();
-            Entry entry = convertToEntry(entryNode);
+            Entry entry = convertToEntry(entryNode, fullEntries);
             feed.addEntry(entry);
             endIndex = entryNode.timestamp;
             entryEtagsConcatenated.append(HexUtil.toHexString(entryNode.digest));
@@ -336,7 +336,7 @@ public class CollectionOperations {
         return entryCategories;
     }
 
-    protected Entry convertToEntry(EntryTuple entryTuple) {
+    protected Entry convertToEntry(EntryTuple entryTuple, boolean fullEntry) {
 
         Entry entry = atompubFactory.newEntry();
 
@@ -348,15 +348,20 @@ public class CollectionOperations {
         entry.setUpdated(updated);
         entry.setPublished(new Date(entryTuple.created));
         EntryKey key = getEntryKey(entryTuple.entryId);
-        if (entryTuple.contentSrc != null) {
-            entry.setContent(new IRI(entryTuple.contentSrc), entryTuple.contentType);
-        } else {
-            try {
-                ReadableByteChannel entryContent = contentStore.get(key);
-                entry.setContent(ContentUtils.toString(entryContent), entryTuple.contentType);
-            } catch (ContentStoreException e) {
-                throw new WebApplicationException(e);
+        if (fullEntry) {
+            if (entryTuple.contentSrc != null) {
+                entry.setContent(new IRI(entryTuple.contentSrc), entryTuple.contentType);
+            } else {
+                try {
+                    ReadableByteChannel entryContent = contentStore.get(key);
+                    entry.setContent(ContentUtils.toString(entryContent), entryTuple.contentType);
+                } catch (ContentStoreException e) {
+                    throw new WebApplicationException(e);
+                }
             }
+        } else {
+            entry.addLink(String.format("/app/%s/%s/%s/%s",
+                    serviceId, workspaceId, collectionId, entryTuple.entryId), "alternate");
         }
         for (CategoryTuple entryCategory : entryTuple.categories) {
             Category category = atompubFactory.newCategory();
