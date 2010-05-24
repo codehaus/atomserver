@@ -13,7 +13,7 @@ public class TestingContentFilter implements EntryFilter {
     }
 
     public void filter(Entry entry, EntryFilterChain chain) {
-        if (entry.getContent().contains("INVALID")) {
+        if (entry.getContent() != null && entry.getContent().contains("INVALID")) {
             throw new BadRequestException("Invalid content!");
         }
 

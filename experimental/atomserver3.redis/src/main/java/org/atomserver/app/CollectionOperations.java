@@ -1,10 +1,11 @@
 package org.atomserver.app;
 
+import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.model.Category;
-import org.apache.abdera.model.Content;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.atomserver.AtomServerConstants;
 import org.atomserver.categories.CategoryQuery;
@@ -17,6 +18,10 @@ import org.atomserver.util.SubtractIterator;
 import org.atomserver.util.UnionIterator;
 
 import javax.ws.rs.WebApplicationException;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
 import java.util.*;
 import java.util.concurrent.Callable;
 
@@ -43,10 +48,12 @@ public class CollectionOperations {
 
         final ContentStore.Transaction contentTxn;
         try {
-            // TODO: not all content is strings, some is links and some is base64-ed
-            contentTxn = contentStore.put(getEntryKey(entryId),
-                    "text/plain",
-                    ContentUtils.toChannel(entry.getContent()));
+            contentTxn =
+                    entry.getContentSrc() != null ?
+                            new OutOfLineContentTransaction(entry.getContentSrc()) :
+                            contentStore.put(getEntryKey(entryId),
+                                    entry.getContentMimeType().toString(),
+                                    ContentUtils.toChannel(entry.getContent()));
         } catch (ContentStoreException e) {
             // TODO: handle for real
             throw new WebApplicationException(e);
@@ -73,6 +80,7 @@ public class CollectionOperations {
                         long now = new Date().getTime();
                         entryTuple = new EntryTuple(
                                 entryId, getNextTimestamp(), now, now, contentTxn.digest(),
+                                entry.getContentSrc() == null ? null : entry.getContentSrc().toString(),
                                 convertCategories(entry.getCategories()));
                     } else {
                         if (!AtomServerConstants.OPTIMISTIC_CONCURRENCY_OVERRIDE.equals(etag) &&
@@ -89,6 +97,7 @@ public class CollectionOperations {
                         entryTuple = entryTuple.update(getNextTimestamp(),
                                 new Date().getTime(),
                                 contentTxn.digest(),
+                                entry.getContentSrc() == null ? null : entry.getContentSrc().toString(),
                                 convertCategories(entry.getCategories()),
                                 delete);
                     }
@@ -98,7 +107,11 @@ public class CollectionOperations {
                     newEntry.setEdited(updated);
                     newEntry.setUpdated(updated);
                     newEntry.setPublished(new Date(entryTuple.created));
-                    newEntry.setContent(entry.getContent(), entry.getContentType()); // TODO: deal with content...
+                    if (entry.getContentSrc() != null) {
+                        newEntry.setContent(entry.getContentSrc(), entry.getContentMimeType().toString());
+                    } else {
+                        newEntry.setContent(entry.getContent(), entry.getContentType()); // TODO: deal with content...
+                    }
                     newEntry.addSimpleExtension(AtomServerConstants.ENTRY_ID, entryId);
                     for (Category category : entry.getCategories()) {
                         newEntry.addCategory(category);
@@ -286,6 +299,33 @@ public class CollectionOperations {
 
     //    -------utility methods
 
+    private static class OutOfLineContentTransaction implements ContentStore.Transaction {
+        byte[] digest;
+
+        OutOfLineContentTransaction(IRI src) {
+            try {
+                DigestInputStream in =
+                        new DigestInputStream(src.toURL().openStream(), MessageDigest.getInstance("MD5"));
+                IOUtils.copy(in, new OutputStream() {
+                    public void write(int b) throws IOException { /* NO-OP */ }
+                });
+                this.digest = in.getMessageDigest().digest();
+            } catch (Exception e) {
+                log.warn(String.format(
+                        "unable to retrieve content at %s to compute ETag - " +
+                                "etag is based on IRI only", src), e);
+                this.digest = DigestUtils.md5(src.toString());
+            }
+        }
+
+        public void commit() throws ContentStoreException { /* NO-OP */ }
+
+        public void abort() throws ContentStoreException { /* NO-OP */ }
+
+        public byte[] digest() throws ContentStoreException { return this.digest; }
+    }
+
+
     private Set<CategoryTuple> convertCategories(List<Category> categories) {
         if (categories == null || categories.isEmpty()) {
             return Collections.emptySet();
@@ -312,12 +352,15 @@ public class CollectionOperations {
         entry.setUpdated(updated);
         entry.setPublished(new Date(entryTuple.created));
         EntryKey key = getEntryKey(entryTuple.entryId);
-        try {
-            EntryContent entryContent = contentStore.get(key);
-            // TODO: not all content is strings, some is links and some is base64-ed
-            entry.setContent(ContentUtils.toString(entryContent.getChannel()), Content.Type.XML);
-        } catch (ContentStoreException e) {
-            throw new WebApplicationException(e);
+        if (entryTuple.contentSrc != null) {
+            entry.setContent(new IRI(entryTuple.contentSrc), "application/xml"); // TODO: content type
+        } else {
+            try {
+                EntryContent entryContent = contentStore.get(key);
+                entry.setContent(ContentUtils.toString(entryContent.getChannel()), entryContent.getType());
+            } catch (ContentStoreException e) {
+                throw new WebApplicationException(e);
+            }
         }
         for (CategoryTuple entryCategory : entryTuple.categories) {
             Category category = atompubFactory.newCategory();

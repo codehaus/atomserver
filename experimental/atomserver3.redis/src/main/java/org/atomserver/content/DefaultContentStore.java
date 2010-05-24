@@ -32,7 +32,7 @@ public class DefaultContentStore implements ContentStore {
         ContentBytes contentBytes;
         contentBytes = contentMap.get(key);
         return contentBytes == null ? null :
-               new EntryContent(contentBytes.type, ContentUtils.toChannel(contentBytes.bytes));
+                new EntryContent(contentBytes.type, ContentUtils.toChannel(contentBytes.bytes));
     }
 
     private final Map<EntryKey, ContentBytes> contentMap =

@@ -11,10 +11,10 @@ public interface ContentStore {
             throws ContentStoreException;
 
     public interface Transaction {
-        void commit();
+        void commit() throws ContentStoreException;
 
-        void abort();
+        void abort() throws ContentStoreException;
 
-        byte[] digest();
+        byte[] digest() throws ContentStoreException;
     }
 }

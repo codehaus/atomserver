@@ -25,7 +25,7 @@ public class FileContentStore implements ContentStore {
         try {
             final File tempFile = File.createTempFile("entry" + key.entryId, ".temp", root);
             DigestOutputStream os = new DigestOutputStream(
-                    new FileOutputStream(tempFile),MessageDigest.getInstance("MD5"));
+                    new FileOutputStream(tempFile), MessageDigest.getInstance("MD5"));
 
             IOUtils.copy(Channels.newInputStream(channel), os);
             os.close();

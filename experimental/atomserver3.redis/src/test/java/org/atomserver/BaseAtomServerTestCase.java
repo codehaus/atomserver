@@ -9,8 +9,14 @@ import org.apache.log4j.Logger;
 import org.atomserver.app.jaxrs.AbderaMarshaller;
 import org.atomserver.domain.Widget;
 import org.junit.*;
+import org.mortbay.jetty.Server;
+import org.mortbay.jetty.handler.AbstractHandler;
 import org.simpleframework.xml.core.Persister;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Collections;
 import java.util.Set;
@@ -26,6 +32,7 @@ public class BaseAtomServerTestCase {
     // TODO: this isn't quite the right name for this constant, with the /app - fix it.
     public static final String ROOT_URL =
             System.getProperty("atomserver.test.url", "http://localhost:8000");
+    private static Server contentServer;
 
     @BeforeClass
     public static void setUp() throws Exception {
@@ -38,6 +45,23 @@ public class BaseAtomServerTestCase {
                 return Collections.singleton(AbderaMarshaller.class);
             }
         });
+
+        contentServer = new Server(9999);
+        contentServer.addHandler(new AbstractHandler() {
+            public void handle(String target,
+                               HttpServletRequest request,
+                               HttpServletResponse response,
+                               int dispatch) throws IOException, ServletException {
+                int id = Integer.valueOf(target.substring(target.lastIndexOf("/") + 1));
+                try {
+                    PERSISTER.write(new Widget(id, "violet", "out of line content"),
+                            response.getOutputStream());
+                } catch (Exception e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+        });
+        contentServer.start();
 
         serverRoot = client.resource(ROOT_URL);
         root = serverRoot.path("app");
@@ -54,9 +78,10 @@ public class BaseAtomServerTestCase {
     }
 
     @AfterClass
-    public static void tearDown() {
+    public static void tearDown() throws Exception {
         log.debug("stopping in-memory server at " + ROOT_URL);
         server.stop();
+        contentServer.stop();
     }
 
     /**
@@ -79,21 +104,34 @@ public class BaseAtomServerTestCase {
                 getClass().getClassLoader().getResourceAsStream(location)).getRoot();
     }
 
-    public static final Category CATEGORY = AbderaMarshaller.ABDERA.getFactory().newCategory();
-
-    static {
-        CATEGORY.setScheme("urn:test.scheme");
-        CATEGORY.setTerm("test.term");
-        CATEGORY.setLabel("test.label");
-    }
+    public static final Category CATEGORY = testCategory();
 
     protected static Entry createWidgetEntry(int id, String color, String name) throws Exception {
+        return createWidgetEntry(id, color, name, false);
+    }
+
+    protected static Entry createWidgetEntry(int id, String color, String name,
+                                             boolean inlineContent) throws Exception {
         Entry entry = AbderaMarshaller.ABDERA.getFactory().newEntry();
         StringWriter stringWriter = new StringWriter();
         PERSISTER.write(new Widget(id, color, name), stringWriter);
-        entry.setContent(stringWriter.toString(), Content.Type.XML);
-        entry.addCategory(CATEGORY);
+        if (inlineContent) {
+            entry.setContent(
+                    new IRI(String.format("http://localhost:9999/%s", id)),
+                    "application/xml"); 
+        } else {
+            entry.setContent(stringWriter.toString(), Content.Type.XML);
+        }
+        entry.addCategory(testCategory());
         return entry;
+    }
+
+    private static Category testCategory() {
+        Category category = AbderaMarshaller.ABDERA.getFactory().newCategory();
+        category.setScheme("urn:test.scheme");
+        category.setTerm("test.term");
+        category.setLabel("test.label");
+        return category;
     }
 
     protected static void assertCategoriesEqual(String message,

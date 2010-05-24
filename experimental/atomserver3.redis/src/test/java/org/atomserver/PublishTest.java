@@ -35,7 +35,6 @@ public class PublishTest extends BaseAtomServerTestCase {
         ClientResponse response;
         Entry responseEntry;
 
-
         Entry widgetEntry = createWidgetEntry(1234, "red", "red widget");
 
         WebResource acme = root().path("atomserver-test").path("widgets").path("acme");
@@ -104,6 +103,41 @@ public class PublishTest extends BaseAtomServerTestCase {
         checkForEntriesInFeed(acme, "atomserver-test/widgets/acme/1234");
         checkForEntriesInFeed(categorized, "atomserver-test/widgets/acme/1234");
 
+        // TEST PUTTING AN ENTRY WITH INLINE CONTENT
+        Entry inlineWidgetEntry = createWidgetEntry(2345, "red", "red widget", true);
+        response =
+                acme.path("2345")
+                        .type(MediaType.APPLICATION_ATOM_XML)
+                        .accept(MediaType.APPLICATION_ATOM_XML)
+                        .entity(inlineWidgetEntry)
+                        .header("ETag", OPTIMISTIC_CONCURRENCY_OVERRIDE)
+                        .put(ClientResponse.class);
+        assertEquals("initial publish of an entry should return an HTTP 201 (CREATED)",
+                     201,
+                     response.getStatus());
+        responseEntry = response.getEntity(Entry.class);
+        assertEquals("expected to get the correct ID back",
+                     "atomserver-test/widgets/acme/2345",
+                     responseEntry.getId().toString());
+        assertEquals("expected to get our content back",
+                     inlineWidgetEntry.getContentSrc(),
+                     responseEntry.getContentSrc());
+        assertEquals("expected to get the requested Content-Type",
+                     MediaType.APPLICATION_ATOM_XML,
+                     response.getMetadata().getFirst("Content-Type"));
+//        assertTrue("expected MD5 ETag Header",
+//                   response.getEntityTag().getValue().matches("[a-f0-9]{32}"));
+//        assertEquals("expected MD5 Etag Element",
+//                     response.getEntityTag().getValue(),
+//                     responseEntry.getSimpleExtension(AtomServerConstants.ETAG));
+
+        checkCategoryPresent(responseEntry);
+
+        checkForEntriesInFeed(acme,
+                "atomserver-test/widgets/acme/1234", "atomserver-test/widgets/acme/2345");
+        checkForEntriesInFeed(categorized,
+                "atomserver-test/widgets/acme/1234", "atomserver-test/widgets/acme/2345");
+
         // TEST POSTING AN ENTRY
         response =
                 acme
@@ -134,10 +168,14 @@ public class PublishTest extends BaseAtomServerTestCase {
         checkCategoryPresent(responseEntry);
         checkForEntriesInFeed(acme,
                               "atomserver-test/widgets/acme/1234",
+                              "atomserver-test/widgets/acme/2345",
                               responseEntry.getId().toString());
         checkForEntriesInFeed(categorized,
                               "atomserver-test/widgets/acme/1234",
+                              "atomserver-test/widgets/acme/2345",
                               responseEntry.getId().toString());
+
+        assertEquals(1, widgetEntry.getCategories().size());
     }
 
     @Test
