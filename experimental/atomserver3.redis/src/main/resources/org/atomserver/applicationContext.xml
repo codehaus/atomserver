@@ -12,9 +12,24 @@
         <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE"/>
     </bean>
 
-    <bean class="org.atomserver.spring.SubstrateFactoryBean">
-        <!--suppress SpringModelInspection -->
-        <property name="configUri" value="${org.atomserver.core.Substrate}"/>
+    <bean class="org.atomserver.core.redis.RedisSubstrate">
+        <property name="distribution">
+            <bean class="org.atomserver.sharding.Distribution">
+                <property name="selectors">
+                    <list>
+                        <bean class="org.atomserver.sharding.Selector">
+                            <property name="regex" value=".*"/>
+                            <property name="urls">
+                                <list>
+                                    <value>redis://localhost</value>
+                                    <value>redis://localhost/2</value>
+                                </list>
+                            </property>
+                        </bean>
+                    </list>
+                </property>
+            </bean>
+        </property>
     </bean>
 
     <bean class="org.apache.abdera.Abdera"/>

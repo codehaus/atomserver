@@ -2,10 +2,8 @@ package org.atomserver.core.redis;
 
 import org.atomserver.core.EntryTuple;
 import org.atomserver.core.Substrate;
-import org.jredis.JRedis;
+import org.atomserver.sharding.Distribution;
 import org.jredis.RedisException;
-import org.jredis.ri.alphazero.JRedisClient;
-import org.jredis.ri.alphazero.connection.DefaultConnectionSpec;
 import org.jredis.ri.alphazero.support.Convert;
 import org.jredis.ri.alphazero.support.Opts;
 
@@ -19,7 +17,7 @@ import java.util.concurrent.Callable;
 public class RedisSubstrate implements Substrate {
     private static final long INTERNAL_PAGE_SIZE = 5L; // TODO: should be bigger than 5, probably 2x default page size
 
-    private JRedis redis;
+    private DistributedRedisClient redis;
 
     private final Map<String, Index> indices = new HashMap<String, Index>();
     private final Map<String, KeyValueStore<Long, EntryTuple>> entryByTimestampStores =
@@ -27,38 +25,25 @@ public class RedisSubstrate implements Substrate {
     private final Map<String, KeyValueStore<String, EntryTuple>> entryByIdStores =
             new HashMap<String, KeyValueStore<String, EntryTuple>>();
 
-    private String host = "localhost";
-    private int port = 6379;
-    private int db = 0;
-
-    public void setHost(String host) {
-        this.host = host;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-    public void setDb(int db) {
-        this.db = db;
+    public void setDistribution(Distribution distribution) {
+        redis = new DistributedRedisClient(distribution);
     }
 
     @PostConstruct
     public void init() {
-        this.redis = new JRedisClient(host, port, null /* TODO: password */, db);
     }
 
     public <T> T sync(String lockName, Callable<T> callable) throws Exception {
         try {
             long now = System.currentTimeMillis();
-            // see if we can get the lock outright
-            boolean acquired = redis.setnx(lockName, now + 1001L);
+            // see if we can at the lock outright
+            boolean acquired = redis.at(lockName).setnx(lockName, now + 1001L);
             while (!acquired) {
                 // if not, let's see if the lock has expired
-                Long timestamp = Convert.toLong(redis.get(lockName));
+                Long timestamp = Convert.toLong(redis.at(lockName).get(lockName));
                 if (timestamp < now) {
                     // if it HAS expired, atomically GETSET to acquire it
-                    timestamp = Convert.toLong(redis.getset(lockName, now + 1001L));
+                    timestamp = Convert.toLong(redis.at(lockName).getset(lockName, now + 1001L));
                     // make damn sure that someone else didn't acquire in the meantime
                     acquired = timestamp < now;
                 }
@@ -78,7 +63,7 @@ public class RedisSubstrate implements Substrate {
             returnValue = callable.call();
         } finally {
             try {
-                redis.del(lockName);
+                redis.at(lockName).del(lockName);
             } catch (RedisException e) {
                 throw new IllegalStateException(e); // TODO: handle
             }
@@ -96,8 +81,8 @@ public class RedisSubstrate implements Substrate {
 
     public synchronized long getNextTimestamp(String key) {
         try {
-            redis.setnx(timestampKey(key), 0L); // TODO: can we avoid making this call each time?
-            return redis.incr(timestampKey(key));
+            redis.at(timestampKey(key)).setnx(timestampKey(key), 0L); // TODO: can we avoid making this call each time?
+            return redis.at(timestampKey(key)).incr(timestampKey(key));
         } catch (RedisException e) {
             throw new IllegalStateException(e); // TODO: handle
         }
@@ -110,7 +95,7 @@ public class RedisSubstrate implements Substrate {
 
                 public void add(Long value) {
                     try {
-                        boolean b = redis.zadd(indexKey(key), value.doubleValue(), value);
+                        boolean b = redis.at(indexKey(key)).zadd(indexKey(key), value.doubleValue(), value);
                     } catch (RedisException e) {
                         throw new IllegalStateException(e); // TODO: handle
                     }
@@ -118,7 +103,7 @@ public class RedisSubstrate implements Substrate {
 
                 public void remove(Long value) {
                     try {
-                        redis.zrem(indexKey(key), value);
+                        redis.at(indexKey(key)).zrem(indexKey(key), value);
                     } catch (RedisException e) {
                         throw new IllegalStateException(e); // TODO: handle
                     }
@@ -140,7 +125,7 @@ public class RedisSubstrate implements Substrate {
                                 private void lookahead() {
                                     if ((page == null || !page.hasNext()) && !lastPage) {
                                         try {
-                                            List<byte[]> response = redis.zrangebyscore(
+                                            List<byte[]> response = redis.at(indexKey(key)).zrangebyscore(
                                                     indexKey(key),
                                                     current == null ? from.doubleValue() : current + 1,
                                                     1000L /*TODO:MAX*/,
@@ -177,7 +162,7 @@ public class RedisSubstrate implements Substrate {
 
                 public Long max() {
                     try {
-                        return Convert.toLong(redis.zrevrange(indexKey(key), 0, 0).get(0)); // TODO: size check
+                        return Convert.toLong(redis.at(indexKey(key)).zrevrange(indexKey(key), 0, 0).get(0)); // TODO: size check
                     } catch (RedisException e) {
                         throw new IllegalStateException(e); // TODO: handle
                     }
@@ -214,7 +199,7 @@ public class RedisSubstrate implements Substrate {
 
         public EntryTuple put(T key, EntryTuple value) {
             try {
-                redis.set(mapKey(key), value);
+                redis.at(mapKey(key)).set(mapKey(key), value);
             } catch (RedisException e) {
                 throw new IllegalStateException(e); // TODO: handle
             }
@@ -223,7 +208,7 @@ public class RedisSubstrate implements Substrate {
 
         public EntryTuple get(T key) {
             try {
-                byte[] bytes = redis.get(mapKey(key));
+                byte[] bytes = redis.at(mapKey(key)).get(mapKey(key));
                 if (bytes == null) return null;
                 ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes));
                 return (EntryTuple) ois.readObject();
@@ -235,7 +220,7 @@ public class RedisSubstrate implements Substrate {
         public EntryTuple remove(T key) {
             EntryTuple value = get(key);
             try {
-                redis.del(mapKey(key));
+                redis.at(mapKey(key)).del(mapKey(key));
             } catch (RedisException e) {
                 throw new IllegalStateException(e); // TODO: handle
             }
