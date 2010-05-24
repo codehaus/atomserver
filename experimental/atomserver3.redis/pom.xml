@@ -40,6 +40,12 @@
     <dependencies>
 
         <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>2.2</version>
+        </dependency>
+
+        <dependency>
             <groupId>servletapi</groupId>
             <artifactId>servletapi</artifactId>
             <version>2.4</version>
@@ -121,6 +127,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.perf4j</groupId>
+            <artifactId>perf4j</artifactId>
+            <version>0.9.13</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-client</artifactId>
             <version>${jersey.version}</version>
@@ -160,7 +172,7 @@
                         <systemProperty>
                             <name>org.atomserver.core.Substrate</name>
                             <!--<value>atomserver:org.atomserver.core.MemSubstrate</value>-->
-                            <value>atomserver:org.atomserver.core.RedisSubstrate;host=localhost;port=6379</value>
+                            <value>atomserver:org.atomserver.core.redis.RedisSubstrate;host=localhost;port=6379</value>
                         </systemProperty>
                     </systemProperties>
                 </configuration>
@@ -180,7 +192,7 @@
                         <property>
                             <name>org.atomserver.core.Substrate</name>
                             <!--<value>atomserver:org.atomserver.core.MemSubstrate</value>-->
-                            <value>atomserver:org.atomserver.core.RedisSubstrate;host=localhost;port=6379</value>
+                            <value>atomserver:org.atomserver.core.redis.RedisSubstrate;host=localhost;port=6379</value>
                         </property>
                     </systemProperties>
                 </configuration>
@@ -216,7 +228,7 @@
                         <systemProperty>
                             <key>org.atomserver.core.Substrate</key>
                             <!--<value>atomserver:org.atomserver.core.MemSubstrate</value>-->
-                            <value>atomserver:org.atomserver.core.RedisSubstrate;host=localhost;port=6379</value>
+                            <value>atomserver:org.atomserver.core.redis.RedisSubstrate;host=localhost;port=6379</value>
                         </systemProperty>
                     </systemProperties>
                 </configuration>

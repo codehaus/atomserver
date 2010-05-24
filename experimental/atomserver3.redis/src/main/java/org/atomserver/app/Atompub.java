@@ -1,6 +1,7 @@
 package org.atomserver.app;
 
 import org.apache.abdera.model.*;
+import org.apache.log4j.Logger;
 import org.atomserver.AtomServerConstants;
 import org.atomserver.categories.CategoryQuery;
 import org.atomserver.content.ContentStore;
@@ -26,6 +27,8 @@ import static org.atomserver.AtomServerConstants.*;
 @Component
 @Produces({APPLICATION_ATOM_XML, APPLICATION_XML, TEXT_XML})
 public class Atompub {
+    private static final Logger log = Logger.getLogger(Atompub.class);
+    
     public static final String APP_CONTEXT = "/app";
     @Autowired
     private Substrate substrate;

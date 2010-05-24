@@ -1,8 +1,11 @@
-package org.atomserver.core;
+package org.atomserver.core.redis;
 
+import org.atomserver.core.EntryTuple;
+import org.atomserver.core.Substrate;
 import org.jredis.JRedis;
 import org.jredis.RedisException;
 import org.jredis.ri.alphazero.JRedisClient;
+import org.jredis.ri.alphazero.connection.DefaultConnectionSpec;
 import org.jredis.ri.alphazero.support.Convert;
 import org.jredis.ri.alphazero.support.Opts;
 
