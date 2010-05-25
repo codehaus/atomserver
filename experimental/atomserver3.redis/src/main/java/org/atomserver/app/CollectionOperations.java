@@ -2,6 +2,7 @@ package org.atomserver.app;
 
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.model.Category;
+import org.apache.abdera.model.Content;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -79,10 +80,19 @@ public class CollectionOperations {
                             throw new NotFoundException("could not delete entry - does not exist.");
                         }
                         long now = new Date().getTime();
+                        String contentType =
+                                entry.getContentMimeType() != null ? entry.getContentMimeType().toString() :
+                                        entry.getContentType() != null ? entry.getContentType().toString() :
+                                                "application/xml"; // TODO: is this a reasonable default?
+
                         entryTuple = new EntryTuple(
-                                entryId, getNextTimestamp(), now, now, contentTxn.digest(),
+                                entryId,
+                                getNextTimestamp(),
+                                now,
+                                now,
+                                contentTxn.digest(),
                                 entry.getContentSrc() == null ? null : entry.getContentSrc().toString(),
-                                entry.getContentMimeType().toString(),
+                                contentType,
                                 convertCategories(entry.getCategories()));
                     } else {
                         if (!AtomServerConstants.OPTIMISTIC_CONCURRENCY_OVERRIDE.equals(etag) &&
@@ -175,6 +185,9 @@ public class CollectionOperations {
         feed.addSimpleExtension(AtomServerConstants.END_INDEX, String.valueOf(endIndex));
         feed.addSimpleExtension(AtomServerConstants.ETAG,
                 DigestUtils.md5Hex(entryEtagsConcatenated.toString()));
+        feed.addLink(
+                String.format("/app/%s/%s/%s?start-index=%s", serviceId, workspaceId, collectionId, endIndex),
+                "next"); // TODO: standardize how we generate URIs like this better
 
         return feed;
     }
@@ -354,15 +367,23 @@ public class CollectionOperations {
             } else {
                 try {
                     ReadableByteChannel entryContent = contentStore.get(key);
-                    entry.setContent(ContentUtils.toString(entryContent), entryTuple.contentType);
+                    Content.Type type = Content.Type.typeFromString(entryTuple.contentType);
+                    if (type == null || type == Content.Type.MEDIA) {
+                        entry.setContent(ContentUtils.toString(entryContent), entryTuple.contentType);
+                    } else {
+                        entry.setContent(ContentUtils.toString(entryContent), type);
+                    }
                 } catch (ContentStoreException e) {
                     throw new WebApplicationException(e);
                 }
             }
-        } else {
-            entry.addLink(String.format("/app/%s/%s/%s/%s",
-                    serviceId, workspaceId, collectionId, entryTuple.entryId), "alternate");
         }
+
+        String entryUri = String.format("/app/%s/%s/%s/%s",
+                serviceId, workspaceId, collectionId, entryTuple.entryId);
+        entry.addLink(entryUri, "alternate");
+        entry.addLink(entryUri, "self");
+
         for (CategoryTuple entryCategory : entryTuple.categories) {
             Category category = atompubFactory.newCategory();
             category.setScheme(entryCategory.scheme);

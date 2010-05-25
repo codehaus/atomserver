@@ -29,6 +29,8 @@ import static org.atomserver.AtomServerConstants.*;
 public class Atompub {
     private static final Logger log = Logger.getLogger(Atompub.class);
 
+    // TODO: make /app in to /app/v3, or some suitably versioned context
+    // TODO: pull this constant in programatically where it is referenced in code and tests
     public static final String APP_CONTEXT = "/app";
     @Autowired
     private Substrate substrate;
@@ -39,7 +41,7 @@ public class Atompub {
     @Autowired
     private AtompubFactory atompubFactory;
 
-    public enum FeedType { link, full }
+    public enum EntryType { link, full }
 
     @GET
     public Feed get() {
@@ -47,8 +49,15 @@ public class Atompub {
         Date latestUpdated = null;
         for (Service service : serviceDirectory.list()) {
             final Entry entry = serviceFeed.addEntry();
-            entry.setTitle(service.getSimpleExtension(NAME));
-            final Date updated = AtomDate.parse(service.getSimpleExtension(UPDATED));
+            String serviceId = service.getSimpleExtension(NAME);
+            entry.setTitle(serviceId);
+            String updatedExtension = service.getSimpleExtension(UPDATED);
+            if (updatedExtension == null) {
+                // if there was no updated extension on the service, save it to add one.
+                service(serviceId).put(service);
+                updatedExtension = service.getSimpleExtension(UPDATED);
+            }
+            final Date updated = AtomDate.parse(updatedExtension);
             latestUpdated = (latestUpdated == null || latestUpdated.before(updated)) ?
                     updated : latestUpdated;
             entry.setUpdated(updated);
@@ -123,20 +132,20 @@ public class Atompub {
 
                 @GET
                 public Response get(
-                        @QueryParam("timestamp") @DefaultValue("0") long timestamp,
+                        @QueryParam("start-index") @DefaultValue("0") long timestamp,
                         @QueryParam("max-results") @DefaultValue("100") int maxResults,
-                        @QueryParam("feed-type") @DefaultValue("link") FeedType feedType) {
-                    return get(timestamp, maxResults, feedType, null);
+                        @QueryParam("entry-type") @DefaultValue("link") EntryType entryType) {
+                    return get(timestamp, maxResults, entryType, null);
                 }
 
                 @Path("-/{categoryQuery : .*}")
                 @GET
                 public Response get(
-                        @QueryParam("timestamp") @DefaultValue("0") long timestamp,
+                        @QueryParam("start-index") @DefaultValue("0") long timestamp,
                         @QueryParam("max-results") @DefaultValue("100") int maxResults,
-                        @QueryParam("feed-type") @DefaultValue("link") FeedType feedType,
+                        @QueryParam("entry-type") @DefaultValue("link") EntryType entryType,
                         @PathParam("categoryQuery") CategoryQuery categoryQuery) {
-                    final Feed feed = getFeed(timestamp, maxResults, categoryQuery, feedType == FeedType.full);
+                    final Feed feed = getFeed(timestamp, maxResults, categoryQuery, entryType == EntryType.full);
                     return feedResponse(feed);
                 }
 

@@ -2,6 +2,8 @@ package org.atomserver.content;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -14,11 +16,19 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class FileContentStore implements ContentStore {
+
+    private static final Logger log = Logger.getLogger(FileContentStore.class);
+
     private File root;
 
     public FileContentStore(File root) {
         this.root = root;
-        this.root.mkdirs();
+        if (!this.root.mkdirs() && !this.root.isDirectory()) {
+            throw new IllegalStateException(
+                    String.format("could not create root content directory %s!",
+                            root.getAbsolutePath()));
+        }
+        log.debug(String.format("created root content directory %s", root.getAbsolutePath()));
     }
 
     public Transaction put(final EntryKey key, ReadableByteChannel channel) throws ContentStoreException {

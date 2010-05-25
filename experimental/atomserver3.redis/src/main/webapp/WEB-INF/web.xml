@@ -6,7 +6,10 @@
 
     <context-param>
         <param-name>contextConfigLocation</param-name>
-        <param-value>classpath:/org/atomserver/applicationContext.xml</param-value>
+        <param-value>
+            classpath:/org/atomserver/applicationContext.xml,
+            classpath:/org/atomserver/spring/ext/*.xml
+        </param-value>
     </context-param>
 
     <listener>
@@ -14,6 +17,11 @@
             org.springframework.web.context.ContextLoaderListener
         </listener-class>
     </listener>
+
+    <filter>
+        <filter-name>access</filter-name>
+        <filter-class>org.atomserver.app.AtompubV2Adapter</filter-class>
+    </filter>
 
     <filter>
         <description>Jersey JAX-RS Servlet Filter</description>
@@ -29,6 +37,11 @@
             <param-value>/|(/.*\.html)|(/(images|js|css)/.*)|(/perf4j)</param-value>
         </init-param>
     </filter>
+
+    <filter-mapping>
+        <filter-name>access</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 
     <filter-mapping>
         <filter-name>jersey</filter-name>

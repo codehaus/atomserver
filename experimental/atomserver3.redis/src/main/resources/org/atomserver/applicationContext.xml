@@ -12,7 +12,8 @@
         <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE"/>
     </bean>
 
-    <bean class="org.atomserver.core.redis.RedisSubstrate">
+    <bean id="org.atomserver.core.Substrate"
+          class="org.atomserver.core.redis.RedisSubstrate">
         <property name="distribution">
             <bean class="org.atomserver.sharding.Distribution">
                 <property name="selectors">
@@ -28,6 +29,28 @@
                         </bean>
                     </list>
                 </property>
+            </bean>
+        </property>
+    </bean>
+
+    <bean id="org.atomserver.content.ContentStore"
+          class="org.atomserver.content.FileContentStore">
+        <constructor-arg>
+            <bean class="java.io.File">
+                <!--TODO: should use ${java.io.tmpdir}, but that is causing problems on os-x -->
+                <constructor-arg value="/tmp"/>
+                <constructor-arg value="org.atomserver.content.ContentStore"/>
+            </bean>
+        </constructor-arg>
+    </bean>
+
+    <bean id="org.atomserver.directory.ServiceDirectory"
+          class="org.atomserver.directory.DefaultServiceDirectory">
+        <property name="diskStorage">
+            <bean class="java.io.File">
+                <!--TODO: should use ${java.io.tmpdir}, but that is causing problems on os-x -->
+                <constructor-arg value="/tmp"/>
+                <constructor-arg value="org.atomserver.directory.ServiceDirectory"/>
             </bean>
         </property>
     </bean>

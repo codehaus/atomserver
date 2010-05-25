@@ -162,7 +162,8 @@ public class RedisSubstrate implements Substrate {
 
                 public Long max() {
                     try {
-                        return Convert.toLong(redis.at(indexKey(key)).zrevrange(indexKey(key), 0, 0).get(0)); // TODO: size check
+                        List<byte[]> maxList = redis.at(indexKey(key)).zrevrange(indexKey(key), 0, 0);
+                        return maxList.isEmpty() ? 0L : Convert.toLong(maxList.get(0));
                     } catch (RedisException e) {
                         throw new IllegalStateException(e); // TODO: handle
                     }

@@ -8,7 +8,6 @@ import org.atomserver.AtomServerConstants;
 import org.atomserver.ext.Filter;
 import org.atomserver.filter.EntryFilter;
 import org.atomserver.filter.EntryFilterChain;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.*;
@@ -17,7 +16,6 @@ import java.util.*;
 
 import static org.atomserver.AtomServerConstants.UPDATED;
 
-@Component()
 public class DefaultServiceDirectory implements ServiceDirectory {
 
     private static final FileFilter XML_FILE_FILTER = new FileFilter() {
@@ -39,10 +37,10 @@ public class DefaultServiceDirectory implements ServiceDirectory {
 
     @PostConstruct 
     public synchronized void refresh() {
-        // TODO: configure the disk storage above - switch to Spring 3.0?
-        setDiskStorage(new File("target/service-directory"));
-        diskStorage.mkdirs();
-
+        if (!diskStorage.mkdirs() && !diskStorage.isDirectory()) {
+            throw new IllegalStateException(
+                    String.format("could not create service directory in %s", diskStorage));
+        }
 
         Map<String, AtomServerService> memStorage = new HashMap<String, AtomServerService>();
         for (File file : diskStorage.listFiles(XML_FILE_FILTER)) {

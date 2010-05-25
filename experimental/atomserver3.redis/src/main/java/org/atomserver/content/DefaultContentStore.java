@@ -1,13 +1,11 @@
 package org.atomserver.content;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.springframework.stereotype.Component;
 
 import java.nio.channels.ReadableByteChannel;
 import java.util.HashMap;
 import java.util.Map;
 
-@Component
 public class DefaultContentStore implements ContentStore {
 
     public Transaction put(final EntryKey key, ReadableByteChannel channel)
