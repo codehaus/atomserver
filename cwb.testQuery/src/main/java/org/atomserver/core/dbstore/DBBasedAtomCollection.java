@@ -52,10 +52,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 /**
  * A Store implementation that uses the DB to store entry meta data.
@@ -141,6 +138,11 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
 
         } catch ( AtomServerException ee ) {
             throw ee;
+        } catch ( ExecutionException ee ) {
+            throw ee.getCause() instanceof AtomServerException ?
+                    (AtomServerException)ee.getCause() :
+                    new AtomServerException("A " + ee.getCause().getClass().getSimpleName() +
+                            " caught in Transaction", ee.getCause());
         } catch( Exception ee ) {
             // NOTE: we don't explicitly rollback, because TransactionTemplate does that for us
             //       when we throw an Exception
