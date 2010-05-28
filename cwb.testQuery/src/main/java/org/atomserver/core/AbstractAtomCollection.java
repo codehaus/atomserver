@@ -1271,7 +1271,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     }
 
 
-    protected interface TransactionalTask<T> {
+    public interface TransactionalTask<T> {
         T execute();
     }
 
