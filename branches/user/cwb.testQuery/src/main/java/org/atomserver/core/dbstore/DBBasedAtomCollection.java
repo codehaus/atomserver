@@ -52,6 +52,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * A Store implementation that uses the DB to store entry meta data.
@@ -93,6 +97,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         }
     }
 
+    /*
     protected <T> T executeTransactionally(final TransactionalTask<T> task) {
         return (T) getTransactionTemplate().execute(new TransactionCallback() {
             public Object doInTransaction(TransactionStatus transactionStatus) {
@@ -106,6 +111,87 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             }
         });
     }
+    */
+
+    protected <T> T executeTransactionally(final TransactionalTask<T> task)  {
+        FutureTask<T> timeoutTask = null;
+        try {
+            // create new timeout task
+            timeoutTask = new FutureTask<T>(new Callable() {
+                public T call() throws Exception {
+                    return (T) getTransactionTemplate().execute(new TransactionCallback() {
+                        public Object doInTransaction(TransactionStatus transactionStatus) {
+                            StopWatch stopWatch = new AtomServerStopWatch();
+                            try {
+                                getEntriesDAO().acquireLock();
+                                return task.execute();
+                            } finally {
+                                stopWatch.stop("DB.txn", "DB.txn");
+                            }
+                        }
+                    });
+                }
+            });
+            // start timeout task in a new thread
+            new Thread(timeoutTask).start();
+
+            // wait for the execution to finish, timeout after X secs
+            // TODO deal with empty timeout
+            return timeoutTask.get(getTransactionTemplate().getTimeout(), TimeUnit.SECONDS);
+
+        } catch ( AtomServerException ee ) {
+            throw ee;
+        } catch( Exception ee ) {
+            // NOTE: we don't explicitly rollback, because TransactionTemplate does that for us
+            //       when we throw an Exception
+            throw new AtomServerException("A " + ee.getClass().getSimpleName() + " caught in Transaction", ee);
+        } finally {
+            timeoutTask.cancel(true);
+            timeoutTask = null;
+        }
+    }
+
+
+    /*
+    protected <T> T executeTransactionally(final TransactionalTask<T> task)  {
+        return (T) getTransactionTemplate().execute(new TransactionCallback() {
+            public Object doInTransaction(TransactionStatus transactionStatus) {
+
+                FutureTask<Object> timeoutTask = null;
+                try {
+                    // create new timeout task
+                    timeoutTask = new FutureTask<Object>(new Callable() {
+                        public Object call() throws Exception {
+                            StopWatch stopWatch = new AtomServerStopWatch();
+                             try {
+                                 getEntriesDAO().acquireLock();
+                                 return task.execute();
+                             } finally {
+                                 stopWatch.stop("DB.txn", "DB.txn");
+                             }
+                         }
+                    });
+                    // start timeout task in a new thread
+                    new Thread(timeoutTask).start();
+
+                    // wait for the execution to finish, timeout after X secs
+                    return timeoutTask.get(getTransactionTemplate().getTimeout(), TimeUnit.SECONDS);
+
+                } catch ( AtomServerException ee ) {
+                    throw ee;
+                } catch( Exception ee ) {
+                    // NOTE: we don't explicitly rollback, because TransactionTemplate does that for us
+                    //       when we throw an Exception
+                    throw new AtomServerException("A " + ee.getClass().getSimpleName() + " caught in Transaction", ee);
+                } finally {
+                    timeoutTask.cancel(true);
+                    timeoutTask = null;
+                }
+            }
+        });
+    }
+    */
+
 
     protected Object getInternalId(EntryDescriptor descriptor) {
         Object id = getEntriesDAO().selectEntryInternalId(descriptor);
