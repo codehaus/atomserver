@@ -175,8 +175,8 @@
             <url>http://repo1.maven.org/maven2/</url>
         </repository>
         <repository>
-            <id>atomserver.org</id>
-            <url>http://maven.atomserver.org/</url>
+            <id>atomserver</id>
+            <url>file://lib</url>
         </repository>
         <repository>
             <id>Codehaus</id>
@@ -484,17 +484,10 @@
         </dependency>
 
         <dependency>
-            <groupId>jfreechart</groupId>
+            <groupId>jfree</groupId>
             <artifactId>jfreechart</artifactId>
             <scope>test</scope>
-            <version>1.0.6</version>
-        </dependency>
-
-        <dependency>
-            <groupId>jcommon</groupId>
-            <artifactId>jcommon</artifactId>
-            <scope>test</scope>
-            <version>1.0.10</version>
+            <version>1.0.9</version>
         </dependency>
 
         <dependency>
