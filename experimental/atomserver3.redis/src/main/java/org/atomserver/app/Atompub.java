@@ -3,11 +3,15 @@ package org.atomserver.app;
 import org.apache.abdera.model.*;
 import org.apache.log4j.Logger;
 import org.atomserver.AtomServerConstants;
+import org.atomserver.app.jaxrs.DELETE;
+import org.atomserver.app.jaxrs.GET;
+import org.atomserver.app.jaxrs.PUT;
 import org.atomserver.categories.CategoryQuery;
 import org.atomserver.content.ContentStore;
 import org.atomserver.core.Substrate;
 import org.atomserver.directory.ServiceDirectory;
 import org.atomserver.filter.EntryFilterChain;
+import org.perf4j.StopWatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -43,7 +47,7 @@ public class Atompub {
 
     public enum EntryType { link, full }
 
-    @GET
+    @GET("service-feed")
     public Feed get() {
         final Feed serviceFeed = atompubFactory.newFeed("/", "Service Feed", "/");
         Date latestUpdated = null;
@@ -80,18 +84,18 @@ public class Atompub {
 
         public AppService(String serviceId) {this.serviceId = serviceId;}
 
-        @PUT
+        @PUT("service")
         public Service put(Service service) {
             serviceDirectory.put(serviceId, service);
             return service;
         }
 
-        @DELETE
+        @DELETE("service")
         public Service delete() {
             return serviceDirectory.remove(serviceId);
         }
 
-        @GET
+        @GET("service")
         public Service get() {
             return serviceDirectory.get(serviceId).getService();
         }
@@ -130,7 +134,7 @@ public class Atompub {
                     this.collectionId = collectionId;
                 }
 
-                @GET
+                @GET("feed")
                 public Response get(
                         @QueryParam("start-index") @DefaultValue("0") long timestamp,
                         @QueryParam("max-results") @DefaultValue("100") int maxResults,
@@ -139,7 +143,7 @@ public class Atompub {
                 }
 
                 @Path("-/{categoryQuery : .*}")
-                @GET
+                @GET("cat-feed")
                 public Response get(
                         @QueryParam("start-index") @DefaultValue("0") long timestamp,
                         @QueryParam("max-results") @DefaultValue("100") int maxResults,
@@ -172,7 +176,7 @@ public class Atompub {
 
                     public AppEntry(String entryId) {this.entryId = entryId;}
 
-                    @GET
+                    @GET("entry")
                     public Entry get() {
                         final Entry entry = getEntry(entryId);
                         if (entry == null) {
@@ -181,7 +185,7 @@ public class Atompub {
                         return entry;
                     }
 
-                    @PUT
+                    @PUT("entry")
                     public Response put(
                             @HeaderParam("ETag") String etagHeader,
                             Entry entry) {
@@ -194,7 +198,7 @@ public class Atompub {
                                 updatedEntry.getUpdated().equals(updatedEntry.getPublished()));
                     }
 
-                    @DELETE
+                    @DELETE("entry")
                     public Entry delete() {
                         // TODO: this is untested and almost certainly doesn't work - implement this completely
                         return updateEntry(entryId, null, null, true);

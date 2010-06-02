@@ -22,6 +22,7 @@ import org.atomserver.util.UnionIterator;
 import javax.ws.rs.WebApplicationException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
@@ -186,7 +187,9 @@ public class CollectionOperations {
         feed.addSimpleExtension(AtomServerConstants.ETAG,
                 DigestUtils.md5Hex(entryEtagsConcatenated.toString()));
         feed.addLink(
-                String.format("/app/%s/%s/%s?start-index=%s", serviceId, workspaceId, collectionId, endIndex),
+                String.format("/app/%s/%s/%s?start-index=%s&entry-type=%s",
+                        serviceId, workspaceId, collectionId, endIndex,
+                        fullEntries ? Atompub.EntryType.full : Atompub.EntryType.link),
                 "next"); // TODO: standardize how we generate URIs like this better
 
         return feed;
@@ -369,7 +372,8 @@ public class CollectionOperations {
                     ReadableByteChannel entryContent = contentStore.get(key);
                     Content.Type type = Content.Type.typeFromString(entryTuple.contentType);
                     if (type == null || type == Content.Type.MEDIA) {
-                        entry.setContent(ContentUtils.toString(entryContent), entryTuple.contentType);
+                        // TODO: does this stream the content??  verify.
+                        entry.setContent(Channels.newInputStream(entryContent), entryTuple.contentType);
                     } else {
                         entry.setContent(ContentUtils.toString(entryContent), type);
                     }

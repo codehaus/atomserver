@@ -1,5 +1,6 @@
 package org.atomserver.core.redis;
 
+import org.apache.log4j.Logger;
 import org.atomserver.core.EntryTuple;
 import org.atomserver.core.Substrate;
 import org.atomserver.sharding.Distribution;
@@ -15,6 +16,9 @@ import java.util.concurrent.Callable;
 
 //@Component
 public class RedisSubstrate implements Substrate {
+
+    private final Logger log = Logger.getLogger(RedisSubstrate.class);
+
     private static final long INTERNAL_PAGE_SIZE = 5L; // TODO: should be bigger than 5, probably 2x default page size
 
     private DistributedRedisClient redis;
@@ -40,12 +44,18 @@ public class RedisSubstrate implements Substrate {
             boolean acquired = redis.at(lockName).setnx(lockName, now + 1001L);
             while (!acquired) {
                 // if not, let's see if the lock has expired
-                Long timestamp = Convert.toLong(redis.at(lockName).get(lockName));
-                if (timestamp < now) {
+                Long timestamp = null;
+                try {
+                    Convert.toLong(redis.at(lockName).get(lockName));
+                } catch (Exception e) {
+                    // TODO: think about whether we need to do something here... certainly log
+                }
+                if (timestamp == null || timestamp < now) {
                     // if it HAS expired, atomically GETSET to acquire it
-                    timestamp = Convert.toLong(redis.at(lockName).getset(lockName, now + 1001L));
+                    byte[] timestampBytes = redis.at(lockName).getset(lockName, now + 1001L);
+                    timestamp = timestampBytes == null ? null : Convert.toLong(timestampBytes);
                     // make damn sure that someone else didn't acquire in the meantime
-                    acquired = timestamp < now;
+                    acquired = timestamp == null || timestamp < now;
                 }
                 if (!acquired) {
                     // if, after all that, we still haven't acquired the lock, sleep
@@ -72,11 +82,11 @@ public class RedisSubstrate implements Substrate {
     }
 
     private String timestampKey(String key) {
-        return String.format("TS::%s", key);
+        return String.format("TS::%s", key).replaceAll("\\s", "_");
     }
 
     private String indexKey(String key) {
-        return String.format("IX::%s", key);
+        return String.format("IX::%s", key).replaceAll("\\s", "_");
     }
 
     public synchronized long getNextTimestamp(String key) {
@@ -103,7 +113,9 @@ public class RedisSubstrate implements Substrate {
 
                 public void remove(Long value) {
                     try {
-                        redis.at(indexKey(key)).zrem(indexKey(key), value);
+                        String indexKey = indexKey(key);
+                        log.debug(String.format("index key = [%s]", indexKey));
+                        redis.at(indexKey).zrem(indexKey, value);
                     } catch (RedisException e) {
                         throw new IllegalStateException(e); // TODO: handle
                     }
@@ -128,7 +140,7 @@ public class RedisSubstrate implements Substrate {
                                             List<byte[]> response = redis.at(indexKey(key)).zrangebyscore(
                                                     indexKey(key),
                                                     current == null ? from.doubleValue() : current + 1,
-                                                    1000L /*TODO:MAX*/,
+                                                    10000000L /*TODO:MAX*/,
                                                     Opts.LIMIT(0L, INTERNAL_PAGE_SIZE));
                                             lastPage = response.size() < INTERNAL_PAGE_SIZE;
                                             page = response.iterator(); // TODO: max index
@@ -229,7 +241,7 @@ public class RedisSubstrate implements Substrate {
         }
 
         private String mapKey(T key) {
-            return String.format("%s::%s::%s", ns, type, key);
+            return String.format("%s::%s::%s", ns, type, key).replaceAll("\\s", "_"); // TODO: proper grammar for values
         }
     }
 }
