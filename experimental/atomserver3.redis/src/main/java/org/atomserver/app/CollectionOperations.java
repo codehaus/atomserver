@@ -20,8 +20,10 @@ import org.atomserver.util.SubtractIterator;
 import org.atomserver.util.UnionIterator;
 
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URI;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.security.DigestInputStream;
@@ -30,6 +32,7 @@ import java.util.*;
 import java.util.concurrent.Callable;
 
 import static java.lang.String.format;
+import static org.atomserver.AtomServerConstants.END_INDEX;
 
 public class CollectionOperations {
 
@@ -164,7 +167,7 @@ public class CollectionOperations {
         return entryTuple == null ? null : convertToEntry(entryTuple, true);
     }
 
-    Feed getFeed(long timestamp, int maxResults, CategoryQuery categoryQuery, boolean fullEntries) {
+    Feed getFeed(long timestamp, int maxResults, CategoryQuery categoryQuery, boolean fullEntries, UriInfo uriInfo) {
         Feed feed = atompubFactory.newFeed(collectionKey, collectionKey, collectionKey);
 
         if (categoryQuery != null) {
@@ -186,11 +189,14 @@ public class CollectionOperations {
         feed.addSimpleExtension(AtomServerConstants.END_INDEX, String.valueOf(endIndex));
         feed.addSimpleExtension(AtomServerConstants.ETAG,
                 DigestUtils.md5Hex(entryEtagsConcatenated.toString()));
-        feed.addLink(
-                String.format("/app/%s/%s/%s?start-index=%s&entry-type=%s",
-                        serviceId, workspaceId, collectionId, endIndex,
-                        fullEntries ? Atompub.EntryType.full : Atompub.EntryType.link),
-                "next"); // TODO: standardize how we generate URIs like this better
+
+        if (entryIterator.hasNext()) {
+            URI next = uriInfo.getBaseUri().relativize(
+                    uriInfo.getRequestUriBuilder().replaceQueryParam(
+                            "start-index", String.valueOf(endIndex)).build());
+
+            feed.addLink(String.format("/%s", next.toString()), "next");
+        }
 
         return feed;
     }

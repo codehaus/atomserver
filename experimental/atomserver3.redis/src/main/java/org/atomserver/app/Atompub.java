@@ -11,13 +11,14 @@ import org.atomserver.content.ContentStore;
 import org.atomserver.core.Substrate;
 import org.atomserver.directory.ServiceDirectory;
 import org.atomserver.filter.EntryFilterChain;
-import org.perf4j.StopWatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import java.util.Date;
 import java.util.UUID;
 
@@ -45,7 +46,9 @@ public class Atompub {
     @Autowired
     private AtompubFactory atompubFactory;
 
-    public enum EntryType { link, full }
+    public enum EntryType {
+        link, full
+    }
 
     @GET("service-feed")
     public Feed get() {
@@ -138,8 +141,10 @@ public class Atompub {
                 public Response get(
                         @QueryParam("start-index") @DefaultValue("0") long timestamp,
                         @QueryParam("max-results") @DefaultValue("100") int maxResults,
-                        @QueryParam("entry-type") @DefaultValue("link") EntryType entryType) {
-                    return get(timestamp, maxResults, entryType, null);
+                        @QueryParam("entry-type") @DefaultValue("link") EntryType entryType,
+                        @Context UriInfo uriInfo) {
+
+                    return get(timestamp, maxResults, entryType, null, uriInfo);
                 }
 
                 @Path("-/{categoryQuery : .*}")
@@ -148,9 +153,12 @@ public class Atompub {
                         @QueryParam("start-index") @DefaultValue("0") long timestamp,
                         @QueryParam("max-results") @DefaultValue("100") int maxResults,
                         @QueryParam("entry-type") @DefaultValue("link") EntryType entryType,
-                        @PathParam("categoryQuery") CategoryQuery categoryQuery) {
-                    final Feed feed = getFeed(timestamp, maxResults, categoryQuery, entryType == EntryType.full);
-                    return feedResponse(feed);
+                        @PathParam("categoryQuery") CategoryQuery categoryQuery,
+                        @Context UriInfo uriInfo) {
+
+                    return feedResponse(getFeed(timestamp, maxResults, categoryQuery,
+                            entryType == EntryType.full,
+                            uriInfo));
                 }
 
                 @POST

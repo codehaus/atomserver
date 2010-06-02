@@ -2,13 +2,18 @@ package org.atomserver.test;
 
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
+import junit.framework.Assert;
+import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
+import org.apache.abdera.model.Link;
 import org.apache.log4j.Logger;
 import org.atomserver.AtomServerConstants;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
+import java.util.HashMap;
+import java.util.Map;
 
 public class FeedFollower {
     private static final Logger log = Logger.getLogger(FeedFollower.class);
@@ -23,7 +28,7 @@ public class FeedFollower {
                         int pageSize,
                         int timestamp) {
         log.debug(String.format("creating new follower for %s, starting at %d",
-                                path, timestamp));        
+                path, timestamp));
         this.root = root;
         this.path = path;
         this.pageSize = pageSize;
@@ -32,7 +37,7 @@ public class FeedFollower {
 
     public Feed nextPage(EntryChecker entryChecker, PageChecker pageChecker) throws Exception {
         log.debug(String.format("next page of %s : pageSize = %d, timestamp = %d",
-                                path, pageSize, timestamp));
+                path, pageSize, timestamp));
         MultivaluedMap params = new MultivaluedMapImpl();
         params.add("max-results", String.valueOf(pageSize));
         params.add("start-index", String.valueOf(timestamp));
@@ -52,6 +57,26 @@ public class FeedFollower {
         }
 
         timestamp = Integer.valueOf(page.getSimpleExtension(AtomServerConstants.END_INDEX));
+        Link nextLink = page.getLink("next");
+        if (nextLink != null) {
+            Assert.assertEquals(nextLink.getHref().getPath(), String.format("/app/%s", path));// TODO: /app/
+            String[] parts = nextLink.getHref().getQuery().split("&");
+            Map<String, String> queryParams = new HashMap<String, String>();
+            for (String queryParam : parts) {
+                String[] nameValue = queryParam.split("=", 2);
+                queryParams.put(nameValue[0], nameValue[1]);
+            }
+            Assert.assertEquals(
+                    page.getSimpleExtension(AtomServerConstants.END_INDEX),
+                    queryParams.get("start-index"));
+            Assert.assertEquals(
+                    "full",
+                    queryParams.get("entry-type"));
+            Assert.assertEquals(
+                    String.valueOf(pageSize),
+                    queryParams.get("max-results"));
+        }
+        
         return page;
     }
 
