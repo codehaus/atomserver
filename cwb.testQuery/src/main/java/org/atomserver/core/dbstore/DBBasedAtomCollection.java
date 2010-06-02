@@ -62,6 +62,7 @@ import java.util.concurrent.*;
 public class DBBasedAtomCollection extends AbstractAtomCollection {
 
     private static final Log log = LogFactory.getLog(DBBasedAtomCollection.class);
+    private static final int DEFAULT_TXN_TIMEOUT = 300;
 
     public DBBasedAtomCollection( AtomWorkspace parentAtomWorkspace, String name ) {
         super( parentAtomWorkspace, name );
@@ -117,8 +118,10 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             new Thread(timeoutTask).start();
 
             // wait for the execution to finish, timeout after X secs
-            // TODO deal with empty timeout
-            return timeoutTask.get(getTransactionTemplate().getTimeout(), TimeUnit.SECONDS);
+            int timeout = (getTransactionTemplate().getTimeout() > 0)
+                          ? getTransactionTemplate().getTimeout() : DEFAULT_TXN_TIMEOUT;
+
+            return timeoutTask.get(timeout, TimeUnit.SECONDS);
 
         } catch ( AtomServerException ee ) {
             throw ee;
@@ -128,8 +131,6 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                     new AtomServerException("A " + ee.getCause().getClass().getSimpleName() +
                             " caught in Transaction", ee.getCause());
         } catch( Exception ee ) {
-            // NOTE: we don't explicitly rollback, because TransactionTemplate does that for us
-            //       when we throw an Exception
             throw new AtomServerException("A " + ee.getClass().getSimpleName() + " caught in Transaction", ee);
         } finally {
             timeoutTask.cancel(true);
