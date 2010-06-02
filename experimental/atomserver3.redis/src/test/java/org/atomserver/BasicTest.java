@@ -2,10 +2,7 @@ package org.atomserver;
 
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.UniformInterfaceException;
-import org.apache.abdera.model.Collection;
-import org.apache.abdera.model.Entry;
-import org.apache.abdera.model.Service;
-import org.apache.abdera.model.Workspace;
+import org.apache.abdera.model.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.atomserver.domain.Widget;
@@ -73,6 +70,14 @@ public class BasicTest extends BaseAtomServerTestCase {
         testEntryAccess();
         testMissingEntry();
         testFeedPullAfterMorePublishes();
+    }
+
+    @Test
+    public void testPullingFeedFromEmptyCollection() throws Exception {
+        Feed feed = root().path(SERVICE).path(WORKSPACE).path("empty")
+                .accept("application/atom+xml").get(Feed.class);
+        assertTrue(feed.getEntries().isEmpty());
+        assertEquals("0", feed.getSimpleExtension(AtomServerConstants.END_INDEX));
     }
 
     public void testFullFeed() throws Exception {

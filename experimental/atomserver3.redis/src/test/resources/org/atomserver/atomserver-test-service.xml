@@ -13,6 +13,10 @@
             <as:name>bigcorp</as:name>
             <atom:title>bigcorp</atom:title>
         </collection>
+        <collection>
+            <as:name>empty</as:name>
+            <atom:title>empty</atom:title>
+        </collection>
         <as:filter class="org.atomserver.test.TestingContentFilter"/>
     </workspace>
     <workspace>

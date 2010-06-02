@@ -19,7 +19,9 @@ public class RedisSubstrate implements Substrate {
 
     private final Logger log = Logger.getLogger(RedisSubstrate.class);
 
-    private static final long INTERNAL_PAGE_SIZE = 5L; // TODO: should be bigger than 5, probably 2x default page size
+    // TODO: should be bigger than 5, probably 2x default page size
+    // TODO: perhaps should dynamically compute this based on the "complexity" of any category query
+    private static final long INTERNAL_PAGE_SIZE = 5L;
 
     private DistributedRedisClient redis;
 
@@ -142,8 +144,13 @@ public class RedisSubstrate implements Substrate {
                                                     current == null ? from.doubleValue() : current + 1,
                                                     10000000L /*TODO:MAX*/,
                                                     Opts.LIMIT(0L, INTERNAL_PAGE_SIZE));
-                                            lastPage = response.size() < INTERNAL_PAGE_SIZE;
-                                            page = response.iterator(); // TODO: max index
+                                            if (response == null) {
+                                                lastPage = true;
+                                                page = Collections.<byte[]>emptySet().iterator();
+                                            } else {
+                                                lastPage = response.size() < INTERNAL_PAGE_SIZE;
+                                                page = response.iterator(); // TODO: max index
+                                            }
                                         } catch (RedisException e) {
                                             throw new IllegalStateException(e);
                                         }
@@ -175,7 +182,9 @@ public class RedisSubstrate implements Substrate {
                 public Long max() {
                     try {
                         List<byte[]> maxList = redis.at(indexKey(key)).zrevrange(indexKey(key), 0, 0);
-                        return maxList.isEmpty() ? 0L : Convert.toLong(maxList.get(0));
+                        return maxList == null || maxList.isEmpty() ?
+                                0L :
+                                Convert.toLong(maxList.get(0));
                     } catch (RedisException e) {
                         throw new IllegalStateException(e); // TODO: handle
                     }
