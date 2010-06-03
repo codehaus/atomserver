@@ -176,8 +176,8 @@
             <url>http://repo1.maven.org/maven2/</url>
         </repository>
         <repository>
-            <id>atomserver.org</id>
-            <url>http://maven.atomserver.org/</url>
+            <id>atomserver</id>
+            <url>file://lib</url>
         </repository>
         <repository>
             <id>Codehaus</id>
