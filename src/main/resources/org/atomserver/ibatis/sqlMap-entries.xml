@@ -42,11 +42,19 @@
             ON searchCategories.EntryStoreId = entry.EntryStoreId
         <isNotNull property="categoryFilterSql">AND ($categoryFilterSql$)</isNotNull>
         </isNotNull>
-         WHERE UpdateDate >= #updatedMin#
+        <isNotNull property="categoryQueryScheme">
+        INNER JOIN EntryCategory searchCategories
+            ON searchCategories.EntryStoreId = entry.EntryStoreId
+           AND searchCategories.Scheme = '$categoryQueryScheme$'
+           AND searchCategories.Term = '$categoryQueryTerm$'
+        </isNotNull>
+        WHERE UpdateTimestamp > CAST($startIndex$ AS <include refid="timestampType"/>)
+        <isNotNull property="updatedMin">
+            AND UpdateDate >= #updatedMin#
+        </isNotNull>
         <isNotNull property="updatedMax">
             <![CDATA[ AND UpdateDate < #updatedMax# ]]>
         </isNotNull>
-           AND UpdateTimestamp > CAST($startIndex$ AS <include refid="timestampType"/>)
         <isNotEqual property="endIndex" compareValue="-1">
             AND UpdateTimestamp &lt;= CAST($endIndex$ AS <include refid="timestampType"/>)
         </isNotEqual>
@@ -117,12 +125,20 @@
                   ON searchCategories.EntryStoreId = entry.EntryStoreId
               <isNotNull property="categoryFilterSql">AND ($categoryFilterSql$)</isNotNull>
               </isNotNull>
-               WHERE UpdateDate >= #updatedMin#
+              <isNotNull property="categoryQueryScheme">
+               <include refid="INNER_LOOP_JOIN"/> EntryCategory searchCategories
+                  ON searchCategories.EntryStoreId = entry.EntryStoreId
+                 AND searchCategories.Scheme = '$categoryQueryScheme$'
+                 AND searchCategories.Term = '$categoryQueryTerm$'
+              </isNotNull>
+              WHERE UpdateTimestamp > CAST($startIndex$ AS <include refid="timestampType"/>)
+              <isNotNull property="updatedMin">
+                  AND UpdateDate >= #updatedMin#
+              </isNotNull>
               <isNotNull property="updatedMax">
                   <![CDATA[ AND UpdateDate < #updatedMax# ]]>
               </isNotNull>
-                 AND UpdateTimestamp > CAST($startIndex$ AS <include refid="timestampType"/>)
-              <isNotEqual property="endIndex" compareValue="-1">
+               <isNotEqual property="endIndex" compareValue="-1">
                   AND UpdateTimestamp &lt;= CAST($endIndex$ AS <include refid="timestampType"/>)
               </isNotEqual>
               <isNotNull property="latencySeconds">

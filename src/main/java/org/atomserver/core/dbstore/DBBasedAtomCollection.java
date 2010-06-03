@@ -52,6 +52,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * A Store implementation that uses the DB to store entry meta data.
@@ -61,6 +62,7 @@ import java.util.*;
 public class DBBasedAtomCollection extends AbstractAtomCollection {
 
     private static final Log log = LogFactory.getLog(DBBasedAtomCollection.class);
+    private static final int DEFAULT_TXN_TIMEOUT = 300;
 
     public DBBasedAtomCollection( AtomWorkspace parentAtomWorkspace, String name ) {
         super( parentAtomWorkspace, name );
@@ -93,18 +95,47 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         }
     }
 
-    protected <T> T executeTransactionally(final TransactionalTask<T> task) {
-        return (T) getTransactionTemplate().execute(new TransactionCallback() {
-            public Object doInTransaction(TransactionStatus transactionStatus) {
-                StopWatch stopWatch = new AtomServerStopWatch();
-                try {
-                    getEntriesDAO().acquireLock();
-                    return task.execute();
-                } finally {
-                    stopWatch.stop("DB.txn", "DB.txn");
+    protected <T> T executeTransactionally(final TransactionalTask<T> task)  {
+        FutureTask<T> timeoutTask = null;
+        try {
+            // create new timeout task
+            timeoutTask = new FutureTask<T>(new Callable() {
+                public T call() throws Exception {
+                    return (T) getTransactionTemplate().execute(new TransactionCallback() {
+                        public Object doInTransaction(TransactionStatus transactionStatus) {
+                            StopWatch stopWatch = new AtomServerStopWatch();
+                            try {
+                                getEntriesDAO().acquireLock();
+                                return task.execute();
+                            } finally {
+                                stopWatch.stop("DB.txn", "DB.txn");
+                            }
+                        }
+                    });
                 }
-            }
-        });
+            });
+            // start timeout task in a new thread
+            new Thread(timeoutTask).start();
+
+            // wait for the execution to finish, timeout after X secs
+            int timeout = (getTransactionTemplate().getTimeout() > 0)
+                          ? getTransactionTemplate().getTimeout() : DEFAULT_TXN_TIMEOUT;
+
+            return timeoutTask.get(timeout, TimeUnit.SECONDS);
+
+        } catch ( AtomServerException ee ) {
+            throw ee;
+        } catch ( ExecutionException ee ) {
+            throw ee.getCause() instanceof AtomServerException ?
+                    (AtomServerException)ee.getCause() :
+                    new AtomServerException("A " + ee.getCause().getClass().getSimpleName() +
+                            " caught in Transaction", ee.getCause());
+        } catch( Exception ee ) {
+            throw new AtomServerException("A " + ee.getClass().getSimpleName() + " caught in Transaction", ee);
+        } finally {
+            timeoutTask.cancel(true);
+            timeoutTask = null;
+        }
     }
 
     protected Object getInternalId(EntryDescriptor descriptor) {

@@ -104,7 +104,7 @@
             <isNotNull property="pageSize">
                 <isNotEqual property="pageSize" compareValue="0">
                     <isNotEqual property="dbType" compareValue="sqlserver">
-                        LIMIT #pageSize#
+                        LIMIT $pageSize$
                     </isNotEqual>
                 </isNotEqual>
             </isNotNull>

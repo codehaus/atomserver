@@ -30,6 +30,7 @@ import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
 import org.atomserver.utils.locale.LocaleUtils;
 import org.atomserver.utils.logic.BooleanExpression;
+import org.atomserver.utils.logic.BooleanTerm;
 import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
 import org.atomserver.utils.perf.AtomServerStopWatch;
 import org.perf4j.StopWatch;
@@ -629,10 +630,17 @@ public class EntriesDAOiBatisImpl
                                                                 pageSize, locale, feed);
 
             if (categoryQuery != null && !categoryQuery.isEmpty()) {
-                paramMap.param("categoryFilterSql",
-                               CategoryQueryGenerator.generateCategoryFilter(categoryQuery));
-                paramMap.param("categoryQuerySql",
-                               CategoryQueryGenerator.generateCategorySearch(categoryQuery));
+                BooleanExpression<AtomCategory> firstExpression = categoryQuery.iterator().next();
+                if (categoryQuery.size() == 1 && firstExpression instanceof BooleanTerm) {
+                    BooleanTerm<AtomCategory> singleTermQuery = (BooleanTerm<AtomCategory>) firstExpression;
+                    paramMap.param("categoryQueryScheme", singleTermQuery.getValue().getScheme());
+                    paramMap.param("categoryQueryTerm", singleTermQuery.getValue().getTerm());
+                } else {
+                    paramMap.param("categoryFilterSql",
+                                   CategoryQueryGenerator.generateCategoryFilter(categoryQuery));
+                    paramMap.param("categoryQuerySql",
+                                   CategoryQueryGenerator.generateCategorySearch(categoryQuery));
+                }
             }
 
             if (latencySeconds > 0) {
@@ -652,6 +660,11 @@ public class EntriesDAOiBatisImpl
     ParamMap prepareParamMapForSelectEntries(Date updatedMin, Date updatedMax,
                                              int startIndex, int endIndex,
                                              int pageSize, String locale, FeedDescriptor feed) {
+
+        if ( updatedMin != null && updatedMin.equals(ZERO_DATE) ) {
+            updatedMin = null;
+        }
+
         ParamMap paramMap = paramMap()
                 .param("workspace", feed.getWorkspace())
                 .param("updatedMin", updatedMin)
