@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation=" http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation=" http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -92,26 +93,26 @@
                 <role>developer</role>
             </roles>
         </developer>
-      <developer>
-          <id>avictoria</id>
-          <name>Alex Victoria</name>
-          <email>alex@atomserver.org</email>
-          <organization>atomserver.org</organization>
-          <timezone>-6</timezone>
-          <roles>
-              <role>developer</role>
-          </roles>
-      </developer>
-      <developer>
-          <id>wbo</id>
-          <name>Win Bo</name>
-          <email>wbo@atomserver.org</email>
-          <organization>atomserver.org</organization>
-          <timezone>-6</timezone>
-          <roles>
-              <role>developer</role>
-          </roles>
-      </developer>
+        <developer>
+            <id>avictoria</id>
+            <name>Alex Victoria</name>
+            <email>alex@atomserver.org</email>
+            <organization>atomserver.org</organization>
+            <timezone>-6</timezone>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>wbo</id>
+            <name>Win Bo</name>
+            <email>wbo@atomserver.org</email>
+            <organization>atomserver.org</organization>
+            <timezone>-6</timezone>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
     </developers>
 
     <scm>
@@ -142,8 +143,8 @@
         <dataDir>file:target/var</dataDir>
 
         <!-- configuration dirs -->
-        <confDir />
-        <opsConfDir />
+        <confDir/>
+        <opsConfDir/>
 
         <!-- JMX (jmxBeans.xml) -->
         <jmxHttpPort>50505</jmxHttpPort>
@@ -190,10 +191,10 @@
             <id>relaxng4j</id>
             <url>http://relaxng4j.googlecode.com/svn/repo/</url>
         </repository>
-	<repository>
-	    <id>snapshotCodeHaus</id>
-	    <url>http://snapshots.repository.codehaus.org/</url>
-	</repository>
+        <repository>
+            <id>snapshotCodeHaus</id>
+            <url>http://snapshots.repository.codehaus.org/</url>
+        </repository>
     </repositories>
 
     <pluginRepositories>
@@ -215,8 +216,8 @@
         </pluginRepository>
 
         <pluginRepository>
-          <id>maven snapshots</id>
-          <url>http://people.apache.org/repo/m2-snapshot-repository/</url>
+            <id>maven snapshots</id>
+            <url>http://people.apache.org/repo/m2-snapshot-repository/</url>
         </pluginRepository>
 
     </pluginRepositories>
@@ -311,7 +312,7 @@
             <artifactId>abdera-extensions-main</artifactId>
             <version>${abderaVersion}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.atomserver.abdera</groupId>
             <artifactId>abdera-spring</artifactId>
@@ -518,7 +519,7 @@
                             <archiveClasses>true</archiveClasses>
                             <!-- when this is available, in 2.1-alpha-2
                                  we can get rid of teh extra assembly execution below -->
-                            <!-- <attachClasses>true</attachClasses> --> 
+                            <!-- <attachClasses>true</attachClasses> -->
                         </configuration>
                     </execution>
                 </executions>
@@ -526,22 +527,22 @@
 
             <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
             <plugin>
-               <groupId>org.apache.maven.plugins</groupId>
-               <artifactId>maven-dependency-plugin</artifactId>
-               <executions>
-                 <execution>
-                   <id>copy-dependencies</id>
-                   <phase>package</phase>
-                   <goals>
-                     <goal>copy-dependencies</goal>
-                   </goals>
-                   <configuration>
-                     <outputDirectory>${project.build.directory}/jetty-lib</outputDirectory>
-                     <includeGroupIds>org.mortbay.jetty</includeGroupIds>
-                   </configuration>
-                 </execution>
-               </executions>
-             </plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/jetty-lib</outputDirectory>
+                            <includeGroupIds>org.mortbay.jetty</includeGroupIds>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 
             <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
             <plugin>
@@ -577,17 +578,17 @@
                         <inherited>false</inherited>
                         <configuration>
                             <tasks>
-                                <mkdir dir="${project.build.directory}" />
+                                <mkdir dir="${project.build.directory}"/>
                                 <exec executable="svn" output="${project.build.directory}/version.properties">
-                                    <arg value="info" />
-                                    <arg value="." />
+                                    <arg value="info"/>
+                                    <arg value="."/>
                                     <redirector>
                                         <outputfilterchain>
                                             <linecontains>
-                                                <contains value="Revision" />
+                                                <contains value="Revision"/>
                                             </linecontains>
                                             <tokenfilter>
-                                                <replacestring from="Revision: " to="atomserver.revision=" />
+                                                <replacestring from="Revision: " to="atomserver.revision="/>
                                             </tokenfilter>
                                         </outputfilterchain>
                                     </redirector>
@@ -595,7 +596,7 @@
                                 <echo file="${project.build.directory}/version.properties" append="true">
                                     atomserver.version=${project.version}
                                 </echo>
-                                <fixcrlf srcdir="${project.build.directory}" eol="lf" includes="version.properties" />
+                                <fixcrlf srcdir="${project.build.directory}" eol="lf" includes="version.properties"/>
                             </tasks>
                         </configuration>
                         <goals>

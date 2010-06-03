@@ -30,6 +30,9 @@ import org.atomserver.core.BaseEntryDescriptor;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.utils.PartitionPathGenerator;
 import org.atomserver.utils.PrefixPartitionPathGenerator;
+import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
+import org.atomserver.utils.perf.AtomServerStopWatch;
+import org.perf4j.StopWatch;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
 
@@ -295,53 +298,60 @@ public class FileBasedContentStorage implements ContentStorage {
      * TODO: per Chris, we may be able to simplify this and remove the retries, because we never overwrite the same file multiple times anymore.
      */
     public String getContent(EntryDescriptor descriptor) {
+        StopWatch stopWatch = new AtomServerStopWatch();
+        try {
 
-        if (descriptor.getRevision() == EntryDescriptor.UNDEFINED_REVISION) {
-            String msg = "The revision number is UNDEFINED when attempting to GET the XML file for "
-                         + descriptor;
-            log.error(msg);
-            throw new AtomServerException(msg);
-        }
+            if (descriptor.getRevision() == EntryDescriptor.UNDEFINED_REVISION) {
+                String msg = "The revision number is UNDEFINED when attempting to GET the XML file for "
+                             + descriptor;
+                log.error(msg);
+                throw new AtomServerException(msg);
+            }
 
-        String result = null;
-        int retries = 0;
-        boolean finished = false;
-        IOException exceptionThrown = null;
+            String result = null;
+            int retries = 0;
+            boolean finished = false;
+            IOException exceptionThrown = null;
 
-        while (!finished && (retries < MAX_RETRIES)) {
-            result = null;
-            exceptionThrown = null;
-            try {
-                File file = findExistingEntryFile(descriptor);
+            while (!finished && (retries < MAX_RETRIES)) {
+                result = null;
+                exceptionThrown = null;
+                try {
+                    File file = findExistingEntryFile(descriptor);
 
-                if (file == null) {
-                    log.warn("getFileLocation() returned NULL getting XML data for entry::  " + descriptor);
+                    if (file == null) {
+                        log.warn("getFileLocation() returned NULL getting XML data for entry::  " + descriptor);
+                    } else {
+                        result = readFileToString(file);
+                    }
+                } catch (IOException ioe) {
+                    log.warn("IOException getting XML data for entry " + descriptor + " Caused by " + ioe.getMessage());
+                    exceptionThrown = ioe;
+                }
+
+                if ((exceptionThrown == null) && (result != null)) {
+                    finished = true;
                 } else {
-                    result = readFileToString(file);
+                    try { Thread.sleep(SLEEP_BETWEEN_RETRY); }
+                    catch (InterruptedException ee) {
+                        // never interrupted
+                    }
+                    retries++;
                 }
-            } catch (IOException ioe) {
-                log.warn("IOException getting XML data for entry " + descriptor + " Caused by " + ioe.getMessage());
-                exceptionThrown = ioe;
             }
 
-            if ((exceptionThrown == null) && (result != null)) {
-                finished = true;
-            } else {
-                try { Thread.sleep(SLEEP_BETWEEN_RETRY); }
-                catch (InterruptedException ee) {
-                    // never interrupted
-                }
-                retries++;
+            if (exceptionThrown != null) {
+                String msg = MessageFormat.format("IOException getting XML data for entry {0} :: Reason {1}",
+                                                  descriptor, exceptionThrown.getMessage());
+                log.error(msg, exceptionThrown);
+                throw new AtomServerException(msg, exceptionThrown);
             }
+            return result;
+
+        } finally {
+            stopWatch.stop("XML.fine.getFileContent", AtomServerPerfLogTagFormatter.getPerfLogEntryString(descriptor));
         }
 
-        if (exceptionThrown != null) {
-            String msg = MessageFormat.format("IOException getting XML data for entry {0} :: Reason {1}",
-                                              descriptor, exceptionThrown.getMessage());
-            log.error(msg, exceptionThrown);
-            throw new AtomServerException(msg, exceptionThrown);
-        }
-        return result;
     }
 
 
