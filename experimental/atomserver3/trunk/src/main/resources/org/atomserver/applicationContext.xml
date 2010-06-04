@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+
+    <context:component-scan base-package="org.atomserver"/>
+
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE"/>
+    </bean>
+
+    <bean id="org.atomserver.core.Substrate"
+          class="org.atomserver.core.redis.RedisSubstrate">
+        <property name="distribution">
+            <bean class="org.atomserver.sharding.Distribution">
+                <property name="selectors">
+                    <list>
+                        <bean class="org.atomserver.sharding.Selector">
+                            <property name="regex" value=".*"/>
+                            <property name="urls">
+                                <list>
+                                    <value>redis://localhost</value>
+                                    <value>redis://localhost/2</value>
+                                </list>
+                            </property>
+                        </bean>
+                    </list>
+                </property>
+            </bean>
+        </property>
+    </bean>
+
+    <bean id="org.atomserver.content.ContentStore"
+          class="org.atomserver.content.FileContentStore">
+        <constructor-arg>
+            <bean class="java.io.File">
+                <!--TODO: should use ${java.io.tmpdir}, but that is causing problems on os-x -->
+                <constructor-arg value="/tmp"/>
+                <constructor-arg value="org.atomserver.content.ContentStore"/>
+            </bean>
+        </constructor-arg>
+    </bean>
+
+    <bean id="org.atomserver.directory.ServiceDirectory"
+          class="org.atomserver.directory.DefaultServiceDirectory">
+        <property name="diskStorage">
+            <bean class="java.io.File">
+                <!--TODO: should use ${java.io.tmpdir}, but that is causing problems on os-x -->
+                <constructor-arg value="/tmp"/>
+                <constructor-arg value="org.atomserver.directory.ServiceDirectory"/>
+            </bean>
+        </property>
+    </bean>
+
+    <bean class="org.apache.abdera.Abdera"/>
+
+    <!--TODO: complete JMX integration-->
+    <context:mbean-export registration="replaceExisting"/>
+
+</beans>
+
+
