@@ -24,9 +24,6 @@ public class PublishTest extends BaseAtomServerTestCase {
         root().path("atomserver-test").type(MediaType.APPLICATION_XML)
                 .entity(parse("org/atomserver/atomserver-test-service.xml"))
                 .put(ClientResponse.class);
-//        root().type(MediaType.APPLICATION_XML)
-//                .entity(parse("org/atomserver/atomserver-test-service.xml"))
-//                .post(ClientResponse.class);
     }
 
 

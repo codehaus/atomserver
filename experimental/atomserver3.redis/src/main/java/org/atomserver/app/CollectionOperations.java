@@ -20,6 +20,7 @@ import org.atomserver.util.SubtractIterator;
 import org.atomserver.util.UnionIterator;
 
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -32,13 +33,12 @@ import java.util.*;
 import java.util.concurrent.Callable;
 
 import static java.lang.String.format;
-import static org.atomserver.AtomServerConstants.END_INDEX;
 
 public class CollectionOperations {
 
     private static final Logger log = Logger.getLogger(CollectionOperations.class);
 
-    public Entry updateEntry(final String entryId, final String etag, final Entry entry, final boolean delete) {
+    public Entry updateEntry(final String entryId, final String etag, final Entry entry) {
 
         log.debug(String.format("PUTting entry %s", entryId));
 
@@ -80,9 +80,6 @@ public class CollectionOperations {
                                             "but this is a new Entry",
                                             etag));
                         }
-                        if (delete) {
-                            throw new NotFoundException("could not delete entry - does not exist.");
-                        }
                         long now = new Date().getTime();
                         String contentType =
                                 entry.getContentMimeType() != null ? entry.getContentMimeType().toString() :
@@ -116,7 +113,7 @@ public class CollectionOperations {
                                 entry.getContentSrc() == null ? null : entry.getContentSrc().toString(),
                                 entry.getContentMimeType().toString(),
                                 convertCategories(entry.getCategories()),
-                                delete);
+                                false);
                     }
                     updateEntryNodeIntoIndices(entryTuple);
 
@@ -149,17 +146,64 @@ public class CollectionOperations {
             } catch (ContentStoreException inner) {
                 log.error("exception aborting content transaction", inner);
             }
-            if (e instanceof AtompubException) {
-                throw (AtompubException) e;
-            }
-            final String message = "unknown internal exception";
-            log.error(message, e);
-            throw new AtompubServerException(message);
+            throw asAtompubException(e);
         }
+    }
+
+    // TODO: this has no tests - probably doesn't work - just checking in to complete the API, but will still need much attention.
+    public void deleteEntry(final String entryId, final String etag) {
+
+        log.debug(String.format("DELETEing entry %s", entryId));
+
+        sync(new Runnable() {
+            public void run() {
+                EntryTuple entryTuple = removeEntryNodeFromIndices(entryId);
+                if (entryTuple == null) {
+                    throw new NotFoundException("could not delete entry - does not exist.");
+                } else {
+                    if (!AtomServerConstants.OPTIMISTIC_CONCURRENCY_OVERRIDE.equals(etag) &&
+                            !(entryTuple.digest == null ?
+                                    etag == null :
+                                    HexUtil.toHexString(entryTuple.digest).equals(etag))) {
+
+                        throw new OptimisticConcurrencyException(
+                                format("Optimistic Concurrency Exception - provided ETag (%s) does " +
+                                        "not match previous ETag value of (%s)",
+                                        etag, HexUtil.toHexString(entryTuple.digest)));
+                    }
+                    entryTuple = entryTuple.delete(getNextTimestamp(), new Date().getTime());
+                }
+                updateEntryNodeIntoIndices(entryTuple);
+
+                log.debug(String.format("successfully DELETED entry %s", entryId));
+            }
+        });
+    }    
+
+    private AtompubException asAtompubException(Exception e) {
+        if (e instanceof AtompubException) {
+            return (AtompubException) e;
+        }
+        final String message = "unknown internal exception";
+        log.error(message, e);
+        return new AtompubServerException(message);
     }
 
     private Entry sync(Callable<Entry> callable) throws Exception {
         return substrate.sync(collectionKey, callable);
+    }
+
+    private void sync(final Runnable task) {
+        try {
+            substrate.sync(collectionKey, new Callable<Object>() {
+                public Object call() throws Exception {
+                    task.run();
+                    return null;
+                }
+            });
+        } catch (Exception e) {
+            throw asAtompubException(e);
+        }
     }
 
     Entry getEntry(String entryId) {
@@ -389,7 +433,8 @@ public class CollectionOperations {
             }
         }
 
-        String entryUri = String.format("/app/%s/%s/%s/%s",
+        String entryUri = String.format("%s/%s/%s/%s/%s",
+                UriBuilder.fromResource(Atompub.class).build().toString(),
                 serviceId, workspaceId, collectionId, entryTuple.entryId);
         entry.addLink(entryUri, "alternate");
         entry.addLink(entryUri, "self");

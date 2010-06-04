@@ -37,14 +37,30 @@ public class Atompub {
     // TODO: make /app in to /app/v3, or some suitably versioned context
     // TODO: pull this constant in programatically where it is referenced in code and tests
     public static final String APP_CONTEXT = "/app";
-    @Autowired
     private Substrate substrate;
-    @Autowired
     private ServiceDirectory serviceDirectory;
-    @Autowired
     private ContentStore contentStore;
-    @Autowired
     private AtompubFactory atompubFactory;
+
+    @Autowired
+    public void setSubstrate(Substrate substrate) {
+        this.substrate = substrate;
+    }
+
+    @Autowired
+    public void setServiceDirectory(ServiceDirectory serviceDirectory) {
+        this.serviceDirectory = serviceDirectory;
+    }
+
+    @Autowired
+    public void setContentStore(ContentStore contentStore) {
+        this.contentStore = contentStore;
+    }
+
+    @Autowired
+    public void setAtompubFactory(AtompubFactory atompubFactory) {
+        this.atompubFactory = atompubFactory;
+    }
 
     public enum EntryType {
         link, full
@@ -200,16 +216,15 @@ public class Atompub {
                         final EntryFilterChain entryFilterChain =
                                 serviceDirectory.get(serviceId).getEntryFilterChain(workspaceId, collectionId);
                         entryFilterChain.doChain(entry);
-                        final Entry updatedEntry = updateEntry(entryId, extractEtag(etagHeader, entry), entry, false);
+                        final Entry updatedEntry = updateEntry(entryId, extractEtag(etagHeader, entry), entry);
                         return entryResponse(
                                 updatedEntry,
                                 updatedEntry.getUpdated().equals(updatedEntry.getPublished()));
                     }
 
                     @DELETE("entry")
-                    public Entry delete() {
-                        // TODO: this is untested and almost certainly doesn't work - implement this completely
-                        return updateEntry(entryId, null, null, true);
+                    public void delete(@HeaderParam("ETag") String etagHeader) {
+                        deleteEntry(entryId, etagHeader);
                     }
 
                     public String toString() {

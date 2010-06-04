@@ -48,6 +48,20 @@ public class EntryTuple implements Serializable {
         this.deleted = deleted;
     }
 
+
+    public EntryTuple update(long timestamp,
+                             long updated,
+                             byte[] digest,
+                             String contentSrc,
+                             String contentType,
+                             Set<CategoryTuple> categories) {
+        return update(timestamp, updated, digest, contentSrc, contentType, categories, false);
+    }
+
+    public EntryTuple delete(Long nextTimestamp, long time) {
+        return update(nextTimestamp, time, this.digest, this.contentSrc, this.contentType, this.categories, true);
+    }
+
     public EntryTuple update(long timestamp,
                              long updated,
                              byte[] digest,
