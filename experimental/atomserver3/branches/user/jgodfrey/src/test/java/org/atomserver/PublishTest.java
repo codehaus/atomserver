@@ -36,7 +36,7 @@ public class PublishTest extends BaseAtomServerTestCase {
 
         WebResource acme = root().path("atomserver-test").path("widgets").path("acme");
         WebResource categorized = acme.path("-").path("(urn:test.scheme)test.term");
-
+        
 
         // TEST PUTTING AN ENTRY
         response =
@@ -391,7 +391,37 @@ public class PublishTest extends BaseAtomServerTestCase {
                               CATEGORY,
                               entry.getCategories().get(0), false);
     }
+    /**
+     * Checks that the alternate and self links reference entry with same id as parameter entry
+     * @author jgodfrey
+     */
+    private void checkEntryLinks(Entry entry){
+        ClientResponse response;
+        WebResource feedResource;
+        Entry recieved_Entry;
+        String alt_Link, self_Link;
+        
+        //Test Self Link
+        assertTrue("Self Link does not exist", (self_Link = entry.getSelfLinkResolvedHref().toString()) != null);
+        feedResource = serverRoot().path(self_Link);        
+        response =
+            feedResource.type(MediaType.APPLICATION_ATOM_XML).get(ClientResponse.class);
+        recieved_Entry = response.getEntity(Entry.class);
+        
+        assertEquals("Self Link does not reference correct entry",entry.getId(),recieved_Entry.getId());
+        
+        //Test Alternate Link
+        assertTrue("Alternate Link does not exist", (alt_Link = entry.getAlternateLinkResolvedHref().toString()) != null);
 
+        feedResource = serverRoot().path(alt_Link);        
+        response =
+            feedResource.type(MediaType.APPLICATION_ATOM_XML).get(ClientResponse.class);
+        recieved_Entry = response.getEntity(Entry.class);
+        
+        assertEquals("Alternate Link does not reference correct entry",entry.getId(),recieved_Entry.getId());
+        
+        
+    }
     private void checkForEntriesInFeed(WebResource feedResource,
                                        String... expectedIds) throws Exception {
         ClientResponse response =
@@ -413,6 +443,7 @@ public class PublishTest extends BaseAtomServerTestCase {
                          expectedIds[i],
                          entry.getId().toString());
             checkCategoryPresent(entry);
+            checkEntryLinks(entry);
             assertTrue("expected MD5 ETag Header",
                        entry.getSimpleExtension(AtomServerConstants.ETAG).matches("[a-f0-9]{32}"));
         }

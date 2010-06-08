@@ -94,6 +94,15 @@ public class BaseAtomServerTestCase {
     }
 
     /**
+     * return the root WebResource for the host server
+     *
+     * @return the host root WebResource
+     */
+    protected static WebResource serverRoot() {
+        return serverRoot;
+    }
+    
+    /**
      * parse the XML resource at the given location into an Abdera Element.
      *
      * @param location the location in the classpath of the XML resource
