@@ -67,6 +67,7 @@ public class BasicTest extends BaseAtomServerTestCase {
     public void testBasicFunctionality() throws Exception {
         testFullFeed();
         testCategorizedFeeds();
+        testNonExistentCategory();
         testEntryAccess();
         testMissingEntry();
         testFeedPullAfterMorePublishes();
@@ -79,13 +80,53 @@ public class BasicTest extends BaseAtomServerTestCase {
         assertTrue(feed.getEntries().isEmpty());
         assertEquals("0", feed.getSimpleExtension(AtomServerConstants.END_INDEX));
     }
+    
+    public void testNonExistentCategory() throws Exception {
+        testEmptyFeed("(urn:fake)cat");
+        testEmptyFeed("(urn:fake)cat/(urn:parity)even");
+        testEmptyFeed("AND/(urn:fake)cat/(urn:parity)even");
+        testEvenParityFeed("OR/(urn:fake)cat/(urn:parity)even");
+        testFullFeed("NOT/(urn:fake)cat");
+        testEvenParityFeed("AND/(urn:parity)even/NOT/(urn:fake)cat");
+    }
 
-    public void testFullFeed() throws Exception {
+    public void testEmptyFeed(String... query) throws Exception {
+
+        FeedFollower follower = new FeedFollower(
+                root(),
+                String.format("%s/%s/%s/%s",
+                        SERVICE, WORKSPACE, COLLECTION,
+                        query.length != 0 ? "-/"+query[0] : "" ), 10, 0);
+        assertEquals("Empty Feed Expected", 0, follower.follow());
+    }
+
+    public void testEvenParityFeed(String... query) throws Exception {
+
+        FeedFollower follower = new FeedFollower(
+                root(),
+                String.format("%s/%s/%s/%s",
+                        SERVICE, WORKSPACE, COLLECTION,
+                        query.length != 0 ? "-/"+query[0] : "" ), 10, 0);
+        assertEquals((names.size()+1)/2, follower.follow(
+                new EntryChecker() {
+                    public void check(Entry entry) throws Exception {
+                        Widget widget = PERSISTER.read(Widget.class, entry.getContent());
+                        assertTrue(widget.getId() % 2 == 0);
+                    }
+                },
+                null));
+    }
+
+    public void testFullFeed(String... query) throws Exception {
 
         final Set<String> allNames = new HashSet<String>(names);
         FeedFollower follower = new FeedFollower(
-                root(), collectionPath(), 10, 0);
-        assertEquals(allNames.toString(), 100, follower.follow(
+                root(),
+                String.format("%s/%s/%s/%s",
+                        SERVICE, WORKSPACE, COLLECTION,
+                        query.length != 0 ? "-/"+query[0] : "" ), 10, 0);
+        System.err.println(collectionPath());
+        assertEquals(allNames.toString(), allNames.size(), follower.follow(
                 new EntryChecker() {
                     public void check(Entry entry) throws Exception {
                         Widget widget = PERSISTER.read(Widget.class, entry.getContent());
