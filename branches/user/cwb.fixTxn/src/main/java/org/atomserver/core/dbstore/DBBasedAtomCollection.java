@@ -105,8 +105,24 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                         public Object doInTransaction(TransactionStatus transactionStatus) {
                             StopWatch stopWatch = new AtomServerStopWatch();
                             try {
+                                // NOTE: we will actually wait for all of these to possibly finish,
+                                //       unless the methods below honor InterruptedExceptions
+                                //       BUT the transaction will still be rolled back eventually by the catch below.
                                 getEntriesDAO().acquireLock();
                                 return task.execute();
+
+                            } catch( Exception ee ) {
+                                log.error("Exception in DB transaction", ee );
+                                // NOTE: per the Spring manual, a transaction is ONLY rolled back
+                                //       when a RuntimeException is thrown!!!
+                                //       And the timeout causes an InterruptedException (via task.cancel()),
+                                //       which is NOT Runtime!!
+                                //       (AtomServerException extends RuntimeException)
+                                throw (ee instanceof AtomServerException)
+                                      ? (AtomServerException)ee
+                                      : new AtomServerException("A " + ee.getCause().getClass().getSimpleName() +
+                                                                " caught in Transaction", ee.getCause());
+                                
                             } finally {
                                 stopWatch.stop("DB.txn", "DB.txn");
                             }
@@ -133,6 +149,10 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         } catch( Exception ee ) {
             throw new AtomServerException("A " + ee.getClass().getSimpleName() + " caught in Transaction", ee);
         } finally {
+            // NOTE: We MUST call timeoutTask.cancel() here.
+            //       This is the ONLY way that we see an InterruptedException in the transaction task,
+            //       and thus, the ONLY way that we can make the transaction rollback.
+            log.debug("@@@@@@@@@@@@@@ Calling task.cancel");
             timeoutTask.cancel(true);
             timeoutTask = null;
         }
