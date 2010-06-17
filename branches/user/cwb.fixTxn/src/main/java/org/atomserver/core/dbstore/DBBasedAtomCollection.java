@@ -113,6 +113,10 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
 
                             } catch( Exception ee ) {
                                 log.error("Exception in DB transaction", ee );
+                                if ( ee instanceof InterruptedException ) {
+                                    // Restore the interrupted status
+                                    Thread.currentThread().interrupt();                                    
+                                }
                                 // NOTE: per the Spring manual, a transaction is ONLY rolled back
                                 //       when a RuntimeException is thrown!!!
                                 //       And the timeout causes an InterruptedException (via task.cancel()),
