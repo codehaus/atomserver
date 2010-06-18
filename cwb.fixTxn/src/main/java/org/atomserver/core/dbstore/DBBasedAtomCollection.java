@@ -113,8 +113,13 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
 
                             } catch( Exception ee ) {
                                 log.error("Exception in DB transaction", ee );
+
+                                // the following is not really required, but ensures that this will rollback, without question
+                                transactionStatus.setRollbackOnly();
+                                
                                 if ( ee instanceof InterruptedException ) {
-                                    // Restore the interrupted status
+                                    // InterruptedException - if the current thread was interrupted while waiting
+                                    // Re-assert the thread's interrupted status
                                     Thread.currentThread().interrupt();                                    
                                 }
                                 // NOTE: per the Spring manual, a transaction is ONLY rolled back
@@ -156,6 +161,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             // NOTE: We MUST call timeoutTask.cancel() here.
             //       This is the ONLY way that we see an InterruptedException in the transaction task,
             //       and thus, the ONLY way that we can make the transaction rollback.
+            // NOTE: Calling cancel() on a completed task is a noop.
             log.debug("@@@@@@@@@@@@@@ Calling task.cancel");
             timeoutTask.cancel(true);
             timeoutTask = null;
