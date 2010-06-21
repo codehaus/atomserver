@@ -9,10 +9,10 @@ Download Project Artifacts
   <All release versions of AtomServer are available from the maven repository at:>
   <<{{http://repository.codehaus.org/org/atomserver/atomserver/}}>>
 
-  * <<2.1.17>>
+  * <<2.1.20>>
 
-     * {{{http://repository.codehaus.org/org/atomserver/atomserver/2.1.17/atomserver-2.1.17-install.tar.gz}installer}}
-       ({{{http://repository.codehaus.org/org/atomserver/atomserver/2.1.17/atomserver-2.1.17-install.tar.gz.md5}MD5}})
+     * {{{http://repository.codehaus.org/org/atomserver/atomserver/2.1.20/atomserver-2.1.20-install.tar.gz}installer}}
+       ({{{http://repository.codehaus.org/org/atomserver/atomserver/2.1.20/atomserver-2.1.20-install.tar.gz.md5}MD5}})
 
   []
 
@@ -21,7 +21,7 @@ Download Project Artifacts
   <All SNAPSHOT versions built from the development trunk are available in the snapshot repository at:>
   <<{{http://snapshots.repository.codehaus.org/org/atomserver/atomserver/}}>>
 
-  * <<2.1.18-SNAPSHOT>>
+  * <<2.1.21-SNAPSHOT>>
 
-    * {{{http://snapshots.repository.codehaus.org/org/atomserver/atomserver/2.1.18-SNAPSHOT/atomserver-2.1.18-SNAPSHOT-install.tar.gz}installer}}
-      ({{{http://snapshots.repository.codehaus.org/org/atomserver/atomserver/2.1.18-SNAPSHOT/atomserver-2.1.18-SNAPSHOT-install.tar.gz.md5}MD5}})
+    * {{{http://snapshots.repository.codehaus.org/org/atomserver/atomserver/2.1.21-SNAPSHOT/atomserver-2.1.21-SNAPSHOT-install.tar.gz}installer}}
+      ({{{http://snapshots.repository.codehaus.org/org/atomserver/atomserver/2.1.21-SNAPSHOT/atomserver-2.1.21-SNAPSHOT-install.tar.gz.md5}MD5}})
