@@ -7,6 +7,13 @@
     </properties>
 
     <body>
+        <section name="Release 2.1.20 (06/21/10)">
+            <ul>
+                <li>Correct a bug when forcing an explicit timeout for Transactions,
+                    where the timeout was enforced in the JUnit, but not in the real code</li>
+            </ul>
+        </section>
+
         <section name="Release 2.1.19 (06/10/10)">
             <ul>
                 <li>Added an explicit timeout for Transactions. The timeout was not being honored.
