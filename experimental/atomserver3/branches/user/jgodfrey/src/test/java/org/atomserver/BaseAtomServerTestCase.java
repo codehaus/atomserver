@@ -132,6 +132,7 @@ public class BaseAtomServerTestCase {
             entry.setContent(stringWriter.toString(), Content.Type.XML);
         }
         entry.addCategory(testCategory());
+        System.out.println(entry.getContent());
         return entry;
     }
 
