@@ -10,6 +10,9 @@ public interface AtomServerConstants {
 
     public static final int MAJOR_VERSION = 3;
 
+    public static final String DEFAULT_PAGE_SIZE_PARAMETER = "100";
+    public static final int DEFAULT_PAGE_SIZE = Integer.valueOf(DEFAULT_PAGE_SIZE_PARAMETER);
+
     public static final String NAMESPACE = format("http://atomserver.org/%d", MAJOR_VERSION);
 
     public static final String PREFIX = "as";

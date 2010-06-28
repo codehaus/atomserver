@@ -1,6 +1,7 @@
 package org.atomserver.core.redis;
 
 import org.apache.log4j.Logger;
+import org.atomserver.AtomServerConstants;
 import org.atomserver.core.EntryTuple;
 import org.atomserver.core.Substrate;
 import org.atomserver.sharding.Distribution;
@@ -14,14 +15,14 @@ import java.io.ObjectInputStream;
 import java.util.*;
 import java.util.concurrent.Callable;
 
+import static org.atomserver.AtomServerConstants.DEFAULT_PAGE_SIZE;
+
 //@Component
 public class RedisSubstrate implements Substrate {
 
     private final Logger log = Logger.getLogger(RedisSubstrate.class);
 
-    // TODO: should be bigger than 5, probably 2x default page size
-    // TODO: perhaps should dynamically compute this based on the "complexity" of any category query
-    private static final long INTERNAL_PAGE_SIZE = 5L;
+    private static final long INTERNAL_PAGE_SIZE = 2 * DEFAULT_PAGE_SIZE;
 
     private DistributedRedisClient redis;
 
@@ -142,7 +143,7 @@ public class RedisSubstrate implements Substrate {
                                             List<byte[]> response = redis.at(indexKey(key)).zrangebyscore(
                                                     indexKey(key),
                                                     current == null ? from.doubleValue() : current + 1,
-                                                    10000000L /*TODO:MAX*/,
+                                                    Long.MAX_VALUE /*TODO:MAX*/,
                                                     Opts.LIMIT(0L, INTERNAL_PAGE_SIZE));
                                             if (response == null) {
                                                 lastPage = true;

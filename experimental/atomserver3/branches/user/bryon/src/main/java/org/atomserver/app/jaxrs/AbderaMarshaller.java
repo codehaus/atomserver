@@ -1,7 +1,13 @@
 package org.atomserver.app.jaxrs;
 
 import org.apache.abdera.Abdera;
+import org.apache.abdera.model.Document;
+import org.apache.abdera.model.Element;
 import org.apache.abdera.model.ExtensibleElement;
+import org.apache.abdera.parser.ParseException;
+import org.apache.abdera.parser.ParserOptions;
+import org.apache.abdera.util.AbderaConfiguration;
+import org.apache.abdera.util.AbstractNamedParser;
 import org.apache.commons.io.IOUtils;
 import org.atomserver.app.BadRequestException;
 import org.springframework.stereotype.Component;
@@ -14,10 +20,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
@@ -31,6 +34,10 @@ import static org.atomserver.AtomServerConstants.APPLICATION_APP_XML;
 public class AbderaMarshaller
         implements MessageBodyWriter<ExtensibleElement>, MessageBodyReader<ExtensibleElement> {
     public static final Abdera ABDERA = new Abdera();
+
+    static {
+        
+    }
 
     public void writeTo(ExtensibleElement element, Class clazz, Type type,
                         Annotation[] annotations, MediaType mediaType,

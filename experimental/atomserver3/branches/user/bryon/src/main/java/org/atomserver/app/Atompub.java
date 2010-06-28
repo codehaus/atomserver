@@ -27,6 +27,7 @@ import static javax.ws.rs.core.MediaType.*;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.atomserver.AtomServerConstants.*;
+import static org.atomserver.AtomServerConstants.DEFAULT_PAGE_SIZE_PARAMETER;
 
 @Path(Atompub.APP_CONTEXT)
 @Component
@@ -156,7 +157,7 @@ public class Atompub {
                 @GET("feed")
                 public Response get(
                         @QueryParam("start-index") @DefaultValue("0") long timestamp,
-                        @QueryParam("max-results") @DefaultValue("100") int maxResults,
+                        @QueryParam("max-results") @DefaultValue(DEFAULT_PAGE_SIZE_PARAMETER) int maxResults,
                         @QueryParam("entry-type") @DefaultValue("link") EntryType entryType,
                         @Context UriInfo uriInfo) {
 
@@ -167,7 +168,7 @@ public class Atompub {
                 @GET("cat-feed")
                 public Response get(
                         @QueryParam("start-index") @DefaultValue("0") long timestamp,
-                        @QueryParam("max-results") @DefaultValue("100") int maxResults,
+                        @QueryParam("max-results") @DefaultValue(DEFAULT_PAGE_SIZE_PARAMETER) int maxResults,
                         @QueryParam("entry-type") @DefaultValue("link") EntryType entryType,
                         @PathParam("categoryQuery") CategoryQuery categoryQuery,
                         @Context UriInfo uriInfo) {
