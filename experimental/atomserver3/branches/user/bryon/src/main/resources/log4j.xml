@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<!-- TODO: re-do the log4j configuration for production -->
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+    <appender name="STDOUT" class="org.apache.log4j.ConsoleAppender">
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="[%d{MM/dd/yy HH:mm:ss:S}](%t) %-5p - %-26.26c{1} - %m%n"/>
+        </layout>
+    </appender>
+
+    <appender name="LOGFILE" class="org.apache.log4j.RollingFileAppender">
+        <!--TODO: don't hard-code this path-->
+        <param name="File" value="target/atomserver.log"/>
+        <param name="append" value="true"/>
+        <param name="maxFileSize" value="20MB"/>
+        <param name="maxBackupIndex" value="10"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="[%d{MM/dd/yy HH:mm:ss:S}](%t) %-5p - %-26.26c{1} - %m%n"/>
+        </layout>
+    </appender>
+
+    <!-- expose summary as file -->
+    <appender name="Perf4jSummaryFile" class="org.apache.log4j.RollingFileAppender">
+        <!--TODO: don't hard-code this path-->
+        <param name="File" value="target/perfsummary.log"/> 
+        <param name="append" value="true"/>
+        <param name="maxFileSize" value="20MB"/>
+        <param name="maxBackupIndex" value="10"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="[%d{MM/dd/yy}],%m%n"/>
+        </layout>
+    </appender>
+
+    <!-- builds summary reports .. every 30s in the log -->
+    <appender name="CoalescingStatistics30sec" class="org.perf4j.log4j.AsyncCoalescingStatisticsAppender">
+        <param name="TimeSlice" value="6000" />
+        <param name="queueSize" value="10000" />
+
+        <!-- create rollup statistics for failure/success cases -->
+        <param name="CreateRollupStatistics" value="false"/>
+
+        <!-- route to a file -->
+        <appender-ref ref="Perf4jSummaryFile"/>
+    </appender>
+
+    <!-- Perf4J logger -->
+    <logger name="org.perf4j.TimingLogger" additivity="false">
+        <level value="INFO"/>
+        <appender-ref ref="CoalescingStatistics30sec"/>
+    </logger>
+
+    <logger name="org.atomserver">
+        <level value="DEBUG"/>
+        <appender-ref ref="LOGFILE"/>
+    </logger>
+
+    <root>
+        <level value="WARN"/>
+        <appender-ref ref="STDOUT"/>
+    </root>
+
+</log4j:configuration>

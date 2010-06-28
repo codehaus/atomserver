@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Service definition is invalid with invalid name element -->
+<service xmlns="http://www.w3.org/2007/app"
+         xmlns:atom="http://www.w3.org/2005/Atom"
+         xmlns:as="http://atomserver.org/3">
+    <as:name>$invalid-name</as:name>
+    <workspace>
+        <as:name>test</as:name>
+        <atom:title>Test</atom:title>
+    </workspace>
+</service>
