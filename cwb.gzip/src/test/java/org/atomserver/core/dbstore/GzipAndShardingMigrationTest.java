@@ -105,11 +105,10 @@ public class GzipAndShardingMigrationTest extends DBSTestCase {
         // change the gzipping and sharding settings
         ((FileBasedContentStorage) contentStorage).setGzipEnabled(true);
 
-        // failing in cobertura
-        //((FileBasedContentStorage) contentStorage).setPartitionPathGenerators(
-        //       Arrays.asList(SHARDED_PATH_GENERATOR, new PrefixPartitionPathGenerator()));
+        // failing in cobertura without the redundant casts
         List<PartitionPathGenerator> pathGenerators =
-                Arrays.asList(SHARDED_PATH_GENERATOR, new PrefixPartitionPathGenerator());
+                Arrays.asList((PartitionPathGenerator)SHARDED_PATH_GENERATOR,
+                              (PartitionPathGenerator)(new PrefixPartitionPathGenerator()) );
         ((FileBasedContentStorage) contentStorage).setPartitionPathGenerators(pathGenerators);                
 
         Thread.sleep(2000); // wait 2 seconds, so we will sweep to the trash
