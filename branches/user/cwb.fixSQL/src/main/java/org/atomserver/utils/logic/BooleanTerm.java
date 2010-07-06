@@ -47,4 +47,14 @@ public class BooleanTerm<T> implements BooleanExpression<T> {
     public void buildTermSet(Set<BooleanTerm<? extends T>> terms) {
         terms.add(this);
     }
+
+    public String toString() {
+        StringBuffer buff = new StringBuffer();
+        buff.append("[ TERM:: ");
+        buff.append(" name= ").append(name);
+        buff.append(" value= ").append(value);
+        buff.append(" ]");
+        return buff.toString();
+    }
+
 }
