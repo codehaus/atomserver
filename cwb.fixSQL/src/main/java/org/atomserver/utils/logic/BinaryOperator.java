@@ -42,6 +42,10 @@ public class BinaryOperator<T> implements BooleanExpression<T> {
         return rhs;
     }
 
+    public ExpressionType getRawType() {
+        return type;
+    }
+
     public ExpressionType getType() {
         switch (lhs.getType()) {
         case MIXED:
@@ -83,5 +87,15 @@ public class BinaryOperator<T> implements BooleanExpression<T> {
     public void buildTermSet(Set<BooleanTerm<? extends T>> terms) {
         lhs.buildTermSet(terms);
         rhs.buildTermSet(terms);
+    }
+
+    public String toString() {
+        StringBuffer buff = new StringBuffer();
+        buff.append("\n[ ");
+        buff.append(type.name());
+        buff.append("\n RHS= ").append(rhs.toString());
+        buff.append("\n LHS= ").append(lhs.toString());
+        buff.append("\n]");
+        return buff.toString();
     }
 }

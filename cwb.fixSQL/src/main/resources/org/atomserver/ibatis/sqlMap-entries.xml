@@ -40,7 +40,7 @@
         <isNotNull property="categoryQuerySql">
         INNER JOIN EntryCategory searchCategories
             ON searchCategories.EntryStoreId = entry.EntryStoreId
-        <isNotNull property="categoryFilterSql">AND ($categoryFilterSql$)</isNotNull>
+            <isNotNull property="categoryFilterSql">AND ($categoryFilterSql$)</isNotNull>
         </isNotNull>
         <isNotNull property="categoryQueryScheme">
         INNER JOIN EntryCategory searchCategories
