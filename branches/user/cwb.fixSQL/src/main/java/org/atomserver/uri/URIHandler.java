@@ -21,6 +21,7 @@ import org.apache.abdera.protocol.Request;
 import org.apache.abdera.protocol.Resolver;
 import org.apache.abdera.protocol.server.RequestContext;
 import org.apache.abdera.protocol.server.Target;
+import org.apache.commons.collections.set.ListOrderedSet;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -430,7 +431,11 @@ public class URIHandler
     static private final String SCHEME_END_CHAR = ")";
 
     private Set<BooleanExpression<AtomCategory>> decodeCategoryFields(String categoriesString) {
-        Set<BooleanExpression<AtomCategory>> categoriesQuery = new HashSet<BooleanExpression<AtomCategory>>();
+
+        //Set<BooleanExpression<AtomCategory>> categoriesQuery = new HashSet<BooleanExpression<AtomCategory>>();
+        // Use a list ordered Set so that we always get the same order out that we put in...
+        Set<BooleanExpression<AtomCategory>> categoriesQuery = new ListOrderedSet();
+
         TermDictionary<AtomCategory> dictionary = new TermDictionary<AtomCategory>();
         Iterator<String> iterator = new ArraySegmentIterator<String>(categoriesString.split("\\/"), 0);
         while (iterator.hasNext()) {

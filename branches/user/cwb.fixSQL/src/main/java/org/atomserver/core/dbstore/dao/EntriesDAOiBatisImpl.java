@@ -61,6 +61,11 @@ public class EntriesDAOiBatisImpl
     private EntryCategoryLogEventDAO entryCategoryLogEventDAO;
     private int latencySeconds = UNDEFINED;
 
+    /**
+     * Use the improved selectFeedPage form, which uses SQL Set operands.
+     */
+    private boolean isUsingSetOpsFeedPage = false;
+
     private static FeedQueryHeuristicsHelper heuristicsHelper = null;
 
 
@@ -153,6 +158,16 @@ public class EntriesDAOiBatisImpl
      public synchronized void updateEntryStats() {
         heuristicsHelper.readStats();
      }
+
+    @ManagedAttribute
+    public boolean isUsingSetOpsFeedPage() {
+        return isUsingSetOpsFeedPage;
+    }
+
+    @ManagedAttribute
+    public void setUsingSetOpsFeedPage(boolean usingSetOpsFeedPage) {
+        isUsingSetOpsFeedPage = usingSetOpsFeedPage;
+    }
 
     //======================================
     //   BATCH methods for entries table
@@ -640,29 +655,11 @@ public class EntriesDAOiBatisImpl
                                                                 startIndex, endIndex,
                                                                 pageSize, locale, feed);
 
-            addSelectFeedPageParams(paramMap, categoryQuery);
-            /*
-
-            if (categoryQuery != null && !categoryQuery.isEmpty()) {
-                BooleanExpression<AtomCategory> firstExpression = categoryQuery.iterator().next();
-                if (categoryQuery.size() == 1 && firstExpression instanceof BooleanTerm) {
-                    BooleanTerm<AtomCategory> singleTermQuery = (BooleanTerm<AtomCategory>) firstExpression;
-                    paramMap.param("categoryQueryScheme", singleTermQuery.getValue().getScheme());
-                    paramMap.param("categoryQueryTerm", singleTermQuery.getValue().getTerm());
-                } else {
-                    paramMap.param("categoryFilterSql",
-                                   CategoryQueryGenerator.generateCategoryFilter(categoryQuery));
-                    paramMap.param("categoryQuerySql",
-                                   CategoryQueryGenerator.generateCategorySearch(categoryQuery));
-                }
+            if ( isUsingSetOpsFeedPage ) {
+                addSetOpsSelectFeedPageParams(paramMap, categoryQuery);
+            } else {
+                addSelectFeedPageParams(paramMap, categoryQuery);
             }
-
-            if (latencySeconds > 0) {
-                paramMap.param("latencySeconds", latencySeconds);
-            }
-
-            heuristicsHelper.applyHeuristics(paramMap, FeedQueryHeuristicsHelper.SCAN);
-            */
 
             return getSqlMapClientTemplate().queryForList("selectFeedPage", paramMap);
         }
@@ -672,9 +669,11 @@ public class EntriesDAOiBatisImpl
         }
     }
 
-
+    /**
+     * Use the original selectFeedPage form, which uses SQL HAVING...SUM.
+     * This form produces a significantly less efficient query plan.
+     */
     private void addSelectFeedPageParams(ParamMap paramMap, Collection<BooleanExpression<AtomCategory>> categoryQuery ) {
-
         if (categoryQuery != null && !categoryQuery.isEmpty()) {
             BooleanExpression<AtomCategory> firstExpression = categoryQuery.iterator().next();
             if (categoryQuery.size() == 1 && firstExpression instanceof BooleanTerm) {
@@ -688,12 +687,24 @@ public class EntriesDAOiBatisImpl
                                CategoryQueryGenerator.generateCategorySearch(categoryQuery));
             }
         }
-
         if (latencySeconds > 0) {
             paramMap.param("latencySeconds", latencySeconds);
         }
-
         heuristicsHelper.applyHeuristics(paramMap, FeedQueryHeuristicsHelper.SCAN);
+    }
+
+    /**
+     * Use the improved selectFeedPage form, which uses SQL Set operands.
+     */
+    private void addSetOpsSelectFeedPageParams(ParamMap paramMap, Collection<BooleanExpression<AtomCategory>> categoryQuery ) {
+        if (categoryQuery != null && !categoryQuery.isEmpty()) {
+            paramMap.param("categoryQuerySql",
+                           SetOpCategoryQueryGenerator.generateCategorySearch(categoryQuery));
+        }
+        if (latencySeconds > 0) {
+            paramMap.param("latencySeconds", latencySeconds);
+        }
+        paramMap.param("usequery", "setOps");
     }
 
 
