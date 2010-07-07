@@ -9,16 +9,6 @@
     </layout>
   </appender>
 
-  <appender name="StdoutFile" class="org.apache.log4j.RollingFileAppender" >
-     <param name="File" value="${atomserver.logdir}/${atomserver.logfilename}.stdout.log" />
-     <param name="Append" value="true" />
-     <param name="MaxFileSize"  value="20MB" />
-     <param name="MaxBackupIndex" value="10" />
-     <layout class="org.apache.log4j.PatternLayout">
-         <param name="ConversionPattern" value="[%d{MM/dd/yy HH:mm:ss:S}](%t) %-5p - %-26.26c{1} - %m%n" />
-     </layout>
-  </appender>
-
   <appender name="Http500log" class="org.apache.log4j.RollingFileAppender" >
      <param name="File" value="${atomserver.logdir}/${atomserver.logfilename}.500errors.log" />
      <param name="Append" value="true" />
@@ -105,7 +95,6 @@
 
   <root>
     <level value="${root.loglevel}"/>
-    <!-- appender-ref ref="${root.appender}" />  log4j 1.2.13 does not substitute -->
-    <appender-ref ref="Stdout" /> 
+    <appender-ref ref="Stdout" />
   </root>
 </log4j:configuration>

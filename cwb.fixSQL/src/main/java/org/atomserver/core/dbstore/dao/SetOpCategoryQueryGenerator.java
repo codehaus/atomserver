@@ -15,143 +15,41 @@ import org.atomserver.utils.logic.ExpressionType;
 import java.util.Collection;
 
 /**
- SELECT
- TOP 21
- entry.EntryStoreId AS EntryStoreId,
- entry.Workspace AS Workspace,
- entry.Collection AS Collection,
- entry.LanCode AS LanCode,
- entry.CountryCode AS CountryCode,
- entry.EntryId AS EntryId,
- entry.UpdateDate AS UpdateDate,
- entry.CreateDate AS CreateDate,
- CAST(UpdateTimestamp AS BIGINT) AS UpdateTimestamp,
- entry.DeleteFlag AS DeleteFlag,
- entry.RevisionNum AS RevisionNum
- FROM EntryStore entry
- WHERE entry.EntryStoreId IN (
-
-     select X.EntryStoreId from EntryCategory X where X.Scheme = 'urn:inquiry.state' AND X.Term = 'INTERVENE'
-     intersect
-     (
-         select Y.EntryStoreId from EntryCategory Y where Y.Scheme = 'urn:inquiry.stripes' AND Y.Term = '3'
-         union
-         select Y.EntryStoreId from EntryCategory Y where Y.Scheme = 'urn:inquiry.stripes' AND Y.Term = '2'
-     )
- )
- AND UpdateTimestamp > CAST(0 AS  TIMESTAMP  )
- AND ( DATEADD(s, -1 * 60, GETDATE()) >= UpdateDate )
- AND Workspace = 'inquiries'
- AND Collection='homeaway'
- ORDER BY entry.UpdateTimestamp
-
-
-
-
-ZERO TERMS
-
-SELECT
- TOP 21
- entry.EntryStoreId AS EntryStoreId,
- entry.EntryId AS EntryId,
- entry.UpdateDate AS UpdateDate,
- entry.CreateDate AS CreateDate,
- CAST(UpdateTimestamp AS BIGINT) AS UpdateTimestamp,
- entry.DeleteFlag AS DeleteFlag,
- entry.RevisionNum AS RevisionNum
- FROM EntryStore entry
- WHERE UpdateTimestamp > CAST(0 AS  TIMESTAMP  )
- AND ( DATEADD(s, -1 * 60, GETDATE()) >= UpdateDate )
- AND Workspace = 'inquiries'
- AND Collection='homeaway'
- ORDER BY entry.UpdateTimestamp
-
-
+ * SetOpCategoryQueryGenerator -- uses SQL Set operands (INTERSECT and UNION)
+ * when constructing the SQL for Category queries.
+ * <p/>
+ * This produces SQL like that shown below;
+ * <p/>
+<pre>
+ ===============
  ONE TERM
 
- SELECT
- TOP 21
- entry.EntryStoreId AS EntryStoreId,
- entry.EntryId AS EntryId,
- entry.UpdateDate AS UpdateDate,
- entry.CreateDate AS CreateDate,
- CAST(UpdateTimestamp AS BIGINT) AS UpdateTimestamp,
- entry.DeleteFlag AS DeleteFlag,
- entry.RevisionNum AS RevisionNum
- FROM EntryStore entry
  WHERE entry.EntryStoreId IN (
      select X.EntryStoreId from EntryCategory X where X.Scheme = 'urn:inquiry.state' AND X.Term = 'INTERVENE'
  )
- AND UpdateTimestamp > CAST(0 AS  TIMESTAMP  )
- AND ( DATEADD(s, -1 * 60, GETDATE()) >= UpdateDate )
- AND Workspace = 'inquiries'
- AND Collection='homeaway'
- ORDER BY entry.UpdateTimestamp
 
 ===============
 TWO TERMS - AND
 
- SELECT
- TOP 21
- entry.EntryStoreId AS EntryStoreId,
- entry.EntryId AS EntryId,
- entry.UpdateDate AS UpdateDate,
- entry.CreateDate AS CreateDate,
- CAST(UpdateTimestamp AS BIGINT) AS UpdateTimestamp,
- entry.DeleteFlag AS DeleteFlag,
- entry.RevisionNum AS RevisionNum
- FROM EntryStore entry
  WHERE entry.EntryStoreId IN (
      select X.EntryStoreId from EntryCategory X where X.Scheme = 'urn:inquiry.state' AND X.Term = 'INTERVENE'
      intersect
      select Y.EntryStoreId from EntryCategory Y where Y.Scheme = 'urn:inquiry.stripes' AND Y.Term = '3'
  )
  AND UpdateTimestamp > CAST(0 AS  TIMESTAMP  )
- AND ( DATEADD(s, -1 * 60, GETDATE()) >= UpdateDate )
- AND Workspace = 'inquiries'
- AND Collection='homeaway'
- ORDER BY entry.UpdateTimestamp
 
 =====================
 TWO TERMS - OR
 
- SELECT
- TOP 21
- entry.EntryStoreId AS EntryStoreId,
- entry.EntryId AS EntryId,
- entry.UpdateDate AS UpdateDate,
- entry.CreateDate AS CreateDate,
- CAST(UpdateTimestamp AS BIGINT) AS UpdateTimestamp,
- entry.DeleteFlag AS DeleteFlag,
- entry.RevisionNum AS RevisionNum
- FROM EntryStore entry
  WHERE entry.EntryStoreId IN (
      select X.EntryStoreId from EntryCategory X where X.Scheme = 'urn:inquiry.state' AND X.Term = 'INTERVENE'
      union
      select Y.EntryStoreId from EntryCategory Y where Y.Scheme = 'urn:inquiry.stripes' AND Y.Term = '3'
  )
- AND UpdateTimestamp > CAST(0 AS  TIMESTAMP  )
- AND ( DATEADD(s, -1 * 60, GETDATE()) >= UpdateDate )
- AND Workspace = 'inquiries'
- AND Collection='homeaway'
- ORDER BY entry.UpdateTimestamp
-
 
 =============
 THREE TERMS - A && ( B || C )
 
- TODO : union all
-
- SELECT
- TOP 21
- entry.EntryStoreId AS EntryStoreId,
- entry.EntryId AS EntryId,
- entry.UpdateDate AS UpdateDate,
- entry.CreateDate AS CreateDate,
- CAST(UpdateTimestamp AS BIGINT) AS UpdateTimestamp,
- entry.DeleteFlag AS DeleteFlag,
- entry.RevisionNum AS RevisionNum
- FROM EntryStore entry
  WHERE entry.EntryStoreId IN (
      select X.EntryStoreId from EntryCategory X where X.Scheme = 'urn:inquiry.state' AND X.Term = 'INTERVENE'
      intersect
@@ -161,26 +59,10 @@ THREE TERMS - A && ( B || C )
          select Y.EntryStoreId from EntryCategory Y where Y.Scheme = 'urn:inquiry.stripes' AND Y.Term = '2'
      )
  )
- AND UpdateTimestamp > CAST(0 AS  TIMESTAMP  )
- AND ( DATEADD(s, -1 * 60, GETDATE()) >= UpdateDate )
- AND Workspace = 'inquiries'
- AND Collection='homeaway'
- ORDER BY entry.UpdateTimestamp
-
 
 =============
 THREE TERMS - A && B && C
 
- SELECT
- TOP 21
- entry.EntryStoreId AS EntryStoreId,
- entry.EntryId AS EntryId,
- entry.UpdateDate AS UpdateDate,
- entry.CreateDate AS CreateDate,
- CAST(UpdateTimestamp AS BIGINT) AS UpdateTimestamp,
- entry.DeleteFlag AS DeleteFlag,
- entry.RevisionNum AS RevisionNum
- FROM EntryStore entry
  WHERE entry.EntryStoreId IN (
      select X.EntryStoreId from EntryCategory X where X.Scheme = 'urn:inquiry.state' AND X.Term = 'INTERVENE'
      intersect
@@ -190,26 +72,10 @@ THREE TERMS - A && B && C
          select Y.EntryStoreId from EntryCategory Y where Y.Scheme = 'urn:inquiry.stripes' AND Y.Term = '2'
      )
  )
- AND UpdateTimestamp > CAST(0 AS  TIMESTAMP  )
- AND ( DATEADD(s, -1 * 60, GETDATE()) >= UpdateDate )
- AND Workspace = 'inquiries'
- AND Collection='homeaway'
- ORDER BY entry.UpdateTimestamp
-
 
 =============
 FOUR TERMS - (A || B) && (B || C)
 
- SELECT
- TOP 21
- entry.EntryStoreId AS EntryStoreId,
- entry.EntryId AS EntryId,
- entry.UpdateDate AS UpdateDate,
- entry.CreateDate AS CreateDate,
- CAST(UpdateTimestamp AS BIGINT) AS UpdateTimestamp,
- entry.DeleteFlag AS DeleteFlag,
- entry.RevisionNum AS RevisionNum
- FROM EntryStore entry
  WHERE entry.EntryStoreId IN (
      (
          select Y.EntryStoreId from EntryCategory Y where Y.Scheme = 'urn:inquiry.state' AND Y.Term = 'INTERVENE'
@@ -223,14 +89,7 @@ FOUR TERMS - (A || B) && (B || C)
          select Y.EntryStoreId from EntryCategory Y where Y.Scheme = 'urn:inquiry.stripes' AND Y.Term = '2'
      )
  )
- AND UpdateTimestamp > CAST(0 AS  TIMESTAMP  )
- AND ( DATEADD(s, -1 * 60, GETDATE()) >= UpdateDate )
- AND Workspace = 'inquiries'
- AND Collection='homeaway'
- ORDER BY entry.UpdateTimestamp
-
-
- *
+</pre>
  */
 public class SetOpCategoryQueryGenerator {
     private static final Log log = LogFactory.getLog(SetOpCategoryQueryGenerator.class);
@@ -248,17 +107,40 @@ public class SetOpCategoryQueryGenerator {
 
     String generateCategorySearchSQL() {
         StringBuilder builder = new StringBuilder();
-        // TODO -- fix for multiple ANDs
-        // TODO -- fix for single term
-        for (BooleanExpression<AtomCategory> expr : exprs) {
-            generate(expr, builder) ;
+        if ( containsOnlyTerms() ) {
+            generateANDsOnly(builder);
+        } else {
+            for (BooleanExpression<AtomCategory> expr : exprs) {
+                generateSQL(expr, builder) ;
+            }
         }
         String sql = builder.toString();
         log.debug( "Generated SQL = \n" +  sql );
         return ( StringUtils.isEmpty(sql) ) ? "" : sql ;
     }
 
-    private void generate(BooleanExpression<AtomCategory> expr, StringBuilder builder) {
+    private boolean containsOnlyTerms() {
+        for (BooleanExpression<AtomCategory> expr : exprs) {
+            if ( expr.getType() != ExpressionType.TERM ) return false;
+        }
+        return true;
+    }
+
+    private void generateANDsOnly(StringBuilder builder) {
+        builder.append( "\n(" );
+        int knt = 0;
+        for (BooleanExpression<AtomCategory> expr : exprs) {
+            generateTerm( (BooleanTerm<AtomCategory>)expr, builder );
+
+            knt++;
+            if ( knt < exprs.size() ){
+                builder.append("\n INTERSECT ");
+            }
+        }          
+        builder.append( "\n)" );
+    }
+
+    private void generateSQL(BooleanExpression<AtomCategory> expr, StringBuilder builder) {
         if ( expr.getType() == ExpressionType.TERM ) {
             generateTerm( (BooleanTerm<AtomCategory>)expr, builder );
         } else {
@@ -270,7 +152,7 @@ public class SetOpCategoryQueryGenerator {
         String alias = "X" + termCounter;
         termCounter++;
 
-        builder.append( "\nSELECT ").append(alias).append(".EntryStoreId from EntryCategory ").append(alias);
+        builder.append( "\nSELECT ").append(alias).append(".EntryStoreId FROM EntryCategory ").append(alias);
         builder.append( " WHERE ").append(alias).append(".Scheme =" );
         builder.append( " '" ).append( term.getValue().getScheme() ).append( "'" );
         builder.append( " AND ").append(alias).append(".Term =");
@@ -279,9 +161,9 @@ public class SetOpCategoryQueryGenerator {
 
     private void generateExpr(BinaryOperator<AtomCategory> operator, StringBuilder builder) {
         builder.append( "\n(" );
-        generate( operator.getLhs(), builder );
+        generateSQL( operator.getLhs(), builder );
         generateSetOp( operator, builder );
-        generate( operator.getRhs(), builder );
+        generateSQL( operator.getRhs(), builder );
         builder.append( "\n)" );
     }
 

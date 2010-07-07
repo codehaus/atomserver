@@ -198,8 +198,6 @@
  AND ( DATEADD(s, -1 * 60, GETDATE()) >= UpdateDate )
  AND Collection='homeaway'
  ORDER BY entry.UpdateTimestamp
-
-
     -->
 
     <sql id="selectFeedPageSetOps" >
@@ -221,7 +219,7 @@
            AND Workspace = '$workspace$'
           <isNotNull property="categoryQuerySql">
            AND entry.EntryStoreId IN
-           $categoryQueryTerm$
+           $categoryQuerySql$
           </isNotNull>
           <isNotNull property="updatedMin">
            AND UpdateDate >= #updatedMin#
@@ -233,7 +231,17 @@
             AND UpdateTimestamp &lt;= CAST($endIndex$ AS <include refid="timestampType"/>)
           </isNotEqual>
           <isNotNull property="latencySeconds">
-            AND ( DATEADD(s, -1 * $latencySeconds$, GETDATE()) >= UpdateDate )
+            AND (
+            <isEqual property="dbType" compareValue="hsql">
+             DATEDIFF('ss', UpdateDate, NOW()) >= $latencySeconds$
+            </isEqual>
+            <isEqual property="dbType" compareValue="sqlserver">
+             DATEADD(s, -1 * $latencySeconds$, GETDATE()) >= UpdateDate
+            </isEqual>
+            <isEqual property="dbType" compareValue="postgres">
+             NOW() - interval '$latencySeconds$ seconds' >= UpdateDate
+            </isEqual>
+            )
           </isNotNull>
           <isNotNull property="collection">
             AND Collection = '$collection$'

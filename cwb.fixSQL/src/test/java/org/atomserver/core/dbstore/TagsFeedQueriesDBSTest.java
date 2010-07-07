@@ -61,9 +61,33 @@ public class TagsFeedQueriesDBSTest extends DBSTestCase {
     // --------------------
     //       tests
     //---------------------
-    public void NOtestNothing() {}
-
     public void testFeedWithOneCategory() throws Exception {
+        runFeedWithOneCategory();
+    }
+
+    public void testFeedWithMultipleCategories() throws Exception {
+        runFeedWithMultipleCategories();
+    }
+
+    public void testSetOpsFeedWithOneCategory() throws Exception {
+        try {
+            ((EntriesDAOiBatisImpl)entriesDao).setUsingSetOpsFeedPage(true);
+            runFeedWithOneCategory();
+        } finally {
+            ((EntriesDAOiBatisImpl)entriesDao).setUsingSetOpsFeedPage(false);
+        }
+    }
+
+    public void testSetOpsFeedWithMultipleCategories() throws Exception {
+        try {
+            ((EntriesDAOiBatisImpl)entriesDao).setUsingSetOpsFeedPage(true);
+            runFeedWithMultipleCategories();
+         } finally {
+            ((EntriesDAOiBatisImpl)entriesDao).setUsingSetOpsFeedPage(false);
+        }
+    }
+
+    public void runFeedWithOneCategory() throws Exception {
         // COUNT
         BaseServiceDescriptor serviceDescriptor = new BaseServiceDescriptor(workspace);
         int startCount = entriesDao.getTotalCount(serviceDescriptor);
@@ -76,8 +100,7 @@ public class TagsFeedQueriesDBSTest extends DBSTestCase {
         long lnow= (entriesDao.selectSysDate()).getTime();
 
         // INSERT
-        //int numRecs = 12 ;
-        int numRecs = 6 ;
+        int numRecs = 12 ;
 
         for ( int ii=0; ii < numRecs; ii++ ) {
             String propId = "" + (propIdSeed + ii);
@@ -129,10 +152,9 @@ public class TagsFeedQueriesDBSTest extends DBSTestCase {
         String url = workspace + "/" + sysId + "/-/(" + scheme + ")test0";
         Feed feed = getPage( url, 200 );
 
-        //assertEquals( 4, feed.getEntries().size() );
         assertEquals( (numRecs/3), feed.getEntries().size() );
 
-        // The Entries should be in ascendingg order
+        // The Entries should be in ascending order
         List<Entry> entries = feed.getEntries();
         String[] expectedEntries = { "34500", "34503", "34506", "34509" };
         int knt = 0; 
@@ -145,10 +167,9 @@ public class TagsFeedQueriesDBSTest extends DBSTestCase {
         url = workspace + "/" + sysId + "/-/(" + scheme + ")test2?locale=fr";
         feed = getPage( url, 200 );
 
-        //assertEquals( 4, feed.getEntries().size() );
         assertEquals( (numRecs/3), feed.getEntries().size() );
 
-        // The Entries should be in ascendingg order
+        // The Entries should be in ascending order
         entries = feed.getEntries();
         String[] expectedEntries2 = { "34502", "34505", "34508", "34511" };
         knt = 0; 
@@ -203,7 +224,7 @@ public class TagsFeedQueriesDBSTest extends DBSTestCase {
         assertEquals( startCount, finalCount );
     }
 
-    public void testFeedWithMultipleCategories() throws Exception {
+    public void runFeedWithMultipleCategories() throws Exception {
         // COUNT
         BaseServiceDescriptor serviceDescriptor = new BaseServiceDescriptor(workspace);
         int startCount = entriesDao.getTotalCount(serviceDescriptor);
@@ -286,10 +307,9 @@ public class TagsFeedQueriesDBSTest extends DBSTestCase {
         String url = workspace + "/" + sysId + "/-/(" + scheme + ")test0/(" + scheme + ")boo0";
         Feed feed = getPage( url, 200 );
 
-        //assertEquals( 2, feed.getEntries().size() );
         assertEquals( (numRecs/6), feed.getEntries().size() );
 
-        // The Entries should be in ascendingg order
+        // The Entries should be in ascending order
         List<Entry> entries = feed.getEntries();
         String[] expectedEntries = { "98700", "98706" };
         int knt = 0; 
@@ -303,10 +323,9 @@ public class TagsFeedQueriesDBSTest extends DBSTestCase {
         url = workspace + "/" + sysId + "/-/(" + scheme + ")sam1?locale=pl";
         feed = getPage( url, 200 );
 
-        //assertEquals( 2, feed.getEntries().size() );
         assertEquals( (numRecs/6), feed.getEntries().size() );
 
-        // The Entries should be in ascendingg order
+        // The Entries should be in ascending order
         entries = feed.getEntries();
         String[] expectedEntries0 = { "98701", "98711" };
         knt = 0; 
@@ -319,10 +338,9 @@ public class TagsFeedQueriesDBSTest extends DBSTestCase {
         url = workspace + "/" + sysId + "/-/AND/(" + scheme + ")test0/OR/(" + scheme + ")ugh0/(" + scheme + ")ugh1";
         feed = getPage( url, 200 );
 
-        //assertEquals( 2, feed.getEntries().size() );
         assertEquals( (numRecs/6), feed.getEntries().size() );
 
-        // The Entries should be in ascendingg order
+        // The Entries should be in ascending order
         entries = feed.getEntries();
         String[] expectedEntries2 = { "98700", "98709" };
         knt = 0;
@@ -336,7 +354,7 @@ public class TagsFeedQueriesDBSTest extends DBSTestCase {
         feed = getPage( url, 200 );
         assertEquals( 10, feed.getEntries().size() );
 
-        // The Entries should be in ascendingg order
+        // The Entries should be in ascending order
         entries = feed.getEntries();
         String[] expectedEntries5 = { "98700", "98701", "98702", "98703", "98705", "98706", "98707", "98708", "98710", "98711" };
         knt = 0;
@@ -350,7 +368,7 @@ public class TagsFeedQueriesDBSTest extends DBSTestCase {
         feed = getPage( url, 200 );
         assertEquals( 1, feed.getEntries().size() );
 
-        // The Entries should be in ascendingg order
+        // The Entries should be in ascending order
         entries = feed.getEntries();
         String[] expectedEntries3 = { "98705" };
         knt = 0;
