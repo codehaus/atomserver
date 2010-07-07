@@ -167,6 +167,86 @@
        ORDER BY entry.Updatetimestamp
      </sql>
 
+
+    <!--
+ SELECT
+ TOP 21
+ entry.EntryStoreId AS EntryStoreId,
+ entry.Workspace AS Workspace,
+ entry.Collection AS Collection,
+ entry.LanCode AS LanCode,
+ entry.CountryCode AS CountryCode,
+ entry.EntryId AS EntryId,
+ entry.UpdateDate AS UpdateDate,
+ entry.CreateDate AS CreateDate,
+ CAST(UpdateTimestamp AS BIGINT) AS UpdateTimestamp,
+ entry.DeleteFlag AS DeleteFlag,
+ entry.RevisionNum AS RevisionNum
+ FROM EntryStore entry
+ WHERE UpdateTimestamp > CAST(0 AS  TIMESTAMP  )
+ AND Workspace = 'inquiries'
+ AND entry.EntryStoreId IN (
+
+     select X.EntryStoreId from EntryCategory X where X.Scheme = 'urn:inquiry.state' AND X.Term = 'INTERVENE'
+     intersect
+     (
+         select Y.EntryStoreId from EntryCategory Y where Y.Scheme = 'urn:inquiry.stripes' AND Y.Term = '3'
+         union
+         select Y.EntryStoreId from EntryCategory Y where Y.Scheme = 'urn:inquiry.stripes' AND Y.Term = '2'
+     )
+ )
+ AND ( DATEADD(s, -1 * 60, GETDATE()) >= UpdateDate )
+ AND Collection='homeaway'
+ ORDER BY entry.UpdateTimestamp
+
+
+    -->
+
+    <sql id="selectFeedPageSetOps" >
+        SELECT <include refid="paginationPrefix"/>
+               entry.EntryStoreId AS EntryStoreId,
+               entry.Workspace AS Workspace,
+               entry.Collection AS Collection,
+               entry.LanCode AS LanCode,
+               entry.CountryCode AS CountryCode,
+               entry.EntryId AS EntryId,
+               entry.UpdateDate AS UpdateDate,
+               entry.CreateDate AS CreateDate,
+               CAST(UpdateTimestamp AS BIGINT) AS UpdateTimestamp,
+               entry.DeleteFlag AS DeleteFlag,
+               entry.RevisionNum AS RevisionNum,
+               entry.ContentHashCode AS contentHashCode
+          FROM EntryStore entry
+         WHERE UpdateTimestamp > CAST($startIndex$ AS <include refid="timestampType"/>)
+           AND Workspace = '$workspace$'
+          <isNotNull property="categoryQuerySql">
+           AND entry.EntryStoreId IN
+           $categoryQueryTerm$
+          </isNotNull>
+          <isNotNull property="updatedMin">
+           AND UpdateDate >= #updatedMin#
+          </isNotNull>
+          <isNotNull property="updatedMax">
+           <![CDATA[ AND UpdateDate < #updatedMax# ]]>
+          </isNotNull>
+          <isNotEqual property="endIndex" compareValue="-1">
+            AND UpdateTimestamp &lt;= CAST($endIndex$ AS <include refid="timestampType"/>)
+          </isNotEqual>
+          <isNotNull property="latencySeconds">
+            AND ( DATEADD(s, -1 * $latencySeconds$, GETDATE()) >= UpdateDate )
+          </isNotNull>
+          <isNotNull property="collection">
+            AND Collection = '$collection$'
+          </isNotNull>
+          <isNotNull property="language">
+            AND LanCode = '$language$'
+            <isNotNull property="country">
+            AND CountryCode = '$country$'
+            </isNotNull>
+          </isNotNull>
+          ORDER BY entry.UpdateTimestamp <include refid="paginationSuffix"/>
+     </sql>
+
     <!--
       Optimized for SQL Server: If dbType is not sql server, use Index Seek version.
       if sql server, use Index Seek or Index Scan version based on the parameter setting.
@@ -177,6 +257,9 @@
         </isEqual>
         <isEqual property="usequery" compareValue="indexScan">
           <include refid="selectFeedPageIndexScan"/>
+        </isEqual>
+        <isEqual property="usequery" compareValue="setOps">
+          <include refid="selectFeedPageSetOps"/>
         </isEqual>
     </select>
 
