@@ -550,25 +550,31 @@ public class EntriesDAOiBatisImpl
 
 
     public AggregateEntryMetaData selectAggregateEntry(EntryDescriptor entryDescriptor, List<String> joinWorkspaces) {
-        ParamMap paramMap = paramMap()
-                .param("collection", entryDescriptor.getCollection())
-                .param("entryId", entryDescriptor.getEntryId())
-                .param("pageSize", 1);
-        if (entryDescriptor.getLocale() != null) {
-            paramMap.addLocaleInfo(entryDescriptor.getLocale());
-        }
-        if (joinWorkspaces != null && !joinWorkspaces.isEmpty()) {
-            paramMap.param("joinWorkspaces", joinWorkspaces);
-        }
+        StopWatch stopWatch = new AtomServerStopWatch();
+        try {
+            ParamMap paramMap = paramMap()
+                    .param("collection", entryDescriptor.getCollection())
+                    .param("entryId", entryDescriptor.getEntryId())
+                    .param("pageSize", 1);
+            if (entryDescriptor.getLocale() != null) {
+                paramMap.addLocaleInfo(entryDescriptor.getLocale());
+            }
+            if (joinWorkspaces != null && !joinWorkspaces.isEmpty()) {
+                paramMap.param("joinWorkspaces", joinWorkspaces);
+            }
 
-        paramMap.put("usequery", FeedQueryHeuristicsHelper.SEEK); // Always use seek
-        Map<String, AggregateEntryMetaData> map =
-                AggregateEntryMetaData.aggregate(entryDescriptor.getWorkspace(),
-                                                 entryDescriptor.getCollection(),
-                                                 entryDescriptor.getLocale(),
-                                                 getSqlMapClientTemplate().queryForList("selectAggregateEntries", paramMap));
+            paramMap.put("usequery", FeedQueryHeuristicsHelper.SEEK); // Always use seek
+            Map<String, AggregateEntryMetaData> map =
+                    AggregateEntryMetaData.aggregate(entryDescriptor.getWorkspace(),
+                                                     entryDescriptor.getCollection(),
+                                                     entryDescriptor.getLocale(),
+                                                     getSqlMapClientTemplate().queryForList("selectAggregateEntries", paramMap));
 
-        return map.get(entryDescriptor.getEntryId());
+            return map.get(entryDescriptor.getEntryId());
+        } finally {
+            stopWatch.stop("DB.selectAggregateEntry",
+                           AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryDescriptor) );
+        }
     }
 
     public List<AggregateEntryMetaData> selectAggregateEntriesByPage(FeedDescriptor feed,
@@ -615,6 +621,11 @@ public class EntriesDAOiBatisImpl
         }
     }
 
+
+
+
+
+    
     public List<EntryMetaData> selectFeedPage(Date updatedMin,
                                               Date updatedMax,
                                               int startIndex,
@@ -628,6 +639,9 @@ public class EntriesDAOiBatisImpl
             ParamMap paramMap = prepareParamMapForSelectEntries(updatedMin, updatedMax,
                                                                 startIndex, endIndex,
                                                                 pageSize, locale, feed);
+
+            addSelectFeedPageParams(paramMap, categoryQuery);
+            /*
 
             if (categoryQuery != null && !categoryQuery.isEmpty()) {
                 BooleanExpression<AtomCategory> firstExpression = categoryQuery.iterator().next();
@@ -648,6 +662,8 @@ public class EntriesDAOiBatisImpl
             }
 
             heuristicsHelper.applyHeuristics(paramMap, FeedQueryHeuristicsHelper.SCAN);
+            */
+
             return getSqlMapClientTemplate().queryForList("selectFeedPage", paramMap);
         }
         finally {
@@ -655,6 +671,37 @@ public class EntriesDAOiBatisImpl
                              AtomServerPerfLogTagFormatter.getPerfLogFeedString(locale, feed.getWorkspace(), feed.getCollection()));
         }
     }
+
+
+    private void addSelectFeedPageParams(ParamMap paramMap, Collection<BooleanExpression<AtomCategory>> categoryQuery ) {
+
+        if (categoryQuery != null && !categoryQuery.isEmpty()) {
+            BooleanExpression<AtomCategory> firstExpression = categoryQuery.iterator().next();
+            if (categoryQuery.size() == 1 && firstExpression instanceof BooleanTerm) {
+                BooleanTerm<AtomCategory> singleTermQuery = (BooleanTerm<AtomCategory>) firstExpression;
+                paramMap.param("categoryQueryScheme", singleTermQuery.getValue().getScheme());
+                paramMap.param("categoryQueryTerm", singleTermQuery.getValue().getTerm());
+            } else {
+                paramMap.param("categoryFilterSql",
+                               CategoryQueryGenerator.generateCategoryFilter(categoryQuery));
+                paramMap.param("categoryQuerySql",
+                               CategoryQueryGenerator.generateCategorySearch(categoryQuery));
+            }
+        }
+
+        if (latencySeconds > 0) {
+            paramMap.param("latencySeconds", latencySeconds);
+        }
+
+        heuristicsHelper.applyHeuristics(paramMap, FeedQueryHeuristicsHelper.SCAN);
+    }
+
+
+
+
+
+
+
 
     // NOTE: package scoped for use by EntryCategoryIBatisImpl
     ParamMap prepareParamMapForSelectEntries(Date updatedMin, Date updatedMax,

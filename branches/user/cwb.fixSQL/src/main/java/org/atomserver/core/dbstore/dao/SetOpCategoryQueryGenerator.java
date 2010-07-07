@@ -138,7 +138,9 @@ TWO TERMS - OR
 
 
 =============
-THREE TERMS - A && B || C
+THREE TERMS - A && ( B || C )
+
+ TODO : union all
 
  SELECT
  TOP 21
@@ -155,7 +157,7 @@ THREE TERMS - A && B || C
      intersect
      (
          select Y.EntryStoreId from EntryCategory Y where Y.Scheme = 'urn:inquiry.stripes' AND Y.Term = '3'
-         union
+         union all
          select Y.EntryStoreId from EntryCategory Y where Y.Scheme = 'urn:inquiry.stripes' AND Y.Term = '2'
      )
  )
