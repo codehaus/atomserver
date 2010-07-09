@@ -64,7 +64,8 @@ public class EntriesDAOiBatisImpl
     /**
      * Use the improved selectFeedPage form, which uses SQL Set operands.
      */
-    private boolean isUsingSetOpsFeedPage = false;
+    // TODO -  false
+    private boolean isUsingSetOpsFeedPage = true;
 
     private static FeedQueryHeuristicsHelper heuristicsHelper = null;
 
