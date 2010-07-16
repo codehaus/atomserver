@@ -59,8 +59,8 @@ GRANT ALL PRIVILEGES ON DATABASE atomserver_dev TO atomserver;
 
 D) Install the tables 
 ``````````````
-$ psql atomserver_dev -f ./src/main/resources/org/atomserver/sql/postgres/postgres_ddl.sql
-$ psql atomserver_dev -f ./src/main/resources/org/atomserver/sql/postgres/grant_perms.sql
+$ psql atomserver_dev -f ./src/main/resources/org/atomserver/sql/postgres/postgres_ddl.sql -U postgres
+$ psql atomserver_dev -f ./src/main/resources/org/atomserver/sql/postgres/grant_perms.sql  -U postgres
 
 E) Verify
 $ psql atomserver_dev
