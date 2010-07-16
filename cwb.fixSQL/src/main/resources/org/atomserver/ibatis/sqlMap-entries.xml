@@ -168,7 +168,7 @@
      </sql>
 
 
-    <!--
+    <!--  The Improved Form, which spits out SQL something like this; 
  SELECT
  TOP 21
  entry.EntryStoreId AS EntryStoreId,

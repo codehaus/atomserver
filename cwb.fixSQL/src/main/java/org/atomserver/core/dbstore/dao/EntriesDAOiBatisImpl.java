@@ -64,7 +64,6 @@ public class EntriesDAOiBatisImpl
     /**
      * Use the improved selectFeedPage form, which uses SQL Set operands.
      */
-    // TODO -  false
     private boolean isUsingSetOpsFeedPage = true;
 
     private static FeedQueryHeuristicsHelper heuristicsHelper = null;
@@ -638,9 +637,6 @@ public class EntriesDAOiBatisImpl
     }
 
 
-
-
-
     
     public List<EntryMetaData> selectFeedPage(Date updatedMin,
                                               Date updatedMax,
@@ -707,11 +703,6 @@ public class EntriesDAOiBatisImpl
         }
         paramMap.param("usequery", "setOps");
     }
-
-
-
-
-
 
 
 
