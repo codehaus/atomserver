@@ -17,27 +17,24 @@
 
 package org.atomserver.core;
 
-import org.atomserver.*;
+import junit.framework.TestCase;
+import org.apache.abdera.Abdera;
+import org.apache.abdera.protocol.server.ServiceContext;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.atomserver.EntryType;
+import org.atomserver.exceptions.BadRequestException;
+import org.atomserver.testutils.client.MockRequestContext;
 import org.atomserver.uri.EntryTarget;
 import org.atomserver.uri.FeedTarget;
 import org.atomserver.uri.URIHandler;
-import org.atomserver.exceptions.BadRequestException;
 import org.atomserver.utils.AtomDate;
 import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
-import org.atomserver.testutils.client.MockRequestContext;
-import junit.framework.TestCase;
-import org.apache.abdera.protocol.server.ServiceContext;
-import org.apache.abdera.Abdera;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.Date;
 import java.util.Locale;
 
-/**
- * unit testutils the URIHelper.
- */
 public class EntryURIHelperTest extends TestCase {
 
     private static final Log log = LogFactory.getLog(EntryURIHelperTest.class);
@@ -57,138 +54,138 @@ public class EntryURIHelperTest extends TestCase {
                             "/org/atomserver/spring/abderaBeans.xml"};
 
         ClassPathXmlApplicationContext springFactory = new ClassPathXmlApplicationContext(configs, false);
-        springFactory.setClassLoader( new ConfigurationAwareClassLoader(springFactory.getClassLoader()));
+        springFactory.setClassLoader(new ConfigurationAwareClassLoader(springFactory.getClassLoader()));
         springFactory.refresh();
 
         handler = ((AbstractAtomService) springFactory.getBean("org.atomserver-atomService")).getURIHandler();
         serviceContext = (ServiceContext) springFactory.getBean(CONTEXT_NAME);
         if (serviceContext.getAbdera() == null) {
-            serviceContext.init(new Abdera(), null );
+            serviceContext.init(new Abdera(), null);
         }
         baseURI = handler.getServiceBaseUri();
     }
 
     public void testDate() {
-        try { 
+        try {
             String ddd = "12012007";
-            Date date = AtomDate.parse( ddd );
-            fail( "this should fail" );
-        } catch ( IllegalArgumentException ee ) {
-            log.error( ee );
-        } 
-       
-        try { 
+            Date date = AtomDate.parse(ddd);
+            fail("this should fail");
+        } catch (IllegalArgumentException ee) {
+            log.error(ee);
+        }
+
+        try {
             String ddd = "2007-12-01";
-            Date date = AtomDate.parse( ddd );
-            log.debug( "********************* date= " + date );         
-        } catch ( IllegalArgumentException ee ) {
-            log.error( ee );
-            fail( "this should NOT fail" );
-        }  
+            Date date = AtomDate.parse(ddd);
+            log.debug("********************* date= " + date);
+        } catch (IllegalArgumentException ee) {
+            log.error(ee);
+            fail("this should NOT fail");
+        }
     }
 
     public void testDate2() {
-        try { 
+        try {
             String iri = "http://foobar:7890/" + baseURI + "/widgets/acme/?updated-min=2007-11-30T23:59:59:000Z";
             handler.getFeedTarget(new MockRequestContext(serviceContext, "GET", iri));
-        } catch ( IllegalArgumentException ee ) {
-            log.error( ee );
+        } catch (IllegalArgumentException ee) {
+            log.error(ee);
         }
 
-        try { 
+        try {
             // This date is WRONG -- should be 59.000Z !!!
             //  NOTE: it should fail -- but it does NOT
             String ddd = "2007-11-30T23:59:59:000Z";
-            Date upmin = AtomDate.parse( ddd );
-            log.debug( "*********2007-11-30T23:59:59:000Z************ upmin= " + upmin );
-        } catch ( IllegalArgumentException ee ) {
-            log.error( ee );
+            Date upmin = AtomDate.parse(ddd);
+            log.debug("*********2007-11-30T23:59:59:000Z************ upmin= " + upmin);
+        } catch (IllegalArgumentException ee) {
+            log.error(ee);
         }
 
         String ddd2 = "2007-11-30T23:59:59.000Z";
-        Date upmin2 = AtomDate.parse( ddd2 );
-        log.debug( "********2007-11-30T23:59:59.000Z************* upmin2= " + upmin2 );         
-        log.debug( "********2007-11-30T23:59:59.000Z************* upmin2 GMT= " + upmin2.toGMTString() );
+        Date upmin2 = AtomDate.parse(ddd2);
+        log.debug("********2007-11-30T23:59:59.000Z************* upmin2= " + upmin2);
+        log.debug("********2007-11-30T23:59:59.000Z************* upmin2 GMT= " + upmin2.toGMTString());
 
         String iri2 = "http://stgbrss:7890/" + baseURI + "/widgets/acme?updated-min=2007-11-30T23:59:59+06:00";
         FeedTarget entryURIData = handler.getFeedTarget(new MockRequestContext(serviceContext, "GET", iri2));
         Date upmin = entryURIData.getUpdatedMinParam();
-        log.debug( "********2007-11-30T23:59:59+06:00************* upmin= " + upmin );
-        log.debug( "********2007-11-30T23:59:59+06:00************* upmin GMT= " + upmin.toGMTString() );
+        log.debug("********2007-11-30T23:59:59+06:00************* upmin= " + upmin);
+        log.debug("********2007-11-30T23:59:59+06:00************* upmin GMT= " + upmin.toGMTString());
     }
 
     public void testSuccess() throws Exception {
-        checkUriData(testDecodeEntryIRI("http://whatever/" + baseURI + "/widgets/acme/1234.en.xml", false),
+        checkUriData(checkEntryIRI("http://whatever/" + baseURI + "/widgets/acme/1234.en.xml", false),
                      "widgets", "acme", "1234", Locale.ENGLISH);
-        checkUriData(testDecodeEntryIRI("http://whatever/" + baseURI + "/widgets/acme/1234?locale=en_GB", false),
+        checkUriData(checkEntryIRI("http://whatever/" + baseURI + "/widgets/acme/1234?locale=en_GB", false),
                      "widgets", "acme", "1234", Locale.UK);
 
         assertEquals(42,
-                     testDecodeEntryIRI(
+                     checkEntryIRI(
                              "http://whatever/" + baseURI + "/widgets/acme/1234.en.xml?start-index=42", false)
                              .getStartIndexParam());
 
         assertEquals(8675309,
-                     testDecodeEntryIRI(
+                     checkEntryIRI(
                              "http://whatever/" + baseURI + "/widgets/acme/1234.en.xml?max-results=8675309", false)
                              .getMaxResultsParam());
 
         assertEquals(0,
-                     testDecodeEntryIRI(
+                     checkEntryIRI(
                              "http://whatever/" + baseURI + "/widgets/acme/1234.en.xml", false).getRevision());
 
         assertEquals(4,
-                     testDecodeEntryIRI(
+                     checkEntryIRI(
                              "http://whatever/" + baseURI + "/widgets/acme/1234.en.xml/4?max-results=8675309", false).getRevision());
 
         assertEquals(URIHandler.REVISION_OVERRIDE,
-                     testDecodeEntryIRI(
+                     checkEntryIRI(
                              "http://whatever/" + baseURI + "/widgets/acme/1234.en.xml/*", false).getRevision());
 
         assertEquals(URIHandler.REVISION_OVERRIDE,
-                     testDecodeEntryIRI(
+                     checkEntryIRI(
                              "http://whatever/" + baseURI + "/widgets/acme/1234.en.xml/*?start-index=15", false).getRevision());
 
         Date now = new Date();
         assertEquals(now,
-                     testDecodeEntryIRI(
+                     checkEntryIRI(
                              "http://whatever/" + baseURI + "/widgets/acme/1234.en.xml?updated-min=" + AtomDate.format(now), false)
                              .getUpdatedMinParam());
 
         assertEquals(Locale.US,
-                     testDecodeEntryIRI(
+                     checkEntryIRI(
                              "http://whatever/" + baseURI + "/widgets/acme/1234?locale=en_US", false)
                              .getLocaleParam());
 
         assertEquals(EntryType.full,
-                     testDecodeEntryIRI(
+                     checkEntryIRI(
                              "http://whatever/" + baseURI + "/widgets/acme/1234.en.xml?entry-type=full", false)
                              .getEntryTypeParam());
- 
+
         assertEquals(EntryType.link,
-                     testDecodeEntryIRI(
+                     checkEntryIRI(
                              "http://whatever/" + baseURI + "/widgets/acme/1234.en.xml?entry-type=link", false)
                              .getEntryTypeParam());
- 
+
     }
 
     public void testError() throws Exception {
-        testDecodeEntryIRI("http://whatever/" + baseURI + "/widgets/acme/1234.xml", true);
-        testDecodeEntryIRI("http://whatever/" + baseURI + "/widgets/acme/1234.en.xml?start-index=pi", true);
-        testDecodeEntryIRI("http://whatever/" + baseURI + "/widgets/acme/1234.en.xml?max-results=pi", true);
-        testDecodeEntryIRI("http://whatever/" + baseURI + "/widgets/acme/1234.en.xml?updated-min=NEVER", true);
-        testDecodeEntryIRI("http://whatever/" + baseURI + "/widgets/acme/1234.en.xml?locale=aldsfkjasldfksdf", true);
-        testDecodeEntryIRI("http://whatever/" + baseURI + "/widgets/acme/1234.en.xml?entry-type=blah", true);
+        checkEntryIRI("http://whatever/" + baseURI + "/widgets/acme/1234.xml", true);
+        checkEntryIRI("http://whatever/" + baseURI + "/widgets/acme/1234.en.xml?start-index=pi", true);
+        checkEntryIRI("http://whatever/" + baseURI + "/widgets/acme/1234.en.xml?max-results=pi", true);
+        checkEntryIRI("http://whatever/" + baseURI + "/widgets/acme/1234.en.xml?updated-min=NEVER", true);
+        checkEntryIRI("http://whatever/" + baseURI + "/widgets/acme/1234.en.xml?locale=aldsfkjasldfksdf", true);
+        checkEntryIRI("http://whatever/" + baseURI + "/widgets/acme/1234.en.xml?entry-type=blah", true);
     }
 
     //>>>
     public void testMissingId() throws Exception {
-        testDecodeEntryIRI("http://whatever/" + baseURI + "/widgets/acme/.en.xml", true);
+        checkEntryIRI("http://whatever/" + baseURI + "/widgets/acme/.en.xml", true);
     }
 
 
-    private EntryTarget testDecodeEntryIRI(String iri,
-                                            boolean expectBadUrlException) {
+    private EntryTarget checkEntryIRI(String iri,
+                                      boolean expectBadUrlException) {
         log.debug("testing URI [" + iri + "] expecting " + (expectBadUrlException ? "failure" : "success"));
         try {
             EntryTarget entryURIData = handler.getEntryTarget(new MockRequestContext(serviceContext, "GET", iri), true);
