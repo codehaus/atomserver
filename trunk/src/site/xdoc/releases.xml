@@ -7,6 +7,17 @@
     </properties>
 
     <body>
+        <section name="Release 2.2.0 (07/21/10)">
+            <ul>
+                <li>Significant improvement to the selectFeedPage query with respect to Category Feeds.
+                    Completely rewrote the query. From it?s current form, where it basically first gets
+                    the union of all Category matches, and then, later, SUMs across them in a HAVING clause
+                    to determine any matching Category AND/OR boolean logic.
+                    To a new form, which uses SQL set operands (INTERSECT and UNION) to do
+                    the Category boolean logic.</li>
+            </ul>
+        </section>
+
         <section name="Release 2.1.20 (06/21/10)">
             <ul>
                 <li>Correct a bug when forcing an explicit timeout for Transactions,
