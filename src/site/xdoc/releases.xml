@@ -7,6 +7,11 @@
     </properties>
 
     <body>
+        <section name="Release 2.2.1 (08/15/10)">
+            <ul>
+                <li>Upgrade woodstox to 3.2.4 to fix occassional ArrayIndexOutOfBoundsException</li>
+            </ul>
+        </section>
         <section name="Release 2.2.0 (07/21/10)">
             <ul>
                 <li>Significant improvement to the selectFeedPage query with respect to Category Feeds.
