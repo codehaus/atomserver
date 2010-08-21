@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+                           http://www.springframework.org/schema/util
+                           http://www.springframework.org/schema/util/spring-util-2.0.xsd">
+
+  <util:set id="org.atomserver-workspaces">
+
+    <bean class="org.atomserver.core.WorkspaceOptions">
+      <property name="name" value="reds"/>
+      <property name="defaultLocalized" value="true"/>
+      <property name="defaultContentStorage" ref="org.atomserver-contentStorage"/>
+      <property name="defaultContentValidator" ref="org.atomserver-simpleXMLContentValidator"/>
+      <property name="defaultCategoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
+      <property name="defaultProducingEntryCategoriesFeedElement" value="true"/>
+      <property name="defaultAutoTagger">
+        <bean class="org.atomserver.core.autotaggers.XPathAutoTagger">
+          <property name="categoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
+          <property name="script">
+            <value>
+              <![CDATA[
+                            NAMESPACE agg = http://schemas.atomserver.org/aggregate-tests;
+                            DELETE SCHEME {urn:tint};
+                            MATCH "//agg:red/agg:group" {urn:tint}$;
+                            DELETE SCHEME {urn:hue};
+                            MATCH "//agg:red/agg:id" {urn:hue}$;
+                            ]]>
+            </value>
+          </property>
+        </bean>
+      </property>
+    </bean>
+
+    <bean class="org.atomserver.core.WorkspaceOptions">
+      <property name="name" value="greens"/>
+      <property name="defaultLocalized" value="false"/>
+      <property name="defaultContentStorage" ref="org.atomserver-contentStorage"/>
+      <property name="defaultContentValidator" ref="org.atomserver-simpleXMLContentValidator"/>
+      <property name="defaultCategoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
+      <property name="defaultProducingEntryCategoriesFeedElement" value="true"/>
+      <property name="defaultAutoTagger">
+        <bean class="org.atomserver.core.autotaggers.XPathAutoTagger">
+          <property name="categoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
+          <property name="script">
+            <value>
+          <![CDATA[
+                        NAMESPACE agg = http://schemas.atomserver.org/aggregate-tests;
+                        DELETE SCHEME {urn:tint};
+                        MATCH "//agg:green/agg:group" {urn:tint}$;
+                        DELETE SCHEME {urn:hue};
+                        MATCH "//agg:green/agg:red" {urn:hue}$;
+                        ]]>
+            </value>
+          </property>
+        </bean>
+      </property>
+    </bean>
+
+    <bean class="org.atomserver.core.WorkspaceOptions">
+      <property name="name" value="blues"/>
+      <property name="defaultLocalized" value="false"/>
+      <property name="defaultContentStorage" ref="org.atomserver-contentStorage"/>
+      <property name="defaultContentValidator" ref="org.atomserver-simpleXMLContentValidator"/>
+      <property name="defaultCategoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
+      <property name="defaultProducingEntryCategoriesFeedElement" value="true"/>
+      <property name="defaultAutoTagger">
+        <bean class="org.atomserver.core.autotaggers.XPathAutoTagger">
+          <!-- <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO"/> -->
+          <property name="categoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
+          <property name="script">
+            <value>
+              <![CDATA[
+                        NAMESPACE agg = http://schemas.atomserver.org/aggregate-tests;
+                        DELETE SCHEME {urn:tint};
+                        MATCH "//agg:blue/agg:group" {urn:tint}$;
+                        DELETE SCHEME {urn:hue};
+                        MATCH "//agg:blue/agg:red" {urn:hue}$;
+                        ]]>
+            </value>
+          </property>
+        </bean>
+      </property>
+    </bean>
+
+    <bean class="org.atomserver.core.WorkspaceOptions">
+      <property name="name" value="purples"/>
+      <property name="defaultLocalized" value="false"/>
+      <property name="defaultContentStorage" ref="org.atomserver-contentStorage"/>
+      <property name="defaultContentValidator" ref="org.atomserver-simpleXMLContentValidator"/>
+      <property name="defaultCategoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
+      <property name="defaultProducingEntryCategoriesFeedElement" value="true"/>
+      <property name="defaultAutoTagger">
+        <bean class="org.atomserver.core.autotaggers.XPathAutoTagger">
+          <property name="categoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
+          <property name="script">
+            <value>
+              <![CDATA[
+                        NAMESPACE agg = http://schemas.atomserver.org/aggregate-tests;
+                        DELETE SCHEME {urn:tint};
+                        MATCH "//agg:purple/agg:group" {urn:tint}$;
+                        DELETE SCHEME {urn:hue};
+                        MATCH "//agg:purple/agg:red" {urn:hue}$;
+                        DELETE SCHEME {urn:rgbcode};
+                        MATCH "//agg:purple/agg:rgb"  {urn:rgbcode}$;
+                        ]]>
+            </value>
+          </property>
+        </bean>
+      </property>
+    </bean>
+
+  </util:set>
+  
+</beans>
