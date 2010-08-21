@@ -1,0 +1,5 @@
+<pet xmlns="http://schemas.atomserver.org/pets/v1/rev0" type="cat">
+    <breed>Mixed</breed>
+    <name>Fluffy</name>
+    <owner>Alex Victoria</owner>
+</pet>
