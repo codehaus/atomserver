@@ -36,6 +36,13 @@ import java.util.Locale;
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
+
+public interface EntriesDAO
+        extends ReadEntriesDAO, WriteEntriesDAO, AggregateEntriesDAO {    
+}
+
+
+/*
 public interface EntriesDAO
         extends AtomServerDAO {
 
@@ -142,3 +149,4 @@ public interface EntriesDAO
     long selectMaxIndex(Date updatedMax);
 
 }
+*/
