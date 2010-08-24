@@ -77,7 +77,8 @@
         <isNotNull property="language">
            AND ((matchingSiblingEntries.LanCode = CAST(#language# AS CHAR(2))
                  AND matchingSiblingEntries.CountryCode = CAST(#country# AS CHAR(2)) )
-           OR (matchingSiblingEntries.LanCode = '**' AND matchingSiblingEntries.CountryCode = '**'))
+           OR (matchingSiblingEntries.LanCode = CAST('**' AS CHAR(2))
+               AND matchingSiblingEntries.CountryCode = CAST('**' AS CHAR(2)) ))
         </isNotNull>
            <!-- If any joinWorkspaces were specified on the query, we need to limit our rows here
                 to only include the right rows. -->
@@ -191,7 +192,8 @@
                   <isNotNull property="language">
                   AND ((siblings.LanCode = CAST(#language# AS CHAR(2))
                         AND siblings.CountryCode = CAST(#country# AS CHAR(2)) )
-                         OR (siblings.LanCode = '**' AND siblings.CountryCode = '**'))
+                         OR (siblings.LanCode = CAST('**' AS CHAR(2))
+                             AND siblings.CountryCode = CAST('**' AS CHAR(2)) ))
                   </isNotNull>
 
                   <!-- If any joinWorkspaces were specified on the query, we need to limit our rows here
@@ -262,7 +264,8 @@
         <isNotNull property="language">
            AND ((candidates.LanCode = CAST(#language# AS CHAR(2))
                  AND candidates.CountryCode = CAST(#country# AS CHAR(2)) )
-                OR (candidates.LanCode = '**' AND candidates.CountryCode = '**'))
+                OR (candidates.LanCode = CAST('**' AS CHAR(2))
+                    AND candidates.CountryCode = CAST('**' AS CHAR(2)) ))
         </isNotNull>
         <!-- This join to "entries" pulls in the EntryStore data, and filters out any candidates
              that were outside of the set of join workspaces requested for the feed -->

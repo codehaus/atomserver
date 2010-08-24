@@ -216,16 +216,16 @@
                entry.ContentHashCode AS contentHashCode
           FROM EntryStore entry
          WHERE UpdateTimestamp > CAST($startIndex$ AS <include refid="timestampType"/>)
-           AND Workspace = '$workspace$'
+           AND Workspace = CAST(#workspace# AS VARCHAR(20))
           <isNotNull property="categoryQuerySql">
            AND entry.EntryStoreId IN
            $categoryQuerySql$
           </isNotNull>
           <isNotNull property="updatedMin">
-           AND UpdateDate >= #updatedMin#
+            AND UpdateDate >= CAST(#updatedMin# AS <include refid="dateType"/>)
           </isNotNull>
           <isNotNull property="updatedMax">
-           <![CDATA[ AND UpdateDate < #updatedMax# ]]>
+            AND UpdateDate &lt; CAST(#updatedMax# AS <include refid="dateType"/>)
           </isNotNull>
           <isNotEqual property="endIndex" compareValue="-1">
             AND UpdateTimestamp &lt;= CAST($endIndex$ AS <include refid="timestampType"/>)
@@ -244,12 +244,12 @@
             )
           </isNotNull>
           <isNotNull property="collection">
-            AND Collection = '$collection$'
+            AND Collection = CAST(#collection# AS VARCHAR(20))
           </isNotNull>
           <isNotNull property="language">
-            AND LanCode = '$language$'
+            AND LanCode = CAST(#language# AS CHAR(2))
             <isNotNull property="country">
-            AND CountryCode = '$country$'
+            AND CountryCode = CAST(#country# AS CHAR(2))
             </isNotNull>
           </isNotNull>
           ORDER BY entry.UpdateTimestamp <include refid="paginationSuffix"/>
@@ -276,11 +276,11 @@
     <select id="selectEntryInternalId" parameterClass="map" resultClass="int">
         SELECT entry.EntryStoreId AS EntryStoreId
           FROM EntryStore entry
-         WHERE Workspace=#workspace#
-           AND Collection=#collection#
-           AND LanCode=#language#
-           AND CountryCode=#country#
-           AND EntryId=#entryId#
+         WHERE Workspace = CAST(#workspace# AS VARCHAR(20))
+           AND Collection = CAST(#collection# AS VARCHAR(20))
+           AND LanCode = CAST(#language# AS CHAR(2))
+           AND CountryCode = CAST(#country# AS CHAR(2))
+           AND EntryId = CAST(#entryId# AS VARCHAR(36))
     </select>
 
     <select id="selectCategoriesForEntries" parameterClass="map" resultMap="entryCategoryResult">
@@ -292,8 +292,8 @@
                Term,
                Label
           FROM EntryCategory JOIN EntryStore On EntryCategory.EntryStoreId = EntryStore.EntryStoreId
-         WHERE Workspace = #workspace#
-           AND Collection = #collection#
+         WHERE Workspace = CAST(#workspace# AS VARCHAR(20))
+           AND Collection = CAST(#collection# AS VARCHAR(20))
            AND EntryId IN
            <iterate property="entryIds" open="(" close=")" conjunction=",">#entryIds[]#</iterate>
     </select>
@@ -331,29 +331,29 @@
     <select id="selectEntry" parameterClass="map" resultMap="entryResult">
         <!-- SELECT a single Entry based on the 5-tuple key -->
         <include refid="SELECT_EntryStore_JOIN_EntryCategory"/>
-        WHERE entry.Workspace=#workspace#
-          AND entry.Collection=#collection#
-          AND entry.LanCode=#language#
-          AND entry.CountryCode=#country#
-          AND entry.EntryId=#entryId#
+        WHERE entry.Workspace = CAST(#workspace# AS VARCHAR(20))
+          AND entry.Collection = CAST(#collection# AS VARCHAR(20))
+          AND entry.LanCode = CAST(#language# AS CHAR(2))
+          AND entry.CountryCode = CAST(#country# AS CHAR(2))
+          AND entry.EntryId = CAST(#entryId# AS VARCHAR(36))
     </select>
 
     <select id="selectEntries" parameterClass="map" resultMap="entryResult">
         <!-- SELECT all the entries that match some part of the 5-tuple key -->
         <include refid="SELECT_EntryStore_JOIN_EntryCategory"/>
-        WHERE entry.Workspace=#workspace#
+        WHERE entry.Workspace = CAST(#workspace# AS VARCHAR(20))
         <dynamic>
             <isNotNull property="collection">
-                AND entry.Collection=#collection#
+                AND entry.Collection = CAST(#collection# AS VARCHAR(20))
             </isNotNull>
             <isNotNull property="entryId">
-                AND entry.EntryId=#entryId#
+                AND entry.EntryId = CAST(#entryId# AS VARCHAR(36))
             </isNotNull>
             <isNotNull property="language">
-                AND LanCode=#language#
+                AND LanCode = CAST(#language# AS CHAR(2))
             </isNotNull>
             <isNotNull property="country">
-                AND CountryCode=#country#
+                AND CountryCode = CAST(#country# AS CHAR(2))
             </isNotNull>
         </dynamic>
     </select>
@@ -362,10 +362,10 @@
     <select id="selectEntryBatch" parameterClass="map" resultMap="entryResult">
         <!-- SELECT a batch of specific Entries from the DB based on the 5-tuple keys -->
         <include refid="SELECT_EntryStore_JOIN_EntryCategory"/>
-        WHERE entry.Workspace=#workspace#
-          AND entry.Collection=#collection#
-          AND LanCode=#language#
-          AND CountryCode=#country#
+        WHERE entry.Workspace = CAST(#workspace# AS VARCHAR(20))
+          AND entry.Collection = CAST(#collection# AS VARCHAR(20))
+          AND LanCode = CAST(#language# AS CHAR(2))
+          AND CountryCode = CAST(#country# AS CHAR(2))
           AND entry.EntryId IN
         <iterate property="entryIds" open="(" close=")" conjunction=",">#entryIds[]#</iterate>
           ORDER BY UpdateTimestamp ASC
@@ -374,10 +374,10 @@
     <select id="selectEntriesByLastModified" parameterClass="map" resultMap="entryResult">
         <!-- SELECT the entries that were last modified since the given time -->
         <include refid="SELECT_EntryStore_JOIN_EntryCategory"/>
-        WHERE UpdateDate >= #updatedMin#
-          AND entry.Workspace = #workspace#
+        WHERE UpdateDate >= CAST(#updatedMin# AS <include refid="dateType"/>)
+          AND entry.Workspace = CAST(#workspace# AS VARCHAR(20))
         <isNotNull property="collection">
-          AND entry.Collection=#collection#
+          AND entry.Collection = CAST(#collection# AS VARCHAR(20))
         </isNotNull>
         ORDER BY UpdateDate
     </select>
@@ -385,31 +385,29 @@
     <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
     <select id="selectEntriesByLastModifiedSeqNum" parameterClass="map" resultMap="entryResult">
         <include refid="SELECT_EntryStore_JOIN_EntryCategory"/>
-        WHERE UpdateDate >= #updatedMin#
-          AND entry.Workspace = #workspace#
+        WHERE UpdateDate >= CAST(#updatedMin# AS <include refid="dateType"/>)
+          AND entry.Workspace = CAST(#workspace# AS VARCHAR(20))
         <isNotNull property="collection">
-          AND entry.Collection=#collection#
+          AND entry.Collection = CAST(#collection# AS VARCHAR(20))
         </isNotNull>
         ORDER BY UpdateTimestamp
     </select>
 
     <select id="countEntriesTotal" parameterClass="map" resultClass="int">
         SELECT COUNT(*) as entrycount FROM EntryStore
-         WHERE Workspace = #workspace#
+         WHERE Workspace = CAST(#workspace# AS VARCHAR(20))
         <isNotNull property="collection">
-            AND Collection=#collection#
+            AND Collection = CAST(#collection# AS VARCHAR(20))
         </isNotNull>
     </select>
 
     <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
     <select id="countEntriesByLastModified" parameterClass="map" resultClass="int">
-        <![CDATA[
         SELECT COUNT(*) as entrycount FROM EntryStore
-         WHERE UpdateDate >= #updatedMin#
-           AND Workspace = #workspace#
-        ]]>
+         WHERE UpdateDate >= CAST(#updatedMin# AS <include refid="dateType"/>)
+           AND Workspace = CAST(#workspace# AS VARCHAR(20))
         <isNotNull property="collection">
-            AND Collection=#collection#
+            AND Collection = CAST(#collection# AS VARCHAR(20))
         </isNotNull>
     </select>
 
@@ -429,12 +427,12 @@
             </isEqual>
             )
             <isNotNull property="updatedMax">
-                <![CDATA[ AND UpdateDate < #updatedMax# ]]>
+                AND UpdateDate &lt; CAST(#updatedMax# AS <include refid="dateType"/>)
             </isNotNull>
         </isNotNull>
         <isNull property="latencySeconds">
             <isNotNull property="updatedMax">
-                <![CDATA[ WHERE UpdateDate < #updatedMax# ]]>
+                WHERE UpdateDate &lt; CAST(#updatedMax# AS <include refid="dateType"/>)
             </isNotNull>
         </isNull>
     </select>
