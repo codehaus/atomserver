@@ -37,11 +37,11 @@
       <isNull property="entryStoreId">
           SELECT EntryStoreId, #scheme#, #term#, #label#
             FROM EntryStore
-           WHERE Workspace=#workspace#
-             AND Collection=#collection#
-             AND EntryId=#entryId#
-             AND LanCode=#language#
-             AND CountryCode=#country#
+           WHERE Workspace = CAST(#workspace# AS VARCHAR(20))
+             AND Collection = CAST(#collection# AS VARCHAR(20))
+             AND EntryId = CAST(#entryId# AS VARCHAR(36))
+             AND LanCode = CAST(#language# AS CHAR(2))
+             AND CountryCode = CAST(#country# AS CHAR(2))
       </isNull>
       </dynamic>
 
@@ -59,11 +59,11 @@
       </isNotNull>
       <isNull property="entryStoreId">
           WHERE EntryStore.EntryStoreId = (SELECT EntryStoreId FROM EntryStore
-                                            WHERE Workspace=#workspace#
-                                              AND Collection=#collection#
-                                              AND EntryId=#entryId#
-                                              AND LanCode=#language#
-                                              AND CountryCode=#country#)
+                                            WHERE Workspace = CAST(#workspace# AS VARCHAR(20))
+                                              AND Collection = CAST(#collection# AS VARCHAR(20))
+                                              AND EntryId = CAST(#entryId# AS VARCHAR(36))
+                                              AND LanCode = CAST(#language# AS CHAR(2))
+                                              AND CountryCode= CAST(#country# AS CHAR(2)) )
       </isNull>
     AND Scheme=#scheme#
     AND Term=#term#
@@ -86,11 +86,11 @@
       </isNotNull>
       <isNull property="entryStoreId">
      WHERE EntryStore.EntryStoreId = (SELECT EntryStoreId FROM EntryStore
-                                       WHERE Workspace=#workspace#
-                                         AND Collection=#collection#
-                                         AND EntryId=#entryId#
-                                         AND LanCode=#language#
-                                         AND CountryCode=#country#)
+                                       WHERE Workspace = CAST(#workspace# AS VARCHAR(20))
+                                         AND Collection = CAST(#collection# AS VARCHAR(20))
+                                         AND EntryId = CAST(#entryId# AS VARCHAR(36))
+                                         AND LanCode = CAST(#language# AS CHAR(2))
+                                         AND CountryCode = CAST(#country# AS CHAR(2)) )
       </isNull>
     <isNotNull property="scheme" >
        AND Scheme=#scheme#
@@ -105,11 +105,11 @@
       </isNotNull>
       <isNull property="entryStoreId">
      WHERE EntryStoreId = (SELECT EntryStoreId FROM EntryStore
-                            WHERE Workspace=#workspace#
-                              AND Collection=#collection#
-                              AND EntryId=#entryId#
-                              AND LanCode=#language#
-                              AND CountryCode=#country#)
+                            WHERE Workspace = CAST(#workspace# AS VARCHAR(20))
+                              AND Collection = CAST(#collection# AS VARCHAR(20))
+                              AND EntryId = CAST(#entryId# AS VARCHAR(36))
+                              AND LanCode = CAST(#language# AS CHAR(2))
+                              AND CountryCode = CAST(#country# AS CHAR(2)) )
       </isNull>
     <isNotNull property="scheme" >
        AND Scheme=#scheme#
@@ -122,7 +122,7 @@
       FROM EntryStore
      INNER JOIN EntryCategory 
         ON EntryCategory.EntryStoreId = EntryStore.EntryStoreId
-     WHERE Workspace=#workspace#
+     WHERE Workspace = CAST(#workspace# AS VARCHAR(20))
   </select>
 
   <!-- return the Distinct List of all Scheme/Term for a Workspace/Collection -->
@@ -130,8 +130,8 @@
     SELECT DISTINCT Scheme, Term
       FROM EntryCategory
      WHERE EntryStoreId IN (SELECT EntryStoreId FROM EntryStore
-                             WHERE Workspace=#workspace#
-                               AND Collection=#collection#)
+                             WHERE Workspace = CAST(#workspace# AS VARCHAR(20))
+                               AND Collection = CAST(#collection# AS VARCHAR(20)) )
   </select>
 
   <!-- #################### delete  ############### -->
@@ -142,11 +142,11 @@
       </isNotNull>
       <isNull property="entryStoreId">
           WHERE EntryStoreId = (SELECT EntryStoreId FROM EntryStore
-                                 WHERE Workspace=#workspace#
-                                   AND Collection=#collection#
-                                   AND EntryId=#entryId#
-                                   AND LanCode=#language#
-                                   AND CountryCode=#country#)
+                                 WHERE Workspace = CAST(#workspace# AS VARCHAR(20))
+                                   AND Collection = CAST(#collection# AS VARCHAR(20))
+                                   AND EntryId = CAST(#entryId# AS VARCHAR(36))
+                                   AND LanCode = CAST(#language# AS CHAR(2))
+                                   AND CountryCode = CAST(#country# AS CHAR(2)) )
       </isNull>
     AND Scheme=#scheme#
     AND Term=#term#
@@ -156,9 +156,9 @@
   <select id="countEntryCategoriesTotal" parameterClass="map" resultClass="int" >
     SELECT COUNT(*) as entrycount FROM EntryCategory
      WHERE EntryStoreId IN (SELECT EntryStoreId FROM EntryStore
-                             WHERE Workspace=#workspace#
+                             WHERE Workspace = CAST(#workspace# AS VARCHAR(20))
                              <isNotNull property="collection" >
-                                AND Collection=#collection#
+                                AND Collection = CAST(#collection# AS VARCHAR(20))
                              </isNotNull>)
   </select>
 
@@ -166,9 +166,9 @@
   <delete id="deleteEntryCategoriesAll" parameterClass="map">
     DELETE FROM EntryCategory
      WHERE EntryStoreId IN (SELECT EntryStoreId FROM EntryStore
-                             WHERE Workspace=#workspace#
+                             WHERE Workspace = CAST(#workspace# AS VARCHAR(20))
                              <isNotNull property="collection" >
-                               AND Collection=#collection#
+                               AND Collection = CAST(#collection# AS VARCHAR(20))
                              </isNotNull>)
   </delete>
 
