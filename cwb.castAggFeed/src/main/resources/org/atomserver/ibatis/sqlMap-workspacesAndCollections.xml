@@ -34,14 +34,14 @@
     <select id="workspaceExists" parameterClass="map" resultClass="int">
         SELECT COUNT(Workspace) AS workspaceCount
           FROM AtomWorkspace
-         WHERE Workspace = #workspace#
+         WHERE Workspace = CAST(#workspace# AS VARCHAR(20))
     </select>
 
     <select id="collectionExists" parameterClass="map" resultClass="int">
         SELECT COUNT(Collection) AS collectionCount
           FROM AtomCollection
-         WHERE Workspace = #workspace#
-           AND Collection = #collection#
+         WHERE Workspace = CAST(#workspace# AS VARCHAR(20))
+           AND Collection = CAST(#collection# AS VARCHAR(20))
     </select>
 
     <select id="listWorkspaces" resultClass="string">
@@ -52,7 +52,7 @@
     <select id="listCollections" parameterClass="map" resultClass="string">
         SELECT Collection
           FROM AtomCollection
-         WHERE Workspace = #workspace#
+         WHERE Workspace = CAST(#workspace# AS VARCHAR(20))
     </select>
 
 </sqlMap>
