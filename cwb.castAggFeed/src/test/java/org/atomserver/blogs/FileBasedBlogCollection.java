@@ -172,7 +172,7 @@ public class FileBasedBlogCollection implements AtomCollection {
         } catch (ParseException e) {
             throw new AtomServerException("Can't parse " + file);
         } catch (FileNotFoundException e) {
-            throw new EntryNotFoundException("File not found: " + file);
+            throw new EntryNotFoundException(EntryNotFoundException.EntryNotFoundType.GET, "File not found: " + file);
         } catch (IRISyntaxException e) {
             throw new AtomServerException(e);
         }
