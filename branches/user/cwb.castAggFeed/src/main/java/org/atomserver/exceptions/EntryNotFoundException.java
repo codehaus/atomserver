@@ -22,19 +22,31 @@ package org.atomserver.exceptions;
  */
 public class EntryNotFoundException extends AtomServerException {
 
-    public EntryNotFoundException() {
+    public enum EntryNotFoundType { DELETE, GET; }
+
+    private EntryNotFoundType type;
+
+    public EntryNotFoundException(EntryNotFoundType type) {
+        super();
+        this.type = type;
     }
 
-    public EntryNotFoundException(String message) {
+    public EntryNotFoundException(EntryNotFoundType type, String message) {
         super(message);
+        this.type = type;
     }
 
-    public EntryNotFoundException(Throwable cause) {
+    public EntryNotFoundException(EntryNotFoundType type, Throwable cause) {
         super(cause);
+        this.type = type;
     }
 
-    public EntryNotFoundException(String message, Throwable cause) {
+    public EntryNotFoundException(EntryNotFoundType type, String message, Throwable cause) {
         super(message, cause);
+        this.type = type;
     }
 
+    public EntryNotFoundType getType() {
+        return type;
+    }
 }

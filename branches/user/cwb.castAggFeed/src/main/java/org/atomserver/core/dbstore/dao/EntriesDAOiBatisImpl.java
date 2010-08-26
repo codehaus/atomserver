@@ -909,22 +909,39 @@ public class EntriesDAOiBatisImpl
     }
 
     public List<String> listWorkspaces() {
-        return getSqlMapClientTemplate().queryForList("listWorkspaces");
+        StopWatch stopWatch = new AtomServerStopWatch();
+        try {
+            return getSqlMapClientTemplate().queryForList("listWorkspaces");
+        }
+        finally {
+            stopWatch.stop("DB.listWorkspaces", "");
+        }
     }
 
     public List<String> listCollections(String workspace) {
-        return getSqlMapClientTemplate().queryForList(
-                "listCollections",
-                paramMap().param("workspace", workspace));
+        StopWatch stopWatch = new AtomServerStopWatch();
+        try {
+            return getSqlMapClientTemplate().queryForList( "listCollections",
+                                                            paramMap().param("workspace", workspace));
+        }
+        finally {
+            stopWatch.stop("DB.listCollections", "");
+        }
     }
 
     public Object selectEntryInternalId(EntryDescriptor entryQuery) {
+        StopWatch stopWatch = new AtomServerStopWatch();
+        try {
         return getSqlMapClientTemplate().queryForObject("selectEntryInternalId",
                                                         paramMap()
                                                                 .param("workspace", entryQuery.getWorkspace())
                                                                 .param("collection", entryQuery.getCollection())
                                                                 .param("entryId", entryQuery.getEntryId())
                                                                 .addLocaleInfo(entryQuery.getLocale()));
+        }
+        finally {
+            stopWatch.stop("DB.selectEntryInternalId", "");
+        }
     }
 
     public EntryMetaData selectEntryByInternalId(Object internalId) {

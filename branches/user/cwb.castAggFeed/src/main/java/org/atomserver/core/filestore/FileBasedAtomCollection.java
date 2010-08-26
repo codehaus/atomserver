@@ -98,8 +98,8 @@ public class FileBasedAtomCollection
         String entryId = entryTarget.getEntryId();
 
         if ( !contentExists(workspace, entryTarget) ) {
-            throw new EntryNotFoundException("Property [" + collection + ", " + entryId
-                                             + ", " + locale + "] NOT FOUND");
+            throw new EntryNotFoundException(EntryNotFoundException.EntryNotFoundType.GET,
+                                             "Property [" + collection + ", " + entryId + ", " + locale + "] NOT FOUND");
         }
         EntryMetaData bean = new EntryMetaData(workspace, collection, locale, entryId, getLastModified(workspace,entryTarget));
 
@@ -148,8 +148,8 @@ public class FileBasedAtomCollection
         String entryId = entryTarget.getEntryId();
 
         if ( !contentExists(workspace, entryTarget) ) {
-            throw new EntryNotFoundException("Property [" + collection + ", " + entryId
-                                             + ", " + locale + "] NOT FOUND");
+            throw new EntryNotFoundException(EntryNotFoundException.EntryNotFoundType.DELETE,
+                                             "Property [" + collection + ", " + entryId + ", " + locale + "] NOT FOUND");
         }
 
         return null;
