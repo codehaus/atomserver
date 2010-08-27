@@ -313,6 +313,28 @@ public class EntryCategoriesDAOiBatisImpl
         return super.getTotalCountInternal(workspace, collection, "countEntryCategoriesTotal");
     }
 
+    public int updateEntryCategory(EntryCategory updateFrom, EntryCategory updateTo) {
+        StopWatch stopWatch = new AtomServerStopWatch();
+        String workspace = updateFrom.getWorkspace();
+        String collection = updateFrom.getCollection();
+        if (log.isDebugEnabled()) {
+            log.info("EntryCategoriesDAOiBatisImpl::updateEntryCategory [ " + workspace + " " + collection + " ]");
+        }
+        try {
+            return getSqlMapClientTemplate().update(
+                    "updateSingleCategory",
+                    paramMap()
+                            .param("entryStoreId", updateFrom.getEntryStoreId())
+                            .param("scheme", updateFrom.getScheme())
+                            .param("fromTerm", updateFrom.getTerm())
+                            .param("toTerm", updateTo.getTerm())
+                            .param("toLabel", updateTo.getLabel()));
+        }
+        finally {
+            stopWatch.stop("DB.updateEntryCategory", "[" + workspace + "." + collection + "]");
+        }
+    }
+
     //======================================
     //          DELETE ALL ROWS
     //======================================

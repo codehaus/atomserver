@@ -97,6 +97,13 @@
    </isNotNull>
   </select>
 
+  <!-- Update category -->
+  <update id="updateSingleCategory" parameterClass="map">
+      UPDATE EntryCategory Set Term = #toTerm#, Label=#toLabel#
+      WHERE EntryCategory.EntryStoreId = #entryStoreId#
+      AND   EntryCategory.Scheme = #scheme#
+      AND  EntryCategory.Term = #fromTerm#
+  </update>
 
   <delete id="deleteEntryCategories" parameterClass="entryCategory">
     DELETE FROM EntryCategory
