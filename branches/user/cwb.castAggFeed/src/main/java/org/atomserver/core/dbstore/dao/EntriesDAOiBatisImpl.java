@@ -56,6 +56,9 @@ public class EntriesDAOiBatisImpl
     public static final long UNDEFINED_SEQNUM = -1L;
     public static final Date ZERO_DATE = new Date(0L);
 
+    public static final long FETCH_INTERVAL = 60000;
+    public static final long STARTUP_INTERVAL = 120000;
+
     private ContentDAO contentDAO;
     private EntryCategoriesDAO entryCategoriesDAO;
     private EntryCategoryLogEventDAO entryCategoryLogEventDAO;
@@ -68,6 +71,13 @@ public class EntriesDAOiBatisImpl
 
     private static FeedQueryHeuristicsHelper heuristicsHelper = null;
 
+    private static long startupTime = System.currentTimeMillis();
+
+    private Set<String> workspaces = new HashSet<String>();
+    long lastWorkspacesSelectTime = 0L;
+
+    private Set<String> collections = new HashSet<String>();
+    long lastCollectionsSelectTime = 0L;
 
     protected void initDao() throws Exception {
         super.initDao();
@@ -911,7 +921,14 @@ public class EntriesDAOiBatisImpl
     public List<String> listWorkspaces() {
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
-            return getSqlMapClientTemplate().queryForList("listWorkspaces");
+            if ( workspacesIsExpired() ) {
+                 lastWorkspacesSelectTime = System.currentTimeMillis();
+                 List<String> dbworkspaces =  getSqlMapClientTemplate().queryForList( "listWorkspaces");
+                 workspaces.addAll( dbworkspaces );
+             }
+             return new ArrayList( workspaces );
+
+            //return getSqlMapClientTemplate().queryForList("listWorkspaces");
         }
         finally {
             stopWatch.stop("DB.listWorkspaces", "");
@@ -921,12 +938,34 @@ public class EntriesDAOiBatisImpl
     public List<String> listCollections(String workspace) {
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
-            return getSqlMapClientTemplate().queryForList( "listCollections",
-                                                            paramMap().param("workspace", workspace));
+            if ( collectionsIsExpired() ) {
+                lastCollectionsSelectTime = System.currentTimeMillis();
+                List<String> dbcollections =  getSqlMapClientTemplate().queryForList( "listCollections",
+                                                                                    paramMap().param("workspace", workspace));
+                collections.addAll( dbcollections );
+            }
+            return new ArrayList( collections );
+
+            //return getSqlMapClientTemplate().queryForList( "listCollections",
+            //                                                paramMap().param("workspace", workspace));
         }
         finally {
             stopWatch.stop("DB.listCollections", "");
         }
+    }
+
+    private boolean collectionsIsExpired() {
+        long currentTime = System.currentTimeMillis();
+        return (collections == null || collections.isEmpty()) ? true
+                : ((currentTime - lastCollectionsSelectTime) >  FETCH_INTERVAL ) ? true
+                : ((currentTime - startupTime) >  STARTUP_INTERVAL ) ? false : true;
+    }
+
+    private boolean workspacesIsExpired() {
+        long currentTime = System.currentTimeMillis();
+        return (workspaces == null || workspaces.isEmpty()) ? true
+                : ((currentTime - lastWorkspacesSelectTime) >  FETCH_INTERVAL ) ? true
+                : ((currentTime - startupTime) >  STARTUP_INTERVAL ) ? false : true;
     }
 
     public Object selectEntryInternalId(EntryDescriptor entryQuery) {
