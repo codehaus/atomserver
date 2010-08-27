@@ -57,7 +57,7 @@ public class EntriesDAOiBatisImpl
     public static final Date ZERO_DATE = new Date(0L);
 
     public static final long FETCH_INTERVAL = 60000;
-    public static final long STARTUP_INTERVAL = 120000;
+    public static final long STARTUP_INTERVAL = 300000;
 
     private ContentDAO contentDAO;
     private EntryCategoriesDAO entryCategoriesDAO;
