@@ -893,8 +893,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                 try {
                     executeTransactionally(new TransactionalTask<Object>() {
                         public Object execute() {
-                            getEntriesDAO().ensureCollectionExists(
-                                    getParentAtomWorkspace().getName(), collection);
+                            getEntriesDAO().ensureCollectionExists( getParentAtomWorkspace().getName(), collection );
                             seenCollections.add(collection);
                             return null;
                         }
