@@ -880,12 +880,11 @@ public class EntriesDAOiBatisImpl
             ParamMap paramMap = paramMap()
                     .param("workspace", workspace)
                     .param("collection", collection);
-            Integer count =
-                    (Integer) getSqlMapClientTemplate().queryForObject("collectionExists",
-                                                                       paramMap);
+            Integer count = (Integer) getSqlMapClientTemplate().queryForObject("collectionExists", paramMap);
             if (count == 0) {
                 try {
                     getSqlMapClientTemplate().insert("createCollection", paramMap);
+                    collections.add(collection);
                 } catch (DataIntegrityViolationException e) {
                     log.warn("race condition while guaranteeing existence of collection " +
                              workspace + "/" + collection + " - this is probably okay.");
@@ -902,11 +901,11 @@ public class EntriesDAOiBatisImpl
         try {
             ParamMap paramMap = paramMap().param("workspace", workspace);
             Integer count = workspace == null ? 0 :
-                            (Integer) getSqlMapClientTemplate().queryForObject("workspaceExists",
-                                                                               paramMap);
+                            (Integer) getSqlMapClientTemplate().queryForObject("workspaceExists", paramMap);
             if (count == 0) {
                 try {
                     getSqlMapClientTemplate().insert("createWorkspace", paramMap);
+                    workspaces.add(workspace);
                 } catch (DataIntegrityViolationException e) {
                     log.warn("race condition while guaranteeing existence of workspace " +
                              workspace + " - this is probably okay.");
