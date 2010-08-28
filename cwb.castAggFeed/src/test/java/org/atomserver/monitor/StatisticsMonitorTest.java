@@ -7,6 +7,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.atomserver.core.AtomServerTestCase;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
+import org.atomserver.core.dbstore.dao.EntriesDAOiBatisImpl;
 
 import java.util.Map;
 import java.util.List;
@@ -38,6 +39,8 @@ public class StatisticsMonitorTest extends AtomServerTestCase {
         StatisticsMonitor statsMonitor = (StatisticsMonitor) getSpringFactory().getBean("org.atomserver-statsMonitor");
 
         EntriesDAO entriesDAO = (EntriesDAO) getSpringFactory().getBean("org.atomserver-entriesDAO");
+        ((EntriesDAOiBatisImpl)entriesDAO).clearWorkspaceCollectionCaches();
+        
         List<String> wkspaces = entriesDAO.listWorkspaces();
         Set<String> existingWorkspaceColletions = new HashSet<String>();
         for(String wksp: wkspaces) {
