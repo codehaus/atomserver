@@ -46,7 +46,9 @@ public class StatisticsMonitorTest extends AtomServerTestCase {
         for(String wksp: wkspaces) {
             List<String> collections = entriesDAO.listCollections(wksp);
             for(String col: collections) {
-                existingWorkspaceColletions.add(wksp + "/" + col);
+                String wc = wksp + "/" + col;
+                log.debug("Adding: " + wc);
+                existingWorkspaceColletions.add(wc);
             }
         }
 
@@ -56,6 +58,7 @@ public class StatisticsMonitorTest extends AtomServerTestCase {
             assertNotNull(indexMap);
             assertTrue(indexMap.entrySet() != null);
             Set<String> diffSet = new HashSet<String>(indexMap.keySet());
+            log.debug("diffSet= " + diffSet);
             diffSet.removeAll(existingWorkspaceColletions);
             assertTrue(diffSet.isEmpty());
 
