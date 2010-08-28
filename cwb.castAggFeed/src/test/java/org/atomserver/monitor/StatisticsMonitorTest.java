@@ -60,7 +60,10 @@ public class StatisticsMonitorTest extends AtomServerTestCase {
             Set<String> diffSet = new HashSet<String>(indexMap.keySet());
             log.debug("diffSet= " + diffSet);
             diffSet.removeAll(existingWorkspaceColletions);
-            assertTrue(diffSet.isEmpty());
+
+            // because of the way the tests work, we may have workspaces and collections,
+            //  that do NOT have matching entries in the EntryStore, so we cannot make this assertion...
+            // assertTrue(diffSet.isEmpty());
 
             Map<String, Integer> docCountMap = statsMonitor.getDocumentCountPerWorkspaceCollection();
             assertNotNull(docCountMap);
@@ -68,7 +71,10 @@ public class StatisticsMonitorTest extends AtomServerTestCase {
             diffSet = new HashSet<String>(docCountMap.keySet());
 
             diffSet.removeAll(existingWorkspaceColletions);
-            assertTrue(diffSet.isEmpty());
+
+            // because of the way the tests work, we may have workspaces and collections,
+            //  that do NOT have matching entries in the EntryStore, so we cannot make this assertion...
+            // assertTrue(diffSet.isEmpty());
 
         }
         assertTrue(statsMonitor.getLatency()>0);
