@@ -34,7 +34,7 @@
             FROM EntryStore
            WHERE Workspace = CAST(#workspace# AS VARCHAR(20))
              AND Collection = CAST(#collection# AS VARCHAR(20))
-             AND EntryId = CAST(#entryId# AS VARCHAR(36))
+             AND EntryId = CAST(#entryId# AS VARCHAR(32))
              AND LanCode = CAST(#language# AS CHAR(2))
              AND CountryCode = CAST(#country# AS CHAR(2))
       </isNull>
@@ -59,7 +59,7 @@
               WHERE EntryStore.EntryStoreId = (SELECT EntryStoreId FROM EntryStore
                                                 WHERE Workspace = CAST(#workspace# AS VARCHAR(20))
                                                   AND Collection = CAST(#collection# AS VARCHAR(20))
-                                                  AND EntryId = CAST(#entryId# AS VARCHAR(36))
+                                                  AND EntryId = CAST(#entryId# AS VARCHAR(32))
                                                   AND LanCode = CAST(#language# AS CHAR(2))
                                                   AND CountryCode = CAST(#country# AS CHAR(2)))
           </isNull>
@@ -95,7 +95,7 @@
               WHERE EntryStoreId = (SELECT EntryStoreId FROM EntryStore
                                      WHERE Workspace = CAST(#workspace# AS VARCHAR(20))
                                        AND Collection = CAST(#collection# AS VARCHAR(20))
-                                       AND EntryId = CAST(#entryId# AS VARCHAR(36))
+                                       AND EntryId = CAST(#entryId# AS VARCHAR(32))
                                        AND LanCode = CAST(#language# AS CHAR(2))
                                        AND CountryCode = CAST(#country# AS CHAR(2)))
           </isNull>
@@ -110,7 +110,7 @@
                                        AND Collection = CAST(#collection# AS VARCHAR(20))
                                        AND LanCode = CAST(#language# AS CHAR(2))
                                        AND CountryCode = CAST(#country# AS CHAR(2))
-                                       AND EntryId = CAST(#entryId# AS VARCHAR(36)) )
+                                       AND EntryId = CAST(#entryId# AS VARCHAR(32)) )
     </delete>
 
     <!-- #################### Count  ############### -->
