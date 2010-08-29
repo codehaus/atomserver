@@ -132,7 +132,7 @@
              FROM (
 
                   SELECT Term, UpdateTimestamp FROM vw_EntryWithCategory  <include refid="WITH_NOEXPAND"/>
-                  WHERE Scheme = #collection#
+                  WHERE Scheme = CAST(#collection# AS VARCHAR(128))
 
                   <isNotNull property="startIndex">
                     AND UpdateTimestamp > CAST(#startIndex# AS <include refid="timestampType"/>)
