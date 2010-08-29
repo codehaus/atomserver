@@ -890,11 +890,11 @@ public class EntriesDAOiBatisImpl
             if (count == 0) {
                 try {
                     getSqlMapClientTemplate().insert("createCollection", paramMap);
-                    collections.add(collection);
                 } catch (DataIntegrityViolationException e) {
                     log.warn("race condition while guaranteeing existence of collection " +
                              workspace + "/" + collection + " - this is probably okay.");
                 }
+                collections.add(collection);
             }
         }
         finally {
@@ -911,11 +911,11 @@ public class EntriesDAOiBatisImpl
             if (count == 0) {
                 try {
                     getSqlMapClientTemplate().insert("createWorkspace", paramMap);
-                    workspaces.add(workspace);
                 } catch (DataIntegrityViolationException e) {
                     log.warn("race condition while guaranteeing existence of workspace " +
                              workspace + " - this is probably okay.");
                 }
+                workspaces.add(workspace);
             }
         }
         finally {
@@ -932,8 +932,6 @@ public class EntriesDAOiBatisImpl
                  workspaces.addAll( dbworkspaces );
              }
              return new ArrayList( workspaces );
-
-            //return getSqlMapClientTemplate().queryForList("listWorkspaces");
         }
         finally {
             stopWatch.stop("DB.listWorkspaces", "");
@@ -950,9 +948,6 @@ public class EntriesDAOiBatisImpl
                 collections.addAll( dbcollections );
             }
             return new ArrayList( collections );
-
-            //return getSqlMapClientTemplate().queryForList( "listCollections",
-            //                                                paramMap().param("workspace", workspace));
         }
         finally {
             stopWatch.stop("DB.listCollections", "");

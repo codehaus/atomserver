@@ -280,7 +280,7 @@
            AND Collection = CAST(#collection# AS VARCHAR(20))
            AND LanCode = CAST(#language# AS CHAR(2))
            AND CountryCode = CAST(#country# AS CHAR(2))
-           AND EntryId = CAST(#entryId# AS VARCHAR(36))
+           AND EntryId = CAST(#entryId# AS VARCHAR(32))
     </select>
 
     <select id="selectCategoriesForEntries" parameterClass="map" resultMap="entryCategoryResult">
@@ -335,7 +335,7 @@
           AND entry.Collection = CAST(#collection# AS VARCHAR(20))
           AND entry.LanCode = CAST(#language# AS CHAR(2))
           AND entry.CountryCode = CAST(#country# AS CHAR(2))
-          AND entry.EntryId = CAST(#entryId# AS VARCHAR(36))
+          AND entry.EntryId = CAST(#entryId# AS VARCHAR(32))
     </select>
 
     <select id="selectEntries" parameterClass="map" resultMap="entryResult">
@@ -347,7 +347,7 @@
                 AND entry.Collection = CAST(#collection# AS VARCHAR(20))
             </isNotNull>
             <isNotNull property="entryId">
-                AND entry.EntryId = CAST(#entryId# AS VARCHAR(36))
+                AND entry.EntryId = CAST(#entryId# AS VARCHAR(32))
             </isNotNull>
             <isNotNull property="language">
                 AND LanCode = CAST(#language# AS CHAR(2))
