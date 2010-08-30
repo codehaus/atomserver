@@ -121,6 +121,7 @@ public class DBBasedAtomService extends AbstractAtomService {
     }
 
     protected AtomWorkspace getJoinWorkspace(List<String> joinWorkspaces) {
+        log.debug("returning an JoinWorkspace for " + joinWorkspaces);
         return new DBBasedJoinWorkspace(this, joinWorkspaces);
     }
 
