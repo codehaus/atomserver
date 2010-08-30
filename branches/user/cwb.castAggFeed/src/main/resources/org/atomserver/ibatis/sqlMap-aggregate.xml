@@ -214,7 +214,7 @@
               AND categoryMatch > 0
               </isNotNull>
               <isNotNull property="language">
-              AND #language# = matchingSiblingEntries.LanCode
+              AND CAST(#language# AS CHAR(2)) = matchingSiblingEntries.LanCode
               </isNotNull>
       
             ORDER BY recentlyChangedEntries.UpdateTimestamp ASC
