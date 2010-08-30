@@ -17,6 +17,9 @@
 package org.atomserver.core.dbstore.dao;
 
 import org.atomserver.core.EntryMetaData;
+import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
+import org.atomserver.utils.perf.AtomServerStopWatch;
+import org.perf4j.StopWatch;
 
 import java.util.Map;
 
@@ -27,27 +30,47 @@ import java.util.Map;
 public class ContentDAOiBatisImpl
         extends AbstractDAOiBatisImpl
         implements ContentDAO {
+
     public void putContent(EntryMetaData entry, String content) {
-        Map paramMap = paramMap()
-                .param("entryStoreId", entry.getEntryStoreId())
-                .param("content", content);
-        if (contentExists(entry)) {
-            getSqlMapClientTemplate().update("updateContent", paramMap);
-        } else {
-            getSqlMapClientTemplate().insert("insertContent", paramMap);
+        StopWatch stopWatch = new AtomServerStopWatch();
+        try {
+
+            Map paramMap = paramMap()
+                    .param("entryStoreId", entry.getEntryStoreId())
+                    .param("content", content);
+            if (contentExists(entry)) {
+                getSqlMapClientTemplate().update("updateContent", paramMap);
+            } else {
+                getSqlMapClientTemplate().insert("insertContent", paramMap);
+            }
+        }
+        finally {
+            stopWatch.stop("DB.putContent", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
         }
     }
 
     public String selectContent(EntryMetaData entry) {
-        return (String)
-                getSqlMapClientTemplate().queryForObject("selectContent",
-                                                         paramMap().param("entryStoreId",
-                                                                          entry.getEntryStoreId()));
+        StopWatch stopWatch = new AtomServerStopWatch();
+        try {
+            return (String)
+                    getSqlMapClientTemplate().queryForObject("selectContent",
+                                                             paramMap().param("entryStoreId",
+                                                                              entry.getEntryStoreId()));
+        }
+        finally {
+            stopWatch.stop("DB.selectContent", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
+        }
     }
 
     public void deleteContent(EntryMetaData entry) {
-        getSqlMapClientTemplate().delete("deleteContent",
-                                         paramMap().param("entryStoreId", entry.getEntryStoreId()));
+        StopWatch stopWatch = new AtomServerStopWatch();
+        try {
+            getSqlMapClientTemplate().delete("deleteContent",
+                                             paramMap().param("entryStoreId", entry.getEntryStoreId()));
+        }
+        finally {
+            stopWatch.stop("DB.deleteContent", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
+        }
     }
 
     public boolean contentExists(EntryMetaData entry) {
@@ -58,14 +81,10 @@ public class ContentDAOiBatisImpl
         return count > 0;
     }
 
-    /*
-    public void deleteAllContent() {
-        getSqlMapClientTemplate().delete("deleteAllContent");
-    }
-    */
     //======================================
     //          DELETE ALL ROWS
     //======================================
+
     public void deleteAllContent(String workspace) {
         super.deleteAllEntriesInternal(workspace, null, "deleteContentAll");
     }

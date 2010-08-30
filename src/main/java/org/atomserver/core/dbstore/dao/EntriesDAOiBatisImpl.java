@@ -56,6 +56,9 @@ public class EntriesDAOiBatisImpl
     public static final long UNDEFINED_SEQNUM = -1L;
     public static final Date ZERO_DATE = new Date(0L);
 
+    public static final long FETCH_INTERVAL = 60000;
+    public static final long STARTUP_INTERVAL = 900000;
+
     private ContentDAO contentDAO;
     private EntryCategoriesDAO entryCategoriesDAO;
     private EntryCategoryLogEventDAO entryCategoryLogEventDAO;
@@ -68,6 +71,13 @@ public class EntriesDAOiBatisImpl
 
     private static FeedQueryHeuristicsHelper heuristicsHelper = null;
 
+    private static long startupTime = System.currentTimeMillis();
+
+    private Set<String> workspaces = new HashSet<String>();
+    long lastWorkspacesSelectTime = 0L;
+
+    private Set<String> collections = new HashSet<String>();
+    long lastCollectionsSelectTime = 0L;
 
     protected void initDao() throws Exception {
         super.initDao();
@@ -862,57 +872,115 @@ public class EntriesDAOiBatisImpl
                (EntryMetaData) entryDescriptor :
                selectEntry(entryDescriptor);
     }
+    public void clearWorkspaceCollectionCaches() {
+        workspaces = new HashSet<String>();
+        lastWorkspacesSelectTime = 0L;
+        collections = new HashSet<String>();
+        lastCollectionsSelectTime = 0L;
+    }
 
     public void ensureCollectionExists(String workspace, String collection) {
-        ensureWorkspaceExists(workspace);
-        ParamMap paramMap = paramMap()
-                .param("workspace", workspace)
-                .param("collection", collection);
-        Integer count =
-                (Integer) getSqlMapClientTemplate().queryForObject("collectionExists",
-                                                                   paramMap);
-        if (count == 0) {
-            try {
-                getSqlMapClientTemplate().insert("createCollection", paramMap);
-            } catch (DataIntegrityViolationException e) {
-                log.warn("race condition while guaranteeing existence of collection " +
-                         workspace + "/" + collection + " - this is probably okay.");
+        StopWatch stopWatch = new AtomServerStopWatch();
+        try {
+            ensureWorkspaceExists(workspace);
+            ParamMap paramMap = paramMap()
+                    .param("workspace", workspace)
+                    .param("collection", collection);
+            Integer count = (Integer) getSqlMapClientTemplate().queryForObject("collectionExists", paramMap);
+            if (count == 0) {
+                try {
+                    getSqlMapClientTemplate().insert("createCollection", paramMap);
+                } catch (DataIntegrityViolationException e) {
+                    log.warn("race condition while guaranteeing existence of collection " +
+                             workspace + "/" + collection + " - this is probably okay.");
+                }
+                collections.add(collection);
             }
+        }
+        finally {
+            stopWatch.stop("DB.ensureCollectionExists", "");
         }
     }
 
     public void ensureWorkspaceExists(String workspace) {
-        ParamMap paramMap = paramMap().param("workspace", workspace);
-        Integer count = workspace == null ? 0 :
-                        (Integer) getSqlMapClientTemplate().queryForObject("workspaceExists",
-                                                                           paramMap);
-        if (count == 0) {
-            try {
-                getSqlMapClientTemplate().insert("createWorkspace", paramMap);
-            } catch (DataIntegrityViolationException e) {
-                log.warn("race condition while guaranteeing existence of workspace " +
-                         workspace + " - this is probably okay.");
+        StopWatch stopWatch = new AtomServerStopWatch();
+        try {
+            ParamMap paramMap = paramMap().param("workspace", workspace);
+            Integer count = workspace == null ? 0 :
+                            (Integer) getSqlMapClientTemplate().queryForObject("workspaceExists", paramMap);
+            if (count == 0) {
+                try {
+                    getSqlMapClientTemplate().insert("createWorkspace", paramMap);
+                } catch (DataIntegrityViolationException e) {
+                    log.warn("race condition while guaranteeing existence of workspace " +
+                             workspace + " - this is probably okay.");
+                }
+                workspaces.add(workspace);
             }
+        }
+        finally {
+            stopWatch.stop("DB.ensureWorkspaceExists", "");
         }
     }
 
     public List<String> listWorkspaces() {
-        return getSqlMapClientTemplate().queryForList("listWorkspaces");
+        StopWatch stopWatch = new AtomServerStopWatch();
+        try {
+            if ( workspacesIsExpired() ) {
+                 lastWorkspacesSelectTime = System.currentTimeMillis();
+                 List<String> dbworkspaces =  getSqlMapClientTemplate().queryForList( "listWorkspaces");
+                 workspaces.addAll( dbworkspaces );
+             }
+             return new ArrayList( workspaces );
+        }
+        finally {
+            stopWatch.stop("DB.listWorkspaces", "");
+        }
     }
 
     public List<String> listCollections(String workspace) {
-        return getSqlMapClientTemplate().queryForList(
-                "listCollections",
-                paramMap().param("workspace", workspace));
+        StopWatch stopWatch = new AtomServerStopWatch();
+        try {
+            if ( collectionsIsExpired() ) {
+                lastCollectionsSelectTime = System.currentTimeMillis();
+                List<String> dbcollections =  getSqlMapClientTemplate().queryForList( "listCollections",
+                                                                                    paramMap().param("workspace", workspace));
+                collections.addAll( dbcollections );
+            }
+            return new ArrayList( collections );
+        }
+        finally {
+            stopWatch.stop("DB.listCollections", "");
+        }
+    }
+
+    private boolean collectionsIsExpired() {
+        long currentTime = System.currentTimeMillis();
+        return (collections == null || collections.isEmpty()) ? true
+                : ((currentTime - lastCollectionsSelectTime) >  FETCH_INTERVAL ) ? true
+                : ((currentTime - startupTime) >  STARTUP_INTERVAL ) ? false : true;
+    }
+
+    private boolean workspacesIsExpired() {
+        long currentTime = System.currentTimeMillis();
+        return (workspaces == null || workspaces.isEmpty()) ? true
+                : ((currentTime - lastWorkspacesSelectTime) >  FETCH_INTERVAL ) ? true
+                : ((currentTime - startupTime) >  STARTUP_INTERVAL ) ? false : true;
     }
 
     public Object selectEntryInternalId(EntryDescriptor entryQuery) {
+        StopWatch stopWatch = new AtomServerStopWatch();
+        try {
         return getSqlMapClientTemplate().queryForObject("selectEntryInternalId",
                                                         paramMap()
                                                                 .param("workspace", entryQuery.getWorkspace())
                                                                 .param("collection", entryQuery.getCollection())
                                                                 .param("entryId", entryQuery.getEntryId())
                                                                 .addLocaleInfo(entryQuery.getLocale()));
+        }
+        finally {
+            stopWatch.stop("DB.selectEntryInternalId", "");
+        }
     }
 
     public EntryMetaData selectEntryByInternalId(Object internalId) {
@@ -922,15 +990,21 @@ public class EntriesDAOiBatisImpl
     }
 
     public long selectMaxIndex(Date updatedMax) {
-        ParamMap paramMap = paramMap();
-        if (latencySeconds > 0) {
-            paramMap.param("latencySeconds", latencySeconds);
+        StopWatch stopWatch = new AtomServerStopWatch();
+        try {
+            ParamMap paramMap = paramMap();
+            if (latencySeconds > 0) {
+                paramMap.param("latencySeconds", latencySeconds);
+            }
+            if (updatedMax != null) {
+                paramMap.param("updatedMax", updatedMax);
+            }
+            Long retVal = (Long) getSqlMapClientTemplate().queryForObject("selectMaxIndex", paramMap);
+            return (retVal == null) ? 0L : retVal;
         }
-        if (updatedMax != null) {
-            paramMap.param("updatedMax", updatedMax);
+        finally {
+            stopWatch.stop("DB.selectMaxIndex", "");
         }
-        Long retVal = (Long) getSqlMapClientTemplate().queryForObject("selectMaxIndex", paramMap);
-        return (retVal == null) ? 0L : retVal;
     }
 
     public void acquireLock() throws AtomServerException {

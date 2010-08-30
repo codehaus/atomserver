@@ -11,6 +11,8 @@ import org.atomserver.core.etc.AtomServerConstants;
 import org.atomserver.exceptions.BadRequestException;
 import org.atomserver.uri.FeedTarget;
 import org.atomserver.uri.URIHandler;
+import org.atomserver.utils.perf.AtomServerStopWatch;
+import org.perf4j.StopWatch;
 
 /**
  * AtomServerV2 - V2 of the AtomServer API.
@@ -29,34 +31,38 @@ public class AtomServerV2 extends AtomServer {
      * @return the feed page indicate by the request context
      */
     public ResponseContext getFeed(RequestContext request) {
-        URIHandler uriHandler = getAtomService().getURIHandler();
-        FeedTarget feedTarget = uriHandler.getFeedTarget(request);
-        long maxIndex = getAtomService().getMaxIndex(feedTarget.getUpdatedMaxParam());
-        if (feedTarget.getEndIndexParam() > 0 && feedTarget.getEndIndexParam() < maxIndex) {
-            maxIndex = feedTarget.getEndIndexParam();
-        }
-
-        ResponseContext responseContext = super.getFeed(request);
-        if (responseContext.getStatus() == 304) {
-            String collection = feedTarget.getCollection();
-
-            Feed feed = AtomServer.getFactory(request.getAbdera()).newFeed();
-            feed.addAuthor("AtomServer APP Service");
-            feed.setTitle(collection + " entries");
-            feed.setUpdated(new java.util.Date());
-            feed.setId("tag:atomserver.org,2008:v2:" + collection);
-
-            feed.addSimpleExtension(AtomServerConstants.END_INDEX, String.valueOf(maxIndex));
-
-            responseContext = new BaseResponseContext<Document<Feed>>(
-                    feed.<Feed>getDocument());
-            try {
-                ((BaseResponseContext) responseContext).setEntityTag(
-                        new EntityTag(feed.getId().toString()));
-            } catch (IRISyntaxException e) {
-                throw new BadRequestException(e);
+        StopWatch stopWatch = new AtomServerStopWatch();
+        try {
+            URIHandler uriHandler = getAtomService().getURIHandler();
+            FeedTarget feedTarget = uriHandler.getFeedTarget(request);
+            long maxIndex = getAtomService().getMaxIndex(feedTarget.getUpdatedMaxParam());
+            if (feedTarget.getEndIndexParam() > 0 && feedTarget.getEndIndexParam() < maxIndex) {
+                maxIndex = feedTarget.getEndIndexParam();
             }
+
+            ResponseContext responseContext = super.getFeed(request);
+            if (responseContext.getStatus() == 304) {
+                String collection = feedTarget.getCollection();
+
+                Feed feed = AtomServer.getFactory(request.getAbdera()).newFeed();
+                feed.addAuthor("AtomServer APP Service");
+                feed.setTitle(collection + " entries");
+                feed.setUpdated(new java.util.Date());
+                feed.setId("tag:atomserver.org,2008:v2:" + collection);
+
+                feed.addSimpleExtension(AtomServerConstants.END_INDEX, String.valueOf(maxIndex));
+
+                responseContext = new BaseResponseContext<Document<Feed>>(feed.<Feed>getDocument());
+                try {
+                    ((BaseResponseContext) responseContext).setEntityTag(new EntityTag(feed.getId().toString()));
+                } catch (IRISyntaxException e) {
+                    throw new BadRequestException(e);
+                }
+            }
+            return responseContext;
         }
-        return responseContext;
+        finally {
+            stopWatch.stop("GET.feedV2", "") ;
+        }
     }
 }
