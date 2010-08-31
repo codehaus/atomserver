@@ -14,7 +14,10 @@ import java.util.Date;
 import java.util.List;
 
 /**
- *
+ * Read/Write DAO for Entries.
+ * This DAO must extend the ReadEntriesDAO because the POST,PUT,DELETE sequence
+ * will need to perform read queries as well as write queries.
+ * <b>And ALL queries in a given transaction MUST take place within the same DataSource.</b>
  */
 public interface WriteEntriesDAO
         extends AtomServerDAO {

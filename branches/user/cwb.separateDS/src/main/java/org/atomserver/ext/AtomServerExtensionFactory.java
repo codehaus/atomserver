@@ -15,20 +15,25 @@
  */
 
 
-package org.atomserver.ext.batch;
+package org.atomserver.ext;
 
 import org.apache.abdera.util.AbstractExtensionFactory;
 import org.atomserver.core.etc.AtomServerConstants;
+import org.atomserver.ext.category.CategoryOperation;
+import org.atomserver.ext.batch.Status;
+import org.atomserver.ext.batch.Operation;
+import org.atomserver.ext.batch.Results;
 
 /**
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
-public class BatchExtensionFactory extends AbstractExtensionFactory {
-    public BatchExtensionFactory() {
+public class AtomServerExtensionFactory extends AbstractExtensionFactory {
+    public AtomServerExtensionFactory() {
         super(AtomServerConstants.ATOMSERVER_BATCH_NS);
         addImpl(AtomServerConstants.STATUS, Status.class);
         addImpl(AtomServerConstants.OPERATION, Operation.class);
         addImpl(AtomServerConstants.RESULTS, Results.class);
+        addImpl(AtomServerConstants.CATEGORY_OP, CategoryOperation.class);
     }
 }

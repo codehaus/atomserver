@@ -26,14 +26,17 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.lang.StringUtils;
 import org.atomserver.*;
+import org.atomserver.ext.category.CategoryOperation;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.WorkspaceOptions;
+import org.atomserver.core.etc.AtomServerConstants;
 import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
 import org.atomserver.core.dbstore.dao.EntryCategoryLogEventDAO;
 import org.atomserver.core.dbstore.utils.SizeLimit;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.exceptions.BadRequestException;
+import org.atomserver.exceptions.OptimisticConcurrencyException;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -269,16 +272,29 @@ public class EntryCategoriesHandler
      */
     public void putContent(String contentXml, EntryDescriptor descriptor) {
         if (log.isTraceEnabled()) {
-            log.trace("EntryCategoriesContentStorage:: putEntry:: [" + descriptor + "]");
-            log.trace("EntryCategoriesContentStorage:: putEntry:: contentXml= [" + contentXml + "]");
+            log.info("EntryCategoriesContentStorage:: putEntry:: [" + descriptor + "]");
+            log.info("EntryCategoriesContentStorage:: putEntry:: contentXml= [" + contentXml + "]");
         }
         EntryDescriptor descriptorClone = cloneDescriptorWithEntriesWorkspace(descriptor);
 
-        // DELETE all current Categories from the DB
-        deleteCategories(descriptorClone);
+        Categories categories = getCategoriesFromContent(contentXml, descriptor);
 
-        // INSERT the input Categories to the DB
-        insertCategories(contentXml, descriptorClone, true);
+        CategoryOperation categoryOp = categories.getExtension(AtomServerConstants.CATEGORY_OP);
+
+        if( categoryOp == null) {
+
+            // DELETE all current Categories from the DB
+            deleteCategories(descriptorClone);
+            // INSERT the input Categories to the DB
+            insertCategories(categories, descriptorClone, true);
+            
+        } else {
+            // make sure the operations are valid.
+            validateCategoryOperation(categoryOp, categories);
+            // process each category document based on the category operation.
+            handleCategoryOperation(categoryOp, categories, descriptor);
+
+        }
 
         getAffliatedContentStorage(descriptorClone).revisionChangedWithoutContentChanging(descriptorClone);
     }
@@ -416,6 +432,10 @@ public class EntryCategoriesHandler
             return;
         }
 
+        deleteCategoriesBatch(categoriesToDelete, descriptor);
+    }
+
+    private void deleteCategoriesBatch(Categories categoriesToDelete, EntryDescriptor descriptor) {
         List<Category> categoryList = categoriesToDelete.getCategories();
         if (categoryList == null) {
             return;
@@ -448,17 +468,13 @@ public class EntryCategoriesHandler
      * But are stored in the EntryCategories table with the unadorned "workspace" (e.g. "widgets")
      * so that we can do proper SELECTs against the actual workspace Entries (e.g. "widgets")
      */
-    private void insertCategories(String contentXml, EntryDescriptor descriptor, boolean wasDeletedFirst) {
+    private void insertCategories(Categories categories, EntryDescriptor descriptor, boolean wasDeletedFirst) {
         if (!wasDeletedFirst) {
             String msg = "Requires that all Records be deleted first";
             log.error(msg);
             throw new AtomServerException(msg);
         }
 
-        Parser parser = getServiceContext().getAbdera().getParser();
-        Document<Categories> doc = parser.parse(new StringReader(contentXml));
-
-        Categories categories = doc.getRoot();
         List<Category> categoryList = categories.getCategories();
         if (categoryList == null) {
             String msg = "A Category List is NULL for entry= " + descriptor;
@@ -470,6 +486,18 @@ public class EntryCategoriesHandler
 
         // BATCH INSERT
         insertEntryCategoryBatch(entryCatList);
+    }
+
+    private int updateCategory(Category cat, String oldTerm, EntryDescriptor descriptor){
+        List<Category> catList = new ArrayList<Category>();
+        catList.add(cat);
+        List<EntryCategory> categoryList = getEntryCategoryList(descriptor, catList);
+        int rc = entryCategoriesDAO.updateEntryCategory(categoryList.get(0), oldTerm );
+
+        if (isLoggingAllCategoryEvents) {
+            entryCategoryLogEventDAO.insertEntryCategoryLogEventBatch(categoryList);
+        }
+        return rc;
     }
 
     /**
@@ -569,6 +597,115 @@ public class EntryCategoriesHandler
                          " characters. The Category [" + category + "] was not properly formatted";
             log.error(msg);
             throw new BadRequestException(msg);
+        }
+    }
+
+    private Categories getCategoriesFromContent(String contentXml, EntryDescriptor descriptor) {
+        Parser parser = getServiceContext().getAbdera().getParser();
+        Document<Categories> doc = parser.parse(new StringReader(contentXml));
+        Categories categories = doc.getRoot();
+        List<Category> categoryList = categories.getCategories();
+        if (categoryList == null) {
+            String msg = "A Category List is NULL for entry= " + descriptor;
+            log.error(msg);
+            throw new BadRequestException(msg);
+        }
+        return categories;
+    }
+
+    private CategoryOperation validateCategoryOperation(CategoryOperation op, Categories categories) {
+
+        if (!(op.getType().equals(CategoryOperation.MODIFY))) {
+            throw new BadRequestException(" Invalid Category Operation");
+        }
+        List<Category> catList = categories.getCategories();
+        if(catList.size() != 1) {
+            String msg = "Cannot have more than one category to insert, update or delete.";
+            log.error(msg);
+            throw new BadRequestException(msg);
+        }
+        Category category = catList.get(0);
+        String modifyType = category.getAttributeValue(AtomServerConstants.CATEGORY_OP_ATTR_MODIFYTYPE);
+        if(modifyType == null) {
+            String msg = "Category does not specify modification type in its attributes.";
+            log.error(msg);
+            throw new BadRequestException(msg);
+        }
+        if (CategoryOperation.UPDATE.equals(modifyType)) {
+            String oldTerm = category.getAttributeValue(AtomServerConstants.CATEGORY_OP_ATTR_OLD_TERM);
+            if (oldTerm == null) {
+                String msg = "Category does not specify old term to update in its attributes.";
+                log.error(msg);
+                throw new BadRequestException(msg);
+            }
+        } 
+        return op;
+    }
+
+    private void handleCategoryOperation(CategoryOperation op, Categories categories, EntryDescriptor descriptor) {
+
+        // TODO: need to handle error condition as a group. It works currently beause there is 1 category only.
+        for(Category category: categories.getCategories()) {
+
+            String modifyType = category.getAttributeValue(AtomServerConstants.CATEGORY_OP_ATTR_MODIFYTYPE);
+
+            if (CategoryOperation.INSERT.equals(modifyType)) {
+                Categories existingCategories = getCategories(descriptor);
+                if (existingCategories != null) {
+                    for (Category cat : existingCategories.getCategories()) {
+                        if (cat.getScheme().equals(category.getScheme()) && (cat.getTerm().equals(category.getTerm()))) {
+                            String msg = "Error: Attempting to insert an existing category";
+                            log.error(msg);
+                            throw new BadRequestException(msg);
+                        }
+                    }
+                }
+                List<EntryCategory> entryCatList = getEntryCategoryList(descriptor, categories.getCategories());
+                insertEntryCategoryBatch(entryCatList);
+            } else if (CategoryOperation.DELETE.equals(modifyType)) {
+                // go ahead and delete categories
+                deleteCategoriesBatch(categories, descriptor);
+
+            } else if (CategoryOperation.UPDATE.equals(modifyType)) {
+
+                String oldTerm = category.getAttributeValue(AtomServerConstants.CATEGORY_OP_ATTR_OLD_TERM);
+                int rc = updateCategory(category, oldTerm, descriptor);
+                // It should return 1, otherwise something is wrong.
+                if (rc != 1) {
+                    boolean matchedSchemeExists = false;
+                    boolean categoryToUpdateFound = false;
+                    Categories existingCategories = getCategories(descriptor);
+                    if (existingCategories != null) {
+                        for (Category cat : existingCategories.getCategories()) {
+                            boolean matchedScheme = cat.getScheme().equals(category.getScheme());
+                            if (!matchedSchemeExists && matchedScheme) {
+                                matchedSchemeExists = true;
+                            }
+                            boolean matchedTerm = cat.getTerm().equals(category.getTerm());
+                            if (matchedScheme && matchedTerm) {
+                                categoryToUpdateFound = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!categoryToUpdateFound) {
+                        if (matchedSchemeExists) {
+                            String editURI = atomService.getURIHandler().constructURIString(descriptor.getWorkspace(),
+                                                                                            descriptor.getCollection(),
+                                                                                            descriptor.getEntryId(),
+                                                                                            descriptor.getLocale(),
+                                                                                            (descriptor.getRevision() + 1));
+                            String msg = "Optimistic Concurrency Exception in category update operation at " + editURI;
+                            log.error(msg);
+                            // If the scheme match but not the term, this is an optimistic concurrency exception.
+                            throw new OptimisticConcurrencyException("Optimistic Concurrency Exception in category update operation", editURI);
+
+                        } else {
+                            throw new BadRequestException("Category to update not found");
+                        }
+                    }
+                }
+            }
         }
     }
 

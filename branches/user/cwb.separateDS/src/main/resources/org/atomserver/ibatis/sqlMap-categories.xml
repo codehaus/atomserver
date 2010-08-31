@@ -97,6 +97,20 @@
    </isNotNull>
   </select>
 
+  <!-- Update category -->
+  <update id="updateSingleCategory" parameterClass="map">
+      UPDATE EntryCategory Set
+      <isNotNull property="toTerm">
+      Term = #toTerm#
+      </isNotNull>
+      <isNotNull property="toLabel">
+        <isNotNull property="toTerm">,</isNotNull>
+        Label=#toLabel#
+      </isNotNull>
+      WHERE EntryCategory.EntryStoreId = CAST(#entryStoreId#  AS int)
+      AND   EntryCategory.Scheme = CAST(#scheme# AS VARCHAR(128))
+      AND   EntryCategory.Term = CAST(#fromTerm# AS VARCHAR(32))
+  </update>
 
   <delete id="deleteEntryCategories" parameterClass="entryCategory">
     DELETE FROM EntryCategory
