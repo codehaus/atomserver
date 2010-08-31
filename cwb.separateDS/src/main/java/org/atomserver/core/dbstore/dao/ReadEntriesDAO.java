@@ -15,7 +15,7 @@ import java.util.Date;
 import java.util.List;
 
 /**
- *
+ * Read Only DAO for Entries
  */
 public interface ReadEntriesDAO extends AtomServerDAO {
 

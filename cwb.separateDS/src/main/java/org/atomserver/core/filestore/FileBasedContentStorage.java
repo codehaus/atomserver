@@ -303,14 +303,12 @@ public class FileBasedContentStorage implements ContentStorage {
     public String getContent(EntryDescriptor descriptor) {
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
-
             if (descriptor.getRevision() == EntryDescriptor.UNDEFINED_REVISION) {
                 String msg = "The revision number is UNDEFINED when attempting to GET the XML file for "
                              + descriptor;
                 log.error(msg);
                 throw new AtomServerException(msg);
             }
-
             String result = null;
             int retries = 0;
             boolean finished = false;
@@ -342,7 +340,6 @@ public class FileBasedContentStorage implements ContentStorage {
                     retries++;
                 }
             }
-
             if (exceptionThrown != null) {
                 String msg = MessageFormat.format("IOException getting XML data for entry {0} :: Reason {1}",
                                                   descriptor, exceptionThrown.getMessage());
@@ -352,7 +349,7 @@ public class FileBasedContentStorage implements ContentStorage {
             return result;
 
         } finally {
-            stopWatch.stop("XML.fine.getFileContent", AtomServerPerfLogTagFormatter.getPerfLogEntryString(descriptor));
+            stopWatch.stop("Disk.getContent", AtomServerPerfLogTagFormatter.getPerfLogEntryString(descriptor));
         }
 
     }
@@ -362,41 +359,44 @@ public class FileBasedContentStorage implements ContentStorage {
      * {@inheritDoc}
      */
     public void putContent(String entryXml, EntryDescriptor descriptor) {
-
-        if (descriptor.getRevision() == EntryDescriptor.UNDEFINED_REVISION) {
-            String msg = "The revision number is UNDEFINED when attempting to PUT the XML file for "
-                         + descriptor;
-            log.error(msg);
-            throw new AtomServerException(msg);
-        }
-
-        File xmlFile = null;
+        StopWatch stopWatch = new AtomServerStopWatch();
         try {
-            // compute the filename
-            xmlFile = getEntryFileForWriting(descriptor);
-            xmlFile.getParentFile().mkdirs();
-
-            if (log.isTraceEnabled()) {
-                log.trace("%> Preparing to write XML file:: " + descriptor + " XML file:: " + xmlFile);
+            if (descriptor.getRevision() == EntryDescriptor.UNDEFINED_REVISION) {
+                String msg = "The revision number is UNDEFINED when attempting to PUT the XML file for "
+                             + descriptor;
+                log.error(msg);
+                throw new AtomServerException(msg);
             }
+            File xmlFile = null;
+            try {
+                // compute the filename
+                xmlFile = getEntryFileForWriting(descriptor);
+                xmlFile.getParentFile().mkdirs();
 
-            // marshall the entry to that file
-            writeStringToFile(entryXml, xmlFile);
+                if (log.isTraceEnabled()) {
+                    log.trace("%> Preparing to write XML file:: " + descriptor + " XML file:: " + xmlFile);
+                }
 
-            // move ANY files except the just created  revision to "_trash" dir
-            // NOTE: cleanupExcessFiles will NOT throw any Exceptions
-            cleanupExcessFiles(xmlFile, descriptor);
+                // marshall the entry to that file
+                writeStringToFile(entryXml, xmlFile);
 
-        } catch (Exception ee) {
-            String errmsg = MessageFormat.format("Exception putting XML data for entry {0}   Reason:: {1}",
-                                                 descriptor, ee.getMessage());
-            if (xmlFile != null && xmlFile.exists()) {
-                errmsg += "\n!!!!!!!!! WARNING !!!!!!!! The file (" + xmlFile + ") exists BUT the write FAILED";
+                // move ANY files except the just created  revision to "_trash" dir
+                // NOTE: cleanupExcessFiles will NOT throw any Exceptions
+                cleanupExcessFiles(xmlFile, descriptor);
+
+            } catch (Exception ee) {
+                String errmsg = MessageFormat.format("Exception putting XML data for entry {0}   Reason:: {1}",
+                                                     descriptor, ee.getMessage());
+                if (xmlFile != null && xmlFile.exists()) {
+                    errmsg += "\n!!!!!!!!! WARNING !!!!!!!! The file (" + xmlFile + ") exists BUT the write FAILED";
+                }
+                log.error(errmsg, ee);
+
+                // must throw RuntimeExceptions for Spring Txn rollback...
+                throw new AtomServerException(errmsg, ee);
             }
-            log.error(errmsg, ee);
-
-            // must throw RuntimeExceptions for Spring Txn rollback...
-            throw new AtomServerException(errmsg, ee);
+        } finally {
+            stopWatch.stop("Disk.putContent", AtomServerPerfLogTagFormatter.getPerfLogEntryString(descriptor));
         }
     }
 
@@ -411,38 +411,43 @@ public class FileBasedContentStorage implements ContentStorage {
      * {@inheritDoc}
      */
     public void revisionChangedWithoutContentChanging(EntryDescriptor descriptor) {
-        File newFile = getEntryFileForWriting(descriptor);
-
-        int lastRev = descriptor.getRevision() - 1;
-        if (log.isTraceEnabled()) {
-            log.trace("%> revision= " + descriptor.getRevision());
-        }
-        if (lastRev < 0) {
-            String msg = "Last revision is 0 or less, which should NOT be possible (" + descriptor + ")";
-            log.error(msg);
-            throw new AtomServerException(msg);
-        }
-
-        File prevFile = findExistingEntryFile(descriptor, 1);
-
-        if (prevFile == null) {
-            String msg = "Last revision file does NOT exist [" + prevFile + "] (" + descriptor + ")";
-            log.error(msg);
-            throw new AtomServerException(msg);
-        }
-
+        StopWatch stopWatch = new AtomServerStopWatch();
         try {
+            File newFile = getEntryFileForWriting(descriptor);
+
+            int lastRev = descriptor.getRevision() - 1;
             if (log.isTraceEnabled()) {
-                log.trace("%> COPYING previous file = " + prevFile + " to " + newFile);
+                log.trace("%> revision= " + descriptor.getRevision());
+            }
+            if (lastRev < 0) {
+                String msg = "Last revision is 0 or less, which should NOT be possible (" + descriptor + ")";
+                log.error(msg);
+                throw new AtomServerException(msg);
             }
 
-            newFile.getParentFile().mkdirs();
-            writeStringToFile(readFileToString(prevFile), newFile);
+            File prevFile = findExistingEntryFile(descriptor, 1);
 
-            cleanupExcessFiles(newFile, descriptor);
+            if (prevFile == null) {
+                String msg = "Last revision file does NOT exist [" + prevFile + "] (" + descriptor + ")";
+                log.error(msg);
+                throw new AtomServerException(msg);
+            }
 
-        } catch (IOException e) {
-            log.error("ERROR COPYING TO FILE! (" + prevFile + ")", e);
+            try {
+                if (log.isTraceEnabled()) {
+                    log.trace("%> COPYING previous file = " + prevFile + " to " + newFile);
+                }
+
+                newFile.getParentFile().mkdirs();
+                writeStringToFile(readFileToString(prevFile), newFile);
+
+                cleanupExcessFiles(newFile, descriptor);
+
+            } catch (IOException e) {
+                log.error("ERROR COPYING TO FILE! (" + prevFile + ")", e);
+            }
+        } finally {
+            stopWatch.stop("Disk.revNoContentChange", AtomServerPerfLogTagFormatter.getPerfLogEntryString(descriptor));
         }
     }
 
