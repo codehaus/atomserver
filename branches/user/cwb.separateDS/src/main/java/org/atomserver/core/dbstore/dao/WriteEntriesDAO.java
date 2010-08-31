@@ -20,6 +20,17 @@ public interface WriteEntriesDAO
         extends AtomServerDAO {
 
     //======================================
+    //  SELECT OPERATIONS USED BY THE WRITES
+    //======================================
+    EntryMetaData selectEntry(EntryDescriptor entry);
+
+    EntryMetaData selectEntryByInternalId(Object internalId);
+
+    Object selectEntryInternalId(EntryDescriptor entryDescriptor);
+
+    List<EntryMetaData> selectEntryBatch(Collection<? extends EntryDescriptor> entries);    
+    
+    //======================================
     //          CRUD OPERATIONS
     //======================================
 

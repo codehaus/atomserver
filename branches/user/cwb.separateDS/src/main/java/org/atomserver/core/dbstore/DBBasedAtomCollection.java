@@ -31,6 +31,8 @@ import org.apache.commons.logging.LogFactory;
 import org.atomserver.*;
 import org.atomserver.core.*;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
+import org.atomserver.core.dbstore.dao.EntriesDAOiBatisImpl;
+import org.atomserver.core.dbstore.dao.WriteEntriesDAO;
 import org.atomserver.core.etc.AtomServerConstants;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.exceptions.BadRequestException;
@@ -76,6 +78,11 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
          return ((DBBasedAtomService)parentAtomWorkspace.getParentAtomService()).getEntriesDAO();
     }
 
+    public WriteEntriesDAO getWriteEntriesDAO() {
+         return ((EntriesDAOiBatisImpl)((DBBasedAtomService)parentAtomWorkspace.getParentAtomService()).getEntriesDAO()).getWriteEntriesDAO();
+    }
+
+
      public TransactionTemplate getTransactionTemplate() {
          return ((DBBasedAtomService)parentAtomWorkspace.getParentAtomService()).getTransactionTemplate();
      }
@@ -87,7 +94,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                 protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
 
                     getContentStorage().obliterateContent(entryMetaData);
-                    getEntriesDAO().obliterateEntry(entryMetaData);
+                    getWriteEntriesDAO().obliterateEntry(entryMetaData);
                 }
             });
         } finally {
@@ -108,11 +115,16 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                                 // NOTE: we will actually wait for all of these to possibly finish,
                                 //       unless the methods below honor InterruptedExceptions
                                 //       BUT the transaction will still be rolled back eventually by the catch below.
-                                getEntriesDAO().acquireLock();
+                                getWriteEntriesDAO().acquireLock();
                                 return task.execute();
 
                             } catch( Exception ee ) {
-                                log.error("Exception in DB transaction", ee );
+                                if (ee instanceof EntryNotFoundException &&
+                                    (((EntryNotFoundException)ee).getType() == EntryNotFoundException.EntryNotFoundType.DELETE)) {
+                                    log.warn("Exception in DB transaction", ee );
+                                } else {
+                                    log.error("Exception in DB transaction", ee );
+                                }
 
                                 // the following is not really required, but ensures that this will rollback, without question
                                 transactionStatus.setRollbackOnly();
@@ -149,13 +161,16 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             return timeoutTask.get(timeout, TimeUnit.SECONDS);
 
         } catch ( AtomServerException ee ) {
+            log.debug("Exception in DB TXN: " + ee.getClass().getSimpleName() + " " + ee.getMessage() );
             throw ee;
         } catch ( ExecutionException ee ) {
+            log.debug("Exception in DB TXN: " + ee.getClass().getSimpleName() + " " + ee.getMessage() );
             throw ee.getCause() instanceof AtomServerException ?
                     (AtomServerException)ee.getCause() :
                     new AtomServerException("A " + ee.getCause().getClass().getSimpleName() +
                             " caught in Transaction", ee.getCause());
         } catch( Exception ee ) {
+            log.debug("Exception in DB TXN: " + ee.getClass().getSimpleName() + " " + ee.getMessage() );
             throw new AtomServerException("A " + ee.getClass().getSimpleName() + " caught in Transaction", ee);
         } finally {
             // NOTE: We MUST call timeoutTask.cancel() here.
@@ -169,7 +184,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
     }
 
     protected Object getInternalId(EntryDescriptor descriptor) {
-        Object id = getEntriesDAO().selectEntryInternalId(descriptor);
+        Object id = getWriteEntriesDAO().selectEntryInternalId(descriptor);
         log.debug("getInternalId= " + id);
         return id;
     }
@@ -301,7 +316,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         if (entry == null) {
             String msg = "Entry [" + workspace + ", " + collection + ", " + entryId + ", " + locale + "] NOT FOUND";
             log.warn(msg);
-            throw new EntryNotFoundException(msg);
+            throw new EntryNotFoundException(EntryNotFoundException.EntryNotFoundType.GET, msg);
         }
 
         return entry;
@@ -329,10 +344,10 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                 descriptors.add(entryTarget);
             }
 
-            getEntriesDAO().deleteEntryBatch(entriesURIData.iterator().next().getWorkspace(), descriptors);
+            getWriteEntriesDAO().deleteEntryBatch(entriesURIData.iterator().next().getWorkspace(), descriptors);
 
             EntryMap<EntryMetaData> metaDataAfterDeleted = new EntryMap<EntryMetaData>();
-            List<EntryMetaData> entryMetaData = getEntriesDAO().selectEntryBatch(descriptors);
+            List<EntryMetaData> entryMetaData = getWriteEntriesDAO().selectEntryBatch(descriptors);
             for (EntryMetaData metaDatum : entryMetaData) {
                 metaDataAfterDeleted.put(metaDatum, metaDatum);
             }
@@ -344,7 +359,8 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                     String msg = "Entry [" + entryTarget.getWorkspace() + ", " + entryTarget.getCollection() + ", " +
                                  entryTarget.getEntryId() + ", " + entryTarget.getLocale() + "] NOT FOUND";
                     log.warn(msg);
-                    returnValue.add(new BatchEntryResult(entryTarget, new EntryNotFoundException(msg)));
+                    returnValue.add(new BatchEntryResult(entryTarget,
+                                                         new EntryNotFoundException(EntryNotFoundException.EntryNotFoundType.DELETE, msg)));
                 }
                 else if (URIHandler.REVISION_OVERRIDE != revision && (metaData.getRevision() != revision)) {
                     String msg = "Entry [" + entryTarget.getWorkspace() + ", " + entryTarget.getCollection() + ", " +
@@ -388,7 +404,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
 
             EntryMap<EntryMetaData> metaData = new EntryMap<EntryMetaData>();
 
-            List<EntryMetaData> list = getEntriesDAO().selectEntryBatch(descriptors);
+            List<EntryMetaData> list = getWriteEntriesDAO().selectEntryBatch(descriptors);
             for (EntryMetaData metaDatum : list) {
                 metaData.put(metaDatum, metaDatum);
             }
@@ -439,16 +455,16 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
 
             EntryMap<EntryMetaData> metaDataAfterModified = new EntryMap<EntryMetaData>();
             if (!toInsert.isEmpty()) {
-                getEntriesDAO().insertEntryBatch(toInsert.get(0).getWorkspace(), toInsert);
-                List<EntryMetaData> afterModified = getEntriesDAO().selectEntryBatch(toInsert);
+                getWriteEntriesDAO().insertEntryBatch(toInsert.get(0).getWorkspace(), toInsert);
+                List<EntryMetaData> afterModified = getWriteEntriesDAO().selectEntryBatch(toInsert);
                 for (EntryMetaData metaDatum : afterModified) {
                     metaDatum.setNewlyCreated(true);
                     metaDataAfterModified.put(metaDatum, metaDatum);
                 }
             }
             if (!toUpdate.isEmpty()) {
-                getEntriesDAO().updateEntryBatch(toUpdate.get(0).getWorkspace(), toUpdate);
-                List<EntryMetaData> afterModified = getEntriesDAO().selectEntryBatch(toUpdate);
+                getWriteEntriesDAO().updateEntryBatch(toUpdate.get(0).getWorkspace(), toUpdate);
+                List<EntryMetaData> afterModified = getWriteEntriesDAO().selectEntryBatch(toUpdate);
                 for (EntryMetaData metaDatum : afterModified) {
                     metaDatum.setNewlyCreated(false);
                     metaDataAfterModified.put(metaDatum, metaDatum);
@@ -497,7 +513,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             if (revision == 0) {
                 // SELECT -- we do this select to know what revision we actually had,
                 // so we can create the proper editURI
-                EntryMetaData metaData = getEntriesDAO().selectEntryByInternalId(internalId);
+                EntryMetaData metaData = getWriteEntriesDAO().selectEntryByInternalId(internalId);
                 int rev = metaData.getRevision();
                 String msg = "Entry [" + workspace + ", " + collection + ", " + entryId + ", " + locale
                              + "] You requested a write at revision 0, but this has already been written"
@@ -508,7 +524,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
 
             if(this.alwaysUpdateEntry()) { // update entry regardless of its content.
 
-                int numRowsModified = getEntriesDAO().updateEntry( entryTarget, false );
+                int numRowsModified = getWriteEntriesDAO().updateEntry( entryTarget, false );
                 if (numRowsModified > 0) {
                     writeFailed = false;
                 }
@@ -519,7 +535,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                 // Don't update entry if the content are the same.
 
                 // SELECT -- we do this select to know what revision we actually had and its content hash code.
-                EntryMetaData metaData = getEntriesDAO().selectEntryByInternalId(internalId);
+                EntryMetaData metaData = getWriteEntriesDAO().selectEntryByInternalId(internalId);
 
                 // check revision compatibility
                 boolean revisionError = (revision >= 0) && (metaData.getRevision() >= revision);
@@ -534,7 +550,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                 }
 
                 if(!revisionError) {
-                    int numRowsModified = getEntriesDAO().updateEntry( entryTarget, false );
+                    int numRowsModified = getWriteEntriesDAO().updateEntry( entryTarget, false );
                     if (numRowsModified > 0) {
                         writeFailed = false;
                     }
@@ -562,7 +578,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             }
 
             try {
-                internalId = getEntriesDAO().insertEntry(entryTarget );
+                internalId = getWriteEntriesDAO().insertEntry(entryTarget );
                 if (log.isDebugEnabled())
                    log.debug( "AFTER INSERT :: [" + entryTarget.getEntryId() + "] internalId= " + internalId);
                 if (internalId != null) {
@@ -572,7 +588,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
 
                 // SELECT -- we do this select to know what revision we actually had,
                 // so we can create the proper editURI
-                EntryMetaData entryMetaData = getEntriesDAO().selectEntryByInternalId(internalId);
+                EntryMetaData entryMetaData = getWriteEntriesDAO().selectEntryByInternalId(internalId);
 
                 String msg;
                 if (revision == URIHandler.REVISION_OVERRIDE) {
@@ -611,7 +627,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             throws AtomServerException {
         boolean writeFailed = true;
 
-        int numRowsModified = getEntriesDAO().updateEntry( entryTarget, false );
+        int numRowsModified = getWriteEntriesDAO().updateEntry( entryTarget, false );
         if (numRowsModified > 0) {
             writeFailed = false;
         }
@@ -634,7 +650,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
 
          // SELECT -- We must select again
         //  because we need data that was set during the INSERT or UPDATE (e.g. published & lastModified)
-        EntryMetaData bean = getEntriesDAO().selectEntryByInternalId(internalId);
+        EntryMetaData bean = getWriteEntriesDAO().selectEntryByInternalId(internalId);
 
         String workspace = entryTarget.getWorkspace();
         String collection = entryTarget.getCollection();
@@ -685,16 +701,16 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         }
 
         // DELETE
-        int numRowsModified = getEntriesDAO().deleteEntry(entryTarget, setDeletedFlag);
+        int numRowsModified = getWriteEntriesDAO().deleteEntry(entryTarget, setDeletedFlag);
 
         // SELECT -- We must select again
         //  because we need data that was set during the DELETE (e.g. published & lastModified)
         EntryMetaData bean = null;
         if (URIHandler.REVISION_OVERRIDE == revision && numRowsModified == 0 ||
-            (bean = getEntriesDAO().selectEntry(entryTarget)) == null) {
+            (bean = getWriteEntriesDAO().selectEntry(entryTarget)) == null) {
             String msg = "Entry [" + workspace + ", " + collection + ", " + entryId + ", " + locale + "] NOT FOUND";
             log.warn(msg);
-            throw new EntryNotFoundException(msg);
+            throw new EntryNotFoundException(EntryNotFoundException.EntryNotFoundType.DELETE, msg);
         }
 
         if (URIHandler.REVISION_OVERRIDE != revision && bean.getRevision() != revision || numRowsModified == 0) {
@@ -887,8 +903,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                 try {
                     executeTransactionally(new TransactionalTask<Object>() {
                         public Object execute() {
-                            getEntriesDAO().ensureCollectionExists(
-                                    getParentAtomWorkspace().getName(), collection);
+                            getEntriesDAO().ensureCollectionExists( getParentAtomWorkspace().getName(), collection );
                             seenCollections.add(collection);
                             return null;
                         }

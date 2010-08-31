@@ -116,6 +116,11 @@
         <isNotEqual property="dbType" compareValue="sqlserver">BIGINT</isNotEqual>
     </sql>
 
+    <sql id="dateType">
+        <isEqual property="dbType" compareValue="sqlserver">DATETIME</isEqual>
+        <isNotEqual property="dbType" compareValue="sqlserver">TIMESTAMP</isNotEqual>
+    </sql>
+
     <sql id="updateLock_Table">
         <isEqual property="dbType" compareValue="sqlserver">
             (UPDLOCK)

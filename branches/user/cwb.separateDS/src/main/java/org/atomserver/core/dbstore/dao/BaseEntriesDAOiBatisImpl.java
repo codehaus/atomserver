@@ -3,12 +3,14 @@
  */
 package org.atomserver.core.dbstore.dao;
 
+import org.atomserver.AtomCategory;
 import org.atomserver.EntryDescriptor;
 import org.atomserver.FeedDescriptor;
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
 import org.atomserver.utils.locale.LocaleUtils;
+import org.atomserver.utils.logic.BooleanExpression;
 import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
 import org.atomserver.utils.perf.AtomServerStopWatch;
 import org.perf4j.StopWatch;
@@ -77,6 +79,32 @@ public class BaseEntriesDAOiBatisImpl
         this.latencySeconds = latencySeconds;
     }
 
+    public Object selectEntryInternalId(EntryDescriptor entryQuery) {
+        StopWatch stopWatch = new AtomServerStopWatch();
+        try {
+            return getSqlMapClientTemplate().queryForObject("selectEntryInternalId",
+                                                            paramMap()
+                                                                    .param("workspace", entryQuery.getWorkspace())
+                                                                    .param("collection", entryQuery.getCollection())
+                                                                    .param("entryId", entryQuery.getEntryId())
+                                                                    .addLocaleInfo(entryQuery.getLocale()));
+        }
+        finally {
+            stopWatch.stop("DB.selectEntryInternalId", "");
+        }
+    }
+
+    public EntryMetaData selectEntryByInternalId(Object internalId) {
+        StopWatch stopWatch = new AtomServerStopWatch();
+        try {
+            return (EntryMetaData) getSqlMapClientTemplate().queryForObject("selectEntryByInternalId",
+                                                                            paramMap().param("internalId", internalId));
+        }
+        finally {
+            stopWatch.stop("DB.selectEntryInternalId2", "");
+        }
+    }
+    
     public EntryMetaData selectEntry(EntryDescriptor entryQuery) {
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
@@ -96,6 +124,23 @@ public class BaseEntriesDAOiBatisImpl
         }
     }
 
+
+    public List<EntryMetaData> selectEntryBatch(Collection<? extends EntryDescriptor> entryQueries) {
+        StopWatch stopWatch = new AtomServerStopWatch();
+        try {
+            AbstractDAOiBatisImpl.ParamMap paramMap = prepareBatchParamMap(entryQueries);
+
+            if (log.isTraceEnabled()) {
+                log.trace("SELECT EntriesDAOiBatisImpl selectEntryBatch:: paramMap= " + paramMap);
+            }
+
+            return getSqlMapClientTemplate().queryForList("selectEntryBatch", paramMap);
+        }
+        finally {
+            stopWatch.stop("DB.selectEntryBATCH", "");
+        }
+    }
+
     /**
      * NOTE: package scoped for use by JUnits
      */
@@ -112,6 +157,41 @@ public class BaseEntriesDAOiBatisImpl
         finally {
             stopWatch.stop("DB.selectEntriesByLastModified", "");
         }
+    }
+
+    // TODO -- here only for tests
+    public List<EntryMetaData> selectFeedPage(Date updatedMin,
+                                              Date updatedMax,
+                                              int startIndex,
+                                              int endIndex,
+                                              int pageSize,
+                                              String locale,
+                                              FeedDescriptor feed,
+                                              Collection<BooleanExpression<AtomCategory>> categoryQuery) {
+        StopWatch stopWatch = new AtomServerStopWatch();
+        try {
+            AbstractDAOiBatisImpl.ParamMap paramMap = prepareParamMapForSelectEntries(updatedMin, updatedMax,
+                                                                                      startIndex, endIndex,
+                                                                                      pageSize, locale, feed);
+            addSetOpsSelectFeedPageParams(paramMap, categoryQuery);
+
+            return getSqlMapClientTemplate().queryForList("selectFeedPage", paramMap);
+        }
+        finally {
+            stopWatch.stop("DB.selectFeedPage",
+                           AtomServerPerfLogTagFormatter.getPerfLogFeedString(locale, feed.getWorkspace(), feed.getCollection()));
+        }
+    }
+
+    protected void addSetOpsSelectFeedPageParams(AbstractDAOiBatisImpl.ParamMap paramMap, Collection<BooleanExpression<AtomCategory>> categoryQuery) {
+        if (categoryQuery != null && !categoryQuery.isEmpty()) {
+            paramMap.param("categoryQuerySql",
+                           SetOpCategoryQueryGenerator.generateCategorySearch(categoryQuery));
+        }
+        if (latencySeconds > 0) {
+            paramMap.param("latencySeconds", latencySeconds);
+        }
+        paramMap.param("usequery", "setOps");
     }
 
     protected AbstractDAOiBatisImpl.ParamMap prepareBatchParamMap(Collection<? extends EntryDescriptor> entryQueries) {

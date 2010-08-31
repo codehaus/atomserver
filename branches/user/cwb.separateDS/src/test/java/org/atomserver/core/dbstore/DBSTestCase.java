@@ -32,6 +32,7 @@ import org.atomserver.core.BaseFeedDescriptor;
 import org.atomserver.core.BaseServiceDescriptor;
 import org.atomserver.core.dbstore.dao.ContentDAO;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
+import org.atomserver.core.dbstore.dao.EntriesDAOiBatisImpl;
 import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
 import org.atomserver.core.dbstore.utils.DBSeeder;
 import org.atomserver.core.etc.AtomServerConstants;
@@ -51,7 +52,7 @@ import java.text.MessageFormat;
  */
 public class DBSTestCase extends AtomServerTestCase {
 
-    protected EntriesDAO entriesDao = null;
+    protected EntriesDAOiBatisImpl entriesDao = null;
     protected EntryCategoriesDAO entryCategoriesDAO = null;
 
     protected ContentDAO contentDAO = null;
@@ -95,7 +96,7 @@ public class DBSTestCase extends AtomServerTestCase {
 
         ApplicationContext springContext = getSpringFactory();
 
-        entriesDao = (EntriesDAO) springContext.getBean("org.atomserver-entriesDAO");
+        entriesDao = (EntriesDAOiBatisImpl) springContext.getBean("org.atomserver-entriesDAO");
         entryCategoriesDAO = (EntryCategoriesDAO) springContext.getBean("org.atomserver-entryCategoriesDAO");
 
         contentDAO = (ContentDAO) springContext.getBean("org.atomserver-contentDAO");

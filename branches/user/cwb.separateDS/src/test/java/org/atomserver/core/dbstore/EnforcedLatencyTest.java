@@ -133,7 +133,7 @@ public class EnforcedLatencyTest extends DBSTestCase {
                             EntryDescriptor entry = new BaseEntryDescriptor(WIDGETS, ACME, "2",
                                                                             US, REVISION_OVERRIDE);
                             entriesDao.updateEntry(entry, false);
-                            EntryMetaData emd = entriesDao.selectEntry(entry);
+                            EntryMetaData emd = entriesDao.getWriteEntriesDAO().selectEntry(entry);
                             contentStorage.revisionChangedWithoutContentChanging(emd);
                             log.debug("::trace-race-condition:: updated 2 to " +
                                                emd.getUpdateTimestamp() + ", " +
@@ -162,7 +162,7 @@ public class EnforcedLatencyTest extends DBSTestCase {
                             EntryDescriptor entry = new BaseEntryDescriptor(WIDGETS, ACME, "1",
                                                                             US, REVISION_OVERRIDE);
                             entriesDao.updateEntry(entry, false);
-                            EntryMetaData emd = entriesDao.selectEntry(entry);
+                            EntryMetaData emd = entriesDao.getWriteEntriesDAO().selectEntry(entry);
                             contentStorage.revisionChangedWithoutContentChanging(emd);
                             log.debug("::trace-race-condition:: updated 1 to " +
                                                emd.getUpdateTimestamp() + ", " +
@@ -221,7 +221,7 @@ public class EnforcedLatencyTest extends DBSTestCase {
             visibleFromDatabase = new HashSet<String>();
             Connection conn = null;
             try {
-                conn = ((EntriesDAOiBatisImpl) entriesDao).getDataSource().getConnection();
+                conn = entriesDao.getWriteEntriesDAO().getDataSource().getConnection();
                 ResultSet resultSet = conn.createStatement().executeQuery(
                         "SELECT EntryId FROM EntryStore WHERE UpdateTimestamp > " + updateIndex);
                 while (resultSet.next()) {

@@ -32,11 +32,11 @@
       <isNull property="entryStoreId">
           SELECT EntryStoreId, ${db.getdate.func}, #scheme#, #term#, #label#
             FROM EntryStore
-           WHERE Workspace=#workspace#
-             AND Collection=#collection#
-             AND EntryId=#entryId#
-             AND LanCode=#language#
-             AND CountryCode=#country#
+           WHERE Workspace = CAST(#workspace# AS VARCHAR(20))
+             AND Collection = CAST(#collection# AS VARCHAR(20))
+             AND EntryId = CAST(#entryId# AS VARCHAR(32))
+             AND LanCode = CAST(#language# AS CHAR(2))
+             AND CountryCode = CAST(#country# AS CHAR(2))
       </isNull>
       </dynamic>
 
@@ -57,26 +57,26 @@
           </isNotNull>
           <isNull property="entryStoreId">
               WHERE EntryStore.EntryStoreId = (SELECT EntryStoreId FROM EntryStore
-                                                WHERE Workspace=#workspace#
-                                                  AND Collection=#collection#
-                                                  AND EntryId=#entryId#
-                                                  AND LanCode=#language#
-                                                  AND CountryCode=#country#)
+                                                WHERE Workspace = CAST(#workspace# AS VARCHAR(20))
+                                                  AND Collection = CAST(#collection# AS VARCHAR(20))
+                                                  AND EntryId = CAST(#entryId# AS VARCHAR(32))
+                                                  AND LanCode = CAST(#language# AS CHAR(2))
+                                                  AND CountryCode = CAST(#country# AS CHAR(2)))
           </isNull>
     </sql>
 
     <select id="selectEntryCategoryLogEventsBySchemeTerm"
             parameterClass="entryCategory" resultMap="entryCategoryLogEventResult" >
         <include refid="selectEntryCategoryLogEventsFragment" />
-        AND Scheme=#scheme#
-        AND Term=#term#
+        AND Scheme = CAST(#scheme# AS VARCHAR(128))
+        AND Term = CAST(#term# AS VARCHAR(32))
         ORDER BY EntryCategoryLogEvent.CreateDate        
     </select>
 
     <select id="selectEntryCategoryLogEventsByScheme"
             parameterClass="entryCategory" resultMap="entryCategoryLogEventResult" >
         <include refid="selectEntryCategoryLogEventsFragment" />
-        AND Scheme=#scheme#
+        AND Scheme = CAST(#scheme# AS VARCHAR(128))
         ORDER BY EntryCategoryLogEvent.CreateDate
     </select>
 
@@ -93,11 +93,11 @@
           </isNotNull>
           <isNull property="entryStoreId">
               WHERE EntryStoreId = (SELECT EntryStoreId FROM EntryStore
-                                     WHERE Workspace=#workspace#
-                                       AND Collection=#collection#
-                                       AND EntryId=#entryId#
-                                       AND LanCode=#language#
-                                       AND CountryCode=#country#)
+                                     WHERE Workspace = CAST(#workspace# AS VARCHAR(20))
+                                       AND Collection = CAST(#collection# AS VARCHAR(20))
+                                       AND EntryId = CAST(#entryId# AS VARCHAR(32))
+                                       AND LanCode = CAST(#language# AS CHAR(2))
+                                       AND CountryCode = CAST(#country# AS CHAR(2)))
           </isNull>
         AND Scheme=#scheme#
         AND Term=#term#
@@ -106,20 +106,20 @@
     <delete id="deleteEntryCategoryLogEvents" parameterClass="map" >
         DELETE FROM EntryCategoryLogEvent
               WHERE EntryStoreId = (SELECT EntryStoreId FROM EntryStore
-                                     WHERE Workspace=#workspace#
-                                       AND Collection=#collection#
-                                       AND LanCode=#language#
-                                       AND CountryCode=#country#
-                                       AND EntryId=#entryId#)
+                                     WHERE Workspace = CAST(#workspace# AS VARCHAR(20))
+                                       AND Collection = CAST(#collection# AS VARCHAR(20))
+                                       AND LanCode = CAST(#language# AS CHAR(2))
+                                       AND CountryCode = CAST(#country# AS CHAR(2))
+                                       AND EntryId = CAST(#entryId# AS VARCHAR(32)) )
     </delete>
 
     <!-- #################### Count  ############### -->
     <select id="countEntryCategoryLogEventsTotal" parameterClass="map" resultClass="int" >
       SELECT COUNT(*) as entrycount FROM EntryCategoryLogEvent
        WHERE EntryStoreId IN (SELECT EntryStoreId FROM EntryStore
-                               WHERE Workspace=#workspace#
+                               WHERE Workspace = CAST(#workspace# AS VARCHAR(20))
                                <isNotNull property="collection" >
-                                  AND Collection=#collection#
+                                  AND Collection = CAST(#collection# AS VARCHAR(20))
                                </isNotNull>)
     </select>
 
@@ -128,9 +128,9 @@
     <delete id="deleteEntryCategoryLogEventsAll" parameterClass="map">
       DELETE FROM EntryCategoryLogEvent
        WHERE EntryStoreId IN (SELECT EntryStoreId FROM EntryStore
-                               WHERE Workspace=#workspace#
+                               WHERE Workspace = CAST(#workspace# AS VARCHAR(20))
                                <isNotNull property="collection" >
-                                 AND Collection=#collection#
+                                 AND Collection = CAST(#collection# AS VARCHAR(20))
                                </isNotNull>)
     </delete>
 

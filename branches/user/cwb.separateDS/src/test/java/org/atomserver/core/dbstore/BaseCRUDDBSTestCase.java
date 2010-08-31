@@ -21,6 +21,7 @@ import org.apache.abdera.i18n.iri.IRI;
 import org.apache.commons.io.FileUtils;
 import org.atomserver.core.CRUDAtomServerTestCase;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
+import org.atomserver.core.dbstore.dao.EntriesDAOiBatisImpl;
 import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
 import org.atomserver.core.dbstore.dao.EntryCategoryLogEventDAO;
 import org.atomserver.core.dbstore.utils.DBSeeder;
@@ -35,7 +36,7 @@ import java.io.File;
  */
 abstract public class BaseCRUDDBSTestCase extends CRUDAtomServerTestCase {
 
-    protected EntriesDAO entriesDAO = null;
+    protected EntriesDAOiBatisImpl entriesDAO = null;
     protected EntryCategoriesDAO entryCategoriesDAO = null;
     protected EntryCategoryLogEventDAO entryCategoryLogEventDAO = null;
 
@@ -43,7 +44,7 @@ abstract public class BaseCRUDDBSTestCase extends CRUDAtomServerTestCase {
         super.setUp();
 
         ApplicationContext springContext = getSpringFactory();
-        entriesDAO = (EntriesDAO) springContext.getBean("org.atomserver-entriesDAO");
+        entriesDAO = (EntriesDAOiBatisImpl) springContext.getBean("org.atomserver-entriesDAO");
         entryCategoriesDAO = (EntryCategoriesDAO) springContext.getBean("org.atomserver-entryCategoriesDAO");
         entryCategoryLogEventDAO = (EntryCategoryLogEventDAO) springContext.getBean("org.atomserver-entryCategoryLogEventDAO");
 
