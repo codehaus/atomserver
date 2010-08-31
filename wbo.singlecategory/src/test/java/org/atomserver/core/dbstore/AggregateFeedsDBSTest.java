@@ -173,6 +173,13 @@ public class AggregateFeedsDBSTest extends DBSTestCase {
         assertEquals(feed.getEntries().get(0).getContent(),
                      getEntry("$join", "urn:myjoin", "" + (BASE_WIDGET_ID + 1), Locale.US.toString()).getContent());
 
+        log.debug("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
+        String url = getServerURL() +
+                     getURLPath("$join(dummy,widgets)", "urn:myjoin",
+                                "" + (BASE_WIDGET_ID + 1), Locale.US.toString(), null);
+
+        clientGet(url, null, 200, true);
+        log.debug("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
 
         feed = getPage("$join/urn:myjoin?locale=en_GB&entry-type=full", 200);
         assertEquals(1, feed.getEntries().size());
@@ -182,7 +189,7 @@ public class AggregateFeedsDBSTest extends DBSTestCase {
         assertEquals(feed.getEntries().get(0).getContent(),
                      entry.getContent());
 
-        String url = getServerURL() +
+        url = getServerURL() +
                      getURLPath("$join", "urn:myjoin",
                                 "" + (BASE_WIDGET_ID + 5), Locale.US.toString(), null);
 
