@@ -59,27 +59,25 @@ public class EntriesDAOiBatisImpl
     private ReadEntriesDAOiBatisImpl readEntriesDAO;
     private AggregateEntriesDAOiBatisImpl aggregateEntriesDAO;
 
-
     private ContentDAO contentDAO;
     private EntryCategoriesDAO entryCategoriesDAO;
     private EntryCategoryLogEventDAO entryCategoryLogEventDAO;
     private int latencySeconds = UNDEFINED;
     private SqlMapClient sqlMapClient;
 
-
     public void afterPropertiesSet() throws Exception {
         if (dataSource != null) {
             if (writeEntriesDAO == null) {
                 writeEntriesDAO = new WriteEntriesDAOiBatisImpl();
-                setupDAO(writeEntriesDAO );
+                setupDAO(writeEntriesDAO);
             }
             if (readEntriesDAO == null) {
                 readEntriesDAO = new ReadEntriesDAOiBatisImpl();
-                setupDAO(readEntriesDAO );
+                setupDAO(readEntriesDAO);
             }
             if (aggregateEntriesDAO == null) {
                 aggregateEntriesDAO = new AggregateEntriesDAOiBatisImpl();
-                setupDAO(aggregateEntriesDAO );
+                setupDAO(aggregateEntriesDAO);
             }
         }
     }
@@ -289,6 +287,8 @@ public class EntriesDAOiBatisImpl
 
     public List<String> listCollections(String workspace) {return readEntriesDAO.listCollections(workspace);}
 
+    public void clearWorkspaceCollectionCaches() { readEntriesDAO.clearWorkspaceCollectionCaches(); }
+    
     public long selectMaxIndex(Date updatedMax) {return readEntriesDAO.selectMaxIndex(updatedMax);}
 
     //-------------------

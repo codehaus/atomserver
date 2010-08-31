@@ -190,6 +190,7 @@ public class FileBasedContentStorage implements ContentStorage {
     }
 
     //=========================
+
     /**
      * {@inheritDoc}
      */
@@ -260,6 +261,7 @@ public class FileBasedContentStorage implements ContentStorage {
     }
 
     // Used by IOC container to enable/disable sweeping excess revisions to a separate trash dir
+
     @ManagedAttribute
     public void setSweepToTrash(boolean sweepToTrash) {
         this.sweepToTrash = sweepToTrash;
@@ -272,6 +274,7 @@ public class FileBasedContentStorage implements ContentStorage {
 
     // Used by IOC container to set the time (in Seconds) to lag when sweeping excess revisions
     // to a separate trash dir
+
     @ManagedAttribute
     public void setSweepToTrashLagTimeSecs(int sweepToTrashLagTimeSecs) {
         this.sweepToTrashLagTimeSecs = sweepToTrashLagTimeSecs;
@@ -320,7 +323,7 @@ public class FileBasedContentStorage implements ContentStorage {
                     File file = findExistingEntryFile(descriptor);
 
                     if (file == null) {
-                        log.warn("getFileLocation() returned NULL getting XML data for entry::  " + descriptor);
+                        log.warn("findExistingEntryFile() returned NULL getting XML data for entry::  " + descriptor);
                     } else {
                         result = readFileToString(file);
                     }
@@ -425,7 +428,7 @@ public class FileBasedContentStorage implements ContentStorage {
         if (prevFile == null) {
             String msg = "Last revision file does NOT exist [" + prevFile + "] (" + descriptor + ")";
             log.error(msg);
-            throw new AtomServerException(msg);                                         
+            throw new AtomServerException(msg);
         }
 
         try {
@@ -461,7 +464,7 @@ public class FileBasedContentStorage implements ContentStorage {
     public void obliterateContent(EntryDescriptor descriptor) {
         File entryFile = findExistingEntryFile(descriptor);
         try {
-            if(entryFile != null) {
+            if (entryFile != null) {
                 FileUtils.deleteDirectory(entryFile.getParentFile());
                 cleanUpToCollection(descriptor, entryFile);
             }
@@ -499,8 +502,7 @@ public class FileBasedContentStorage implements ContentStorage {
                                             String entryId,
                                             Locale locale,
                                             int revision) {
-        return findExistingEntryFile(
-                new BaseEntryDescriptor(workspace, collection, entryId, locale, revision));
+        return findExistingEntryFile(new BaseEntryDescriptor(workspace, collection, entryId, locale, revision));
     }
 
     private EntryDescriptor getMetaDataFromFilePath(File file) {
@@ -653,9 +655,9 @@ public class FileBasedContentStorage implements ContentStorage {
                                                   + file + ") to (" + moveTo + ")");
                         }
                         // log the deleted files so that external scripts can locate them
-                        if(trashLog != null) {
-                            String relativePath = moveTo.getCanonicalPath().substring(rootDirLen + 1) ; // get relateivePath
-                            trashLog.info(System.currentTimeMillis()/1000 + " " + relativePath); // seconds timestamp 
+                        if (trashLog != null) {
+                            String relativePath = moveTo.getCanonicalPath().substring(rootDirLen + 1); // get relateivePath
+                            trashLog.info(System.currentTimeMillis() / 1000 + " " + relativePath); // seconds timestamp
                         }
                     }
                     cleanUpToCollection(descriptor, directoryToClean);
@@ -669,8 +671,7 @@ public class FileBasedContentStorage implements ContentStorage {
         }
     }
 
-    private void cleanUpToCollection(EntryDescriptor descriptor,
-                                     File cleanDir)
+    private void cleanUpToCollection(EntryDescriptor descriptor, File cleanDir)
             throws IOException {
         // under no circumstances do we want to clean the collection directory.
         File stopDir = pathFromRoot(descriptor.getWorkspace(), descriptor.getCollection());
@@ -739,6 +740,8 @@ public class FileBasedContentStorage implements ContentStorage {
                         log.trace("%> file path " + entryFile + " exists.");
                     }
                     return entryFile;
+                } else {
+                    log.warn("Could not locate the GZIP file: " + entryFile + " " + entry);
                 }
             }
             File entryFile = generateEntryFilePath(entry, pathGenerator, false,
@@ -751,6 +754,8 @@ public class FileBasedContentStorage implements ContentStorage {
                     log.trace("%> file path " + entryFile + " exists.");
                 }
                 return entryFile;
+            } else {
+                log.warn("Could not locate the file: " + entryFile + " " + entry);
             }
         }
         return null;
@@ -769,13 +774,10 @@ public class FileBasedContentStorage implements ContentStorage {
                         getFileName(entry.getEntryId(), revision, gzipped));
     }
 
-    private File generateEntryDir(EntryDescriptor entry,
-                                  PartitionPathGenerator pathGenerator) {
-        File entryDir = new File(
-                pathGenerator.generatePath(
-                        pathFromRoot(entry.getWorkspace(), entry.getCollection()),
-                        entry.getEntryId()),
-                entry.getEntryId());
+    private File generateEntryDir(EntryDescriptor entry, PartitionPathGenerator pathGenerator) {
+        File entryDir = new File(pathGenerator.generatePath(pathFromRoot(entry.getWorkspace(), entry.getCollection()),
+                                                            entry.getEntryId()),
+                                 entry.getEntryId());
         if (entry.getLocale() != null) {
             if (entry.getLocale().getLanguage() != null) {
                 entryDir = new File(entryDir, entry.getLocale().getLanguage());

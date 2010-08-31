@@ -85,7 +85,7 @@ public class NoDirDBSTest extends CRUDDBSTestCase {
         // clean up the categories created by this test.
         Connection conn = null;
         try {
-            conn = ((EntriesDAOiBatisImpl) entriesDAO).getDataSource().getConnection();
+            conn = entriesDAO.getWriteEntriesDAO().getDataSource().getConnection();
             conn.createStatement()
                 .execute("DELETE FROM AtomCollection WHERE Collection LIKE 'Foo-%'");
         } finally {

@@ -17,33 +17,35 @@
 
 package org.atomserver.core.filestore;
 
-import org.atomserver.EntryDescriptor;
-import org.atomserver.*;
-import org.atomserver.uri.EntryTarget;
-import org.atomserver.uri.FeedTarget;
-import org.atomserver.core.EntryMetaData;
-import org.atomserver.core.AbstractAtomCollection;
-import org.atomserver.exceptions.AtomServerException;
-import org.atomserver.exceptions.EntryNotFoundException;
 import org.apache.abdera.Abdera;
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.i18n.iri.IRISyntaxException;
+import org.apache.abdera.model.Category;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
-import org.apache.abdera.model.Category;
 import org.apache.abdera.parser.ParseException;
 import org.apache.abdera.protocol.server.RequestContext;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.atomserver.AtomWorkspace;
+import org.atomserver.EntryDescriptor;
+import org.atomserver.EntryType;
+import org.atomserver.core.AbstractAtomCollection;
+import org.atomserver.core.EntryMetaData;
+import org.atomserver.exceptions.AtomServerException;
+import org.atomserver.exceptions.EntryNotFoundException;
+import org.atomserver.uri.EntryTarget;
+import org.atomserver.uri.FeedTarget;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Collection;
 
 /**
  * A Store implementation that provides a Feed from the file-system.
+ *
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
@@ -51,11 +53,12 @@ public class FileBasedAtomCollection
         extends AbstractAtomCollection {
     private static final Log log = LogFactory.getLog(FileBasedAtomCollection.class);
 
-    public FileBasedAtomCollection( AtomWorkspace parentAtomWorkspace, String name ) {
-        super( parentAtomWorkspace, name );
+    public FileBasedAtomCollection(AtomWorkspace parentAtomWorkspace, String name) {
+        super(parentAtomWorkspace, name);
     }
 
     // FIXME
+
     public Collection<Category> listCategories(RequestContext request) throws AtomServerException {
         return null;
     }
@@ -63,6 +66,7 @@ public class FileBasedAtomCollection
     //--------------------------------
     //      public methods
     //--------------------------------
+
     protected long getEntries(Abdera abdera,
                               IRI iri,
                               FeedTarget feedTarget,
@@ -82,14 +86,13 @@ public class FileBasedAtomCollection
 
         FileBasedAtomCollection.LastModified lastModified = new FileBasedAtomCollection.LastModified();
         boolean foundModifiedFile = loadFeedEntries(abdera, iri, workspace, collection, workspaceDir, collection,
-                                                   feed, lastModified, updatedMin.getTime());
+                                                    feed, lastModified, updatedMin.getTime());
         return (foundModifiedFile) ? lastModified.getTime() : 0L;
     }
 
     /**
      */
-    protected EntryMetaData getEntry(
-            EntryTarget entryTarget)
+    protected EntryMetaData getEntry(EntryTarget entryTarget)
             throws AtomServerException {
         log.debug("FileBasedAtomCollection::getEntry");
         String workspace = entryTarget.getWorkspace();
@@ -97,11 +100,11 @@ public class FileBasedAtomCollection
         Locale locale = entryTarget.getLocale();
         String entryId = entryTarget.getEntryId();
 
-        if ( !contentExists(workspace, entryTarget) ) {
-            throw new EntryNotFoundException("Property [" + collection + ", " + entryId
-                                             + ", " + locale + "] NOT FOUND");
+        if (!contentExists(workspace, entryTarget)) {
+            throw new EntryNotFoundException(EntryNotFoundException.EntryNotFoundType.GET,
+                                             "Property [" + collection + ", " + entryId + ", " + locale + "] NOT FOUND");
         }
-        EntryMetaData bean = new EntryMetaData(workspace, collection, locale, entryId, getLastModified(workspace,entryTarget));
+        EntryMetaData bean = new EntryMetaData(workspace, collection, locale, entryId, getLastModified(workspace, entryTarget));
 
         bean.setWorkspace(workspace);
         return bean;
@@ -110,25 +113,25 @@ public class FileBasedAtomCollection
     /**
      */
     protected EntryMetaDataStatus modifyEntry(Object internalId,
-                                        EntryTarget entryTarget,
-                                        boolean mustAlreadyExist)
+                                              EntryTarget entryTarget,
+                                              boolean mustAlreadyExist)
             throws AtomServerException {
         String workspace = entryTarget.getWorkspace();
         String collection = entryTarget.getCollection();
         Locale locale = entryTarget.getLocale();
         String entryId = entryTarget.getEntryId();
 
-        boolean isNewlyCreated = !contentExists(workspace,entryTarget);
+        boolean isNewlyCreated = !contentExists(workspace, entryTarget);
 
         EntryMetaData bean = new EntryMetaData(workspace, collection, locale, entryId,
-                                               getLastModified(workspace,entryTarget), isNewlyCreated);
+                                               getLastModified(workspace, entryTarget), isNewlyCreated);
 
         bean.setWorkspace(entryTarget.getWorkspace());
         if (isNewlyCreated) {
             bean.setNewlyCreated(true);
         }
 
-        return new EntryMetaDataStatus(bean,true);
+        return new EntryMetaDataStatus(bean, true);
     }
 
     protected EntryMetaDataStatus reModifyEntry(Object internalId,
@@ -138,18 +141,17 @@ public class FileBasedAtomCollection
 
     /**
      */
-    protected EntryMetaData deleteEntry(
-            EntryTarget entryTarget,
-            boolean setDeletedFlag)
+    protected EntryMetaData deleteEntry(EntryTarget entryTarget,
+                                        boolean setDeletedFlag)
             throws AtomServerException {
         String workspace = entryTarget.getWorkspace();
         String collection = entryTarget.getCollection();
         Locale locale = entryTarget.getLocale();
         String entryId = entryTarget.getEntryId();
 
-        if ( !contentExists(workspace, entryTarget) ) {
-            throw new EntryNotFoundException("Property [" + collection + ", " + entryId
-                                             + ", " + locale + "] NOT FOUND");
+        if (!contentExists(workspace, entryTarget)) {
+            throw new EntryNotFoundException(EntryNotFoundException.EntryNotFoundType.DELETE,
+                                             "Property [" + collection + ", " + entryId + ", " + locale + "] NOT FOUND");
         }
 
         return null;
@@ -159,12 +161,13 @@ public class FileBasedAtomCollection
     //--------------------------------
     //      private methods
     //--------------------------------
+
     /**
      * Recursively load files that have been modified since IfModifiedSince
      *
      * @return boolean indicating whether any files have been modified
      */
-    private boolean loadFeedEntries(Abdera abdera, IRI iri, String workspace, String collection, 
+    private boolean loadFeedEntries(Abdera abdera, IRI iri, String workspace, String collection,
                                     File baseDir, String dir, Feed feed,
                                     FileBasedAtomCollection.LastModified lastModified, long ifModifiedSince) {
 
@@ -186,8 +189,8 @@ public class FileBasedAtomCollection
                                && (FilenameUtils.getExtension(files[i].getName())).equals("xml")) {
 
                         long thisFileLastModified = files[i].lastModified();
-                        log.debug( "+++++++++ file= " + files[i].getName() + " thisFileLastModified= " + thisFileLastModified );
-                        
+                        log.debug("+++++++++ file= " + files[i].getName() + " thisFileLastModified= " + thisFileLastModified);
+
                         if (thisFileLastModified > ifModifiedSince) {
                             foundModifiedFile = true;
 
@@ -210,7 +213,7 @@ public class FileBasedAtomCollection
     }
 
     private Entry newLinkEntry(Abdera abdera, String workspace, File actualFile, Date updated, IRI iri) {
-        EntryDescriptor pid = ((FileBasedContentStorage)getContentStorage()).getEntryMetaData(actualFile.getAbsolutePath());
+        EntryDescriptor pid = ((FileBasedContentStorage) getContentStorage()).getEntryMetaData(actualFile.getAbsolutePath());
         if (pid == null) {
             return null;
         }
@@ -222,15 +225,15 @@ public class FileBasedAtomCollection
             log.debug("actualFile= " + actualFile + " pid = " + pid);
         }
 
-        EntryMetaData entryMetaData = new EntryMetaData( workspace, sysId, locale, propId, updated, false );
-        return newEntry( abdera, entryMetaData, EntryType.link );
+        EntryMetaData entryMetaData = new EntryMetaData(workspace, sysId, locale, propId, updated, false);
+        return newEntry(abdera, entryMetaData, EntryType.link);
     }
 
-    public long getLastModified( String workspace, EntryTarget entryTarget ) {
-        return ((FileBasedContentStorage)getContentStorage()).lastModified(entryTarget);
+    public long getLastModified(String workspace, EntryTarget entryTarget) {
+        return ((FileBasedContentStorage) getContentStorage()).lastModified(entryTarget);
     }
 
-    public boolean contentExists( String workspace, EntryTarget entryTarget) {
+    public boolean contentExists(String workspace, EntryTarget entryTarget) {
         return getContentStorage().contentExists(entryTarget);
     }
 
@@ -238,6 +241,7 @@ public class FileBasedAtomCollection
     //--------------------------------
     //      private classes
     //--------------------------------
+
     /**
      * A utility class so that we can pass lastModified by reference.
      */

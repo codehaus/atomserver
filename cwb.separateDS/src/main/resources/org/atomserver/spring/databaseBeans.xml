@@ -120,7 +120,7 @@
     <bean id="org.atomserver-contentDAO"
           class="org.atomserver.core.dbstore.dao.ContentDAOiBatisImpl"
           depends-on="org.atomserver-propertyConfigurer">
-        <property name="dataSource" ref="org.atomserver-dataSource"/>
+        <property name="dataSource" ref="org.atomserver-write-dataSource"/>
         <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
         <property name="databaseType" value="${db.type}"/>
     </bean>
@@ -128,7 +128,7 @@
     <bean id="org.atomserver-entryCategoriesDAO"
           class="org.atomserver.core.dbstore.dao.EntryCategoriesDAOiBatisImpl"
           depends-on="org.atomserver-propertyConfigurer">
-        <property name="dataSource" ref="org.atomserver-dataSource"/>
+        <property name="dataSource" ref="org.atomserver-write-dataSource"/>
         <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
         <property name="databaseType" value="${db.type}"/>
     </bean>
@@ -136,7 +136,7 @@
     <bean id="org.atomserver-entryCategoryLogEventDAO"
           class="org.atomserver.core.dbstore.dao.EntryCategoryLogEventDAOiBatisImpl"
           depends-on="org.atomserver-propertyConfigurer">
-        <property name="dataSource" ref="org.atomserver-dataSource"/>
+        <property name="dataSource" ref="org.atomserver-write-dataSource"/>
         <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
         <property name="databaseType" value="${db.type}"/>
     </bean>

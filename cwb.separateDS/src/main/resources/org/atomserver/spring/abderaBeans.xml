@@ -170,7 +170,7 @@
               <property name="timeout" value="${db.timeout.txn.put}"/>
               <property name="transactionManager">
                   <bean class="org.springframework.jdbc.datasource.DataSourceTransactionManager" >
-                    <property name="dataSource" ref="org.atomserver-dataSource"/>
+                    <property name="dataSource" ref="org.atomserver-write-dataSource"/>
                   </bean>
               </property>
             </bean>
@@ -199,7 +199,7 @@
               <property name="timeout" value="${db.timeout.txn.put}"/>
               <property name="transactionManager">
                   <bean class="org.springframework.jdbc.datasource.DataSourceTransactionManager" >
-                    <property name="dataSource" ref="org.atomserver-dataSource"/>
+                    <property name="dataSource" ref="org.atomserver-write-dataSource"/>
                   </bean>
               </property>
             </bean>

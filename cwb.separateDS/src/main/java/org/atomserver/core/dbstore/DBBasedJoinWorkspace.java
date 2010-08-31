@@ -71,6 +71,7 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
             }
 
             protected EntryMetaData innerGetEntry(EntryTarget entryTarget) {
+                log.debug("DBBasedJoinWorkspace::innerGetEntry " + entryTarget);
                 return getEntriesDAO().selectAggregateEntry(entryTarget, joinWorkspaces);
             }
 
