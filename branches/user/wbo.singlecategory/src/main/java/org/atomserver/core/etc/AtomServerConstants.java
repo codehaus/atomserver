@@ -37,7 +37,7 @@ public final class AtomServerConstants {
     public static final String ATOMSERVER_BATCH_NS_PREFIX = "asbatch";
 
     public static final String ATOMSERVER_CATEGORY_NS = "http://atomserver.org/namespaces/1.0/category";
-    public static final String ATOMSERVER_CATEGORY_NS_PREFIX = "ascat";
+    public static final String ATOMSERVER_CATEGORY_NS_PREFIX = "catop";
 
     public static final String END_INDEX_LN = "endIndex";
     public static final QName END_INDEX = new QName(ATOMSERVER_NS, END_INDEX_LN, ATOMSERVER_NS_PREFIX);
@@ -65,8 +65,8 @@ public final class AtomServerConstants {
 
     public static final String CATEGORY_OP_LN = "category-op";
     public static final QName CATEGORY_OP = new QName(ATOMSERVER_CATEGORY_NS, CATEGORY_OP_LN, ATOMSERVER_CATEGORY_NS_PREFIX);
-    public static final QName CATEGORY_OP_ATTR_NEWTERM = new QName(ATOMSERVER_CATEGORY_NS, "newterm", ATOMSERVER_CATEGORY_NS_PREFIX);
-    public static final QName CATEGORY_OP_ATTR_NEWLABEL = new QName(ATOMSERVER_CATEGORY_NS, "newlabel", ATOMSERVER_CATEGORY_NS_PREFIX);
+    public static final QName CATEGORY_OP_ATTR_OLD_TERM = new QName(ATOMSERVER_CATEGORY_NS, "oldTerm", ATOMSERVER_CATEGORY_NS_PREFIX);
+    public static final QName CATEGORY_OP_ATTR_MODIFYTYPE = new QName(ATOMSERVER_CATEGORY_NS, "modifyType", ATOMSERVER_CATEGORY_NS_PREFIX);
 
     public static final String STATUS_LN = "status";
     public static final QName STATUS = new QName(ATOMSERVER_BATCH_NS, STATUS_LN, ATOMSERVER_BATCH_NS_PREFIX);
