@@ -80,7 +80,7 @@
     </bean>
 
     <bean id="org.atomserver-write-entriesDAO"
-          class="org.atomserver.core.dbstore.dao.WriteEntriesDAOiBatisImpl"
+          class="org.atomserver.core.dbstore.dao.WriteReadEntriesDAOiBatisImpl"
           parent="org.atomserver-base-entriesDAO">
         <property name="dataSource" ref="org.atomserver-write-dataSource"/>
     </bean>

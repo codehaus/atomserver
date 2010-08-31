@@ -55,7 +55,7 @@ public class EntriesDAOiBatisImpl
     protected String dbType = DEFAULT_DB_TYPE;
     protected DataSource dataSource;
 
-    private WriteEntriesDAOiBatisImpl writeEntriesDAO;
+    private WriteReadEntriesDAOiBatisImpl writeEntriesDAO;
     private ReadEntriesDAOiBatisImpl readEntriesDAO;
     private AggregateEntriesDAOiBatisImpl aggregateEntriesDAO;
 
@@ -68,7 +68,7 @@ public class EntriesDAOiBatisImpl
     public void afterPropertiesSet() throws Exception {
         if (dataSource != null) {
             if (writeEntriesDAO == null) {
-                writeEntriesDAO = new WriteEntriesDAOiBatisImpl();
+                writeEntriesDAO = new WriteReadEntriesDAOiBatisImpl();
                 setupDAO(writeEntriesDAO);
             }
             if (readEntriesDAO == null) {
@@ -82,11 +82,11 @@ public class EntriesDAOiBatisImpl
         }
     }
 
-    public WriteEntriesDAOiBatisImpl getWriteEntriesDAO() {
+    public WriteReadEntriesDAOiBatisImpl getWriteEntriesDAO() {
         return writeEntriesDAO;
     }
 
-    public void setWriteEntriesDAO(WriteEntriesDAOiBatisImpl writeEntriesDAO) {
+    public void setWriteEntriesDAO(WriteReadEntriesDAOiBatisImpl writeEntriesDAO) {
         this.writeEntriesDAO = writeEntriesDAO;
     }
 
@@ -186,7 +186,7 @@ public class EntriesDAOiBatisImpl
     }
 
     //-------------------
-    //   WriteEntriesDAO
+    //   WriteReadEntriesDAO
     //-------------------
 
     public void acquireLock() throws AtomServerException {writeEntriesDAO.acquireLock();}

@@ -16,20 +16,6 @@
 
 package org.atomserver.core.dbstore.dao;
 
-import org.atomserver.AtomCategory;
-import org.atomserver.EntryDescriptor;
-import org.atomserver.FeedDescriptor;
-import org.atomserver.ServiceDescriptor;
-import org.atomserver.core.EntryMetaData;
-import org.atomserver.core.AggregateEntryMetaData;
-import org.atomserver.exceptions.AtomServerException;
-import org.atomserver.utils.logic.BooleanExpression;
-
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-
 /**
  * The DAO for accessing Entries
  *
@@ -38,7 +24,7 @@ import java.util.Locale;
  */
 
 public interface EntriesDAO
-        extends ReadEntriesDAO, WriteEntriesDAO, AggregateEntriesDAO {    
+        extends ReadEntriesDAO, WriteReadEntriesDAO, AggregateEntriesDAO {
 }
 
 

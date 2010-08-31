@@ -19,19 +19,8 @@ import java.util.List;
  * will need to perform read queries as well as write queries.
  * <b>And ALL queries in a given transaction MUST take place within the same DataSource.</b>
  */
-public interface WriteEntriesDAO
-        extends AtomServerDAO {
-
-    //======================================
-    //  SELECT OPERATIONS USED BY THE WRITES
-    //======================================
-    EntryMetaData selectEntry(EntryDescriptor entry);
-
-    EntryMetaData selectEntryByInternalId(Object internalId);
-
-    Object selectEntryInternalId(EntryDescriptor entryDescriptor);
-
-    List<EntryMetaData> selectEntryBatch(Collection<? extends EntryDescriptor> entries);    
+public interface WriteReadEntriesDAO
+        extends ReadEntriesDAO {
     
     //======================================
     //          CRUD OPERATIONS
