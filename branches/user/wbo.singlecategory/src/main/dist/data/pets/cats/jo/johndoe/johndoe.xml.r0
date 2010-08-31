@@ -1,5 +1,0 @@
-<pet xmlns="http://schemas.atomserver.org/pets/v1/rev0" type="cat">
-    <breed>Mixed</breed>
-    <name>John Doe</name>
-    <owner>Celia Berry</owner>
-</pet>
