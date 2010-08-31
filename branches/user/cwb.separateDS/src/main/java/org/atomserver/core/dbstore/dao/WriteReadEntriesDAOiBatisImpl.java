@@ -25,10 +25,10 @@ import java.util.*;
 /**
  *
  */
-@ManagedResource(description = "WriteEntriesDAO")
-public class WriteEntriesDAOiBatisImpl
-        extends BaseEntriesDAOiBatisImpl
-        implements WriteEntriesDAO {
+@ManagedResource(description = "WriteReadEntriesDAO")
+public class WriteReadEntriesDAOiBatisImpl
+        extends ReadEntriesDAOiBatisImpl
+        implements WriteReadEntriesDAO {
 
     //======================================
     //   BATCH methods for entries table
@@ -43,12 +43,12 @@ public class WriteEntriesDAOiBatisImpl
 
         private Collection<? extends EntryDescriptor> entryList = null;
         private OperationType opType = null;
-        private WriteEntriesDAOiBatisImpl entriesDAO = null;
+        private WriteReadEntriesDAOiBatisImpl dao = null;
 
-        EntryBatcher(WriteEntriesDAOiBatisImpl entriesDAO,
+        EntryBatcher(WriteReadEntriesDAOiBatisImpl dao,
                      Collection<? extends EntryDescriptor> entryList,
                      OperationType opType) {
-            this.entriesDAO = entriesDAO;
+            this.dao = dao;
             this.entryList = entryList;
             this.opType = opType;
         }
@@ -57,20 +57,16 @@ public class WriteEntriesDAOiBatisImpl
             List<EntryDescriptor> validEntries = new ArrayList<EntryDescriptor>();
             executor.startBatch();
             for (EntryDescriptor uriData : entryList) {
-
                 if (opType == OperationType.insert) {
-                    Map<String, Object> paramMap = entriesDAO.prepareInsertParamMap(uriData);
-                    executor.insert("insertEntry-" + entriesDAO.getDatabaseType(), paramMap);
+                    Map<String, Object> paramMap = dao.prepareInsertParamMap(uriData);
+                    executor.insert("insertEntry-" + dao.getDatabaseType(), paramMap);
                     validEntries.add(uriData);
 
                 } else if (opType == OperationType.update || opType == OperationType.delete) {
                     boolean deleted = (opType == OperationType.delete);
-                    EntryMetaData metaData = entriesDAO.safeCastToEntryMetaData(uriData);
+                    EntryMetaData metaData = dao.safeCastToEntryMetaData(uriData);
                     if (metaData != null) {
-                        executor.update("updateEntry",
-                                        entriesDAO.prepareUpdateParamMap(deleted,
-                                                                         uriData.getRevision(),
-                                                                         metaData));
+                        executor.update("updateEntry", dao.prepareUpdateParamMap(deleted, uriData.getRevision(), metaData));
                         validEntries.add(uriData);
                     }
                 } else {
@@ -80,7 +76,6 @@ public class WriteEntriesDAOiBatisImpl
                 }
             }
             Object obj = executor.executeBatch();
-
             return obj;
         }
     }
@@ -124,7 +119,6 @@ public class WriteEntriesDAOiBatisImpl
     public int deleteEntryBatch(String workspace, Collection<? extends EntryDescriptor> entryList) {
         return internalEntryBatch(entryList, EntryBatcher.OperationType.delete);
     }
-
 
 //======================================
 //   CRUD methods for entries table
@@ -230,9 +224,7 @@ public class WriteEntriesDAOiBatisImpl
             metaData.setContentHashCode(entryQuery.getContentHashCode());
 
             int rc = getSqlMapClientTemplate().update("updateEntry",
-                                                      prepareUpdateParamMap(deleted,
-                                                                            entryQuery.getRevision(),
-                                                                            metaData));
+                                                      prepareUpdateParamMap(deleted, entryQuery.getRevision(), metaData));
             return rc;
         }
         finally {
@@ -267,7 +259,6 @@ public class WriteEntriesDAOiBatisImpl
                                                     prepareUpdateParamMap(false, revision, entry)
                                                             .param("publishedDate", published)
                                                             .param("updatedDate", updated));
-
         }
         finally {
             stopWatch.stop("DB.updateEntryOverwrite", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));

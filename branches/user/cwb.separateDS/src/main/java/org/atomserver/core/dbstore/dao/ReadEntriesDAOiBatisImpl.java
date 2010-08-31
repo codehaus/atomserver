@@ -8,6 +8,7 @@ import org.atomserver.EntryDescriptor;
 import org.atomserver.FeedDescriptor;
 import org.atomserver.ServiceDescriptor;
 import org.atomserver.core.EntryMetaData;
+import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.utils.logic.BooleanExpression;
 import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
 import org.atomserver.utils.perf.AtomServerStopWatch;
@@ -16,6 +17,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  *
@@ -24,16 +26,16 @@ public class ReadEntriesDAOiBatisImpl
         extends BaseEntriesDAOiBatisImpl
         implements ReadEntriesDAO {
 
-    public static final long FETCH_INTERVAL = 60000;
-    public static final long STARTUP_INTERVAL = 900000;
+    static public final long FETCH_INTERVAL = 60000;
+    static public final long STARTUP_INTERVAL = 900000;
 
-    private static long startupTime = System.currentTimeMillis();
+    static private long startupTime = System.currentTimeMillis();
 
-    private Set<String> workspaces = new HashSet<String>();
-    long lastWorkspacesSelectTime = 0L;
+    static private Set<String> workspaces = new CopyOnWriteArraySet<String>();
+    static long lastWorkspacesSelectTime = 0L;
 
-    private Set<String> collections = new HashSet<String>();
-    long lastCollectionsSelectTime = 0L;
+    static private Set<String> collections = new CopyOnWriteArraySet<String>();
+    static long lastCollectionsSelectTime = 0L;
 
     /**
      * Use the improved selectFeedPage form, which uses SQL Set operands.
@@ -54,7 +56,6 @@ public class ReadEntriesDAOiBatisImpl
 //     SELECT BATCH
 //-----------------------
 
-    /*
     public List<EntryMetaData> selectEntryBatch(Collection<? extends EntryDescriptor> entryQueries) {
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
@@ -70,11 +71,96 @@ public class ReadEntriesDAOiBatisImpl
             stopWatch.stop("DB.selectEntryBATCH", "");
         }
     }
-    */
+
+    protected AbstractDAOiBatisImpl.ParamMap prepareBatchParamMap(Collection<? extends EntryDescriptor> entryQueries) {
+        AbstractDAOiBatisImpl.ParamMap paramMap = paramMap();
+
+        String workspace = null;
+        String collection = null;
+        Locale locale = null;
+        List<String> entryIds = new ArrayList<String>();
+
+        for (EntryDescriptor entryQuery : entryQueries) {
+            if (workspace != null && !workspace.equals(entryQuery.getWorkspace())) {
+                String msg = "Attempt to use more than one workspace";
+                log.error(msg);
+                throw new AtomServerException(msg);
+            } else {
+                workspace = entryQuery.getWorkspace();
+                paramMap.param("workspace", workspace);
+            }
+            if (collection != null && !collection.equals(entryQuery.getCollection())) {
+                String msg = "Attempt to use more than one collection";
+                log.error(msg);
+                throw new AtomServerException(msg);
+            } else {
+                collection = entryQuery.getCollection();
+                paramMap.param("collection", collection);
+            }
+            if (locale != null && !locale.equals(entryQuery.getLocale())) {
+                String msg = "Attempt to use more than one locale";
+                log.error(msg);
+                throw new AtomServerException(msg);
+            } else {
+                locale = entryQuery.getLocale();
+                paramMap.addLocaleInfo(locale);
+            }
+
+            entryIds.add(entryQuery.getEntryId());
+        }
+
+        return paramMap.param("entryIds", entryIds);
+    }
 
 //-----------------------
 //       SELECT
 //-----------------------
+
+    public Object selectEntryInternalId(EntryDescriptor entryQuery) {
+        StopWatch stopWatch = new AtomServerStopWatch();
+        try {
+            return getSqlMapClientTemplate().queryForObject("selectEntryInternalId",
+                                                            paramMap()
+                                                                    .param("workspace", entryQuery.getWorkspace())
+                                                                    .param("collection", entryQuery.getCollection())
+                                                                    .param("entryId", entryQuery.getEntryId())
+                                                                    .addLocaleInfo(entryQuery.getLocale()));
+        }
+        finally {
+            stopWatch.stop("DB.selectEntryInternalId", "");
+        }
+    }
+
+    public EntryMetaData selectEntryByInternalId(Object internalId) {
+        StopWatch stopWatch = new AtomServerStopWatch();
+        try {
+            return (EntryMetaData) getSqlMapClientTemplate().queryForObject("selectEntryByInternalId",
+                                                                            paramMap().param("internalId", internalId));
+        }
+        finally {
+            stopWatch.stop("DB.selectEntryInternalId2", "");
+        }
+    }
+
+    public EntryMetaData selectEntry(EntryDescriptor entryQuery) {
+        StopWatch stopWatch = new AtomServerStopWatch();
+        try {
+            Map<String, Object> paramMap = paramMap()
+                    .param("workspace", entryQuery.getWorkspace())
+                    .param("collection", entryQuery.getCollection())
+                    .param("entryId", entryQuery.getEntryId())
+                    .addLocaleInfo(entryQuery.getLocale());
+
+            if (log.isDebugEnabled()) {
+                log.debug("SELECT EntriesDAOiBatisImpl selectEntry:: paramMap= " + paramMap);
+            }
+            return (EntryMetaData) (getSqlMapClientTemplate().queryForObject("selectEntry", paramMap));
+        }
+        finally {
+            stopWatch.stop("DB.selectEntry", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryQuery));
+        }
+    }
+
 
     public List<EntryMetaData> selectEntries(EntryDescriptor entryQuery) {
         StopWatch stopWatch = new AtomServerStopWatch();
@@ -97,7 +183,6 @@ public class ReadEntriesDAOiBatisImpl
         }
     }
 
-    /*
     public List<EntryMetaData> selectFeedPage(Date updatedMin,
                                               Date updatedMax,
                                               int startIndex,
@@ -127,7 +212,7 @@ public class ReadEntriesDAOiBatisImpl
     }
 
 
-     private void addSetOpsSelectFeedPageParams(AbstractDAOiBatisImpl.ParamMap paramMap, Collection<BooleanExpression<AtomCategory>> categoryQuery) {
+    private void addSetOpsSelectFeedPageParams(AbstractDAOiBatisImpl.ParamMap paramMap, Collection<BooleanExpression<AtomCategory>> categoryQuery) {
         if (categoryQuery != null && !categoryQuery.isEmpty()) {
             paramMap.param("categoryQuerySql",
                            SetOpCategoryQueryGenerator.generateCategorySearch(categoryQuery));
@@ -137,11 +222,22 @@ public class ReadEntriesDAOiBatisImpl
         }
         paramMap.param("usequery", "setOps");
     }
-    */
 
+    public List<EntryMetaData> selectEntriesByLastModified(String workspace, String collection,
+                                                           Date updatedMin) {
+        StopWatch stopWatch = new AtomServerStopWatch();
+        try {
+            return getSqlMapClientTemplate().queryForList("selectEntriesByLastModified",
+                                                          paramMap()
+                                                                  .param("updatedMin", updatedMin)
+                                                                  .param("workspace", workspace)
+                                                                  .param("collection", collection));
+        }
+        finally {
+            stopWatch.stop("DB.selectEntriesByLastModified", "");
+        }
+    }
 
-    /**
-     */
     public List<EntryMetaData> selectEntriesByLastModifiedSeqNum(FeedDescriptor feed,
                                                                  Date updatedMin) {
         StopWatch stopWatch = new AtomServerStopWatch();
@@ -207,8 +303,7 @@ public class ReadEntriesDAOiBatisImpl
                     .param("workspace", workspace)
                     .param("collection", collection);
             Integer count =
-                    (Integer) getSqlMapClientTemplate().queryForObject("collectionExists",
-                                                                       paramMap);
+                    (Integer) getSqlMapClientTemplate().queryForObject("collectionExists", paramMap);
             if (count == 0) {
                 try {
                     getSqlMapClientTemplate().insert("createCollection", paramMap);
@@ -229,8 +324,7 @@ public class ReadEntriesDAOiBatisImpl
         try {
             AbstractDAOiBatisImpl.ParamMap paramMap = paramMap().param("workspace", workspace);
             Integer count = workspace == null ? 0 :
-                            (Integer) getSqlMapClientTemplate().queryForObject("workspaceExists",
-                                                                               paramMap);
+                            (Integer) getSqlMapClientTemplate().queryForObject("workspaceExists", paramMap);
             if (count == 0) {
                 try {
                     getSqlMapClientTemplate().insert("createWorkspace", paramMap);
@@ -252,7 +346,10 @@ public class ReadEntriesDAOiBatisImpl
             if (workspacesIsExpired()) {
                 lastWorkspacesSelectTime = System.currentTimeMillis();
                 List<String> dbworkspaces = getSqlMapClientTemplate().queryForList("listWorkspaces");
-                workspaces.addAll(dbworkspaces);
+
+                if (!workspaces.equals(dbworkspaces)) {
+                    workspaces.addAll(dbworkspaces);
+                }
             }
             return new ArrayList(workspaces);
         }
@@ -268,7 +365,9 @@ public class ReadEntriesDAOiBatisImpl
                 lastCollectionsSelectTime = System.currentTimeMillis();
                 List<String> dbcollections = getSqlMapClientTemplate().queryForList("listCollections",
                                                                                     paramMap().param("workspace", workspace));
-                collections.addAll(dbcollections);
+                if (!collections.equals(dbcollections)) {
+                    collections.addAll(dbcollections);
+                }
             }
             return new ArrayList(collections);
         }
@@ -279,29 +378,34 @@ public class ReadEntriesDAOiBatisImpl
 
     private boolean collectionsIsExpired() {
         long currentTime = System.currentTimeMillis();
-        return (collections == null || collections.isEmpty()) ? true
-                                                              : ((currentTime - lastCollectionsSelectTime) > FETCH_INTERVAL) ? true
-                                                                                                                             : ((currentTime - startupTime) > STARTUP_INTERVAL) ? false : true;
+        return (collections == null || collections.isEmpty())
+               ? true
+               : ((currentTime - lastCollectionsSelectTime) > FETCH_INTERVAL)
+                 ? true
+                 : ((currentTime - startupTime) > STARTUP_INTERVAL)
+                   ? false : true;
     }
 
     private boolean workspacesIsExpired() {
         long currentTime = System.currentTimeMillis();
-        return (workspaces == null || workspaces.isEmpty()) ? true
-                                                            : ((currentTime - lastWorkspacesSelectTime) > FETCH_INTERVAL) ? true
-                                                                                                                          : ((currentTime - startupTime) > STARTUP_INTERVAL) ? false : true;
+        return (workspaces == null || workspaces.isEmpty())
+               ? true
+               : ((currentTime - lastWorkspacesSelectTime) > FETCH_INTERVAL)
+                 ? true
+                 : ((currentTime - startupTime) > STARTUP_INTERVAL)
+                   ? false : true;
     }
 
     public void clearWorkspaceCollectionCaches() {
-        workspaces = new HashSet<String>();
+        workspaces = new CopyOnWriteArraySet<String>();
         lastWorkspacesSelectTime = 0L;
-        collections = new HashSet<String>();
+        collections = new CopyOnWriteArraySet<String>();
         lastCollectionsSelectTime = 0L;
     }
 
 //======================================
 //                MISC
 //======================================
-
 
     public long selectMaxIndex(Date updatedMax) {
         StopWatch stopWatch = new AtomServerStopWatch();

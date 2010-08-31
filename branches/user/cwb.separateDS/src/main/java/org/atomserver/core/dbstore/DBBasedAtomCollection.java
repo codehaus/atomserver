@@ -32,7 +32,7 @@ import org.atomserver.*;
 import org.atomserver.core.*;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
 import org.atomserver.core.dbstore.dao.EntriesDAOiBatisImpl;
-import org.atomserver.core.dbstore.dao.WriteEntriesDAO;
+import org.atomserver.core.dbstore.dao.WriteReadEntriesDAO;
 import org.atomserver.core.etc.AtomServerConstants;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.exceptions.BadRequestException;
@@ -78,7 +78,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
          return ((DBBasedAtomService)parentAtomWorkspace.getParentAtomService()).getEntriesDAO();
     }
 
-    public WriteEntriesDAO getWriteEntriesDAO() {
+    public WriteReadEntriesDAO getWriteEntriesDAO() {
          return ((EntriesDAOiBatisImpl)((DBBasedAtomService)parentAtomWorkspace.getParentAtomService()).getEntriesDAO()).getWriteEntriesDAO();
     }
 
