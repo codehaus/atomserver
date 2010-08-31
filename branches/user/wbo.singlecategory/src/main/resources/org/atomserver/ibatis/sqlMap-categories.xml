@@ -99,10 +99,17 @@
 
   <!-- Update category -->
   <update id="updateSingleCategory" parameterClass="map">
-      UPDATE EntryCategory Set Term = #toTerm#, Label=#toLabel#
+      UPDATE EntryCategory Set
+      <isNotNull property="toTerm">
+      Term = #toTerm#
+      </isNotNull>
+      <isNotNull property="toLabel">
+        <isNotNull property="toTerm">,</isNotNull>
+        Label=#toLabel#
+      </isNotNull>
       WHERE EntryCategory.EntryStoreId = #entryStoreId#
       AND   EntryCategory.Scheme = #scheme#
-      AND  EntryCategory.Term = #fromTerm#
+      AND   EntryCategory.Term = #fromTerm#
   </update>
 
   <delete id="deleteEntryCategories" parameterClass="entryCategory">

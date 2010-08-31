@@ -488,15 +488,15 @@ public class EntryCategoriesHandler
         insertEntryCategoryBatch(entryCatList);
     }
 
-    private int updateCategory(Category cat1, Category cat2, EntryDescriptor descriptor){
+    private int updateCategory(Category cat, String newTerm, String newLabel, EntryDescriptor descriptor){
         List<Category> catList = new ArrayList<Category>();
-        catList.add(cat1);
-        catList.add(cat2);
+        catList.add(cat);
         List<EntryCategory> categoryList = getEntryCategoryList(descriptor, catList);
-        int rc = entryCategoriesDAO.updateEntryCategory(categoryList.get(0), categoryList.get(1));
+        int rc = entryCategoriesDAO.updateEntryCategory(categoryList.get(0), newTerm, newLabel);
 
         if (isLoggingAllCategoryEvents) {
-            categoryList.remove(0);  //Do not record the category to be replaced.
+            cat.setTerm(newTerm);
+            cat.setLabel(newLabel);
             entryCategoryLogEventDAO.insertEntryCategoryLogEventBatch(categoryList);
         }
         return rc;
@@ -615,27 +615,26 @@ public class EntryCategoriesHandler
         return categories;
     }
 
-
     private CategoryOperation validateCategoryOperation(CategoryOperation op, Categories categories) {
 
         if (!(op.isInsert() || op.isUpdate() || op.isDelete())) {
             throw new BadRequestException(" Invalid Category Operation");
         }
-        if (op.isUpdate()) {
-            List<Category> catList = categories.getCategories();
-            if (catList.size() != 2) {
-                String msg = "Invalid parameters for Category Operation to update. Must have 2 category entries.";
-                log.error(msg);
-                throw new BadRequestException(msg);
-            }
-            Category cat1 = catList.get(0);
-            Category cat2 = catList.get(1);
-            if (!cat1.getScheme().equals(cat2.getScheme())) {
-                String msg = "Categories to update have different schemes";
-                log.error(msg);
-                throw new BadRequestException(msg);
-            }
+        List<Category> catList = categories.getCategories();
+        if(catList.size() != 1) {
+            String msg = "Cannot have more than one category to insert or delete.";
+            log.error(msg);
+            throw new BadRequestException(msg);
         }
+        if (op.isUpdate()) {
+            String newTerm = catList.get(0).getAttributeValue(AtomServerConstants.CATEGORY_OP_ATTR_NEWTERM);
+            String newLabel = catList.get(0).getAttributeValue(AtomServerConstants.CATEGORY_OP_ATTR_NEWLABEL);
+            if (newTerm == null && newLabel == null) {
+                String msg = "Category has no value to update to";
+                log.error(msg);
+                throw new BadRequestException(msg);
+            }
+        } 
         return op;
     }
 
@@ -662,10 +661,10 @@ public class EntryCategoriesHandler
 
         } else if (op.isUpdate()) {
 
-            List<Category> cats = categories.getCategories();
-            Category cat1 = cats.get(0);
-            Category cat2 = cats.get(1);
-            int rc = updateCategory(cat1, cat2, descriptor);
+            Category updateCat = categories.getCategories().get(0);
+            String newTerm = updateCat.getAttributeValue(AtomServerConstants.CATEGORY_OP_ATTR_NEWTERM);
+            String newLabel = updateCat.getAttributeValue(AtomServerConstants.CATEGORY_OP_ATTR_NEWLABEL);
+            int rc = updateCategory(updateCat, newTerm, newLabel, descriptor);
             // It should return 1, otherwise something is wrong.
             if (rc != 1) {
                 boolean matchedSchemeExists = false;
@@ -673,13 +672,12 @@ public class EntryCategoriesHandler
                 Categories existingCategories = getCategories(descriptor);
                 if (existingCategories != null) {
                     for (Category cat : existingCategories.getCategories()) {
-                        boolean matchedScheme = cat.getScheme().equals(cat1.getScheme());
+                        boolean matchedScheme = cat.getScheme().equals(updateCat.getScheme());
                         if (!matchedSchemeExists && matchedScheme) {
                             matchedSchemeExists = true;
                         }
-                        boolean matchedTerm = cat.getTerm().equals(cat1.getTerm());
+                        boolean matchedTerm = cat.getTerm().equals(updateCat.getTerm());
                         if (matchedScheme && matchedTerm) {
-                            updateCategory(cat1, cat2, descriptor);
                             categoryToUpdateFound = true;
                             break;
                         }

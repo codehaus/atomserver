@@ -313,22 +313,25 @@ public class EntryCategoriesDAOiBatisImpl
         return super.getTotalCountInternal(workspace, collection, "countEntryCategoriesTotal");
     }
 
-    public int updateEntryCategory(EntryCategory updateFrom, EntryCategory updateTo) {
+    public int updateEntryCategory(EntryCategory categoryToUpdate, String newTerm, String newLabel) {
         StopWatch stopWatch = new AtomServerStopWatch();
-        String workspace = updateFrom.getWorkspace();
-        String collection = updateFrom.getCollection();
+        String workspace = categoryToUpdate.getWorkspace();
+        String collection = categoryToUpdate.getCollection();
         if (log.isDebugEnabled()) {
             log.info("EntryCategoriesDAOiBatisImpl::updateEntryCategory [ " + workspace + " " + collection + " ]");
         }
         try {
-            return getSqlMapClientTemplate().update(
-                    "updateSingleCategory",
-                    paramMap()
-                            .param("entryStoreId", updateFrom.getEntryStoreId())
-                            .param("scheme", updateFrom.getScheme())
-                            .param("fromTerm", updateFrom.getTerm())
-                            .param("toTerm", updateTo.getTerm())
-                            .param("toLabel", updateTo.getLabel()));
+            ParamMap map = paramMap()
+                            .param("entryStoreId", categoryToUpdate.getEntryStoreId())
+                            .param("scheme", categoryToUpdate.getScheme())
+                            .param("fromTerm", categoryToUpdate.getTerm());
+            if(newTerm != null) {
+                map.param("toTerm", newTerm);
+            }
+            if(newLabel != null) {
+                map.param("toLabel", newLabel);
+            }
+            return getSqlMapClientTemplate().update("updateSingleCategory", map);
         }
         finally {
             stopWatch.stop("DB.updateEntryCategory", "[" + workspace + "." + collection + "]");
