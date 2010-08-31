@@ -42,9 +42,9 @@ import javax.xml.namespace.QName;
  */
 public class CategoryOperation extends ElementWrapper {
     
-    public static final String INSERT="insert-cat";
-    public static final String UPDATE="update-cat";
-    public static final String DELETE="delete-cat";
+    public static final String INSERT="insert";
+    public static final String UPDATE="update";
+    public static final String DELETE="delete";
 
     public static final QName TYPE = new QName("type");
 

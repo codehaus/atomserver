@@ -23,8 +23,6 @@ import org.apache.abdera.model.*;
 import org.apache.abdera.parser.Parser;
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.protocol.client.ClientResponse;
-import org.apache.abdera.protocol.client.AbderaClient;
-import org.apache.abdera.protocol.client.RequestOptions;
 import org.apache.abdera.util.Constants;
 import org.atomserver.core.etc.AtomServerConstants;
 import org.atomserver.ext.category.CategoryOperation;
@@ -44,23 +42,21 @@ public class CategoryOperationTest extends CRUDDBSTestCase {
     String expectedCategoryInsertXML = "<categories xmlns=\"http://www.w3.org/2007/app\" " +
                                        "xmlns:atom=\"http://www.w3.org/2005/Atom\" " +
                                        "xmlns:ascat=\"http://atomserver.org/namespaces/1.0/category\">" +
-                                       "<ascat:category-op type=\"insert-cat\" />" +
+                                       "<ascat:category-op type=\"insert\" />" +
                                        "<category xmlns=\"http://www.w3.org/2005/Atom\" scheme=\"urn:widgets/foo0\" term=\"testutils:0\" />" +
-                                       "<category xmlns=\"http://www.w3.org/2005/Atom\" scheme=\"urn:widgets/foo1\" term=\"testutils:1\" />" +
                                        "</categories>";
-    String expectedCategoryUpdateXML = "<categories xmlns=\"http://www.w3.org/2007/app\" " +
+     String expectedCategoryUpdateXML = "<categories xmlns=\"http://www.w3.org/2007/app\" " +
                                        "xmlns:atom=\"http://www.w3.org/2005/Atom\" " +
                                        "xmlns:ascat=\"http://atomserver.org/namespaces/1.0/category\">" +
-                                       "<ascat:category-op type=\"update-cat\" />" +
-                                       "<category xmlns=\"http://www.w3.org/2005/Atom\" scheme=\"urn:widgets/foo1\" term=\"testutils:1\" />" +
-                                       "<category xmlns=\"http://www.w3.org/2005/Atom\" scheme=\"urn:widgets/foo1\" term=\"testutils:A\" />" +
+                                       "<ascat:category-op type=\"update\" />" +
+                                       "<category xmlns=\"http://www.w3.org/2005/Atom\" scheme=\"urn:widgets/foo0\" term=\"testutils:0\" " +
+                                       "ascat:newterm=\"testutils:A\" ascat:newlabel=\"Some testutils A label\" />" +
                                        "</categories>";
     String expectedCategoryDeleteXML = "<categories xmlns=\"http://www.w3.org/2007/app\" " +
                                        "xmlns:atom=\"http://www.w3.org/2005/Atom\" " +
                                        "xmlns:ascat=\"http://atomserver.org/namespaces/1.0/category\">" +
-                                       "<ascat:category-op type=\"delete-cat\" />" +
-                                       "<category xmlns=\"http://www.w3.org/2005/Atom\" scheme=\"urn:widgets/foo1\" term=\"testutils:A\" />" +
-                                       "<category xmlns=\"http://www.w3.org/2005/Atom\" scheme=\"urn:widgets/foo0\" term=\"testutils:0\" />" +
+                                       "<ascat:category-op type=\"delete\" />" +
+                                       "<category xmlns=\"http://www.w3.org/2005/Atom\" scheme=\"urn:widgets/foo0\" term=\"testutils:A\" />" +
                                        "</categories>";
 
     public static Test suite() { return new TestSuite(CategoryOperationTest.class); }
@@ -83,13 +79,14 @@ public class CategoryOperationTest extends CRUDDBSTestCase {
     //---------------------
     public void testCategoryOperationParse() throws Exception {
 
-        Categories categories = createCategoriesWithOpToInsert();
+        Categories categories = createCategoriesWithOpToInsert(1);
         String insertXML = getCategoriesXML(categories);
         assertEquals(insertXML, expectedCategoryInsertXML);
         parseAndValidate(insertXML, CategoryOperation.INSERT);
 
         categories = createCategoriesWithOpToUpdate();
         String updateXML = getCategoriesXML(categories);
+        System.out.println(" updateXML:" + updateXML);
         assertEquals(updateXML, expectedCategoryUpdateXML);
         parseAndValidate(updateXML, CategoryOperation.UPDATE);
 
@@ -120,7 +117,7 @@ public class CategoryOperationTest extends CRUDDBSTestCase {
         StringWriter stringWriter = new StringWriter();
         categories.writeTo(stringWriter);
         String categoriesXML = stringWriter.toString();
-        System.out.println("Categories= " + categoriesXML);
+        log.debug("Categories= " + categoriesXML);
 
         // create property 642.
         String realEntryURL = getServerURL() + "widgets/acme/642.en.xml";
@@ -134,15 +131,15 @@ public class CategoryOperationTest extends CRUDDBSTestCase {
 
         editURI = select(fullURL, "urn:widgets/foo");
 
-        categories = createCategoriesWithOpToInsert(); // with CategoryOperation
+        categories = createCategoriesWithOpToInsert(1); // with CategoryOperation
         String catXML = getCategoriesXML(categories);
         editURI = update(id, editURI, catXML, true, -1);
-        validateCategoriesInDB(categories, fullURL, CategoryOperation.INSERT, 4);
+        validateCategoriesInDB(categories, fullURL, CategoryOperation.INSERT, 3);
 
         categories = createCategoriesWithOpToUpdate();
         catXML = getCategoriesXML(categories);
         editURI = update(id, editURI, catXML, true, -1);
-        validateCategoriesInDB(categories, fullURL, CategoryOperation.UPDATE, 4);
+        validateCategoriesInDB(categories, fullURL, CategoryOperation.UPDATE, 3);
 
         categories = createCategoriesWithOpToDelete();
         catXML = getCategoriesXML(categories);
@@ -151,17 +148,31 @@ public class CategoryOperationTest extends CRUDDBSTestCase {
 
         log.debug("********** Error document tests **********");
 
-        categories = createCategoriesWithOpToInsert();
+        // insert existing category
+        categories = createCategoriesWithOpToInsert(1);
         catXML = getCategoriesXML(categories);
         editURI = update(id, editURI, catXML, true, 200);
         log.debug("      Inserting Error XML\n" + catXML);
         update(id, editURI, catXML, true, 400);
 
-        categories = createCategoriesWithOpToUpdateError();
+        // inserting more than one category
+        categories = createCategoriesWithOpToInsert(2);
+        catXML = getCategoriesXML(categories);
+        update(id, editURI, catXML, true, 400);
+
+        // updating with no newTerm or newLabel attribute
+        categories = createCategoriesWithOpToUpdateWithNoNewTermError();
+        catXML = getCategoriesXML(categories);
+        log.debug("       Update with no new term or label\n" + catXML);
+        update(id,editURI, catXML, true, 400);
+
+        // updating non-existing category
+        categories = createCategoriesWithOpToUpdateWithNonExistingCategoryError();
         catXML = getCategoriesXML(categories);
         log.debug("      Updating invalid Scheme Error XML\n" + catXML);
         update(id, editURI, catXML, true, 400);
 
+        // updating a category with matching scheme but not term
         categories = createCategoriesWithOpToUpdateWithOCError();
         catXML = getCategoriesXML(categories);
         log.debug("      Updating OC Error XML\n" + catXML);
@@ -187,12 +198,24 @@ public class CategoryOperationTest extends CRUDDBSTestCase {
         return category;
     }
 
-    private Categories createCategoriesWithOpToInsert() {
+    private Category newCategory(String scheme, String term, String newTerm, String newLabel) {
+        Category category = getFactory().newCategory();
+        category.setScheme(scheme);
+        category.setTerm(term);
+        if(newTerm != null) {
+            category.setAttributeValue(AtomServerConstants.CATEGORY_OP_ATTR_NEWTERM, newTerm);
+        }
+        if(newLabel != null) {
+            category.setAttributeValue(AtomServerConstants.CATEGORY_OP_ATTR_NEWLABEL, newLabel);
+        }
+        return category;
+    }
+
+    private Categories createCategoriesWithOpToInsert(int numCats) {
         Categories categories = getFactory().newCategories();
         CategoryOperation op = getFactory().newExtensionElement(AtomServerConstants.CATEGORY_OP);
         op.setType(CategoryOperation.INSERT);
         categories.addExtension(op);
-        int numCats = 2;
         for (int ii = 0; ii < numCats; ii++) {
             categories.addCategory(newCategory("urn:widgets/foo" + ii, "testutils:" + ii));
         }
@@ -204,19 +227,28 @@ public class CategoryOperationTest extends CRUDDBSTestCase {
         CategoryOperation op = getFactory().newExtensionElement(AtomServerConstants.CATEGORY_OP);
         op.setType(CategoryOperation.UPDATE);
         categories.addExtension(op);
-        categories.addCategory(newCategory("urn:widgets/foo1", "testutils:1"));
-        categories.addCategory(newCategory("urn:widgets/foo1", "testutils:A"));
+        categories.addCategory(newCategory("urn:widgets/foo0", "testutils:0", "testutils:A", "Some testutils A label"));
         return categories;
     }
 
+    // update with no new term or label
+    private Categories createCategoriesWithOpToUpdateWithNoNewTermError() {
+         Categories categories = getFactory().newCategories();
+         CategoryOperation op = getFactory().newExtensionElement(AtomServerConstants.CATEGORY_OP);
+         op.setType(CategoryOperation.UPDATE);
+         categories.addExtension(op);
+         categories.addCategory(newCategory("urn:widgets/foo0", "testutils:0", null,null));
+         return categories;
+     }
+
+
     // update non-existing scheme
-    private Categories createCategoriesWithOpToUpdateError() {
+    private Categories createCategoriesWithOpToUpdateWithNonExistingCategoryError() {
         Categories categories = getFactory().newCategories();
         CategoryOperation op = getFactory().newExtensionElement(AtomServerConstants.CATEGORY_OP);
         op.setType(CategoryOperation.UPDATE);
         categories.addExtension(op);
-        categories.addCategory(newCategory("urn:widgets/fooXXX", "testutils:1"));
-        categories.addCategory(newCategory("urn:widgets/foo1", "testutils:A"));
+        categories.addCategory(newCategory("urn:widgets/fooXXX", "testutils:0","testutils:A",null));
         return categories;
     }
 
@@ -226,18 +258,18 @@ public class CategoryOperationTest extends CRUDDBSTestCase {
         CategoryOperation op = getFactory().newExtensionElement(AtomServerConstants.CATEGORY_OP);
         op.setType(CategoryOperation.UPDATE);
         categories.addExtension(op);
-        categories.addCategory(newCategory("urn:widgets/foo1", "testutils:B"));
-        categories.addCategory(newCategory("urn:widgets/foo1", "testutils:A"));
+        categories.addCategory(newCategory("urn:widgets/foo0", "testutils:B","testutils:A",null));
         return categories;
     }
+
+
 
     private Categories createCategoriesWithOpToDelete() {
         Categories categories = getFactory().newCategories();
         CategoryOperation op = getFactory().newExtensionElement(AtomServerConstants.CATEGORY_OP);
         op.setType(CategoryOperation.DELETE);
         categories.addExtension(op);
-        categories.addCategory(newCategory("urn:widgets/foo1", "testutils:A"));
-        categories.addCategory(newCategory("urn:widgets/foo0", "testutils:0"));
+        categories.addCategory(newCategory("urn:widgets/foo0", "testutils:A"));
         return categories;
     }
 
@@ -256,10 +288,12 @@ public class CategoryOperationTest extends CRUDDBSTestCase {
         assertEquals(opType, catOp.getType());
 
         if (opType.equals(CategoryOperation.UPDATE)) {
-            assertEquals(categories.getCategories().size(), 2);
+            assertEquals(categories.getCategories().size(), 1);
             Category category1 = categories.getCategories().get(0);
-            Category category2 = categories.getCategories().get(1);
-            assertTrue(category1.getScheme().equals(category2.getScheme()));
+            String newTerm = category1.getAttributeValue(AtomServerConstants.CATEGORY_OP_ATTR_NEWTERM);
+            String newLabel = category1.getAttributeValue(AtomServerConstants.CATEGORY_OP_ATTR_NEWLABEL);
+            assertEquals(newTerm,"testutils:A");
+            assertEquals(newLabel,"Some testutils A label");
         }
     }
 
@@ -339,8 +373,10 @@ public class CategoryOperationTest extends CRUDDBSTestCase {
         } else if (CategoryOperation.UPDATE.equals(opType)) {
             for (int i = 1; i < cats.size(); i++) {
                 Category c = cats.get(i);
+                System.out.println(" c=" + c.getScheme() + ":" + c.getTerm());
                 boolean found = false;
                 for (Category c1 : allCats) {
+                    System.out.println(" c1=" + c1.getScheme() + ":" + c1.getTerm());
                     if (c1.getScheme().equals(c.getScheme()) && c1.getTerm().equals(c.getTerm())) {
                         found = true;
                         break;

@@ -65,6 +65,8 @@ public final class AtomServerConstants {
 
     public static final String CATEGORY_OP_LN = "category-op";
     public static final QName CATEGORY_OP = new QName(ATOMSERVER_CATEGORY_NS, CATEGORY_OP_LN, ATOMSERVER_CATEGORY_NS_PREFIX);
+    public static final QName CATEGORY_OP_ATTR_NEWTERM = new QName(ATOMSERVER_CATEGORY_NS, "newterm", ATOMSERVER_CATEGORY_NS_PREFIX);
+    public static final QName CATEGORY_OP_ATTR_NEWLABEL = new QName(ATOMSERVER_CATEGORY_NS, "newlabel", ATOMSERVER_CATEGORY_NS_PREFIX);
 
     public static final String STATUS_LN = "status";
     public static final QName STATUS = new QName(ATOMSERVER_BATCH_NS, STATUS_LN, ATOMSERVER_BATCH_NS_PREFIX);
