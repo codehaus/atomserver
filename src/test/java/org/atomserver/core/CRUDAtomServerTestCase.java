@@ -18,6 +18,7 @@
 package org.atomserver.core;
 
 import org.apache.abdera.i18n.iri.IRI;
+import org.apache.abdera.util.Constants;
 import org.apache.abdera.model.*;
 import org.apache.abdera.protocol.client.AbderaClient;
 import org.apache.abdera.protocol.client.ClientResponse;
@@ -35,12 +36,6 @@ import java.util.Locale;
 /**
  */
 abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
-
-    // FIXME:: these must exist somewhere in Abdera`
-    private static final String NS = "http://www.w3.org/2005/Atom";
-    private static final String PFX = "";
-    private static final QName LINK = new QName(NS, "link", PFX);
-
 
     private String currentEntryId = null;
 
@@ -376,7 +371,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
         ExtensibleElement error = doc.getRoot();
         log.debug( "&&&&&&&&&&&&&& error = " + error );
 
-        Link link = error.getExtension( LINK );
+        Link link = error.getExtension(Constants.LINK);
         IRI editLink = link.getResolvedHref();
         String editLinkStr = null;
         if ( editLink != null )
@@ -471,7 +466,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
                 ExtensibleElement error = doc.getRoot();
                 log.debug( "&&&&&&&&&&&&&& error = " + error );
 
-                Link link = error.getExtension( LINK );
+                Link link = error.getExtension( Constants.LINK );
                 log.debug( "&&&&&&&&&&&&&& editLink = " + editLink );
                 editLink = link.getResolvedHref();
             }
@@ -538,7 +533,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
             ExtensibleElement error = doc.getRoot();
             log.debug("&&&&&&&&&&&&&& error = " + error);
 
-            Link link = error.getExtension(LINK);
+            Link link = error.getExtension(Constants.LINK);
             log.debug("&&&&&&&&&&&&&& editLink = " + editLink);
             editLink = link.getResolvedHref();
         } else {
@@ -575,7 +570,7 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
                 ExtensibleElement error = doc.getRoot();
                 log.debug("&&&&&&&&&&&&&& error = " + error);
 
-                Link link = error.getExtension(LINK);
+                Link link = error.getExtension(Constants.LINK);
                 log.debug("&&&&&&&&&&&&&& editLink = " + editLink);
                 if ( link != null ) {
                     editLink = link.getResolvedHref();
