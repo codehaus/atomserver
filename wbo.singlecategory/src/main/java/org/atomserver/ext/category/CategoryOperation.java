@@ -41,12 +41,14 @@ import javax.xml.namespace.QName;
  *
  */
 public class CategoryOperation extends ElementWrapper {
-    
-    public static final String INSERT="insert";
-    public static final String UPDATE="update";
-    public static final String DELETE="delete";
 
-    public static final QName TYPE = new QName("type");
+    // ModifyType values:
+    public static final String INSERT = "insert";
+    public static final String UPDATE = "update";
+    public static final String DELETE = "delete";
+
+    public static final QName  TYPE = new QName("type");
+    public static final String MODIFY = "modify";
 
     public CategoryOperation(Element element) {
         super(element);
@@ -54,6 +56,7 @@ public class CategoryOperation extends ElementWrapper {
 
     public CategoryOperation(Factory factory) {
         super(factory, AtomServerConstants.CATEGORY_OP);
+        setType(MODIFY); // default;
     }
 
     public CategoryOperation(ExtensibleElement parent) {
@@ -71,17 +74,5 @@ public class CategoryOperation extends ElementWrapper {
 
     public String getType() {
         return getInternal().getAttributeValue(TYPE);
-    }
-
-    public boolean isInsert() {
-        return INSERT.equals(getType());
-    }
-
-    public boolean isUpdate() {
-        return UPDATE.equals(getType());
-    }
-
-    public boolean isDelete() {
-        return DELETE.equals(getType());
     }
 }

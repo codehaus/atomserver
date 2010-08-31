@@ -44,7 +44,7 @@ public interface EntryCategoriesDAO
 
     void deleteEntryCategory(EntryCategory entryQuery);
 
-    int updateEntryCategory(EntryCategory categoryToUpdate, String newTerm, String newLabel);
+    int updateEntryCategory(EntryCategory categoryToUpdate, String oldTerm);
 
     //======================================
     //          BATCH OPERATIONS

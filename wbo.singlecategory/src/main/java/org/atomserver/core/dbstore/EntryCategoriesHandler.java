@@ -488,15 +488,13 @@ public class EntryCategoriesHandler
         insertEntryCategoryBatch(entryCatList);
     }
 
-    private int updateCategory(Category cat, String newTerm, String newLabel, EntryDescriptor descriptor){
+    private int updateCategory(Category cat, String oldTerm, EntryDescriptor descriptor){
         List<Category> catList = new ArrayList<Category>();
         catList.add(cat);
         List<EntryCategory> categoryList = getEntryCategoryList(descriptor, catList);
-        int rc = entryCategoriesDAO.updateEntryCategory(categoryList.get(0), newTerm, newLabel);
+        int rc = entryCategoriesDAO.updateEntryCategory(categoryList.get(0), oldTerm );
 
         if (isLoggingAllCategoryEvents) {
-            cat.setTerm(newTerm);
-            cat.setLabel(newLabel);
             entryCategoryLogEventDAO.insertEntryCategoryLogEventBatch(categoryList);
         }
         return rc;
@@ -617,20 +615,26 @@ public class EntryCategoriesHandler
 
     private CategoryOperation validateCategoryOperation(CategoryOperation op, Categories categories) {
 
-        if (!(op.isInsert() || op.isUpdate() || op.isDelete())) {
+        if (!(op.getType().equals(CategoryOperation.MODIFY))) {
             throw new BadRequestException(" Invalid Category Operation");
         }
         List<Category> catList = categories.getCategories();
         if(catList.size() != 1) {
-            String msg = "Cannot have more than one category to insert or delete.";
+            String msg = "Cannot have more than one category to insert, update or delete.";
             log.error(msg);
             throw new BadRequestException(msg);
         }
-        if (op.isUpdate()) {
-            String newTerm = catList.get(0).getAttributeValue(AtomServerConstants.CATEGORY_OP_ATTR_NEWTERM);
-            String newLabel = catList.get(0).getAttributeValue(AtomServerConstants.CATEGORY_OP_ATTR_NEWLABEL);
-            if (newTerm == null && newLabel == null) {
-                String msg = "Category has no value to update to";
+        Category category = catList.get(0);
+        String modifyType = category.getAttributeValue(AtomServerConstants.CATEGORY_OP_ATTR_MODIFYTYPE);
+        if(modifyType == null) {
+            String msg = "Category does not specify modification type in its attributes.";
+            log.error(msg);
+            throw new BadRequestException(msg);
+        }
+        if (CategoryOperation.UPDATE.equals(modifyType)) {
+            String oldTerm = category.getAttributeValue(AtomServerConstants.CATEGORY_OP_ATTR_OLD_TERM);
+            if (oldTerm == null) {
+                String msg = "Category does not specify old term to update in its attributes.";
                 log.error(msg);
                 throw new BadRequestException(msg);
             }
@@ -640,63 +644,65 @@ public class EntryCategoriesHandler
 
     private void handleCategoryOperation(CategoryOperation op, Categories categories, EntryDescriptor descriptor) {
 
-        if (op.isInsert()) {
-            Categories existingCategories = getCategories(descriptor);
-            if (existingCategories != null) {
-                for (Category cat : existingCategories.getCategories()) {
-                    for (Category newCat : categories.getCategories()) {
-                        if (cat.getScheme().equals(newCat.getScheme()) && (cat.getTerm().equals(newCat.getTerm()))) {
-                            String msg = "Error: Attempting to insert one or more existing categories";
+        // TODO: need to handle error condition as a group. It works currently beause there is 1 category only.
+        for(Category category: categories.getCategories()) {
+
+            String modifyType = category.getAttributeValue(AtomServerConstants.CATEGORY_OP_ATTR_MODIFYTYPE);
+
+            if (CategoryOperation.INSERT.equals(modifyType)) {
+                Categories existingCategories = getCategories(descriptor);
+                if (existingCategories != null) {
+                    for (Category cat : existingCategories.getCategories()) {
+                        if (cat.getScheme().equals(category.getScheme()) && (cat.getTerm().equals(category.getTerm()))) {
+                            String msg = "Error: Attempting to insert an existing category";
                             log.error(msg);
                             throw new BadRequestException(msg);
                         }
                     }
                 }
-            }
-            List<EntryCategory> entryCatList = getEntryCategoryList(descriptor, categories.getCategories());
-            insertEntryCategoryBatch(entryCatList);
-        } else if (op.isDelete()) {
-            // go ahead and delete categories
-            deleteCategoriesBatch(categories, descriptor);
+                List<EntryCategory> entryCatList = getEntryCategoryList(descriptor, categories.getCategories());
+                insertEntryCategoryBatch(entryCatList);
+            } else if (CategoryOperation.DELETE.equals(modifyType)) {
+                // go ahead and delete categories
+                deleteCategoriesBatch(categories, descriptor);
 
-        } else if (op.isUpdate()) {
+            } else if (CategoryOperation.UPDATE.equals(modifyType)) {
 
-            Category updateCat = categories.getCategories().get(0);
-            String newTerm = updateCat.getAttributeValue(AtomServerConstants.CATEGORY_OP_ATTR_NEWTERM);
-            String newLabel = updateCat.getAttributeValue(AtomServerConstants.CATEGORY_OP_ATTR_NEWLABEL);
-            int rc = updateCategory(updateCat, newTerm, newLabel, descriptor);
-            // It should return 1, otherwise something is wrong.
-            if (rc != 1) {
-                boolean matchedSchemeExists = false;
-                boolean categoryToUpdateFound = false;
-                Categories existingCategories = getCategories(descriptor);
-                if (existingCategories != null) {
-                    for (Category cat : existingCategories.getCategories()) {
-                        boolean matchedScheme = cat.getScheme().equals(updateCat.getScheme());
-                        if (!matchedSchemeExists && matchedScheme) {
-                            matchedSchemeExists = true;
-                        }
-                        boolean matchedTerm = cat.getTerm().equals(updateCat.getTerm());
-                        if (matchedScheme && matchedTerm) {
-                            categoryToUpdateFound = true;
-                            break;
+                String oldTerm = category.getAttributeValue(AtomServerConstants.CATEGORY_OP_ATTR_OLD_TERM);
+                int rc = updateCategory(category, oldTerm, descriptor);
+                // It should return 1, otherwise something is wrong.
+                if (rc != 1) {
+                    boolean matchedSchemeExists = false;
+                    boolean categoryToUpdateFound = false;
+                    Categories existingCategories = getCategories(descriptor);
+                    if (existingCategories != null) {
+                        for (Category cat : existingCategories.getCategories()) {
+                            boolean matchedScheme = cat.getScheme().equals(category.getScheme());
+                            if (!matchedSchemeExists && matchedScheme) {
+                                matchedSchemeExists = true;
+                            }
+                            boolean matchedTerm = cat.getTerm().equals(category.getTerm());
+                            if (matchedScheme && matchedTerm) {
+                                categoryToUpdateFound = true;
+                                break;
+                            }
                         }
                     }
-                }
-                if (!categoryToUpdateFound) {
-                    if (matchedSchemeExists) {
-                        String editURI = atomService.getURIHandler().constructURIString(descriptor.getWorkspace(),
-                                                                                        descriptor.getCollection(),
-                                                                                        descriptor.getEntryId(),
-                                                                                        descriptor.getLocale(),
-                                                                                        (descriptor.getRevision() + 1));
-                        String msg = "Optimistic Concurrency Exception in category update operation at " + editURI;
-                        log.error(msg);
-                        // If the scheme match but not the term, this is an optimistic concurrency exception.
-                        throw new OptimisticConcurrencyException("Optimistic Concurrency Exception in category update operation", editURI);
+                    if (!categoryToUpdateFound) {
+                        if (matchedSchemeExists) {
+                            String editURI = atomService.getURIHandler().constructURIString(descriptor.getWorkspace(),
+                                                                                            descriptor.getCollection(),
+                                                                                            descriptor.getEntryId(),
+                                                                                            descriptor.getLocale(),
+                                                                                            (descriptor.getRevision() + 1));
+                            String msg = "Optimistic Concurrency Exception in category update operation at " + editURI;
+                            log.error(msg);
+                            // If the scheme match but not the term, this is an optimistic concurrency exception.
+                            throw new OptimisticConcurrencyException("Optimistic Concurrency Exception in category update operation", editURI);
 
-                    } else {
-                        throw new BadRequestException("Category to update not found");
+                        } else {
+                            throw new BadRequestException("Category to update not found");
+                        }
                     }
                 }
             }
