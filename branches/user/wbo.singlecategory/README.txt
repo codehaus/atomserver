@@ -21,7 +21,7 @@ A)   If you kill a build mid-flight you might leave the DB in a "bad state". So 
 Just use this backdoor JUnit (which clears all rows from the tables)
 (of course, you can just use a SQL client with "DELETE *  FROM EntryStore" to do the same, assuming you have access)
 
-$ mvn -Denv=asdev-postgres -DENABLE_DB_CLEAR_ALL=true -Dtest=DBClearTest test
+$ mvn -Denv=asdev-postgres -DENABLE_DB_CLEAR_ALL=true -Dtest=ClearDBSTest test
 
 =======================================================
 Database Information
@@ -42,7 +42,7 @@ NOTE - as of 2/18/2010 there is a download of the Postgres install for MAC.  htt
 B) Start Postgres;
 ``````````````
 $ su postgres;
-$ pg-ctl start;   (Or possibly pg-ctl reload;)
+$ pg-ctl restart;   (Or possibly pg-ctl reload;)
 
 If you install the new Postgres, it will likely be running as your user.  You can use the ui to stop and start it
 or the command line.

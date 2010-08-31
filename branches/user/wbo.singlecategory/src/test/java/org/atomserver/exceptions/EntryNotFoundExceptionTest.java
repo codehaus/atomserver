@@ -43,16 +43,16 @@ public class EntryNotFoundExceptionTest extends TestCase {
     //----------------------------
     public void testException() throws Exception {
         
-        EntryNotFoundException ee = new EntryNotFoundException();
+        EntryNotFoundException ee = new EntryNotFoundException(EntryNotFoundException.EntryNotFoundType.DELETE);
         assertNull( ee.getMessage() );
 
-        ee = new EntryNotFoundException( "whatever" );
+        ee = new EntryNotFoundException(EntryNotFoundException.EntryNotFoundType.DELETE, "whatever" );
         assertEquals( "whatever", ee.getMessage() );
 
-        ee = new EntryNotFoundException( new NullPointerException() );
+        ee = new EntryNotFoundException(EntryNotFoundException.EntryNotFoundType.DELETE, new NullPointerException() );
         assertTrue( ee.getCause() instanceof NullPointerException );
 
-        ee = new EntryNotFoundException( "whatever", new NullPointerException() );
+        ee = new EntryNotFoundException(EntryNotFoundException.EntryNotFoundType.DELETE, "whatever", new NullPointerException() );
         assertEquals( "whatever", ee.getMessage() );
         assertTrue( ee.getCause() instanceof NullPointerException );
     }

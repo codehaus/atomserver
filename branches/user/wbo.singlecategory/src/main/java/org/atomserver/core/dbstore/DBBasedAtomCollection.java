@@ -112,7 +112,12 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                                 return task.execute();
 
                             } catch( Exception ee ) {
-                                log.error("Exception in DB transaction", ee );
+                                if (ee instanceof EntryNotFoundException &&
+                                    (((EntryNotFoundException)ee).getType() == EntryNotFoundException.EntryNotFoundType.DELETE)) {
+                                    log.warn("Exception in DB transaction", ee );
+                                } else {
+                                    log.error("Exception in DB transaction", ee );
+                                }
 
                                 // the following is not really required, but ensures that this will rollback, without question
                                 transactionStatus.setRollbackOnly();
@@ -301,7 +306,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         if (entry == null) {
             String msg = "Entry [" + workspace + ", " + collection + ", " + entryId + ", " + locale + "] NOT FOUND";
             log.warn(msg);
-            throw new EntryNotFoundException(msg);
+            throw new EntryNotFoundException(EntryNotFoundException.EntryNotFoundType.GET, msg);
         }
 
         return entry;
@@ -344,7 +349,8 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                     String msg = "Entry [" + entryTarget.getWorkspace() + ", " + entryTarget.getCollection() + ", " +
                                  entryTarget.getEntryId() + ", " + entryTarget.getLocale() + "] NOT FOUND";
                     log.warn(msg);
-                    returnValue.add(new BatchEntryResult(entryTarget, new EntryNotFoundException(msg)));
+                    returnValue.add(new BatchEntryResult(entryTarget,
+                                                         new EntryNotFoundException(EntryNotFoundException.EntryNotFoundType.DELETE, msg)));
                 }
                 else if (URIHandler.REVISION_OVERRIDE != revision && (metaData.getRevision() != revision)) {
                     String msg = "Entry [" + entryTarget.getWorkspace() + ", " + entryTarget.getCollection() + ", " +
@@ -694,7 +700,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             (bean = getEntriesDAO().selectEntry(entryTarget)) == null) {
             String msg = "Entry [" + workspace + ", " + collection + ", " + entryId + ", " + locale + "] NOT FOUND";
             log.warn(msg);
-            throw new EntryNotFoundException(msg);
+            throw new EntryNotFoundException(EntryNotFoundException.EntryNotFoundType.DELETE, msg);
         }
 
         if (URIHandler.REVISION_OVERRIDE != revision && bean.getRevision() != revision || numRowsModified == 0) {
@@ -887,8 +893,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                 try {
                     executeTransactionally(new TransactionalTask<Object>() {
                         public Object execute() {
-                            getEntriesDAO().ensureCollectionExists(
-                                    getParentAtomWorkspace().getName(), collection);
+                            getEntriesDAO().ensureCollectionExists( getParentAtomWorkspace().getName(), collection );
                             seenCollections.add(collection);
                             return null;
                         }

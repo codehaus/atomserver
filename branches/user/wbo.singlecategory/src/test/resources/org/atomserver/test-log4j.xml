@@ -54,13 +54,13 @@
   </logger>
 
     <logger name="com.ibatis">
-        <level value="INHERITED"/>
+        <level value="${atomserver.loglevel}"/>
     </logger>
     <logger name="org.springframework.orm.ibatis">
-        <level value="INHERITED"/>
+        <level value="${atomserver.loglevel}"/>
     </logger>
     <logger name="java.sql">
-        <level value="INHERITED"/>
+        <level value="${atomserver.loglevel}"/>
     </logger>
 
 

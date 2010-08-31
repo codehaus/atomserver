@@ -39,7 +39,7 @@ CREATE TABLE EntryStore (
 EntryStoreId        INT                     NOT NULL,
 Workspace           VARCHAR(20)             NOT NULL,
 Collection          VARCHAR(20)             NOT NULL,
-EntryId             VARCHAR(36)             NOT NULL,
+EntryId             VARCHAR(32)             NOT NULL,
 LanCode             CHAR(2)                 NOT NULL DEFAULT '**',
 CountryCode         CHAR(2)                 NOT NULL DEFAULT '**',
 UpdateDate          TIMESTAMP               NOT NULL,
