@@ -34,6 +34,7 @@ import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.exceptions.BadContentException;
 import org.atomserver.exceptions.BadRequestException;
 import org.atomserver.ext.batch.Operation;
+import org.atomserver.server.servlet.AtomServerUserInfo;
 import org.atomserver.uri.*;
 import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
 import org.atomserver.utils.perf.AtomServerStopWatch;
@@ -549,6 +550,8 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         final Entry entry = parseEntry(entryTarget, request);
         final String entryXml = validateAndPreprocessEntryContents(entry, entryTarget);
 
+        final String t_user = AtomServerUserInfo.getUser();
+
         if(getEntriesMonitor() != null) {
             getEntriesMonitor().updateNumberOfEntriesToUpdate(1);
         }
@@ -558,6 +561,9 @@ abstract public class AbstractAtomCollection implements AtomCollection {
             EntryMetaDataStatus entryMetaDataStatus = executeTransactionally(
                     new TransactionalTask<EntryMetaDataStatus>() {
                         public EntryMetaDataStatus execute() {
+
+                            AtomServerUserInfo.setUser(t_user);
+
                             EntryTarget target = getEntryTarget(request, entry, entryXml);
 
                             // determine if we are creating the entryId -- i.e. if this was a POST

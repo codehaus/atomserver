@@ -32,6 +32,7 @@ import org.atomserver.AtomServer;
 import org.atomserver.AtomServerWrapper;
 import org.atomserver.ContentStorage;
 import org.atomserver.DelegatingProvider;
+import org.atomserver.server.servlet.AtomServerUserInfo;
 import org.atomserver.testutils.client.JettyWebAppTestCase;
 import org.atomserver.testutils.client.MockRequestContext;
 import org.atomserver.testutils.latency.LatencyUtil;
