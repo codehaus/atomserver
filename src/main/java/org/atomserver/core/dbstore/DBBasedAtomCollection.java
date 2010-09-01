@@ -97,6 +97,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
     }
 
     protected <T> T executeTransactionally(final TransactionalTask<T> task)  {
+        final String t_user = AtomServerUserInfo.getUser();
         FutureTask<T> timeoutTask = null;
         try {
             // create new timeout task
@@ -104,6 +105,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                 public T call() throws Exception {
                     return (T) getTransactionTemplate().execute(new TransactionCallback() {
                         public Object doInTransaction(TransactionStatus transactionStatus) {
+                            AtomServerUserInfo.setUser(t_user);
                             StopWatch stopWatch = new AtomServerStopWatch();
                             try {
                                 // NOTE: we will actually wait for all of these to possibly finish,
