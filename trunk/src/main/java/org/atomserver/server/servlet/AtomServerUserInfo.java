@@ -28,7 +28,6 @@ public class AtomServerUserInfo {
     }
 
     public static String getUser() {
-        String user = userInfo.get();
-        return  (user == null) ? "undef" : user ;
+        return userInfo.get();
     }
 }
