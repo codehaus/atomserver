@@ -36,6 +36,7 @@ import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.exceptions.BadRequestException;
 import org.atomserver.exceptions.EntryNotFoundException;
 import org.atomserver.exceptions.OptimisticConcurrencyException;
+import org.atomserver.server.servlet.AtomServerUserInfo;
 import org.atomserver.uri.*;
 import org.atomserver.utils.AtomDate;
 import org.atomserver.utils.collections.MultiHashMap;
