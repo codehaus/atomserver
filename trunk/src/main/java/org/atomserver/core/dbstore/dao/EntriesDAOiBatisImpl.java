@@ -17,6 +17,7 @@
 package org.atomserver.core.dbstore.dao;
 
 import com.ibatis.sqlmap.client.SqlMapExecutor;
+import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.AtomCategory;
@@ -42,6 +43,8 @@ import org.springframework.orm.ibatis.SqlMapClientCallback;
 
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * @author Chris Berry  (chriswberry at gmail.com)
@@ -56,13 +59,15 @@ public class EntriesDAOiBatisImpl
     public static final long UNDEFINED_SEQNUM = -1L;
     public static final Date ZERO_DATE = new Date(0L);
 
-    public static final long FETCH_INTERVAL = 60000;
+    public static final long FETCH_INTERVAL = 300000;
     public static final long STARTUP_INTERVAL = 900000;
 
     private ContentDAO contentDAO;
     private EntryCategoriesDAO entryCategoriesDAO;
     private EntryCategoryLogEventDAO entryCategoryLogEventDAO;
     private int latencySeconds = UNDEFINED;
+
+    private boolean useWorkspaceCollectionCache = false;
 
     /**
      * Use the improved selectFeedPage form, which uses SQL Set operands.
@@ -73,10 +78,10 @@ public class EntriesDAOiBatisImpl
 
     private static long startupTime = System.currentTimeMillis();
 
-    private Set<String> workspaces = new HashSet<String>();
+    private Set<String> workspaces = new CopyOnWriteArraySet<String>();
     long lastWorkspacesSelectTime = 0L;
 
-    private Set<String> collections = new HashSet<String>();
+    private ConcurrentHashMap<String, HashSet<String>> collections = new ConcurrentHashMap<String, HashSet<String>>();
     long lastCollectionsSelectTime = 0L;
 
     protected void initDao() throws Exception {
@@ -94,6 +99,17 @@ public class EntriesDAOiBatisImpl
 
     public void setEntryCategoryLogEventDAO(EntryCategoryLogEventDAO entryCategoryLogEventDAO) {
         this.entryCategoryLogEventDAO = entryCategoryLogEventDAO;
+    }
+
+    @ManagedAttribute(description="Use the workspace, collection cache")
+    public boolean isUseWorkspaceCollectionCache() {
+        return useWorkspaceCollectionCache;
+    }
+
+    @ManagedAttribute(description="Set use the workspace, collection cache")
+    public void setUseWorkspaceCollectionCache(boolean useWorkspaceCollectionCache) {
+        this.useWorkspaceCollectionCache = useWorkspaceCollectionCache;
+        clearWorkspaceCollectionCaches();
     }
 
     @ManagedAttribute(description="Maximum index")
@@ -857,25 +873,14 @@ public class EntriesDAOiBatisImpl
         getSqlMapClientTemplate().delete("deleteAllRowsFromEntries");
     }
 
+    //======================================
+    //     COLLECTION/WORKSPACE QUERIES
+    //======================================
 
-    /**
-     * returns the corresponding EntryMetaData for the given EntryDescriptor.
-     * <p/>
-     * this method returns the object it is passed if it happens to be an EntryMetaData, or it
-     * retrieves the corresponding EntryMetaData from the database if not.
-     *
-     * @param entryDescriptor the EntryDescriptor of the EntryMetaData to retrieve
-     * @return the EntryMetaData corresponding to the given EntryDescriptor
-     */
-    private EntryMetaData safeCastToEntryMetaData(EntryDescriptor entryDescriptor) {
-        return entryDescriptor instanceof EntryMetaData ?
-               (EntryMetaData) entryDescriptor :
-               selectEntry(entryDescriptor);
-    }
     public void clearWorkspaceCollectionCaches() {
-        workspaces = new HashSet<String>();
+        workspaces = new CopyOnWriteArraySet<String>();
         lastWorkspacesSelectTime = 0L;
-        collections = new HashSet<String>();
+        collections = new ConcurrentHashMap<String, HashSet<String>>();
         lastCollectionsSelectTime = 0L;
     }
 
@@ -894,7 +899,8 @@ public class EntriesDAOiBatisImpl
                     log.warn("race condition while guaranteeing existence of collection " +
                              workspace + "/" + collection + " - this is probably okay.");
                 }
-                collections.add(collection);
+                HashSet<String> workspaceCollections = getWorkspaceCollections(workspace);
+                workspaceCollections.add(collection);
             }
         }
         finally {
@@ -926,10 +932,12 @@ public class EntriesDAOiBatisImpl
     public List<String> listWorkspaces() {
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
-            if ( workspacesIsExpired() ) {
+            if (!useWorkspaceCollectionCache || workspacesIsExpired()) {
                  lastWorkspacesSelectTime = System.currentTimeMillis();
                  List<String> dbworkspaces =  getSqlMapClientTemplate().queryForList( "listWorkspaces");
-                 workspaces.addAll( dbworkspaces );
+                 if ( (dbworkspaces != null) && (!workspaces.equals(dbworkspaces)) ) {
+                    workspaces.addAll(dbworkspaces);
+                 }
              }
              return new ArrayList( workspaces );
         }
@@ -941,32 +949,70 @@ public class EntriesDAOiBatisImpl
     public List<String> listCollections(String workspace) {
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
-            if ( collectionsIsExpired() ) {
+            HashSet<String> workspaceCollections = getWorkspaceCollections(workspace);
+            if (!useWorkspaceCollectionCache || collectionsIsExpired()) {
                 lastCollectionsSelectTime = System.currentTimeMillis();
                 List<String> dbcollections =  getSqlMapClientTemplate().queryForList( "listCollections",
                                                                                     paramMap().param("workspace", workspace));
-                collections.addAll( dbcollections );
+                if ( (dbcollections != null) && (!workspaceCollections.equals(dbcollections))) {
+                    workspaceCollections.addAll(dbcollections);
+                }
             }
-            return new ArrayList( collections );
+            return new ArrayList( workspaceCollections );
         }
         finally {
             stopWatch.stop("DB.listCollections", "");
         }
     }
 
-    private boolean collectionsIsExpired() {
-        long currentTime = System.currentTimeMillis();
-        return (collections == null || collections.isEmpty()) ? true
-                : ((currentTime - lastCollectionsSelectTime) >  FETCH_INTERVAL ) ? true
-                : ((currentTime - startupTime) >  STARTUP_INTERVAL ) ? false : true;
+    private HashSet<String> getWorkspaceCollections( String workspace ) {
+        HashSet<String> workspaceCollections = collections.get(workspace);
+        if ( workspaceCollections == null ) {
+            workspaceCollections = new HashSet<String>();
+            collections.put(workspace, workspaceCollections);
+        }
+        return workspaceCollections;
     }
+
+    private boolean collectionsIsExpired() {
+         long currentTime = System.currentTimeMillis();
+         return (collections == null || collections.isEmpty())
+                ? true
+                : ((currentTime - lastCollectionsSelectTime) > FETCH_INTERVAL)
+                  ? true
+                  : ((currentTime - startupTime) > STARTUP_INTERVAL)
+                    ? false : true;
+     }
 
     private boolean workspacesIsExpired() {
         long currentTime = System.currentTimeMillis();
-        return (workspaces == null || workspaces.isEmpty()) ? true
-                : ((currentTime - lastWorkspacesSelectTime) >  FETCH_INTERVAL ) ? true
-                : ((currentTime - startupTime) >  STARTUP_INTERVAL ) ? false : true;
+        return (workspaces == null || workspaces.isEmpty())
+               ? true
+               : ((currentTime - lastWorkspacesSelectTime) > FETCH_INTERVAL)
+                 ? true
+                 : ((currentTime - startupTime) > STARTUP_INTERVAL)
+                   ? false : true;
     }
+
+    //======================================
+    //           MISCELLANEOUS
+    //======================================
+
+    /**
+      * returns the corresponding EntryMetaData for the given EntryDescriptor.
+      * <p/>
+      * this method returns the object it is passed if it happens to be an EntryMetaData, or it
+      * retrieves the corresponding EntryMetaData from the database if not.
+      *
+      * @param entryDescriptor the EntryDescriptor of the EntryMetaData to retrieve
+      * @return the EntryMetaData corresponding to the given EntryDescriptor
+      */
+     private EntryMetaData safeCastToEntryMetaData(EntryDescriptor entryDescriptor) {
+         return entryDescriptor instanceof EntryMetaData ?
+                (EntryMetaData) entryDescriptor :
+                selectEntry(entryDescriptor);
+     }
+
 
     public Object selectEntryInternalId(EntryDescriptor entryQuery) {
         StopWatch stopWatch = new AtomServerStopWatch();
