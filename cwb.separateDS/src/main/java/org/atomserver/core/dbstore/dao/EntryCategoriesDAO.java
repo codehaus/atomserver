@@ -33,8 +33,10 @@ import java.util.Set;
  *               to workspace or collection as strings into ones that take a descriptor of some sort.
  */
 public interface EntryCategoriesDAO
-        extends AtomServerDAO {
+        extends WriteReadEntryCategoriesDAO {   
+}
 
+    /*
     //======================================
     //          CRUD OPERATIONS
     //======================================
@@ -89,3 +91,4 @@ public interface EntryCategoriesDAO
     int getTotalCount(String workspace, String collection);
 
 }
+*/
