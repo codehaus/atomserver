@@ -62,7 +62,9 @@ public class EntriesDAOiBatisImpl
     private ContentDAO contentDAO;
     private EntryCategoriesDAO entryCategoriesDAO;
     private EntryCategoryLogEventDAO entryCategoryLogEventDAO;
+
     private int latencySeconds = UNDEFINED;
+    
     private SqlMapClient sqlMapClient;
 
     public void afterPropertiesSet() throws Exception {
@@ -173,11 +175,11 @@ public class EntriesDAOiBatisImpl
     }
 
     public Date selectSysDate() {
-        return writeEntriesDAO.selectSysDate();
+        return readEntriesDAO.selectSysDate();
     }
 
     public void testAvailability() {
-        writeEntriesDAO.testAvailability();
+        readEntriesDAO.testAvailability();
         // TODO - what about the others
     }
 

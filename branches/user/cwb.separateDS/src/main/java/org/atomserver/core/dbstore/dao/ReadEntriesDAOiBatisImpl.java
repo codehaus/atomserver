@@ -217,8 +217,8 @@ public class ReadEntriesDAOiBatisImpl
             paramMap.param("categoryQuerySql",
                            SetOpCategoryQueryGenerator.generateCategorySearch(categoryQuery));
         }
-        if (latencySeconds > 0) {
-            paramMap.param("latencySeconds", latencySeconds);
+        if (getLatencySeconds() > 0) {
+            paramMap.param("latencySeconds", getLatencySeconds());
         }
         paramMap.param("usequery", "setOps");
     }
@@ -411,8 +411,8 @@ public class ReadEntriesDAOiBatisImpl
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
             AbstractDAOiBatisImpl.ParamMap paramMap = paramMap();
-            if (latencySeconds > 0) {
-                paramMap.param("latencySeconds", latencySeconds);
+            if (getLatencySeconds() > 0) {
+                paramMap.param("latencySeconds", getLatencySeconds());
             }
             if (updatedMax != null) {
                 paramMap.param("updatedMax", updatedMax);

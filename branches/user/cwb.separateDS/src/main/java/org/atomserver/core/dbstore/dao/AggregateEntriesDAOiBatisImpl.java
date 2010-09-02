@@ -128,8 +128,8 @@ public class AggregateEntriesDAOiBatisImpl
                                CategoryQueryGenerator.generateCategorySearch(categoriesQuery));
             }
 
-            if (latencySeconds > 0) {
-                paramMap.param("latencySeconds", latencySeconds);
+            if (getLatencySeconds() > 0) {
+                paramMap.param("latencySeconds", getLatencySeconds());
             }
 
             heuristicsHelper.applyHeuristics(paramMap, FeedQueryHeuristicsHelper.SEEK);

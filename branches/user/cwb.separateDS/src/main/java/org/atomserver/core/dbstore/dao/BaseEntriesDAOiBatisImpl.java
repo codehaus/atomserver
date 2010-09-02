@@ -28,22 +28,34 @@ public class BaseEntriesDAOiBatisImpl
     public static final int UNDEFINED = -1;
     public static final Date ZERO_DATE = new Date(0L);
 
-    protected ContentDAO contentDAO;
-    protected EntryCategoriesDAO entryCategoriesDAO;
-    protected EntryCategoryLogEventDAO entryCategoryLogEventDAO;
-    protected int latencySeconds = UNDEFINED;
+    private ContentDAO contentDAO;
+    private WriteReadEntryCategoriesDAO entryCategoriesDAO;
+    private EntryCategoryLogEventDAO entryCategoryLogEventDAO;
+    private int latencySeconds = UNDEFINED;
 
 
     public void setContentDAO(ContentDAO contentDAO) {
         this.contentDAO = contentDAO;
     }
 
-    public void setEntryCategoriesDAO(EntryCategoriesDAO entryCategoriesDAO) {
+    public void setEntryCategoriesDAO(WriteReadEntryCategoriesDAO entryCategoriesDAO) {
         this.entryCategoriesDAO = entryCategoriesDAO;
     }
 
     public void setEntryCategoryLogEventDAO(EntryCategoryLogEventDAO entryCategoryLogEventDAO) {
         this.entryCategoryLogEventDAO = entryCategoryLogEventDAO;
+    }
+
+    public ContentDAO getContentDAO() {
+        return contentDAO;
+    }
+
+    public WriteReadEntryCategoriesDAO getEntryCategoriesDAO() {
+        return entryCategoriesDAO;
+    }
+
+    public EntryCategoryLogEventDAO getEntryCategoryLogEventDAO() {
+        return entryCategoryLogEventDAO;
     }
 
     @ManagedAttribute

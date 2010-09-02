@@ -296,20 +296,20 @@ public class WriteReadEntriesDAOiBatisImpl
         EntryMetaData metaData = null;
         List<EntryCategory> categoriesToRemove = null;
 
-        if (contentDAO != null || entryCategoriesDAO != null) {
+        if (getContentDAO() != null || getEntryCategoriesDAO() != null) {
             metaData = (entryQuery instanceof EntryMetaData) ? (EntryMetaData) entryQuery : selectEntry(entryQuery);
 
             if (metaData != null) {
                 categoriesToRemove = metaData.getCategories();
             }
-            if (metaData != null && entryCategoryLogEventDAO != null) {
-                entryCategoryLogEventDAO.deleteEntryCategoryLogEvent(entryQuery);
+            if (metaData != null && getEntryCategoryLogEventDAO() != null) {
+                getEntryCategoryLogEventDAO().deleteEntryCategoryLogEvent(entryQuery);
             }
-            if (metaData != null && contentDAO != null) {
-                contentDAO.deleteContent(metaData);
+            if (metaData != null && getContentDAO() != null) {
+                getContentDAO().deleteContent(metaData);
             }
-            if (metaData != null && entryCategoriesDAO != null) {
-                entryCategoriesDAO.deleteEntryCategoriesWithoutCacheUpdate(metaData);
+            if (metaData != null && getEntryCategoriesDAO() != null) {
+                getEntryCategoriesDAO().deleteEntryCategoriesWithoutCacheUpdate(metaData);
             }
         }
 
@@ -384,12 +384,12 @@ public class WriteReadEntriesDAOiBatisImpl
 //======================================
 
     public void deleteAllEntries(ServiceDescriptor service) {
-        if (contentDAO != null) {
-            //contentDAO.deleteAllContent();
-            contentDAO.deleteAllContent(service.getWorkspace());
+        if (getContentDAO() != null) {
+            //getContentDAO().deleteAllContent();
+            getContentDAO().deleteAllContent(service.getWorkspace());
         }
-        if (entryCategoriesDAO != null) {
-            entryCategoriesDAO.deleteAllEntryCategories(service.getWorkspace());
+        if (getEntryCategoriesDAO() != null) {
+            getEntryCategoriesDAO().deleteAllEntryCategories(service.getWorkspace());
         }
         super.deleteAllEntriesInternal(service.getWorkspace(), null, "deleteEntriesAll");
     }
@@ -478,8 +478,8 @@ public class WriteReadEntriesDAOiBatisImpl
 
     public long selectMaxIndex(Date updatedMax) {
         AbstractDAOiBatisImpl.ParamMap paramMap = paramMap();
-        if (latencySeconds > 0) {
-            paramMap.param("latencySeconds", latencySeconds);
+        if (getLatencySeconds() > 0) {
+            paramMap.param("getLatencySeconds()", getLatencySeconds());
         }
         if (updatedMax != null) {
             paramMap.param("updatedMax", updatedMax);
@@ -489,7 +489,7 @@ public class WriteReadEntriesDAOiBatisImpl
     }
 
     public void acquireLock() throws AtomServerException {
-        if (latencySeconds <= 0) {
+        if (getLatencySeconds() <= 0) {
             log.debug("ACQUIRING LOCK");
 
             // JTDS forces us to actually "touch" a DB Table before it will begin the transaction

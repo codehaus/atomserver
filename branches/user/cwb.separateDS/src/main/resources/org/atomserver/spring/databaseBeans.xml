@@ -23,7 +23,7 @@
                Otherwise, the Transaction (withing Spring's TransactionManager) will NOT commit -->
 
     <!-- the READ datasource -->
-    <bean id="org.atomserver-dataSource"
+    <bean id="org.atomserver-read-dataSource"
           class="org.apache.commons.dbcp.BasicDataSource"
           destroy-method="close"
           lazy-init="true"
@@ -38,7 +38,7 @@
     </bean>
 
     <!-- the WRITE datasource --> 
-    <bean id="org.atomserver-write-dataSource"
+    <bean id="org.atomserver-dataSource"
           class="org.apache.commons.dbcp.BasicDataSource"
           destroy-method="close"
           lazy-init="true"
@@ -70,11 +70,11 @@
           class="org.atomserver.core.dbstore.dao.BaseEntriesDAOiBatisImpl"
           depends-on="org.atomserver-propertyConfigurer"
           abstract="true" >
-        <property name="dataSource" ref="org.atomserver-dataSource"/>
+        <property name="dataSource" ref="org.atomserver-read-dataSource"/>
         <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
         <property name="databaseType" value="${db.type}"/>
         <property name="contentDAO" ref="org.atomserver-contentDAO"/>
-        <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO" />
+        <property name="entryCategoriesDAO" ref="org.atomserver-write-entryCategoriesDAO" />
         <property name="entryCategoryLogEventDAO" ref="org.atomserver-entryCategoryLogEventDAO" />
         <property name="latencySeconds" value="${db.latency.seconds}"/>
     </bean>
@@ -82,17 +82,17 @@
     <bean id="org.atomserver-write-entriesDAO"
           class="org.atomserver.core.dbstore.dao.WriteReadEntriesDAOiBatisImpl"
           parent="org.atomserver-base-entriesDAO">
-        <property name="dataSource" ref="org.atomserver-write-dataSource"/>
+        <property name="dataSource" ref="org.atomserver-dataSource"/>
     </bean>
     <bean id="org.atomserver-read-entriesDAO"
           class="org.atomserver.core.dbstore.dao.ReadEntriesDAOiBatisImpl"
           parent="org.atomserver-base-entriesDAO">
-        <property name="dataSource" ref="org.atomserver-dataSource"/>
+        <property name="dataSource" ref="org.atomserver-read-dataSource"/>
     </bean>
     <bean id="org.atomserver-aggregate-entriesDAO"
           class="org.atomserver.core.dbstore.dao.AggregateEntriesDAOiBatisImpl"
           parent="org.atomserver-base-entriesDAO">
-        <property name="dataSource" ref="org.atomserver-dataSource"/>
+        <property name="dataSource" ref="org.atomserver-read-dataSource"/>
     </bean>
 
     <bean id="org.atomserver-entriesDAO"
@@ -103,40 +103,56 @@
         <property name="aggregateEntriesDAO" ref="org.atomserver-aggregate-entriesDAO" />
     </bean>
 
-    <!--
-    <bean id="org.atomserver-entriesDAO"
-          class="org.atomserver.core.dbstore.dao.EntriesDAOiBatisImpl"
-          depends-on="org.atomserver-propertyConfigurer">
-        <property name="dataSource" ref="org.atomserver-dataSource"/>
-        <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
-        <property name="databaseType" value="${db.type}"/>
-        <property name="contentDAO" ref="org.atomserver-contentDAO"/>
-        <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO" />
-        <property name="entryCategoryLogEventDAO" ref="org.atomserver-entryCategoryLogEventDAO" />
-        <property name="latencySeconds" value="${db.latency.seconds}"/>
-    </bean>
-    -->
+
 
     <bean id="org.atomserver-contentDAO"
           class="org.atomserver.core.dbstore.dao.ContentDAOiBatisImpl"
           depends-on="org.atomserver-propertyConfigurer">
-        <property name="dataSource" ref="org.atomserver-write-dataSource"/>
+        <property name="dataSource" ref="org.atomserver-dataSource"/>
         <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
         <property name="databaseType" value="${db.type}"/>
+    </bean>
+
+
+    <!--
+    <bean id="org.atomserver-entryCategoriesDAO"
+          class="org.atomserver.core.dbstore.dao.EntryCategoriesDAOiBatisImpl"
+          depends-on="org.atomserver-propertyConfigurer">
+        <property name="dataSource" ref="org.atomserver-dataSource"/>
+        <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
+        <property name="databaseType" value="${db.type}"/>
+    </bean>
+    -->
+    <bean id="org.atomserver-base-entryCategoriesDAO"
+          class="org.atomserver.core.dbstore.dao.ReadEntryCategoriesDAOiBatisImpl"
+          depends-on="org.atomserver-propertyConfigurer"
+          abstract="true" >
+        <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
+        <property name="databaseType" value="${db.type}"/>
+    </bean>
+    <bean id="org.atomserver-read-entryCategoriesDAO"
+          class="org.atomserver.core.dbstore.dao.ReadEntryCategoriesDAOiBatisImpl"
+          parent="org.atomserver-base-entryCategoriesDAO">
+        <property name="dataSource" ref="org.atomserver-read-dataSource"/>
+    </bean>
+    <bean id="org.atomserver-write-entryCategoriesDAO"
+          class="org.atomserver.core.dbstore.dao.WriteReadEntryCategoriesDAOiBatisImpl"
+          parent="org.atomserver-base-entryCategoriesDAO">
+        <property name="dataSource" ref="org.atomserver-dataSource"/>
     </bean>
 
     <bean id="org.atomserver-entryCategoriesDAO"
           class="org.atomserver.core.dbstore.dao.EntryCategoriesDAOiBatisImpl"
           depends-on="org.atomserver-propertyConfigurer">
-        <property name="dataSource" ref="org.atomserver-write-dataSource"/>
-        <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
-        <property name="databaseType" value="${db.type}"/>
+        <property name="readEntryCategoriesDAO" ref="org.atomserver-read-entryCategoriesDAO" />
+        <property name="writeReadEntryCategoriesDAO" ref="org.atomserver-write-entryCategoriesDAO" />
     </bean>
+
 
     <bean id="org.atomserver-entryCategoryLogEventDAO"
           class="org.atomserver.core.dbstore.dao.EntryCategoryLogEventDAOiBatisImpl"
           depends-on="org.atomserver-propertyConfigurer">
-        <property name="dataSource" ref="org.atomserver-write-dataSource"/>
+        <property name="dataSource" ref="org.atomserver-dataSource"/>
         <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
         <property name="databaseType" value="${db.type}"/>
     </bean>
@@ -144,7 +160,7 @@
     <bean id="org.atomserver-statsMonitorDAO"
           class="org.atomserver.core.dbstore.dao.StatisticsMonitorDAOiBatisImpl"
           depends-on="org.atomserver-propertyConfigurer">
-        <property name="dataSource" ref="org.atomserver-dataSource"/>
+        <property name="dataSource" ref="org.atomserver-read-dataSource"/>
         <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
         <property name="databaseType" value="${db.type}"/>
     </bean>
@@ -168,7 +184,7 @@
     <bean id="org.atomserver-sizeLimit"
           class="org.atomserver.core.dbstore.utils.SizeLimit"
           depends-on="org.atomserver-propertyConfigurer">
-         <property name="dataSource" ref="org.atomserver-dataSource"/>
+         <property name="dataSource" ref="org.atomserver-read-dataSource"/>
     </bean>
 
 </beans>
