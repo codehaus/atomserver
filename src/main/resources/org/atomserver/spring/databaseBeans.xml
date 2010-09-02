@@ -65,6 +65,9 @@
         <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO" />
         <property name="entryCategoryLogEventDAO" ref="org.atomserver-entryCategoryLogEventDAO" />
         <property name="latencySeconds" value="${db.latency.seconds}"/>
+
+        <!-- TODO --> 
+        <property name="useWorkspaceCollectionCache" value="${db.cache.workspaceCollections}" />
     </bean>
 
     <bean id="org.atomserver-contentDAO"
