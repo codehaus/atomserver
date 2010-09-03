@@ -7,6 +7,7 @@ import org.atomserver.FeedDescriptor;
 import org.atomserver.core.dbstore.dao.ContentDAO;
 import org.atomserver.core.dbstore.dao.EntryCategoryLogEventDAO;
 import org.atomserver.core.dbstore.dao.WriteReadEntryCategoriesDAO;
+import org.atomserver.core.dbstore.dao.WriteReadEntryCategoryLogEventDAO;
 import org.atomserver.core.dbstore.dao.impl.AbstractDAOiBatisImpl;
 import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
 import org.atomserver.utils.locale.LocaleUtils;
@@ -26,7 +27,7 @@ public class BaseEntriesDAOiBatisImpl
 
     private ContentDAO contentDAO;
     private WriteReadEntryCategoriesDAO entryCategoriesDAO;
-    private EntryCategoryLogEventDAO entryCategoryLogEventDAO;
+    private WriteReadEntryCategoryLogEventDAO entryCategoryLogEventDAO;
     private int latencySeconds = UNDEFINED;
 
 
@@ -38,7 +39,7 @@ public class BaseEntriesDAOiBatisImpl
         this.entryCategoriesDAO = entryCategoriesDAO;
     }
 
-    public void setEntryCategoryLogEventDAO(EntryCategoryLogEventDAO entryCategoryLogEventDAO) {
+    public void setEntryCategoryLogEventDAO(WriteReadEntryCategoryLogEventDAO entryCategoryLogEventDAO) {
         this.entryCategoryLogEventDAO = entryCategoryLogEventDAO;
     }
 
@@ -50,7 +51,7 @@ public class BaseEntriesDAOiBatisImpl
         return entryCategoriesDAO;
     }
 
-    public EntryCategoryLogEventDAO getEntryCategoryLogEventDAO() {
+    public WriteReadEntryCategoryLogEventDAO getEntryCategoryLogEventDAO() {
         return entryCategoryLogEventDAO;
     }
 

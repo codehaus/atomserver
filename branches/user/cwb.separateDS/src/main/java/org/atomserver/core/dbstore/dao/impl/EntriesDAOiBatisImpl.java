@@ -185,9 +185,11 @@ public class EntriesDAOiBatisImpl
         // TODO - what about the others
     }
 
+    /*
     public void setUsingSetOpsFeedPage(boolean usingSetOpsFeedPage) {
         // TODO - remove
     }
+    */
 
     //-------------------
     //   WriteReadEntriesDAO

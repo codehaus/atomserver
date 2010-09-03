@@ -52,6 +52,7 @@
         <property name="maxWait" value="10000"/>
     </bean>
 
+    <!-- the iBatis SQLMap client --> 
     <bean id="org.atomserver-sqlMapClient"
           class="org.springframework.orm.ibatis.SqlMapClientFactoryBean"
           depends-on="org.atomserver-propertyConfigurer">
@@ -66,6 +67,10 @@
         </property>
     </bean>
 
+    <!-- +++++++++++++++++++++++++++++++++++ -->
+    <!--               entriesDAO            -->
+    <!-- +++++++++++++++++++++++++++++++++++ -->
+
     <bean id="org.atomserver-base-entriesDAO"
           class="org.atomserver.core.dbstore.dao.impl.BaseEntriesDAOiBatisImpl"
           depends-on="org.atomserver-propertyConfigurer"
@@ -75,7 +80,7 @@
         <property name="databaseType" value="${db.type}"/>
         <property name="contentDAO" ref="org.atomserver-contentDAO"/>
         <property name="entryCategoriesDAO" ref="org.atomserver-write-entryCategoriesDAO" />
-        <property name="entryCategoryLogEventDAO" ref="org.atomserver-entryCategoryLogEventDAO" />
+        <property name="entryCategoryLogEventDAO" ref="org.atomserver-write-entryCategoryLogEventDAO" />
         <property name="latencySeconds" value="${db.latency.seconds}"/>
     </bean>
 
@@ -105,6 +110,9 @@
     </bean>
 
 
+    <!-- +++++++++++++++++++++++++++++++++++ -->
+    <!--               contentDAO            -->
+    <!-- +++++++++++++++++++++++++++++++++++ -->
 
     <bean id="org.atomserver-contentDAO"
           class="org.atomserver.core.dbstore.dao.impl.ContentDAOiBatisImpl"
@@ -114,16 +122,9 @@
         <property name="databaseType" value="${db.type}"/>
     </bean>
 
-
-    <!--
-    <bean id="org.atomserver-entryCategoriesDAO"
-          class="org.atomserver.core.dbstore.dao.impl.EntryCategoriesDAOiBatisImpl"
-          depends-on="org.atomserver-propertyConfigurer">
-        <property name="dataSource" ref="org.atomserver-dataSource"/>
-        <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
-        <property name="databaseType" value="${db.type}"/>
-    </bean>
-    -->
+    <!-- +++++++++++++++++++++++++++++++++++ -->
+    <!--        entryCategoriesDAO           -->
+    <!-- +++++++++++++++++++++++++++++++++++ -->
     <bean id="org.atomserver-base-entryCategoriesDAO"
           class="org.atomserver.core.dbstore.dao.impl.ReadEntryCategoriesDAOiBatisImpl"
           depends-on="org.atomserver-propertyConfigurer"
@@ -149,7 +150,10 @@
         <property name="writeReadEntryCategoriesDAO" ref="org.atomserver-write-entryCategoriesDAO" />
     </bean>
 
-
+    <!-- +++++++++++++++++++++++++++++++++++ -->
+    <!--       entryCategoryLogEventDAO      -->
+    <!-- +++++++++++++++++++++++++++++++++++ -->
+    <!--
     <bean id="org.atomserver-entryCategoryLogEventDAO"
           class="org.atomserver.core.dbstore.dao.impl.EntryCategoryLogEventDAOiBatisImpl"
           depends-on="org.atomserver-propertyConfigurer">
@@ -157,6 +161,32 @@
         <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
         <property name="databaseType" value="${db.type}"/>
     </bean>
+    -->
+    <bean id="org.atomserver-base-entryCategoryLogEventDAO"
+          class="org.atomserver.core.dbstore.dao.impl.ReadEntryCategoryLogEventDAOiBatisImpl"
+          depends-on="org.atomserver-propertyConfigurer"
+          abstract="true" >
+        <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
+        <property name="databaseType" value="${db.type}"/>
+    </bean>
+    <bean id="org.atomserver-read-entryCategoryLogEventDAO"
+          class="org.atomserver.core.dbstore.dao.impl.ReadEntryCategoryLogEventDAOiBatisImpl"
+          parent="org.atomserver-base-entryCategoryLogEventDAO">
+        <property name="dataSource" ref="org.atomserver-dataSource"/>
+   </bean>
+    <bean id="org.atomserver-write-entryCategoryLogEventDAO"
+          class="org.atomserver.core.dbstore.dao.impl.WriteReadEntryCategoryLogEventDAOiBatisImpl"
+          parent="org.atomserver-base-entryCategoryLogEventDAO">
+        <property name="dataSource" ref="org.atomserver-dataSource"/>
+    </bean>
+    <bean id="org.atomserver-entryCategoryLogEventDAO"
+          class="org.atomserver.core.dbstore.dao.impl.EntryCategoryLogEventDAOiBatisImpl"
+          depends-on="org.atomserver-propertyConfigurer">
+        <property name="readEntryCategoryLogEventDAO" ref="org.atomserver-read-entryCategoryLogEventDAO" />
+        <property name="writeReadEntryCategoryLogEventDAO" ref="org.atomserver-write-entryCategoryLogEventDAO" />
+    </bean>
+
+
 
     <bean id="org.atomserver-statsMonitorDAO"
           class="org.atomserver.core.dbstore.dao.impl.StatisticsMonitorDAOiBatisImpl"
