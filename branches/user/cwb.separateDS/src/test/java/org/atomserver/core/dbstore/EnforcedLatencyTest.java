@@ -5,7 +5,7 @@ import org.apache.abdera.model.Feed;
 import org.atomserver.EntryDescriptor;
 import org.atomserver.core.BaseEntryDescriptor;
 import org.atomserver.core.EntryMetaData;
-import org.atomserver.core.dbstore.dao.EntriesDAOiBatisImpl;
+import org.atomserver.core.dbstore.dao.impl.EntriesDAOiBatisImpl;
 import org.atomserver.core.etc.AtomServerConstants;
 import org.atomserver.testutils.latency.TimeLine;
 import static org.atomserver.uri.URIHandler.REVISION_OVERRIDE;

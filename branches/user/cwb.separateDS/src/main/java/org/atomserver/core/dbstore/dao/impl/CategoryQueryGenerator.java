@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.atomserver.core.dbstore.dao;
+package org.atomserver.core.dbstore.dao.impl;
 
 import org.atomserver.AtomCategory;
 import org.atomserver.utils.logic.BooleanExpression;

@@ -18,7 +18,7 @@
 package org.atomserver.core.dbstore;
 
 import org.atomserver.core.BaseServiceDescriptor;
-import org.atomserver.core.dbstore.dao.EntriesDAOiBatisImpl;
+import org.atomserver.core.dbstore.dao.impl.EntriesDAOiBatisImpl;
 import org.atomserver.core.dbstore.dao.ContentDAO;
 import junit.framework.Test;
 import junit.framework.TestSuite;

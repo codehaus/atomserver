@@ -15,23 +15,18 @@
  */
 
 
-package org.atomserver.core.dbstore.dao;
+package org.atomserver.core.dbstore.dao.impl;
 
 import com.ibatis.sqlmap.client.SqlMapClient;
-import com.ibatis.sqlmap.client.SqlMapExecutor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.EntryDescriptor;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryMetaData;
-import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
-import org.atomserver.utils.perf.AtomServerStopWatch;
-import org.perf4j.StopWatch;
+import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.orm.ibatis.SqlMapClientCallback;
 
 import javax.sql.DataSource;
-import java.sql.SQLException;
 import java.util.*;
 
 

@@ -31,8 +31,7 @@ import org.atomserver.core.BaseEntryDescriptor;
 import org.atomserver.core.BaseFeedDescriptor;
 import org.atomserver.core.BaseServiceDescriptor;
 import org.atomserver.core.dbstore.dao.ContentDAO;
-import org.atomserver.core.dbstore.dao.EntriesDAO;
-import org.atomserver.core.dbstore.dao.EntriesDAOiBatisImpl;
+import org.atomserver.core.dbstore.dao.impl.EntriesDAOiBatisImpl;
 import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
 import org.atomserver.core.dbstore.utils.DBSeeder;
 import org.atomserver.core.etc.AtomServerConstants;
@@ -45,7 +44,6 @@ import org.atomserver.monitor.EntriesMonitor;
 import org.springframework.context.ApplicationContext;
 
 import java.io.File;
-import java.io.InputStream;
 import java.text.MessageFormat;
 
 /**

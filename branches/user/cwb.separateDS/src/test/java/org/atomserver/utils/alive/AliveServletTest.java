@@ -25,7 +25,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.ContentStorage;
 import org.atomserver.core.dbstore.AtomServerIsAliveHandler;
-import org.atomserver.core.dbstore.dao.AbstractDAOiBatisImpl;
+import org.atomserver.core.dbstore.dao.impl.AbstractDAOiBatisImpl;
 import org.atomserver.core.filestore.FileBasedContentStorage;
 import org.atomserver.testutils.client.JettyWebAppTestCase;
 import org.springframework.context.ApplicationContext;

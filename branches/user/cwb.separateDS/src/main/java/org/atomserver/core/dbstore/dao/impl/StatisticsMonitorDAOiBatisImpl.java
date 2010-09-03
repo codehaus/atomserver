@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-package org.atomserver.core.dbstore.dao;
+package org.atomserver.core.dbstore.dao.impl;
 
+import org.atomserver.core.dbstore.dao.StatisticsMonitorDAO;
+import org.atomserver.core.dbstore.dao.impl.AbstractDAOiBatisImpl;
 import org.atomserver.monitor.WorkspaceCollectionMaxIndex;
 import org.atomserver.monitor.WorkspaceCollectionDocumentCount;
 
