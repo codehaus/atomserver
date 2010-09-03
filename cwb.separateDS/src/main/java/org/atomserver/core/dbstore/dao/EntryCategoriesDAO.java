@@ -16,22 +16,14 @@
 
 package org.atomserver.core.dbstore.dao;
 
-import org.atomserver.EntryDescriptor;
-import org.atomserver.core.EntryCategory;
-import org.atomserver.core.EntryMetaData;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 /**
  * The DAO for accessing an Entry's Categories
  *
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  *         TODO: ideally, we would like to change all of the methods that refer
- *               to workspace or collection as strings into ones that take a descriptor of some sort.
+ *         to workspace or collection as strings into ones that take a descriptor of some sort.
  */
 public interface EntryCategoriesDAO
-        extends WriteReadEntryCategoriesDAO {   
+        extends WriteReadEntryCategoriesDAO {
 }

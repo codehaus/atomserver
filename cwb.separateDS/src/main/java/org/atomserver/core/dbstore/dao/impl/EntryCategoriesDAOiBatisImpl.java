@@ -17,17 +17,15 @@
 
 package org.atomserver.core.dbstore.dao.impl;
 
-import com.ibatis.sqlmap.client.SqlMapClient;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.atomserver.EntryDescriptor;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
 import org.springframework.beans.factory.InitializingBean;
 
-import javax.sql.DataSource;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -35,21 +33,11 @@ import java.util.*;
  * @author Bryon Jacob (bryon at jacob.net)
  */
 public class EntryCategoriesDAOiBatisImpl
+        extends AbstractDAOiBatisImplDelegator
         implements EntryCategoriesDAO, InitializingBean {
-
-    static protected final Log log = LogFactory.getLog(AbstractDAOiBatisImpl.class);
-    static public final String DEFAULT_DB_TYPE = "sqlserver";
-
-    /**
-     * valid values are "hsql", "mysql" and "sqlserver"
-     */
-    protected String dbType = DEFAULT_DB_TYPE;
-    protected DataSource dataSource;
 
     private ReadEntryCategoriesDAOiBatisImpl readEntryCategoriesDAO;
     private WriteReadEntryCategoriesDAOiBatisImpl writeReadEntryCategoriesDAO;
-    
-    private SqlMapClient sqlMapClient;
 
     public ReadEntryCategoriesDAOiBatisImpl getReadEntryCategoriesDAO() {
         return readEntryCategoriesDAO;
@@ -87,36 +75,14 @@ public class EntryCategoriesDAOiBatisImpl
         dao.afterPropertiesSet();
     }
 
-    // TODO - consolidate 
-    public void setSqlMapClient(SqlMapClient sqlMapClient) {
-        this.sqlMapClient = sqlMapClient;
-    }
-
-    public String getDatabaseType() {
-        return dbType;
-    }
-
-    public void setDatabaseType(String dbType) {
-        if (DatabaseType.isValidType(dbType)) {
-            log.info("Database Type = " + dbType);
-            this.dbType = dbType;
-        } else {
-            throw new IllegalArgumentException(dbType + " is not a valid DatabaseType value");
-        }
-    }
-
-    public Date selectSysDate() {
-        return readEntryCategoriesDAO.selectSysDate();
-    }
-
-    public void testAvailability() {
-        readEntryCategoriesDAO.testAvailability();
-        // TODO - what about the others
+    public AbstractDAOiBatisImpl getReadDAO() {
+        return readEntryCategoriesDAO;
     }
 
     //-------------------
     //   ReadEntryCategoriesDAOiBatisImpl
     //-------------------
+
     public EntryCategory selectEntryCategory(EntryCategory entryQuery) {
         return readEntryCategoriesDAO.selectEntryCategory(entryQuery);
     }
@@ -150,6 +116,7 @@ public class EntryCategoriesDAOiBatisImpl
     //-------------------
     //   WriteReadEntryCategoriesDAOiBatisImpl
     //-------------------
+
     public int insertEntryCategory(EntryCategory entry) {return writeReadEntryCategoriesDAO.insertEntryCategory(entry);}
 
     public int insertEntryCategoryWithNoCacheUpdate(EntryCategory entry) {

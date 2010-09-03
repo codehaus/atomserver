@@ -5,15 +5,13 @@ package org.atomserver.core.dbstore.dao.impl;
 
 import org.atomserver.FeedDescriptor;
 import org.atomserver.core.dbstore.dao.ContentDAO;
-import org.atomserver.core.dbstore.dao.EntryCategoryLogEventDAO;
 import org.atomserver.core.dbstore.dao.WriteReadEntryCategoriesDAO;
 import org.atomserver.core.dbstore.dao.WriteReadEntryCategoryLogEventDAO;
-import org.atomserver.core.dbstore.dao.impl.AbstractDAOiBatisImpl;
 import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
 import org.atomserver.utils.locale.LocaleUtils;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 
-import java.util.*;
+import java.util.Date;
 
 /**
  * @author Chris Berry  (chriswberry at gmail.com)

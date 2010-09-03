@@ -16,12 +16,6 @@
 
 package org.atomserver.core.dbstore.dao;
 
-import org.atomserver.EntryDescriptor;
-import org.atomserver.core.EntryCategory;
-import org.atomserver.core.EntryCategoryLogEvent;
-
-import java.util.List;
-
 /**
  * The DAO for accessing an Entry's Category Log Events
  *
@@ -29,7 +23,7 @@ import java.util.List;
  * @author Bryon Jacob (bryon at jacob.net)
  */
 public interface EntryCategoryLogEventDAO
-    extends WriteReadEntryCategoryLogEventDAO {
+        extends WriteReadEntryCategoryLogEventDAO {
 
 }
 

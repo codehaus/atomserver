@@ -69,24 +69,6 @@ public class TagsFeedQueriesDBSTest extends DBSTestCase {
         runFeedWithMultipleCategories();
     }
 
-    public void XXXtestSetOpsFeedWithOneCategory() throws Exception {
-        try {
-            ((EntriesDAOiBatisImpl)entriesDao).setUsingSetOpsFeedPage(true);
-            runFeedWithOneCategory();
-        } finally {
-            ((EntriesDAOiBatisImpl)entriesDao).setUsingSetOpsFeedPage(false);
-        }
-    }
-
-    public void XXXtestSetOpsFeedWithMultipleCategories() throws Exception {
-        try {
-            ((EntriesDAOiBatisImpl)entriesDao).setUsingSetOpsFeedPage(true);
-            runFeedWithMultipleCategories();
-         } finally {
-            ((EntriesDAOiBatisImpl)entriesDao).setUsingSetOpsFeedPage(false);
-        }
-    }
-
     public void runFeedWithOneCategory() throws Exception {
         // COUNT
         BaseServiceDescriptor serviceDescriptor = new BaseServiceDescriptor(workspace);

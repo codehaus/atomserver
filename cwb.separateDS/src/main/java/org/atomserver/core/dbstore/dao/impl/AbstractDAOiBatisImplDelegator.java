@@ -41,7 +41,7 @@ abstract public class AbstractDAOiBatisImplDelegator {
     public final DataSource getDataSource() {
         return dataSource;
     }
-    
+
     public String getDatabaseType() {
         return dbType;
     }
@@ -56,12 +56,12 @@ abstract public class AbstractDAOiBatisImplDelegator {
     }
 
     public Date selectSysDate() {
-        return getBaseDAO().selectSysDate();
+        return getReadDAO().selectSysDate();
     }
 
     public void testAvailability() {
-        getBaseDAO().testAvailability();
+        getReadDAO().testAvailability();
     }
 
-    abstract public AbstractDAOiBatisImpl getBaseDAO();
+    abstract public AbstractDAOiBatisImpl getReadDAO();
 }
