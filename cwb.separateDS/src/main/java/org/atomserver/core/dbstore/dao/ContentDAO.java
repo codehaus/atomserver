@@ -23,7 +23,10 @@ import org.atomserver.core.EntryMetaData;
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
-public interface ContentDAO {
+public interface ContentDAO extends WriteReadContentDAO {
+}
+
+    /*
     void putContent(EntryMetaData entry, String content);
 
     String selectContent(EntryMetaData entry);
@@ -40,3 +43,4 @@ public interface ContentDAO {
 
     void deleteAllRowsFromContent();
 }
+*/

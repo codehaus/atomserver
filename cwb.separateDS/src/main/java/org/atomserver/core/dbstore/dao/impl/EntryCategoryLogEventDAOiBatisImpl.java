@@ -42,6 +42,7 @@ public class EntryCategoryLogEventDAOiBatisImpl
         extends AbstractDAOiBatisImpl
         implements EntryCategoryLogEventDAO {
 
+    
     //======================================
     //           CRUD methods
     //======================================
