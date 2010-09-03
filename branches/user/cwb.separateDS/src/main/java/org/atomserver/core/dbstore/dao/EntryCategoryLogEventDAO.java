@@ -29,6 +29,11 @@ import java.util.List;
  * @author Bryon Jacob (bryon at jacob.net)
  */
 public interface EntryCategoryLogEventDAO
+    extends WriteReadEntryCategoryLogEventDAO {
+
+}
+
+/*
         extends AtomServerDAO {
 
     //======================================
@@ -64,3 +69,4 @@ public interface EntryCategoryLogEventDAO
 
     public void deleteAllRowsFromEntryCategoryLogEvent();
 }
+*/
