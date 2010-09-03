@@ -11,6 +11,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.AtomCategory;
 import org.atomserver.core.AbstractAtomService;
+import org.atomserver.core.dbstore.dao.impl.SetOpCategoryQueryGenerator;
 import org.atomserver.testutils.client.MockRequestContext;
 import org.atomserver.uri.FeedTarget;
 import org.atomserver.uri.URIHandler;

@@ -22,6 +22,7 @@ import org.apache.abdera.protocol.server.ServiceContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.AtomService;
+import org.atomserver.core.dbstore.dao.impl.EntriesDAOiBatisImpl;
 import org.atomserver.uri.URIHandler;
 import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
 import org.springframework.context.support.ClassPathXmlApplicationContext;

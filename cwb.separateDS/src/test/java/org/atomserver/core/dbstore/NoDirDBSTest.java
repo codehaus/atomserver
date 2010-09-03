@@ -23,7 +23,6 @@ import org.apache.abdera.i18n.iri.IRI;
 import org.apache.commons.io.FileUtils;
 import org.atomserver.testutils.client.MockRequestContext;
 import org.atomserver.uri.EntryTarget;
-import org.atomserver.core.dbstore.dao.EntriesDAOiBatisImpl;
 
 import java.io.File;
 import java.util.Locale;

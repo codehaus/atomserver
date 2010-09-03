@@ -1,20 +1,20 @@
 /* Copyright Homeaway, Inc 2005-2007. All Rights Reserved.
  * No unauthorized use of this software.
  */
-package org.atomserver.core.dbstore.dao;
+package org.atomserver.core.dbstore.dao.impl;
 
 import org.atomserver.AtomCategory;
 import org.atomserver.EntryDescriptor;
 import org.atomserver.FeedDescriptor;
 import org.atomserver.ServiceDescriptor;
 import org.atomserver.core.EntryMetaData;
+import org.atomserver.core.dbstore.dao.ReadEntriesDAO;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.utils.logic.BooleanExpression;
 import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
 import org.atomserver.utils.perf.AtomServerStopWatch;
 import org.perf4j.StopWatch;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.jmx.export.annotation.ManagedAttribute;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

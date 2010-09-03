@@ -31,7 +31,7 @@ import org.apache.commons.logging.LogFactory;
 import org.atomserver.*;
 import org.atomserver.core.*;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
-import org.atomserver.core.dbstore.dao.EntriesDAOiBatisImpl;
+import org.atomserver.core.dbstore.dao.impl.EntriesDAOiBatisImpl;
 import org.atomserver.core.dbstore.dao.WriteReadEntriesDAO;
 import org.atomserver.core.etc.AtomServerConstants;
 import org.atomserver.exceptions.AtomServerException;

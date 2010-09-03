@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.atomserver.core.dbstore.dao;
+package org.atomserver.core.dbstore.dao.impl;
 
 import com.ibatis.sqlmap.client.SqlMapClient;
 import org.apache.commons.logging.Log;
@@ -25,6 +25,7 @@ import org.atomserver.FeedDescriptor;
 import org.atomserver.ServiceDescriptor;
 import org.atomserver.core.AggregateEntryMetaData;
 import org.atomserver.core.EntryMetaData;
+import org.atomserver.core.dbstore.dao.*;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.utils.logic.BooleanExpression;
 import org.springframework.beans.factory.InitializingBean;

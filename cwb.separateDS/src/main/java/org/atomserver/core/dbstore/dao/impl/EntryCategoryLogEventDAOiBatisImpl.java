@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.atomserver.core.dbstore.dao;
+package org.atomserver.core.dbstore.dao.impl;
 
 import com.ibatis.sqlmap.client.SqlMapExecutor;
 import org.apache.commons.logging.Log;
@@ -22,6 +22,8 @@ import org.apache.commons.logging.LogFactory;
 import org.atomserver.EntryDescriptor;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryCategoryLogEvent;
+import org.atomserver.core.dbstore.dao.EntryCategoryLogEventDAO;
+import org.atomserver.core.dbstore.dao.impl.AbstractDAOiBatisImpl;
 import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
 import org.atomserver.utils.perf.AtomServerStopWatch;
 import org.perf4j.StopWatch;

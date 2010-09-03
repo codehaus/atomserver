@@ -17,11 +17,11 @@
 
 package org.atomserver.core.dbstore;
 
+import org.atomserver.core.dbstore.dao.impl.EntriesDAOiBatisImpl;
 import org.atomserver.testutils.mt.MultiThreadedTestCase;
 import org.atomserver.testutils.mt.MultiThreadedTestThread;
 import org.atomserver.core.BaseServiceDescriptor;
 import org.atomserver.core.BaseEntryDescriptor;
-import org.atomserver.core.dbstore.dao.EntriesDAOiBatisImpl;
 import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
 import junit.framework.Test;
 import junit.framework.TestSuite;

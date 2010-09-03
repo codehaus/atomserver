@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package org.atomserver.core.dbstore.dao;
+package org.atomserver.core.dbstore.dao.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.atomserver.core.dbstore.dao.AtomServerDAO;
 import org.atomserver.utils.perf.AtomServerStopWatch;
 import org.perf4j.StopWatch;
 import org.springframework.orm.ibatis.support.SqlMapClientDaoSupport;
