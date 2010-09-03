@@ -16,23 +16,22 @@
 
 package org.atomserver.core.dbstore.dao.impl;
 
-import com.ibatis.sqlmap.client.SqlMapClient;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.atomserver.AtomCategory;
 import org.atomserver.EntryDescriptor;
 import org.atomserver.FeedDescriptor;
 import org.atomserver.ServiceDescriptor;
 import org.atomserver.core.AggregateEntryMetaData;
 import org.atomserver.core.EntryMetaData;
-import org.atomserver.core.dbstore.dao.*;
+import org.atomserver.core.dbstore.dao.ContentDAO;
+import org.atomserver.core.dbstore.dao.EntriesDAO;
+import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
+import org.atomserver.core.dbstore.dao.EntryCategoryLogEventDAO;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.utils.logic.BooleanExpression;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
 
-import javax.sql.DataSource;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -44,18 +43,10 @@ import java.util.Locale;
  */
 @ManagedResource(description = "EntriesDAO")
 public class EntriesDAOiBatisImpl
+        extends AbstractDAOiBatisImplDelegator
         implements EntriesDAO, InitializingBean {
 
-    static protected final Log log = LogFactory.getLog(AbstractDAOiBatisImpl.class);
-    static public final String DEFAULT_DB_TYPE = "sqlserver";
-
     static public final int UNDEFINED = -1;
-
-    /**
-     * valid values are "hsql", "mysql" and "sqlserver"
-     */
-    protected String dbType = DEFAULT_DB_TYPE;
-    protected DataSource dataSource;
 
     private WriteReadEntriesDAOiBatisImpl writeEntriesDAO;
     private ReadEntriesDAOiBatisImpl readEntriesDAO;
@@ -66,8 +57,6 @@ public class EntriesDAOiBatisImpl
     private EntryCategoryLogEventDAO entryCategoryLogEventDAO;
 
     private int latencySeconds = UNDEFINED;
-    
-    private SqlMapClient sqlMapClient;
 
     public void afterPropertiesSet() throws Exception {
         if (dataSource != null) {
@@ -84,6 +73,10 @@ public class EntriesDAOiBatisImpl
                 setupDAO(aggregateEntriesDAO);
             }
         }
+    }
+
+    public AbstractDAOiBatisImpl getReadDAO() {
+        return readEntriesDAO;
     }
 
     public WriteReadEntriesDAOiBatisImpl getWriteEntriesDAO() {
@@ -121,14 +114,6 @@ public class EntriesDAOiBatisImpl
         dao.afterPropertiesSet();
     }
 
-    public final void setDataSource(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
-
-    public final DataSource getDataSource() {
-        return dataSource;
-    }
-
     public void setContentDAO(ContentDAO contentDAO) {
         this.contentDAO = contentDAO;
     }
@@ -159,41 +144,10 @@ public class EntriesDAOiBatisImpl
         return latencySeconds;
     }
 
-    public void setSqlMapClient(SqlMapClient sqlMapClient) {
-        this.sqlMapClient = sqlMapClient;
-    }
-
-    public String getDatabaseType() {
-        return dbType;
-    }
-
-    public void setDatabaseType(String dbType) {
-        if (DatabaseType.isValidType(dbType)) {
-            log.info("Database Type = " + dbType);
-            this.dbType = dbType;
-        } else {
-            throw new IllegalArgumentException(dbType + " is not a valid DatabaseType value");
-        }
-    }
-
-    public Date selectSysDate() {
-        return readEntriesDAO.selectSysDate();
-    }
-
-    public void testAvailability() {
-        readEntriesDAO.testAvailability();
-        // TODO - what about the others
-    }
-
-    /*
-    public void setUsingSetOpsFeedPage(boolean usingSetOpsFeedPage) {
-        // TODO - remove
-    }
-    */
-
     //-------------------
     //   WriteReadEntriesDAO
     //-------------------
+
     public void acquireLock() throws AtomServerException {writeEntriesDAO.acquireLock();}
 
     public Object insertEntry(EntryDescriptor entry) {return writeEntriesDAO.insertEntry(entry);}
@@ -241,12 +195,13 @@ public class EntriesDAOiBatisImpl
     //-------------------
     //   ReadEntriesDAO
     //-------------------
-    @ManagedAttribute(description="Set use the workspace, collection cache")
+
+    @ManagedAttribute(description = "Set use the workspace, collection cache")
     public void setUseWorkspaceCollectionCache(boolean useWorkspaceCollectionCache) {
         readEntriesDAO.setUseWorkspaceCollectionCache(useWorkspaceCollectionCache);
     }
 
-    @ManagedAttribute(description="Use the workspace, collection cache")
+    @ManagedAttribute(description = "Use the workspace, collection cache")
     public boolean isUseWorkspaceCollectionCache() {
         return readEntriesDAO.isUseWorkspaceCollectionCache();
     }
@@ -302,7 +257,7 @@ public class EntriesDAOiBatisImpl
     public List<String> listCollections(String workspace) {return readEntriesDAO.listCollections(workspace);}
 
     public void clearWorkspaceCollectionCaches() { readEntriesDAO.clearWorkspaceCollectionCaches(); }
-    
+
     public long selectMaxIndex(Date updatedMax) {return readEntriesDAO.selectMaxIndex(updatedMax);}
 
     //-------------------

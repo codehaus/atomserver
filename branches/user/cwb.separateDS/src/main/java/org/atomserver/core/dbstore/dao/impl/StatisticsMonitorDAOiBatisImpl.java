@@ -17,9 +17,8 @@
 package org.atomserver.core.dbstore.dao.impl;
 
 import org.atomserver.core.dbstore.dao.StatisticsMonitorDAO;
-import org.atomserver.core.dbstore.dao.impl.AbstractDAOiBatisImpl;
-import org.atomserver.monitor.WorkspaceCollectionMaxIndex;
 import org.atomserver.monitor.WorkspaceCollectionDocumentCount;
+import org.atomserver.monitor.WorkspaceCollectionMaxIndex;
 
 import java.util.List;
 

@@ -16,17 +16,16 @@
 
 package org.atomserver.core.dbstore.dao;
 
-import org.atomserver.core.EntryMetaData;
-
 /**
  * The DAO for accessing Content
+ *
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
 public interface ContentDAO extends WriteReadContentDAO {
 }
 
-    /*
+/*
     void putContent(EntryMetaData entry, String content);
 
     String selectContent(EntryMetaData entry);

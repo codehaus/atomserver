@@ -21,7 +21,7 @@ import java.util.List;
  */
 public interface WriteReadEntriesDAO
         extends ReadEntriesDAO {
-    
+
     //======================================
     //          CRUD OPERATIONS
     //======================================

@@ -285,6 +285,7 @@ public class ReadEntriesDAOiBatisImpl
 //======================================
 //     COLLECTION/WORKSPACE QUERIES
 //======================================
+
     public void clearWorkspaceCollectionCaches() {
         workspaces = new CopyOnWriteArraySet<String>();
         lastWorkspacesSelectTime = 0L;
@@ -344,8 +345,8 @@ public class ReadEntriesDAOiBatisImpl
             if (!useWorkspaceCollectionCache || workspacesIsExpired()) {
                 lastWorkspacesSelectTime = System.currentTimeMillis();
                 List<String> dbworkspaces = getSqlMapClientTemplate().queryForList("listWorkspaces");
-                if ( (dbworkspaces != null) && (!workspaces.equals(dbworkspaces)) ) {
-                     workspaces.addAll(dbworkspaces);
+                if ((dbworkspaces != null) && (!workspaces.equals(dbworkspaces))) {
+                    workspaces.addAll(dbworkspaces);
                 }
             }
             return new ArrayList(workspaces);
@@ -356,27 +357,27 @@ public class ReadEntriesDAOiBatisImpl
     }
 
     public List<String> listCollections(String workspace) {
-         StopWatch stopWatch = new AtomServerStopWatch();
-         try {
-             HashSet<String> workspaceCollections = getWorkspaceCollections(workspace);
-             if (!useWorkspaceCollectionCache || collectionsIsExpired()) {
-                 lastCollectionsSelectTime = System.currentTimeMillis();
-                 List<String> dbcollections =  getSqlMapClientTemplate().queryForList( "listCollections",
-                                                                                     paramMap().param("workspace", workspace));
-                 if ( (dbcollections != null) && (!workspaceCollections.equals(dbcollections))) {
-                     workspaceCollections.addAll(dbcollections);
-                 }
-             }
-             return new ArrayList( workspaceCollections );
-         }
-         finally {
-             stopWatch.stop("DB.listCollections", "");
-         }
+        StopWatch stopWatch = new AtomServerStopWatch();
+        try {
+            HashSet<String> workspaceCollections = getWorkspaceCollections(workspace);
+            if (!useWorkspaceCollectionCache || collectionsIsExpired()) {
+                lastCollectionsSelectTime = System.currentTimeMillis();
+                List<String> dbcollections = getSqlMapClientTemplate().queryForList("listCollections",
+                                                                                    paramMap().param("workspace", workspace));
+                if ((dbcollections != null) && (!workspaceCollections.equals(dbcollections))) {
+                    workspaceCollections.addAll(dbcollections);
+                }
+            }
+            return new ArrayList(workspaceCollections);
+        }
+        finally {
+            stopWatch.stop("DB.listCollections", "");
+        }
     }
 
-    private HashSet<String> getWorkspaceCollections( String workspace ) {
+    private HashSet<String> getWorkspaceCollections(String workspace) {
         HashSet<String> workspaceCollections = collections.get(workspace);
-        if ( workspaceCollections == null ) {
+        if (workspaceCollections == null) {
             workspaceCollections = new HashSet<String>();
             collections.put(workspace, workspaceCollections);
         }

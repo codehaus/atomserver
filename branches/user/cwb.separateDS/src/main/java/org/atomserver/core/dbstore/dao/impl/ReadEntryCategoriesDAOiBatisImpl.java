@@ -7,7 +7,6 @@ import org.atomserver.EntryDescriptor;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.dbstore.dao.ReadEntryCategoriesDAO;
-import org.atomserver.core.dbstore.dao.impl.AbstractDAOiBatisImpl;
 import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
 import org.atomserver.utils.perf.AtomServerStopWatch;
 import org.perf4j.StopWatch;

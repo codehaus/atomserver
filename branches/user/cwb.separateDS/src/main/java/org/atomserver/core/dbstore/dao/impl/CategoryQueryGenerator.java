@@ -71,9 +71,9 @@ public class CategoryQueryGenerator {
                 builder.append("\nOR\n");
             }
             builder.append(MessageFormat.format(
-                "(searchCategories.Scheme = ''{0}'' AND searchCategories.Term = ''{1}'')",
-                term.getValue().getScheme(),
-                term.getValue().getTerm()));
+                    "(searchCategories.Scheme = ''{0}'' AND searchCategories.Term = ''{1}'')",
+                    term.getValue().getScheme(),
+                    term.getValue().getTerm()));
         }
         return builder == null ? "" : builder.toString();
     }
@@ -94,9 +94,9 @@ public class CategoryQueryGenerator {
     private String generate(BooleanExpression<AtomCategory> expr) {
         return (expr instanceof BooleanTerm) ?
                generateAtom((BooleanTerm<AtomCategory>) expr)
-               : (expr instanceof Conjunction) ?
-                 generateAnd((Conjunction<AtomCategory>) expr)
-                 : generateOr((Disjunction<AtomCategory>) expr);
+                                             : (expr instanceof Conjunction) ?
+                                               generateAnd((Conjunction<AtomCategory>) expr)
+                                                                             : generateOr((Disjunction<AtomCategory>) expr);
     }
 
     private String generateAnd(Conjunction<AtomCategory> expr) {

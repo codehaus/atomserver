@@ -16,17 +16,12 @@
 
 package org.atomserver.core.dbstore.dao.impl;
 
-import com.ibatis.sqlmap.client.SqlMapClient;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.atomserver.EntryDescriptor;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryCategoryLogEvent;
 import org.atomserver.core.dbstore.dao.EntryCategoryLogEventDAO;
 import org.springframework.beans.factory.InitializingBean;
 
-import javax.sql.DataSource;
-import java.util.Date;
 import java.util.List;
 
 
@@ -35,21 +30,11 @@ import java.util.List;
  * @author Bryon Jacob (bryon at jacob.net)
  */
 public class EntryCategoryLogEventDAOiBatisImpl
+        extends AbstractDAOiBatisImplDelegator
         implements EntryCategoryLogEventDAO, InitializingBean {
-
-    static protected final Log log = LogFactory.getLog(AbstractDAOiBatisImpl.class);
-    static public final String DEFAULT_DB_TYPE = "sqlserver";
-
-    /**
-     * valid values are "hsql", "mysql" and "sqlserver"
-     */
-    protected String dbType = DEFAULT_DB_TYPE;
-    protected DataSource dataSource;
 
     private ReadEntryCategoryLogEventDAOiBatisImpl readDAO;
     private WriteReadEntryCategoryLogEventDAOiBatisImpl writeReadDAO;
-
-    private SqlMapClient sqlMapClient;
 
     public void afterPropertiesSet() throws Exception {
         if (dataSource != null) {
@@ -71,27 +56,6 @@ public class EntryCategoryLogEventDAOiBatisImpl
         dao.afterPropertiesSet();
     }
 
-    public String getDatabaseType() {
-        return dbType;
-    }
-
-    public void setDatabaseType(String dbType) {
-        if (DatabaseType.isValidType(dbType)) {
-            log.info("Database Type = " + dbType);
-            this.dbType = dbType;
-        } else {
-            throw new IllegalArgumentException(dbType + " is not a valid DatabaseType value");
-        }
-    }
-
-    public Date selectSysDate() {
-        return readDAO.selectSysDate();
-    }
-
-    public void testAvailability() {
-        writeReadDAO.testAvailability();
-    }
-
     public ReadEntryCategoryLogEventDAOiBatisImpl getReadEntryCategoryLogEventDAO() {
         return readDAO;
     }
@@ -108,12 +72,8 @@ public class EntryCategoryLogEventDAOiBatisImpl
         this.writeReadDAO = writeReadDAO;
     }
 
-    public SqlMapClient getSqlMapClient() {
-        return sqlMapClient;
-    }
-
-    public void setSqlMapClient(SqlMapClient sqlMapClient) {
-        this.sqlMapClient = sqlMapClient;
+    public AbstractDAOiBatisImpl getReadDAO() {
+        return readDAO;
     }
 
     // ----------------------------
