@@ -16,22 +16,18 @@
 
 package org.atomserver.core.dbstore.dao.impl;
 
-import com.ibatis.sqlmap.client.SqlMapExecutor;
+import com.ibatis.sqlmap.client.SqlMapClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.EntryDescriptor;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryCategoryLogEvent;
 import org.atomserver.core.dbstore.dao.EntryCategoryLogEventDAO;
-import org.atomserver.core.dbstore.dao.impl.AbstractDAOiBatisImpl;
-import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
-import org.atomserver.utils.perf.AtomServerStopWatch;
-import org.perf4j.StopWatch;
-import org.springframework.orm.ibatis.SqlMapClientCallback;
+import org.springframework.beans.factory.InitializingBean;
 
-import java.sql.SQLException;
+import javax.sql.DataSource;
+import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -39,16 +35,143 @@ import java.util.Map;
  * @author Bryon Jacob (bryon at jacob.net)
  */
 public class EntryCategoryLogEventDAOiBatisImpl
-        extends AbstractDAOiBatisImpl
-        implements EntryCategoryLogEventDAO {
+        implements EntryCategoryLogEventDAO, InitializingBean {
 
-    
+    static protected final Log log = LogFactory.getLog(AbstractDAOiBatisImpl.class);
+    static public final String DEFAULT_DB_TYPE = "sqlserver";
+
+    /**
+     * valid values are "hsql", "mysql" and "sqlserver"
+     */
+    protected String dbType = DEFAULT_DB_TYPE;
+    protected DataSource dataSource;
+
+    private ReadEntryCategoryLogEventDAOiBatisImpl readDAO;
+    private WriteReadEntryCategoryLogEventDAOiBatisImpl writeReadDAO;
+
+    private SqlMapClient sqlMapClient;
+
+    public void afterPropertiesSet() throws Exception {
+        if (dataSource != null) {
+            if (writeReadDAO == null) {
+                writeReadDAO = new WriteReadEntryCategoryLogEventDAOiBatisImpl();
+                setupDAO(writeReadDAO);
+            }
+            if (readDAO == null) {
+                readDAO = new ReadEntryCategoryLogEventDAOiBatisImpl();
+                setupDAO(readDAO);
+            }
+        }
+    }
+
+    private void setupDAO(ReadEntryCategoryLogEventDAOiBatisImpl dao) {
+        dao.setSqlMapClient(sqlMapClient);
+        dao.setDatabaseType(dbType);
+        dao.setDataSource(dataSource);
+        dao.afterPropertiesSet();
+    }
+
+    public String getDatabaseType() {
+        return dbType;
+    }
+
+    public void setDatabaseType(String dbType) {
+        if (DatabaseType.isValidType(dbType)) {
+            log.info("Database Type = " + dbType);
+            this.dbType = dbType;
+        } else {
+            throw new IllegalArgumentException(dbType + " is not a valid DatabaseType value");
+        }
+    }
+
+    public Date selectSysDate() {
+        return readDAO.selectSysDate();
+    }
+
+    public void testAvailability() {
+        writeReadDAO.testAvailability();
+    }
+
+    public ReadEntryCategoryLogEventDAOiBatisImpl getReadEntryCategoryLogEventDAO() {
+        return readDAO;
+    }
+
+    public void setReadEntryCategoryLogEventDAO(ReadEntryCategoryLogEventDAOiBatisImpl readDAO) {
+        this.readDAO = readDAO;
+    }
+
+    public WriteReadEntryCategoryLogEventDAOiBatisImpl getWriteReadEntryCategoryLogEventDAO() {
+        return writeReadDAO;
+    }
+
+    public void setWriteReadEntryCategoryLogEventDAO(WriteReadEntryCategoryLogEventDAOiBatisImpl writeReadDAO) {
+        this.writeReadDAO = writeReadDAO;
+    }
+
+    public SqlMapClient getSqlMapClient() {
+        return sqlMapClient;
+    }
+
+    public void setSqlMapClient(SqlMapClient sqlMapClient) {
+        this.sqlMapClient = sqlMapClient;
+    }
+
+    // ----------------------------
+    //  ReadEntryCategoryLogEventDAO
+    // ----------------------------    
+
+    public List<EntryCategoryLogEvent> selectEntryCategoryLogEventBySchemeAndTerm(EntryCategory entryQuery) {
+        return readDAO.selectEntryCategoryLogEventBySchemeAndTerm(entryQuery);
+    }
+
+    public List<EntryCategoryLogEvent> selectEntryCategoryLogEventByScheme(EntryCategory entryQuery) {
+        return readDAO.selectEntryCategoryLogEventByScheme(entryQuery);
+    }
+
+    public List<EntryCategoryLogEvent> selectEntryCategoryLogEvent(EntryCategory entryQuery) {
+        return readDAO.selectEntryCategoryLogEvent(entryQuery);
+    }
+
+    public int getTotalCount(String workspace) {return readDAO.getTotalCount(workspace);}
+
+    public int getTotalCount(String workspace, String collection) {return readDAO.getTotalCount(workspace, collection);}
+
+
+    // ----------------------------
+    //  WriteReadEntryCategoryLogEventDAO
+    // ----------------------------    
+
+    public int insertEntryCategoryLogEvent(EntryCategory entry) {
+        return writeReadDAO.insertEntryCategoryLogEvent(entry);
+    }
+
+    public void deleteEntryCategoryLogEventBySchemeAndTerm(EntryCategory entryQuery) {
+        writeReadDAO.deleteEntryCategoryLogEventBySchemeAndTerm(entryQuery);
+    }
+
+    public void deleteEntryCategoryLogEvent(EntryDescriptor entryQuery) {
+        writeReadDAO.deleteEntryCategoryLogEvent(entryQuery);
+    }
+
+    public void insertEntryCategoryLogEventBatch(List<EntryCategory> entryCategoryList) {
+        writeReadDAO.insertEntryCategoryLogEventBatch(entryCategoryList);
+    }
+
+    public void deleteAllEntryCategoryLogEvents(String workspace) {
+        writeReadDAO.deleteAllEntryCategoryLogEvents(workspace);
+    }
+
+    public void deleteAllEntryCategoryLogEvents(String workspace, String collection) {
+        writeReadDAO.deleteAllEntryCategoryLogEvents(workspace, collection);
+    }
+
+    public void deleteAllRowsFromEntryCategoryLogEvent() {writeReadDAO.deleteAllRowsFromEntryCategoryLogEvent();}
+}
+
+/*    
     //======================================
     //           CRUD methods
     //======================================
-    /**
-     * Insert a single EntryCategoryLogEvent
-     */
     public int insertEntryCategoryLogEvent(EntryCategory entry) {
         StopWatch stopWatch = new AtomServerStopWatch();
         if (log.isDebugEnabled()) {
@@ -67,11 +190,7 @@ public class EntryCategoryLogEventDAOiBatisImpl
         return numRowsAffected;
     }
 
-    /**
-     * Select ALL EntryCategoryLogEvents for a given EntryCategory.
-     * I.e. Return EntryCategoryLogEvents that match both Entry and Scheme/Term.
-     */
-    public List<EntryCategoryLogEvent> selectEntryCategoryLogEventBySchemeAndTerm(EntryCategory entryQuery) {
+   public List<EntryCategoryLogEvent> selectEntryCategoryLogEventBySchemeAndTerm(EntryCategory entryQuery) {
         StopWatch stopWatch = new AtomServerStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntryCategoryLogEventDAOiBatisImpl SELECT ==> " + entryQuery);
@@ -86,11 +205,7 @@ public class EntryCategoryLogEventDAOiBatisImpl
         }
     }
 
-    /**
-     * Select ALL EntryCategoryLogEvents for a given EntryCategory.
-     * I.e. Return EntryCategoryLogEvents that match both Entry and Scheme/Term.
-     */
-    public List<EntryCategoryLogEvent> selectEntryCategoryLogEventByScheme(EntryCategory entryQuery) {
+   public List<EntryCategoryLogEvent> selectEntryCategoryLogEventByScheme(EntryCategory entryQuery) {
         StopWatch stopWatch = new AtomServerStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntryCategoryLogEventDAOiBatisImpl SELECT ==> " + entryQuery);
@@ -105,10 +220,7 @@ public class EntryCategoryLogEventDAOiBatisImpl
         }
     }
 
-    /**
-     * Select ALL EntryCategoryLogEvents for a given Entry
-     */
-    public List<EntryCategoryLogEvent> selectEntryCategoryLogEvent(EntryCategory entryQuery) {
+   public List<EntryCategoryLogEvent> selectEntryCategoryLogEvent(EntryCategory entryQuery) {
         StopWatch stopWatch = new AtomServerStopWatch();
         if (log.isDebugEnabled()) {
             log.debug("EntryCategoryLogEventDAOiBatisImpl SELECT ==> " + entryQuery);
@@ -123,11 +235,6 @@ public class EntryCategoryLogEventDAOiBatisImpl
         }
     }
 
-    /**
-     * NOTE: This method is really only here for Unit Testing
-     * Delete ALL EntryCategoryLogEvents for a given EntryCategory.
-     * If an Entry has, say two LogEvents for (urn:foo)bar, both will be deleted
-     */
     public void deleteEntryCategoryLogEventBySchemeAndTerm(EntryCategory entryQuery) {
         StopWatch stopWatch = new AtomServerStopWatch();
         if (log.isDebugEnabled()) {
@@ -142,11 +249,6 @@ public class EntryCategoryLogEventDAOiBatisImpl
         }
     }
 
-    /**
-     * NOTE: This method is really only here for Unit Testing
-     * Delete ALL EntryCategoryLogEvents for a given EntryCategory.
-     * If an Entry has, say two LogEvents for (urn:foo)bar, both will be deleted
-     */
     public void deleteEntryCategoryLogEvent(EntryDescriptor entryQuery) {
         StopWatch stopWatch = new AtomServerStopWatch();
         if (log.isDebugEnabled()) {
@@ -230,3 +332,4 @@ public class EntryCategoryLogEventDAOiBatisImpl
     }
 
 }
+*/
