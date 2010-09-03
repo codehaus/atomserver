@@ -19,7 +19,7 @@ package org.atomserver.core.autotaggers;
 
 import org.atomserver.CategoriesHandler;
 import org.atomserver.EntryAutoTagger;
-import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
+import org.atomserver.core.dbstore.dao.CategoriesDAO;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -48,8 +48,8 @@ public abstract class BaseAutoTagger implements EntryAutoTagger {
     /**
      * @deprecated
      */
-    public void setEntryCategoriesDAO(EntryCategoriesDAO entryCategoriesDAO) {
-        log.error("setEntryCategoriesDAO is DEPRECATED and does nothing. You MUST use setCategoriesHandler");
+    public void setEntryCategoriesDAO(CategoriesDAO categoriesDAO) {
+        log.error("setCategoriesDAO is DEPRECATED and does nothing. You MUST use setCategoriesHandler");
     }
     //<<<<<<<<<<<<<<<<<<<
 }

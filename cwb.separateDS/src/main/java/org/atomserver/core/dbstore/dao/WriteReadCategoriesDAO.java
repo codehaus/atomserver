@@ -12,8 +12,8 @@ import java.util.List;
 /**
  *
  */
-public interface WriteReadEntryCategoriesDAO
-        extends ReadEntryCategoriesDAO {
+public interface WriteReadCategoriesDAO
+        extends ReadCategoriesDAO {
 
     //======================================
     //          CRUD OPERATIONS

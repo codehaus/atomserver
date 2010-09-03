@@ -24,8 +24,8 @@ import org.atomserver.core.AggregateEntryMetaData;
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.dbstore.dao.ContentDAO;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
-import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
-import org.atomserver.core.dbstore.dao.EntryCategoryLogEventDAO;
+import org.atomserver.core.dbstore.dao.CategoriesDAO;
+import org.atomserver.core.dbstore.dao.CategoryLogEventsDAO;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.utils.logic.BooleanExpression;
 import org.springframework.beans.factory.InitializingBean;
@@ -53,8 +53,8 @@ public class EntriesDAOiBatisImpl
     private AggregateEntriesDAOiBatisImpl aggregateEntriesDAO;
 
     private ContentDAO contentDAO;
-    private EntryCategoriesDAO entryCategoriesDAO;
-    private EntryCategoryLogEventDAO entryCategoryLogEventDAO;
+    private CategoriesDAO categoriesDAO;
+    private CategoryLogEventsDAO categoryLogEventsDAO;
 
     private int latencySeconds = UNDEFINED;
 
@@ -75,38 +75,24 @@ public class EntriesDAOiBatisImpl
         }
     }
 
-    public AbstractDAOiBatisImpl getReadDAO() {
-        return readEntriesDAO;
-    }
+    public AbstractDAOiBatisImpl getReadDAO() { return readEntriesDAO; }
 
-    public WriteReadEntriesDAOiBatisImpl getWriteEntriesDAO() {
-        return writeEntriesDAO;
-    }
+    public WriteReadEntriesDAOiBatisImpl getWriteEntriesDAO() { return writeEntriesDAO; }
 
-    public void setWriteEntriesDAO(WriteReadEntriesDAOiBatisImpl writeEntriesDAO) {
-        this.writeEntriesDAO = writeEntriesDAO;
-    }
+    public void setWriteEntriesDAO(WriteReadEntriesDAOiBatisImpl writeEntriesDAO) { this.writeEntriesDAO = writeEntriesDAO; }
 
-    public ReadEntriesDAOiBatisImpl getReadEntriesDAO() {
-        return readEntriesDAO;
-    }
+    public ReadEntriesDAOiBatisImpl getReadEntriesDAO() { return readEntriesDAO; }
 
-    public void setReadEntriesDAO(ReadEntriesDAOiBatisImpl readEntriesDAO) {
-        this.readEntriesDAO = readEntriesDAO;
-    }
+    public void setReadEntriesDAO(ReadEntriesDAOiBatisImpl readEntriesDAO) { this.readEntriesDAO = readEntriesDAO; }
 
-    public AggregateEntriesDAOiBatisImpl getAggregateEntriesDAO() {
-        return aggregateEntriesDAO;
-    }
+    public AggregateEntriesDAOiBatisImpl getAggregateEntriesDAO() { return aggregateEntriesDAO; }
 
-    public void setAggregateEntriesDAO(AggregateEntriesDAOiBatisImpl aggregateEntriesDAO) {
-        this.aggregateEntriesDAO = aggregateEntriesDAO;
-    }
+    public void setAggregateEntriesDAO(AggregateEntriesDAOiBatisImpl aggregateEntriesDAO) { this.aggregateEntriesDAO = aggregateEntriesDAO; }
 
     private void setupDAO(BaseEntriesDAOiBatisImpl dao) {
         dao.setContentDAO(contentDAO);
-        dao.setEntryCategoriesDAO(entryCategoriesDAO);
-        dao.setEntryCategoryLogEventDAO(entryCategoryLogEventDAO);
+        dao.setCategoriesDAO(categoriesDAO);
+        dao.setCategoryLogEventsDAO(categoryLogEventsDAO);
         dao.setLatencySeconds(latencySeconds);
         dao.setSqlMapClient(sqlMapClient);
         dao.setDatabaseType(dbType);
@@ -114,17 +100,11 @@ public class EntriesDAOiBatisImpl
         dao.afterPropertiesSet();
     }
 
-    public void setContentDAO(ContentDAO contentDAO) {
-        this.contentDAO = contentDAO;
-    }
+    public void setContentDAO(ContentDAO contentDAO) { this.contentDAO = contentDAO; }
 
-    public void setEntryCategoriesDAO(EntryCategoriesDAO entryCategoriesDAO) {
-        this.entryCategoriesDAO = entryCategoriesDAO;
-    }
+    public void setEntryCategoriesDAO(CategoriesDAO categoriesDAO) { this.categoriesDAO = categoriesDAO; }
 
-    public void setEntryCategoryLogEventDAO(EntryCategoryLogEventDAO entryCategoryLogEventDAO) {
-        this.entryCategoryLogEventDAO = entryCategoryLogEventDAO;
-    }
+    public void setEntryCategoryLogEventDAO(CategoryLogEventsDAO categoryLogEventsDAO) { this.categoryLogEventsDAO = categoryLogEventsDAO; }
 
     public void setLatencySeconds(int latencySeconds) {
         this.latencySeconds = latencySeconds;
@@ -140,9 +120,7 @@ public class EntriesDAOiBatisImpl
         }
     }
 
-    public int getLatencySeconds() {
-        return latencySeconds;
-    }
+    public int getLatencySeconds() { return latencySeconds; }
 
     //-------------------
     //   WriteReadEntriesDAO

@@ -22,10 +22,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.ContentStorage;
 import org.atomserver.FeedDescriptor;
+import org.atomserver.core.dbstore.dao.CategoriesDAO;
+import org.atomserver.core.dbstore.dao.CategoryLogEventsDAO;
 import org.atomserver.core.dbstore.dao.ContentDAO;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
-import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
-import org.atomserver.core.dbstore.dao.EntryCategoryLogEventDAO;
 import org.atomserver.core.filestore.FileBasedContentStorage;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -45,8 +45,8 @@ public class DBPurger extends DBTool {
     static private ClassPathXmlApplicationContext springFactory = null;
 
     private EntriesDAO entriesDAO;
-    private EntryCategoryLogEventDAO entryCategoryLogEventDAO;
-    private EntryCategoriesDAO entryCategoriesDAO;
+    private CategoryLogEventsDAO categoryLogEventsDAO;
+    private CategoriesDAO categoriesDAO;
     private ContentStorage contentStorage;
     private ContentDAO contentDAO;
 
@@ -97,8 +97,8 @@ public class DBPurger extends DBTool {
     public void setEntriesDAO( EntriesDAO entriesDAO ) {
         this.entriesDAO = entriesDAO;
     }
-    public void setEntryCategoriesDAO( EntryCategoriesDAO entryCategoriesDAO) {
-        this.entryCategoriesDAO = entryCategoriesDAO;
+    public void setEntryCategoriesDAO( CategoriesDAO categoriesDAO) {
+        this.categoriesDAO = categoriesDAO;
     }
 
     public void setContentStorage(ContentStorage contentStorage) {
@@ -110,8 +110,8 @@ public class DBPurger extends DBTool {
         this.contentDAO = contentDAO;
     }
 
-    public void setEntryCategoryLogEventDAO(EntryCategoryLogEventDAO entryCategoryLogEventDAO) {
-        this.entryCategoryLogEventDAO = entryCategoryLogEventDAO;
+    public void setEntryCategoryLogEventDAO(CategoryLogEventsDAO categoryLogEventsDAO) {
+        this.categoryLogEventsDAO = categoryLogEventsDAO;
     }
 
 
@@ -137,12 +137,12 @@ public class DBPurger extends DBTool {
         log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.info("==========> DELETING ROWS for ( " + workspace + ", " + collection + ") in EntryCategoryLogEvent !!!!!!!!!!!!!");
         log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-        entryCategoryLogEventDAO.deleteAllEntryCategoryLogEvents(workspace, collection);
+        categoryLogEventsDAO.deleteAllEntryCategoryLogEvents(workspace, collection);
 
         log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.info("==========> DELETING ROWS for ( " + workspace + ", " + collection + ") in EntryCategory !!!!!!!!!!!!!");
         log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-        entryCategoriesDAO.deleteAllEntryCategories( workspace, collection );
+        categoriesDAO.deleteAllEntryCategories( workspace, collection );
 
         log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.info("==========> DELETING ROWS ( " + workspace + ", " + collection + ") in EntryStore  !!!!!!!!!!!!!");

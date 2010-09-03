@@ -62,7 +62,7 @@ public class CategoryOperationTest extends CRUDDBSTestCase {
 
     public void setUp() throws Exception {
         super.setUp();
-        entryCategoriesDAO.deleteAllRowsFromEntryCategories();
+        categoriesDAO.deleteAllRowsFromEntryCategories();
     }
 
     public void tearDown() throws Exception { super.tearDown(); }

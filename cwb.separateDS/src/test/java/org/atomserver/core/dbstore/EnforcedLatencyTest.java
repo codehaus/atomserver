@@ -34,7 +34,7 @@ public class EnforcedLatencyTest extends DBSTestCase {
         super.setUp();
         ((EntriesDAOiBatisImpl) entriesDao).setLatencySeconds(LATENCY_SECONDS);
 
-        entryCategoriesDAO.deleteAllRowsFromEntryCategories();
+        categoriesDAO.deleteAllRowsFromEntryCategories();
         entriesDao.deleteAllRowsFromEntries();
 
         DBBasedAtomService service =

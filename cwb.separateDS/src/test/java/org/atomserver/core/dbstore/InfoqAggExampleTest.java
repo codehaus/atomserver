@@ -36,8 +36,8 @@ public class InfoqAggExampleTest  extends DBSTestCase {
         TestConfUtil.preSetup("infoq");
         super.setUp();
 
-        entryCategoriesDAO.deleteAllEntryCategories("employees");
-        entryCategoriesDAO.deleteAllEntryCategories("meetings");
+        categoriesDAO.deleteAllEntryCategories("employees");
+        categoriesDAO.deleteAllEntryCategories("meetings");
 
         entriesDao.deleteAllEntries(new BaseServiceDescriptor("employees"));
         entriesDao.deleteAllEntries(new BaseServiceDescriptor("meetings"));

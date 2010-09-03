@@ -11,8 +11,8 @@ import java.util.List;
 /**
  *
  */
-public interface WriteReadEntryCategoryLogEventDAO
-        extends ReadEntryCategoryLogEventDAO {
+public interface WriteReadCategoryLogEventsDAO
+        extends ReadCategoryLogEventsDAO {
 
     int insertEntryCategoryLogEvent(EntryCategory entry);
 

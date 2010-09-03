@@ -29,7 +29,7 @@ import org.atomserver.core.CRUDAtomServerTestCase;
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
-import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
+import org.atomserver.core.dbstore.dao.CategoriesDAO;
 import org.atomserver.testutils.client.MockRequestContext;
 import org.atomserver.uri.EntryTarget;
 import org.atomserver.utils.ShardedPathGenerator;
@@ -112,8 +112,8 @@ public class AutoTaggingDBSTest extends CRUDAtomServerTestCase {
             // Now insert an Category with an empty term in the DB
             //  Note: we cannot get one in any other way
             EntriesDAO entriesDAO = (EntriesDAO)getSpringFactory().getBean("org.atomserver-entriesDAO");
-            EntryCategoriesDAO entryCategoriesDAO =
-                    (EntryCategoriesDAO)getSpringFactory().getBean("org.atomserver-entryCategoriesDAO");
+            CategoriesDAO categoriesDAO =
+                    (CategoriesDAO)getSpringFactory().getBean("org.atomserver-entryCategoriesDAO");
 
             EntryDescriptor descriptor  = new BaseEntryDescriptor("dummy", "acme", "23450", null, 0);
             EntryMetaData metaData = entriesDAO.selectEntry(descriptor);
@@ -123,7 +123,7 @@ public class AutoTaggingDBSTest extends CRUDAtomServerTestCase {
             entryIn.setScheme( "urn:foo.colors" );
             entryIn.setTerm( "" );
 
-            int numRows = entryCategoriesDAO.insertEntryCategory(entryIn);
+            int numRows = categoriesDAO.insertEntryCategory(entryIn);
             assertTrue(numRows > 0);
 
             // Now publish again. This will auto-tag again, and prove that we can delete when empty terms are present

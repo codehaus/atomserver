@@ -9,7 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.atomserver.EntryDescriptor;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryMetaData;
-import org.atomserver.core.dbstore.dao.WriteReadEntryCategoriesDAO;
+import org.atomserver.core.dbstore.dao.WriteReadCategoriesDAO;
 import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
 import org.atomserver.utils.perf.AtomServerStopWatch;
 import org.perf4j.StopWatch;
@@ -21,9 +21,9 @@ import java.util.List;
 /**
  *
  */
-public class WriteReadEntryCategoriesDAOiBatisImpl
-        extends ReadEntryCategoriesDAOiBatisImpl
-        implements WriteReadEntryCategoriesDAO {
+public class WriteReadCategoriesDAOiBatisImpl
+        extends ReadCategoriesDAOiBatisImpl
+        implements WriteReadCategoriesDAO {
 
     static class EntryCategoryBatcher implements SqlMapClientCallback {
         static final Log log = LogFactory.getLog(EntryCategoryBatcher.class);

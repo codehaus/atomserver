@@ -11,7 +11,7 @@ import java.util.List;
 /**
  *
  */
-public interface ReadEntryCategoryLogEventDAO
+public interface ReadCategoryLogEventsDAO
         extends AtomServerDAO {
 
     List<EntryCategoryLogEvent> selectEntryCategoryLogEvent(EntryCategory entryQuery);

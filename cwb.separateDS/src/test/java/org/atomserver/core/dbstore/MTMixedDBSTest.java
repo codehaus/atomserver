@@ -65,7 +65,7 @@ public class MTMixedDBSTest extends FeedDBSTestCase {
     protected void validateStartCount() throws Exception {
         contentDAO.deleteAllRowsFromContent();
         Thread.sleep(5000);
-        entryCategoriesDAO.deleteAllRowsFromEntryCategories();
+        categoriesDAO.deleteAllRowsFromEntryCategories();
         Thread.sleep(5000);
         entriesDao.deleteAllRowsFromEntries();
         startCount = NUM_RECS;
