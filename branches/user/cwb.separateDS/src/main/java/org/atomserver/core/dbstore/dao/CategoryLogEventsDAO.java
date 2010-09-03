@@ -22,8 +22,8 @@ package org.atomserver.core.dbstore.dao;
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
-public interface EntryCategoryLogEventDAO
-        extends WriteReadEntryCategoryLogEventDAO {
+public interface CategoryLogEventsDAO
+        extends WriteReadCategoryLogEventsDAO {
 
 }
 

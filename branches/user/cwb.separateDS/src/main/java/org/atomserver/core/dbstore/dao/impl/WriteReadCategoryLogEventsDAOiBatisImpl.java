@@ -8,7 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.EntryDescriptor;
 import org.atomserver.core.EntryCategory;
-import org.atomserver.core.dbstore.dao.WriteReadEntryCategoryLogEventDAO;
+import org.atomserver.core.dbstore.dao.WriteReadCategoryLogEventsDAO;
 import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
 import org.atomserver.utils.perf.AtomServerStopWatch;
 import org.perf4j.StopWatch;
@@ -21,9 +21,9 @@ import java.util.Map;
 /**
  *
  */
-public class WriteReadEntryCategoryLogEventDAOiBatisImpl
-        extends ReadEntryCategoryLogEventDAOiBatisImpl
-        implements WriteReadEntryCategoryLogEventDAO {
+public class WriteReadCategoryLogEventsDAOiBatisImpl
+        extends ReadCategoryLogEventsDAOiBatisImpl
+        implements WriteReadCategoryLogEventsDAO {
 
     //======================================
     //           CRUD methods

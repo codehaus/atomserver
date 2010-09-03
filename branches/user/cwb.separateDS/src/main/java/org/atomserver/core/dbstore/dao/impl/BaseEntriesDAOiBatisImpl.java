@@ -5,8 +5,8 @@ package org.atomserver.core.dbstore.dao.impl;
 
 import org.atomserver.FeedDescriptor;
 import org.atomserver.core.dbstore.dao.ContentDAO;
-import org.atomserver.core.dbstore.dao.WriteReadEntryCategoriesDAO;
-import org.atomserver.core.dbstore.dao.WriteReadEntryCategoryLogEventDAO;
+import org.atomserver.core.dbstore.dao.WriteReadCategoriesDAO;
+import org.atomserver.core.dbstore.dao.WriteReadCategoryLogEventsDAO;
 import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
 import org.atomserver.utils.locale.LocaleUtils;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
@@ -24,39 +24,28 @@ public class BaseEntriesDAOiBatisImpl
     public static final Date ZERO_DATE = new Date(0L);
 
     private ContentDAO contentDAO;
-    private WriteReadEntryCategoriesDAO entryCategoriesDAO;
-    private WriteReadEntryCategoryLogEventDAO entryCategoryLogEventDAO;
+    private WriteReadCategoriesDAO entryCategoriesDAO;
+    private WriteReadCategoryLogEventsDAO entryCategoryLogEventsDAO;
     private int latencySeconds = UNDEFINED;
 
+    public void setContentDAO(ContentDAO contentDAO) { this.contentDAO = contentDAO; }
 
-    public void setContentDAO(ContentDAO contentDAO) {
-        this.contentDAO = contentDAO;
-    }
+    public ContentDAO getContentDAO() { return contentDAO; }
 
-    public void setEntryCategoriesDAO(WriteReadEntryCategoriesDAO entryCategoriesDAO) {
+    public void setCategoriesDAO(WriteReadCategoriesDAO entryCategoriesDAO) {
         this.entryCategoriesDAO = entryCategoriesDAO;
     }
 
-    public void setEntryCategoryLogEventDAO(WriteReadEntryCategoryLogEventDAO entryCategoryLogEventDAO) {
-        this.entryCategoryLogEventDAO = entryCategoryLogEventDAO;
+    public WriteReadCategoriesDAO getCategoriesDAO() { return entryCategoriesDAO; }
+
+    public void setCategoryLogEventsDAO(WriteReadCategoryLogEventsDAO entryCategoryLogEventsDAO) {
+        this.entryCategoryLogEventsDAO = entryCategoryLogEventsDAO;
     }
 
-    public ContentDAO getContentDAO() {
-        return contentDAO;
-    }
-
-    public WriteReadEntryCategoriesDAO getEntryCategoriesDAO() {
-        return entryCategoriesDAO;
-    }
-
-    public WriteReadEntryCategoryLogEventDAO getEntryCategoryLogEventDAO() {
-        return entryCategoryLogEventDAO;
-    }
+    public WriteReadCategoryLogEventsDAO getCategoryLogEventDAO() { return entryCategoryLogEventsDAO; }
 
     @ManagedAttribute
-    public int getLatencySeconds() {
-        return latencySeconds;
-    }
+    public int getLatencySeconds() { return latencySeconds; }
 
     @ManagedAttribute
     public void setLatencySeconds(int latencySeconds) {

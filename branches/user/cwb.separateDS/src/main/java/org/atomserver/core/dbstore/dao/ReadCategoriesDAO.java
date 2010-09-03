@@ -13,7 +13,7 @@ import java.util.Set;
 /**
  *
  */
-public interface ReadEntryCategoriesDAO
+public interface ReadCategoriesDAO
         extends AtomServerDAO {
 
     EntryCategory selectEntryCategory(EntryCategory entryQuery);

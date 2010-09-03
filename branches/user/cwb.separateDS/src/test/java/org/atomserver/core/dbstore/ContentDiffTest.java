@@ -1,16 +1,9 @@
 package org.atomserver.core.dbstore;
 
-import org.apache.abdera.model.Base;
-import org.apache.abdera.model.Entry;
-import org.apache.abdera.model.Feed;
 import org.atomserver.core.BaseServiceDescriptor;
 import org.atomserver.core.EntryMetaData;
-import org.atomserver.core.etc.AtomServerConstants;
 import org.atomserver.testutils.conf.TestConfUtil;
-import org.atomserver.utils.AtomDate;
 
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.*;
 
 public class ContentDiffTest extends DBSTestCase {
@@ -19,9 +12,9 @@ public class ContentDiffTest extends DBSTestCase {
         TestConfUtil.preSetup("aggregates");
         super.setUp();
 
-        entryCategoriesDAO.deleteAllEntryCategories("lalas");
-        entryCategoriesDAO.deleteAllEntryCategories("cuckoos");
-        entryCategoriesDAO.deleteAllEntryCategories("aloos");
+        categoriesDAO.deleteAllEntryCategories("lalas");
+        categoriesDAO.deleteAllEntryCategories("cuckoos");
+        categoriesDAO.deleteAllEntryCategories("aloos");
 
         entriesDao.deleteAllEntries(new BaseServiceDescriptor("lalas"));
         entriesDao.deleteAllEntries(new BaseServiceDescriptor("cuckoos"));

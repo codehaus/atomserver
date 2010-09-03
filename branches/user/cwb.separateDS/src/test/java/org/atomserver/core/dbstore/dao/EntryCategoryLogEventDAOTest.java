@@ -37,7 +37,7 @@ public class EntryCategoryLogEventDAOTest
     // -------------------------------------------------------
     protected void setUp() throws Exception {
         super.setUp();
-        entryCategoryLogEventDAO.deleteAllRowsFromEntryCategoryLogEvent();
+        categoryLogEventsDAO.deleteAllRowsFromEntryCategoryLogEvent();
     }
 
     // -------------------------------------------------------
@@ -49,7 +49,7 @@ public class EntryCategoryLogEventDAOTest
 
     public void testCRUD() throws Exception {
         // COUNT
-        int startCount = entryCategoryLogEventDAO.getTotalCount(workspace);
+        int startCount = categoryLogEventsDAO.getTotalCount(workspace);
         log.debug("startCount = " + startCount);
 
         //String workspace = "widgets";
@@ -71,18 +71,18 @@ public class EntryCategoryLogEventDAOTest
         entryIn.setScheme( scheme );
         entryIn.setTerm( term );
 
-        int numRows = entryCategoriesDAO.insertEntryCategory(entryIn);
+        int numRows = categoriesDAO.insertEntryCategory(entryIn);
         assertTrue(numRows > 0);
 
-        EntryCategory entryOut = entryCategoriesDAO.selectEntryCategory(entryIn);
+        EntryCategory entryOut = categoriesDAO.selectEntryCategory(entryIn);
         log.debug("====> entryOut = " + entryOut);
         assertNotNull(entryOut);
 
         // INSERT the EntryCategoryLogEvent
-        numRows = entryCategoryLogEventDAO.insertEntryCategoryLogEvent(entryIn);
+        numRows = categoryLogEventsDAO.insertEntryCategoryLogEvent(entryIn);
         assertTrue(numRows > 0);
 
-        int count = entryCategoryLogEventDAO.getTotalCount(workspace);
+        int count = categoryLogEventsDAO.getTotalCount(workspace);
         assertEquals((startCount + 1), count);
 
         // SELECT
@@ -95,20 +95,20 @@ public class EntryCategoryLogEventDAOTest
 
         // SELECT again
         List<EntryCategoryLogEvent> logEvents2 =
-                entryCategoryLogEventDAO.selectEntryCategoryLogEventBySchemeAndTerm(entryIn);
+                categoryLogEventsDAO.selectEntryCategoryLogEventBySchemeAndTerm(entryIn);
         log.debug("====> logEvents2 = " + logEvents2);
         assertTrue(logEvents2.size() == 0);
 
         // COUNT
         Thread.sleep( DB_CATCHUP_SLEEP); // give the DB a chance to catch up
-        int finalCount = entryCategoryLogEventDAO.getTotalCount(workspace);
+        int finalCount = categoryLogEventsDAO.getTotalCount(workspace);
         log.debug("finalCount = " + finalCount);
         assertEquals(startCount, finalCount);
     }
 
     public void testSelect() throws Exception {
         // COUNT
-        int startCount = entryCategoryLogEventDAO.getTotalCount(workspace);
+        int startCount = categoryLogEventsDAO.getTotalCount(workspace);
         log.debug("startCount = " + startCount);
 
         String sysId = "acme";
@@ -131,11 +131,11 @@ public class EntryCategoryLogEventDAOTest
             entryIn[ii].setScheme( scheme );
             entryIn[ii].setTerm( terms[ii]);
 
-            entryCategoriesDAO.deleteEntryCategory(entryIn[ii]);
-            int numRows = entryCategoriesDAO.insertEntryCategory(entryIn[ii]);
+            categoriesDAO.deleteEntryCategory(entryIn[ii]);
+            int numRows = categoriesDAO.insertEntryCategory(entryIn[ii]);
             assertTrue(numRows > 0);
 
-            numRows = entryCategoryLogEventDAO.insertEntryCategoryLogEvent(entryIn[ii]);
+            numRows = categoryLogEventsDAO.insertEntryCategoryLogEvent(entryIn[ii]);
             assertTrue(numRows > 0);
         }
 
@@ -154,14 +154,14 @@ public class EntryCategoryLogEventDAOTest
 
         // COUNT
         Thread.sleep( DB_CATCHUP_SLEEP); // give the DB a chance to catch up
-        int finalCount = entryCategoryLogEventDAO.getTotalCount(workspace);
+        int finalCount = categoryLogEventsDAO.getTotalCount(workspace);
         log.debug("finalCount = " + finalCount);
         assertEquals(startCount, finalCount);
     }
 
     public void testBatch() throws Exception {
         // COUNT
-        int startCount = entryCategoryLogEventDAO.getTotalCount(workspace);
+        int startCount = categoryLogEventsDAO.getTotalCount(workspace);
         log.debug("startCount = " + startCount);
 
         String sysId = "acme";
@@ -186,12 +186,12 @@ public class EntryCategoryLogEventDAOTest
 
             ecList.add( entryIn );
         }
-        entryCategoriesDAO.insertEntryCategoryBatch( ecList );
+        categoriesDAO.insertEntryCategoryBatch( ecList );
 
         // INSERT the LogEvents
-        entryCategoryLogEventDAO.insertEntryCategoryLogEventBatch( ecList );
+        categoryLogEventsDAO.insertEntryCategoryLogEventBatch( ecList );
 
-        int count = entryCategoryLogEventDAO.getTotalCount(workspace);
+        int count = categoryLogEventsDAO.getTotalCount(workspace);
         assertEquals((startCount + numTags), count);
         
         verifySelectLogEvent( ecList.get(0), 5, sysId, propId, scheme );
@@ -205,7 +205,7 @@ public class EntryCategoryLogEventDAOTest
 
         // COUNT
         Thread.sleep( DB_CATCHUP_SLEEP); // give the DB a chance to catch up
-        int finalCount = entryCategoryLogEventDAO.getTotalCount(workspace);
+        int finalCount = categoryLogEventsDAO.getTotalCount(workspace);
         log.debug("finalCount = " + finalCount);
         assertEquals(startCount, finalCount);
     }
@@ -214,7 +214,7 @@ public class EntryCategoryLogEventDAOTest
                                               String scheme, String term ){
         assertEquals( term, tag.getTerm() );
         List<EntryCategoryLogEvent> logEvents =
-                entryCategoryLogEventDAO.selectEntryCategoryLogEventBySchemeAndTerm(tag);
+                categoryLogEventsDAO.selectEntryCategoryLogEventBySchemeAndTerm(tag);
         log.debug("====> logEvents = " + logEvents);
         assertNotNull(logEvents);
         assertTrue(logEvents.size() == size);
@@ -230,7 +230,7 @@ public class EntryCategoryLogEventDAOTest
 
     void verifySelectLogEventByScheme( EntryCategory tag, int size, String sysId, String propId, String scheme){
         assertEquals( scheme, tag.getScheme() );
-        List<EntryCategoryLogEvent> logEvents = entryCategoryLogEventDAO.selectEntryCategoryLogEventByScheme(tag);
+        List<EntryCategoryLogEvent> logEvents = categoryLogEventsDAO.selectEntryCategoryLogEventByScheme(tag);
         log.debug("====> logEvents = " + logEvents);
         assertNotNull(logEvents);
         assertTrue(logEvents.size() == size);
@@ -244,7 +244,7 @@ public class EntryCategoryLogEventDAOTest
     }
 
     void verifySelectLogEvent( EntryCategory tag, int size, String sysId, String propId, String scheme ){
-        List<EntryCategoryLogEvent> logEvents = entryCategoryLogEventDAO.selectEntryCategoryLogEvent(tag);
+        List<EntryCategoryLogEvent> logEvents = categoryLogEventsDAO.selectEntryCategoryLogEvent(tag);
         log.debug("====> logEvents = " + logEvents);
         assertNotNull(logEvents);
         assertTrue(logEvents.size() == size);

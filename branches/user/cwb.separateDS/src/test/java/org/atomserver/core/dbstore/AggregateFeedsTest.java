@@ -21,9 +21,9 @@ public class AggregateFeedsTest extends DBSTestCase {
         TestConfUtil.preSetup("aggregates");
         super.setUp();
 
-        entryCategoriesDAO.deleteAllEntryCategories("lalas");
-        entryCategoriesDAO.deleteAllEntryCategories("cuckoos");
-        entryCategoriesDAO.deleteAllEntryCategories("aloos");
+        categoriesDAO.deleteAllEntryCategories("lalas");
+        categoriesDAO.deleteAllEntryCategories("cuckoos");
+        categoriesDAO.deleteAllEntryCategories("aloos");
         
         entriesDao.deleteAllEntries(new BaseServiceDescriptor("lalas"));
         entriesDao.deleteAllEntries(new BaseServiceDescriptor("cuckoos"));

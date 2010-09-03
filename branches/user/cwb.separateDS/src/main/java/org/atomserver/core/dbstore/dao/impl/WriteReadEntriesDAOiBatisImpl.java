@@ -297,20 +297,20 @@ public class WriteReadEntriesDAOiBatisImpl
         EntryMetaData metaData = null;
         List<EntryCategory> categoriesToRemove = null;
 
-        if (getContentDAO() != null || getEntryCategoriesDAO() != null) {
+        if (getContentDAO() != null || getCategoriesDAO() != null) {
             metaData = (entryQuery instanceof EntryMetaData) ? (EntryMetaData) entryQuery : selectEntry(entryQuery);
 
             if (metaData != null) {
                 categoriesToRemove = metaData.getCategories();
             }
-            if (metaData != null && getEntryCategoryLogEventDAO() != null) {
-                getEntryCategoryLogEventDAO().deleteEntryCategoryLogEvent(entryQuery);
+            if (metaData != null && getCategoryLogEventDAO() != null) {
+                getCategoryLogEventDAO().deleteEntryCategoryLogEvent(entryQuery);
             }
             if (metaData != null && getContentDAO() != null) {
                 getContentDAO().deleteContent(metaData);
             }
-            if (metaData != null && getEntryCategoriesDAO() != null) {
-                getEntryCategoriesDAO().deleteEntryCategoriesWithoutCacheUpdate(metaData);
+            if (metaData != null && getCategoriesDAO() != null) {
+                getCategoriesDAO().deleteEntryCategoriesWithoutCacheUpdate(metaData);
             }
         }
 
@@ -389,8 +389,8 @@ public class WriteReadEntriesDAOiBatisImpl
             //getContentDAO().deleteAllContent();
             getContentDAO().deleteAllContent(service.getWorkspace());
         }
-        if (getEntryCategoriesDAO() != null) {
-            getEntryCategoriesDAO().deleteAllEntryCategories(service.getWorkspace());
+        if (getCategoriesDAO() != null) {
+            getCategoriesDAO().deleteAllEntryCategories(service.getWorkspace());
         }
         super.deleteAllEntriesInternal(service.getWorkspace(), null, "deleteEntriesAll");
     }

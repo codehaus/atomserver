@@ -18,7 +18,6 @@
 package org.atomserver.core.dbstore;
 
 import org.atomserver.core.BaseServiceDescriptor;
-import org.atomserver.core.dbstore.dao.impl.EntriesDAOiBatisImpl;
 import org.atomserver.core.dbstore.dao.ContentDAO;
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -48,7 +47,7 @@ public class TagsFeedQueriesDBSTest extends DBSTestCase {
 
     public void setUp() throws Exception { 
         super.setUp();         
-        entryCategoriesDAO.deleteAllRowsFromEntryCategories();
+        categoriesDAO.deleteAllRowsFromEntryCategories();
 
         entriesDao.deleteAllEntries( new BaseServiceDescriptor( "widgets" ) );
     }
@@ -97,7 +96,7 @@ public class TagsFeedQueriesDBSTest extends DBSTestCase {
         //====================
         // Create a standard APP Categories doc
         //  which is the Content for this "tags:widgets" Entry
-        int startCountEC = entryCategoriesDAO.getTotalCount(workspace);
+        int startCountEC = categoriesDAO.getTotalCount(workspace);
         log.debug( "startCountEC = " + startCountEC );
        
         String scheme = "urn:widgets.foo";
@@ -186,7 +185,7 @@ public class TagsFeedQueriesDBSTest extends DBSTestCase {
             assertTrue( content.indexOf( "category" ) >= 0 );
         }
         
-        int finalCountEC = entryCategoriesDAO.getTotalCount(workspace);
+        int finalCountEC = categoriesDAO.getTotalCount(workspace);
         log.debug( "finalCountEC = " + finalCountEC );
         // check that there was one category entered for each record
         assertEquals( numRecs, finalCountEC );
@@ -237,7 +236,7 @@ public class TagsFeedQueriesDBSTest extends DBSTestCase {
         // Create a standard APP Categories doc
         //  which is the Content for this "tags:widgets" Entry
 
-        int startCountEC = entryCategoriesDAO.getTotalCount(workspace);
+        int startCountEC = categoriesDAO.getTotalCount(workspace);
         log.debug( "startCountEC = " + startCountEC );
        
         String scheme = "urn:widgets.foo";
@@ -407,7 +406,7 @@ public class TagsFeedQueriesDBSTest extends DBSTestCase {
             assertTrue( content.indexOf( "category" ) >= 0 );
         }
 
-        int finalCountEC = entryCategoriesDAO.getTotalCount(workspace);
+        int finalCountEC = categoriesDAO.getTotalCount(workspace);
         log.debug( "finalCountEC = " + finalCountEC );
         // check that there are 4 categories for each record.
         assertEquals( numRecs * 4, finalCountEC );
@@ -436,7 +435,7 @@ public class TagsFeedQueriesDBSTest extends DBSTestCase {
             ContentDAO contentDAO = (ContentDAO) appSpringFactory.getBean("org.atomserver-contentDAO");
             //contentDAO.deleteAllContent();
             contentDAO.deleteAllRowsFromContent();
-            entryCategoriesDAO.deleteAllRowsFromEntryCategories();
+            categoriesDAO.deleteAllRowsFromEntryCategories();
             entriesDao.deleteAllRowsFromEntries();
             Connection conn = null;
             try {

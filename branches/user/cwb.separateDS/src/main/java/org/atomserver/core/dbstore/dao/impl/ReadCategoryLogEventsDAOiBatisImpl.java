@@ -5,7 +5,7 @@ package org.atomserver.core.dbstore.dao.impl;
 
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryCategoryLogEvent;
-import org.atomserver.core.dbstore.dao.ReadEntryCategoryLogEventDAO;
+import org.atomserver.core.dbstore.dao.ReadCategoryLogEventsDAO;
 import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
 import org.atomserver.utils.perf.AtomServerStopWatch;
 import org.perf4j.StopWatch;
@@ -15,9 +15,9 @@ import java.util.List;
 /**
  *
  */
-public class ReadEntryCategoryLogEventDAOiBatisImpl
+public class ReadCategoryLogEventsDAOiBatisImpl
         extends AbstractDAOiBatisImpl
-        implements ReadEntryCategoryLogEventDAO {
+        implements ReadCategoryLogEventsDAO {
 
     /**
      * Select ALL EntryCategoryLogEvents for a given EntryCategory.

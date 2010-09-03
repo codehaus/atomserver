@@ -19,7 +19,6 @@
             <property name="defaultProducingEntryCategoriesFeedElement" value="true"/>
             <property name="defaultAutoTagger">
                 <bean class="org.atomserver.core.autotaggers.XPathAutoTagger">
-                    <!-- <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO"/> -->
                     <property name="categoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
                     <property name="script">
                         <value>
@@ -46,7 +45,6 @@
             <property name="defaultProducingEntryCategoriesFeedElement" value="true"/>
             <property name="defaultAutoTagger">
                 <bean class="org.atomserver.core.autotaggers.XPathAutoTagger">
-                    <!-- <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO"/> -->
                     <property name="categoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
                     <property name="script">
                         <value>
@@ -73,7 +71,6 @@
             <property name="defaultProducingEntryCategoriesFeedElement" value="true"/>
             <property name="defaultAutoTagger">
                 <bean class="org.atomserver.core.autotaggers.XPathAutoTagger">
-                    <!-- <property name="entryCategoriesDAO" ref="org.atomserver-entryCategoriesDAO"/> -->
                     <property name="categoriesHandler" ref="org.atomserver-entryCategoriesHandler"/>
                     <property name="script">
                         <value>

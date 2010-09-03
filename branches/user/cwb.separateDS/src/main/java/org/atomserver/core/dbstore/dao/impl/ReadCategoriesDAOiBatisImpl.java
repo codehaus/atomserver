@@ -6,7 +6,7 @@ package org.atomserver.core.dbstore.dao.impl;
 import org.atomserver.EntryDescriptor;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryMetaData;
-import org.atomserver.core.dbstore.dao.ReadEntryCategoriesDAO;
+import org.atomserver.core.dbstore.dao.ReadCategoriesDAO;
 import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
 import org.atomserver.utils.perf.AtomServerStopWatch;
 import org.perf4j.StopWatch;
@@ -19,9 +19,9 @@ import java.util.Set;
 /**
  *
  */
-public class ReadEntryCategoriesDAOiBatisImpl
+public class ReadCategoriesDAOiBatisImpl
         extends AbstractDAOiBatisImpl
-        implements ReadEntryCategoriesDAO {
+        implements ReadCategoriesDAO {
 
     //-----------------------
     //       SELECT

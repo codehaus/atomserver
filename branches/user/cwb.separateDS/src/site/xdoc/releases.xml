@@ -304,7 +304,7 @@
             entirely transparent.
             <ul>
                 <li>The Spring configuration has changed somewhat. The wiring of XPathAutoTaggers for a workspace
-                    has slightly changed; the entryCategoriesDAO property should be
+                    has slightly changed; the categoriesDAO property should be
                     replaced with a categoriesHandler property. This change plugs a leaky abstraction,
                     and allows all Category operations to happen through the CategoriesHander.
                 </li>

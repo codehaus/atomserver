@@ -24,6 +24,6 @@ package org.atomserver.core.dbstore.dao;
  *         TODO: ideally, we would like to change all of the methods that refer
  *         to workspace or collection as strings into ones that take a descriptor of some sort.
  */
-public interface EntryCategoriesDAO
-        extends WriteReadEntryCategoriesDAO {
+public interface CategoriesDAO
+        extends WriteReadCategoriesDAO {
 }
