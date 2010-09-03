@@ -17,6 +17,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
@@ -26,7 +27,7 @@ public class ReadEntriesDAOiBatisImpl
         extends BaseEntriesDAOiBatisImpl
         implements ReadEntriesDAO {
 
-    static public final long FETCH_INTERVAL = 60000;
+    static public final long FETCH_INTERVAL = 300000;
     static public final long STARTUP_INTERVAL = 900000;
 
     static private long startupTime = System.currentTimeMillis();
@@ -34,22 +35,18 @@ public class ReadEntriesDAOiBatisImpl
     static private Set<String> workspaces = new CopyOnWriteArraySet<String>();
     static long lastWorkspacesSelectTime = 0L;
 
-    static private Set<String> collections = new CopyOnWriteArraySet<String>();
+    private ConcurrentHashMap<String, HashSet<String>> collections = new ConcurrentHashMap<String, HashSet<String>>();
     static long lastCollectionsSelectTime = 0L;
 
-    /**
-     * Use the improved selectFeedPage form, which uses SQL Set operands.
-     */
-    private boolean isUsingSetOpsFeedPage = true;
+    private boolean useWorkspaceCollectionCache = false;
 
-    @ManagedAttribute
-    public boolean isUsingSetOpsFeedPage() {
-        return isUsingSetOpsFeedPage;
+    public boolean isUseWorkspaceCollectionCache() {
+        return useWorkspaceCollectionCache;
     }
 
-    @ManagedAttribute
-    public void setUsingSetOpsFeedPage(boolean usingSetOpsFeedPage) {
-        isUsingSetOpsFeedPage = usingSetOpsFeedPage;
+    public void setUseWorkspaceCollectionCache(boolean useWorkspaceCollectionCache) {
+        this.useWorkspaceCollectionCache = useWorkspaceCollectionCache;
+        clearWorkspaceCollectionCaches();
     }
 
 //-----------------------
@@ -196,13 +193,7 @@ public class ReadEntriesDAOiBatisImpl
             AbstractDAOiBatisImpl.ParamMap paramMap = prepareParamMapForSelectEntries(updatedMin, updatedMax,
                                                                                       startIndex, endIndex,
                                                                                       pageSize, locale, feed);
-
-            if (isUsingSetOpsFeedPage) {
-                addSetOpsSelectFeedPageParams(paramMap, categoryQuery);
-            } else {
-                throw new RuntimeException("REMOVED OLD QUERY");
-            }
-
+            addSetOpsSelectFeedPageParams(paramMap, categoryQuery);
             return getSqlMapClientTemplate().queryForList("selectFeedPage", paramMap);
         }
         finally {
@@ -294,6 +285,12 @@ public class ReadEntriesDAOiBatisImpl
 //======================================
 //     COLLECTION/WORKSPACE QUERIES
 //======================================
+    public void clearWorkspaceCollectionCaches() {
+        workspaces = new CopyOnWriteArraySet<String>();
+        lastWorkspacesSelectTime = 0L;
+        collections = new ConcurrentHashMap<String, HashSet<String>>();
+        lastCollectionsSelectTime = 0L;
+    }
 
     public void ensureCollectionExists(String workspace, String collection) {
         StopWatch stopWatch = new AtomServerStopWatch();
@@ -311,7 +308,8 @@ public class ReadEntriesDAOiBatisImpl
                     log.warn("race condition while guaranteeing existence of collection " +
                              workspace + "/" + collection + " - this is probably okay.");
                 }
-                collections.add(collection);
+                HashSet<String> workspaceCollections = getWorkspaceCollections(workspace);
+                workspaceCollections.add(collection);
             }
         }
         finally {
@@ -343,12 +341,11 @@ public class ReadEntriesDAOiBatisImpl
     public List<String> listWorkspaces() {
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
-            if (workspacesIsExpired()) {
+            if (!useWorkspaceCollectionCache || workspacesIsExpired()) {
                 lastWorkspacesSelectTime = System.currentTimeMillis();
                 List<String> dbworkspaces = getSqlMapClientTemplate().queryForList("listWorkspaces");
-
-                if (!workspaces.equals(dbworkspaces)) {
-                    workspaces.addAll(dbworkspaces);
+                if ( (dbworkspaces != null) && (!workspaces.equals(dbworkspaces)) ) {
+                     workspaces.addAll(dbworkspaces);
                 }
             }
             return new ArrayList(workspaces);
@@ -359,21 +356,31 @@ public class ReadEntriesDAOiBatisImpl
     }
 
     public List<String> listCollections(String workspace) {
-        StopWatch stopWatch = new AtomServerStopWatch();
-        try {
-            if (collectionsIsExpired()) {
-                lastCollectionsSelectTime = System.currentTimeMillis();
-                List<String> dbcollections = getSqlMapClientTemplate().queryForList("listCollections",
-                                                                                    paramMap().param("workspace", workspace));
-                if (!collections.equals(dbcollections)) {
-                    collections.addAll(dbcollections);
-                }
-            }
-            return new ArrayList(collections);
+         StopWatch stopWatch = new AtomServerStopWatch();
+         try {
+             HashSet<String> workspaceCollections = getWorkspaceCollections(workspace);
+             if (!useWorkspaceCollectionCache || collectionsIsExpired()) {
+                 lastCollectionsSelectTime = System.currentTimeMillis();
+                 List<String> dbcollections =  getSqlMapClientTemplate().queryForList( "listCollections",
+                                                                                     paramMap().param("workspace", workspace));
+                 if ( (dbcollections != null) && (!workspaceCollections.equals(dbcollections))) {
+                     workspaceCollections.addAll(dbcollections);
+                 }
+             }
+             return new ArrayList( workspaceCollections );
+         }
+         finally {
+             stopWatch.stop("DB.listCollections", "");
+         }
+    }
+
+    private HashSet<String> getWorkspaceCollections( String workspace ) {
+        HashSet<String> workspaceCollections = collections.get(workspace);
+        if ( workspaceCollections == null ) {
+            workspaceCollections = new HashSet<String>();
+            collections.put(workspace, workspaceCollections);
         }
-        finally {
-            stopWatch.stop("DB.listCollections", "");
-        }
+        return workspaceCollections;
     }
 
     private boolean collectionsIsExpired() {
@@ -394,13 +401,6 @@ public class ReadEntriesDAOiBatisImpl
                  ? true
                  : ((currentTime - startupTime) > STARTUP_INTERVAL)
                    ? false : true;
-    }
-
-    public void clearWorkspaceCollectionCaches() {
-        workspaces = new CopyOnWriteArraySet<String>();
-        lastWorkspacesSelectTime = 0L;
-        collections = new CopyOnWriteArraySet<String>();
-        lastCollectionsSelectTime = 0L;
     }
 
 //======================================

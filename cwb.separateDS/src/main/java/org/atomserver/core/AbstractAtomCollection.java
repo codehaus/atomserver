@@ -27,13 +27,14 @@ import org.apache.abdera.util.Constants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.*;
-import org.atomserver.monitor.EntriesMonitor;
 import org.atomserver.core.etc.AtomServerConstants;
 import org.atomserver.core.utils.HashUtils;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.exceptions.BadContentException;
 import org.atomserver.exceptions.BadRequestException;
 import org.atomserver.ext.batch.Operation;
+import org.atomserver.monitor.EntriesMonitor;
+import org.atomserver.server.servlet.AtomServerUserInfo;
 import org.atomserver.uri.*;
 import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
 import org.atomserver.utils.perf.AtomServerStopWatch;
@@ -57,18 +58,19 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     //--------------------------------
     //      abstract methods
     //--------------------------------
+
     /**
      * The getEntries() method on the AtomCollection API delegates to this method within the subclass
      * to do the real work. This method will, most likely, return only a "page" of results.
      *
      * @param abdera
      * @param iri
-     * @param feedTarget      The FeedTarget, which was decoded from the URI
-     * @param updatedMin      The minimum update Date determined using either the Header or a Query param.
-     * @param updatedMax      The maximum update Date determined using a Query param.
-     * @param feed            The Feed to which to add Entries
+     * @param feedTarget The FeedTarget, which was decoded from the URI
+     * @param updatedMin The minimum update Date determined using either the Header or a Query param.
+     * @param updatedMax The maximum update Date determined using a Query param.
+     * @param feed       The Feed to which to add Entries
      * @return The last update Date (as a long) for an Entry in this Feed.
-     * Used to set the <updated> element in the Feed
+     *         Used to set the <updated> element in the Feed
      * @throws AtomServerException
      */
 
@@ -102,20 +104,21 @@ abstract public class AbstractAtomCollection implements AtomCollection {
      * @throws AtomServerException
      */
     abstract protected EntryMetaDataStatus modifyEntry(Object internalId,
-                                                 EntryTarget entryTarget,
-                                                 boolean mustAlreadyExist) throws AtomServerException;
+                                                       EntryTarget entryTarget,
+                                                       boolean mustAlreadyExist) throws AtomServerException;
 
     /**
      * Second call to modify Entry after determining that the categories have changed even though the content
      * has not. This is called only for the Entry already existing.
      *
-     * @param internalId       The internalId of this Entry.
-     * @param entryTarget      EntryTarget to update
+     * @param internalId  The internalId of this Entry.
+     * @param entryTarget EntryTarget to update
      * @return
      * @throws AtomServerException
      */
     abstract protected EntryMetaDataStatus reModifyEntry(Object internalId, EntryTarget entryTarget)
-                                                throws AtomServerException;
+            throws AtomServerException;
+
     /**
      * The deleteEntry() method on the AtomCollection API delegates to this method within the subclass
      * to do the real work.
@@ -143,6 +146,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     // -----------
     //  methods
     // -----------
+
     public AbstractAtomCollection(AtomWorkspace parentAtomWorkspace, String name) {
         this.parentAtomWorkspace = parentAtomWorkspace;
         this.name = name;
@@ -197,12 +201,12 @@ abstract public class AbstractAtomCollection implements AtomCollection {
      * {@inheritDoc}
      */
     public CategoriesHandler getCategoriesHandler() {
-        return ((AbstractAtomService)parentAtomWorkspace.getParentAtomService()).getCategoriesHandler();
+        return ((AbstractAtomService) parentAtomWorkspace.getParentAtomService()).getCategoriesHandler();
     }
 
     /**
      * * A convenience method to obtain the ContentHashGenerator wired into this AtomCollection
-     * 
+     *
      * @return ContentHashGenerator object
      */
     protected ContentHashGenerator getContentHashFunction() {
@@ -216,6 +220,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
 
     /**
      * Decode the Entry Target from the URI. Content hash code will not be set.
+     *
      * @param request
      * @return
      */
@@ -226,6 +231,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     /**
      * Decode the Entry Target from the URI and set the content hash code. THe content hash code will be retrieved
      * from the Entry if it is already there, or compute from the content itself if it is not in the Entry.
+     *
      * @param request
      * @param entry
      * @param entryXml
@@ -381,6 +387,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     /**
      * Spring configured flag on workspace indicating if the entry should be updated regardless of the content being
      * the same or not.
+     *
      * @return true if the entry is to be updated when the content is the same.
      */
     public boolean alwaysUpdateEntry() {
@@ -408,7 +415,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                 for (EntryTarget entryTarget : entriesURIData) {
                     try {
                         EntryMetaDataStatus metaDataStatus = modifyEntry(null, entryTarget, false);
-                        beans.add(new BatchEntryResult(entryTarget, metaDataStatus.getEntryMetaData(),metaDataStatus.isModified()));
+                        beans.add(new BatchEntryResult(entryTarget, metaDataStatus.getEntryMetaData(), metaDataStatus.isModified()));
                     } catch (Exception e) {
                         beans.add(new BatchEntryResult(entryTarget, e));
                     }
@@ -472,7 +479,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         Date updatedMin = getUpdatedMin(feedTarget, request);
         Date updatedMax = feedTarget.getUpdatedMaxParam();
 
-        if ( updatedMax != null && updatedMin.after( updatedMax) ) {
+        if (updatedMax != null && updatedMin.after(updatedMax)) {
             String msg = "updated-min (" + updatedMin + ") is after updated-max (" + updatedMax + ")";
             log.error(msg);
             throw new BadRequestException(msg);
@@ -511,8 +518,8 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         Abdera abdera = request.getServiceContext().getAbdera();
         EntryTarget entryTarget = getEntryTarget(request);
 
-        if ( entryTarget.getRawRevision() != null ) {
-            throw new BadRequestException( "Do NOT include the revision number when GET-ing an Entry" );
+        if (entryTarget.getRawRevision() != null) {
+            throw new BadRequestException("Do NOT include the revision number when GET-ing an Entry");
         }
 
         EntryMetaData entryMetaData = getEntry(entryTarget);
@@ -521,12 +528,12 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                                ? entryMetaData.getUpdatedDate() : AtomServerConstants.ZERO_DATE;
 
         Date updatedMin = getUpdatedMin(entryTarget, request);
-        Date updatedMax = (entryTarget.getUpdatedMaxParam() != null ) 
+        Date updatedMax = (entryTarget.getUpdatedMaxParam() != null)
                           ? entryTarget.getUpdatedMaxParam() : AtomServerConstants.FAR_FUTURE_DATE;
 
         Entry entry = null;
-        if ( ( thisLastUpdated.after( updatedMin ) || thisLastUpdated.equals( updatedMin ) )
-             && thisLastUpdated.before( updatedMax ) ) {
+        if ((thisLastUpdated.after(updatedMin) || thisLastUpdated.equals(updatedMin))
+            && thisLastUpdated.before(updatedMax)) {
             EntryType entryType =
                     (entryTarget.getEntryTypeParam() != null) ? entryTarget.getEntryTypeParam() : EntryType.full;
             entry = newEntry(abdera, entryMetaData, entryType);
@@ -539,25 +546,39 @@ abstract public class AbstractAtomCollection implements AtomCollection {
      */
     public UpdateCreateOrDeleteEntry.CreateOrUpdateEntry updateEntry(final RequestContext request)
             throws AtomServerException {
-        Abdera abdera = request.getServiceContext().getAbdera();
-        final EntryTarget entryTarget = getURIHandler().getEntryTarget(request, false);
 
-        String collection = entryTarget.getCollection();
+        StopWatch stopWatch1 = new AtomServerStopWatch();
 
-        ensureCollectionExists(collection);
+        final Entry entry;
+        final String entryXml;
+        final EntryTarget entryTarget;
+        Abdera abdera;
+        try {
+            abdera = request.getServiceContext().getAbdera();
+            entryTarget = getURIHandler().getEntryTarget(request, false);
 
-        final Entry entry = parseEntry(entryTarget, request);
-        final String entryXml = validateAndPreprocessEntryContents(entry, entryTarget);
+            ensureCollectionExists(entryTarget.getCollection());
 
-        if(getEntriesMonitor() != null) {
-            getEntriesMonitor().updateNumberOfEntriesToUpdate(1);
+            entry = parseEntry(entryTarget, request);
+            entryXml = validateAndPreprocessEntryContents(entry, entryTarget);
+
+            if (getEntriesMonitor() != null) {
+                getEntriesMonitor().updateNumberOfEntriesToUpdate(1);
+            }
+        } finally {
+            stopWatch1.stop("AC.updateEntry.preProc", "");
         }
+
+        final String t_user = AtomServerUserInfo.getUser();
         EntryMetaData entryMetaData = null;
-        StopWatch stopWatch = new AtomServerStopWatch();
+        StopWatch stopWatch2 = new AtomServerStopWatch();
         try {
             EntryMetaDataStatus entryMetaDataStatus = executeTransactionally(
                     new TransactionalTask<EntryMetaDataStatus>() {
                         public EntryMetaDataStatus execute() {
+
+                            AtomServerUserInfo.setUser(t_user);
+
                             EntryTarget target = getEntryTarget(request, entry, entryXml);
 
                             // determine if we are creating the entryId -- i.e. if this was a POST
@@ -571,23 +592,23 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                             }
                             final Object internalId = getInternalId(target);
                             EntryMetaDataStatus metaDataStatus = modifyEntry(internalId,
-                                                                 target,
-                                                                 mustAlreadyExist());
+                                                                             target,
+                                                                             mustAlreadyExist());
 
                             // Update category to see if there are changes.
                             // Assumption here: postProcessEntryContents method does not need entry revision or timestamps.
                             boolean categoriesUpdated = postProcessEntryContents(entryXml, metaDataStatus.getEntryMetaData());
 
                             // If both category and contents are not modified, no need to update.
-                            if(!metaDataStatus.isModified() && !categoriesUpdated) {
-                                if(getEntriesMonitor() != null) {
+                            if (!metaDataStatus.isModified() && !categoriesUpdated) {
+                                if (getEntriesMonitor() != null) {
                                     getEntriesMonitor().updateNumberOfEntriesNotUpdatedDueToSameContent(1);
                                 }
                                 return metaDataStatus;
                             }
 
                             // if content is not modified but the categories are, call reModifyEntry to update rev/timestamp
-                            if(!metaDataStatus.isModified()) {
+                            if (!metaDataStatus.isModified()) {
                                 metaDataStatus = reModifyEntry(internalId, entryTarget);
                             }
 
@@ -598,7 +619,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                                 log.trace("ContentStorage = " + getContentStorage());
                             }
                             getContentStorage().putContent(entryXml, metaDataStatus.getEntryMetaData());
-                            if(getEntriesMonitor() != null) {
+                            if (getEntriesMonitor() != null) {
                                 getEntriesMonitor().updateNumberOfEntriesActuallyUpdated(1);
                             }
 
@@ -607,25 +628,24 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                     }
             );
 
-
             // For Create and Update, we always, by definition, return "full" Entries
             entryMetaData = entryMetaDataStatus.getEntryMetaData();
             entryMetaData.setWorkspace(entryTarget.getWorkspace());
             Entry newEntry = newEntry(abdera, entryMetaData, EntryType.full);
             newEntry.addSimpleExtension(AtomServerConstants.CONTENT_HASH,
                                         HashUtils.convertUUIDStandardToSimpleFormat(entryMetaData.getContentHashCode()));
-            newEntry.addSimpleExtension(AtomServerConstants.ENTRY_UPDATED,(entryMetaDataStatus.isModified()?"true":"false"));
+            newEntry.addSimpleExtension(AtomServerConstants.ENTRY_UPDATED, (entryMetaDataStatus.isModified() ? "true" : "false"));
 
-            if(log.isDebugEnabled()) {
-                log.debug(" ** EntryId:" + entryMetaData.getEntryId() + (entryMetaData.isNewlyCreated()?
-                                                                              " Inserted":" No-Insert") +
-                            ( entryMetaData.isNewlyCreated() ?  " " : " Modified:" +
-                              (entryMetaDataStatus.isModified() ? "Yes": "No") ) +
-                             " hashCode: " + entryMetaData.getContentHashCode());
+            if (log.isDebugEnabled()) {
+                log.debug(" ** EntryId:" + entryMetaData.getEntryId() + (entryMetaData.isNewlyCreated() ?
+                                                                         " Inserted" : " No-Insert") +
+                          (entryMetaData.isNewlyCreated() ? " " : " Modified:" +
+                                                                  (entryMetaDataStatus.isModified() ? "Yes" : "No")) +
+                          " hashCode: " + entryMetaData.getContentHashCode());
             }
             return new UpdateCreateOrDeleteEntry.CreateOrUpdateEntry(newEntry, entryMetaData.isNewlyCreated());
         } finally {
-            stopWatch.stop("Collection.updateEntry", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryMetaData));
+            stopWatch2.stop("AC.updateEntry.Proc", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryMetaData));
         }
     }
 
@@ -671,7 +691,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         final List<EntryTarget> entriesToUpdate = new ArrayList<EntryTarget>();
         final List<EntryTarget> entriesToDelete = new ArrayList<EntryTarget>();
         final EntryMap<String> entryXmlMap = new EntryMap<String>();
-        final Map<EntryTarget,Entry> entryMap = new HashMap<EntryTarget, Entry>();
+        final Map<EntryTarget, Entry> entryMap = new HashMap<EntryTarget, Entry>();
         final HashMap<EntryTarget, Integer> orderMap = new HashMap<EntryTarget, Integer>();
 
         Operation defaultOperationExtension = document.getRoot().getExtension(AtomServerConstants.OPERATION);
@@ -764,7 +784,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         }
 
         // update entry count
-        if(getEntriesMonitor() != null) {
+        if (getEntriesMonitor() != null) {
             getEntriesMonitor().updateNumberOfEntriesToUpdate(entries.size());
         }
         Abdera abdera = request.getServiceContext().getAbdera();
@@ -781,19 +801,19 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                                         boolean categoriesUpdated = false;
                                         if (result.getMetaData() != null) {
                                             categoriesUpdated = postProcessEntryContents(entryXmlMap.get(result.getMetaData()),
-                                                                     result.getMetaData());
+                                                                                         result.getMetaData());
                                         }
-                                        if(!result.isModified() && !categoriesUpdated) {
+                                        if (!result.isModified() && !categoriesUpdated) {
                                             // Same contents and categories
-                                            if(getEntriesMonitor() != null) {
+                                            if (getEntriesMonitor() != null) {
                                                 getEntriesMonitor().updateNumberOfEntriesNotUpdatedDueToSameContent(1);
                                             }
                                             continue;
                                         }
                                         // if contents is the same but the categories have changed,
                                         // go back and update the entry so that it'll have a new revision and timestamp.
-                                        if(!result.isModified()) {
-                                            EntryMetaDataStatus  mdStatus = reModifyEntry(null, result.getEntryTarget());
+                                        if (!result.isModified()) {
+                                            EntryMetaDataStatus mdStatus = reModifyEntry(null, result.getEntryTarget());
                                             // update the result to indicate Entry has been modified.
                                             result.setMetaData(mdStatus.getEntryMetaData());
                                             result.setModified(true);
@@ -804,7 +824,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                                             getContentStorage().putContent(entryXml,
                                                                            result.getMetaData());
                                         }
-                                        if(getEntriesMonitor() != null) {
+                                        if (getEntriesMonitor() != null) {
                                             getEntriesMonitor().updateNumberOfEntriesActuallyUpdated(1);
                                         }
                                     }
@@ -826,8 +846,8 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                               newEntryWithCommonContentOnly(abdera, result.getEntryTarget()) :
                               newEntry(abdera, metaData, EntryType.full);
 
-                entry.addSimpleExtension(AtomServerConstants.ENTRY_UPDATED, (result.isModified()) ? "true":"false");
-                if(metaData != null && metaData.getContentHashCode() != null) {
+                entry.addSimpleExtension(AtomServerConstants.ENTRY_UPDATED, (result.isModified()) ? "true" : "false");
+                if (metaData != null && metaData.getContentHashCode() != null) {
                     entry.addSimpleExtension(AtomServerConstants.CONTENT_HASH, metaData.getContentHashCode());
                 }
 
@@ -958,6 +978,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~
+
     private boolean postProcessEntryContents(String entryXml, EntryMetaData entryMetaData) {
         EntryAutoTagger autoTagger = getAutoTagger();
         if (autoTagger != null) {
@@ -973,6 +994,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~
+
     protected String validateAndPreprocessEntryContents(Entry entry, EntryTarget entryTarget)
             throws BadContentException {
         // Let's validate upfront so we can fail-fast, so grab the entryXml
@@ -1015,51 +1037,59 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~
-    private Entry parseEntry(EntryTarget entryTarget, RequestContext request) {
-        String errMsgPrefix = "Could not process PUT for [" + entryTarget.getWorkspace()
-                              + ", " + entryTarget.getCollection() + ", " + entryTarget.getLocale() +
-                              ", " + entryTarget.getEntryId() + ", " + entryTarget.getRevision();
-        String errMsgPostfix = "\n MAKE CERTAIN THAT YOU ARE INDEED SENDING VALID XML";
 
-        Entry entry = null;
+    private Entry parseEntry(EntryTarget entryTarget, RequestContext request) {
+        StopWatch stopWatch = new AtomServerStopWatch();
         try {
-            Document<Entry> document = request.getDocument();
-            entry = document.getRoot();
-        } catch (java.lang.ClassCastException ee) {
-            String msg = errMsgPrefix +
-                         "]\n Reason:: Could not parse a valid <entry> from the Request provided. " + ee.getMessage()
-                         + "\n 1) MAKE CERTAIN THAT YOU HAVE A NAMESPACE ON THE <entry> ELEMENT!"
-                         + "\n (i.e. <entry xmlns=\"http://www.w3.org/2005/Atom\">)" + errMsgPostfix;
-            log.error(msg, ee);
-            throw new BadContentException(msg, ee);
-        } catch (java.lang.ArrayIndexOutOfBoundsException ee) {
-            String msg = errMsgPrefix +
-                         "]\n Reason:: MOST LIKELY THE <content> IS EMPTY. " + ee.getMessage() + errMsgPostfix;
-            log.error(msg, ee);
-            throw new BadContentException(msg, ee);
-        } catch (org.apache.abdera.parser.ParseException ee) {
-            String msg = errMsgPrefix +
-                         "]\n Reason:: The <content> XML could not be parsed. " + ee.getMessage() +
-                         "\n If this was caused by an ArrayIndexOutOfBoundsException.  MOST LIKELY THE <content> IS EMPTY " +
-                         errMsgPostfix;
-            log.error(msg, ee);
-            throw new BadContentException(msg, ee);
-        } catch (Exception ee) {
-            String msg = errMsgPrefix +
-                         "]\n Reason:: UNKNOWN EXCEPTION THROWN while parsing the <entry>" + ee.getMessage() + errMsgPostfix;
-            log.error(msg, ee);
-            throw new BadContentException(msg, ee);
+
+            String errMsgPrefix = "Could not process PUT for [" + entryTarget.getWorkspace()
+                                  + ", " + entryTarget.getCollection() + ", " + entryTarget.getLocale() +
+                                  ", " + entryTarget.getEntryId() + ", " + entryTarget.getRevision();
+            String errMsgPostfix = "\n MAKE CERTAIN THAT YOU ARE INDEED SENDING VALID XML";
+
+            Entry entry = null;
+            try {
+                Document<Entry> document = request.getDocument();
+                entry = document.getRoot();
+            } catch (java.lang.ClassCastException ee) {
+                String msg = errMsgPrefix +
+                             "]\n Reason:: Could not parse a valid <entry> from the Request provided. " + ee.getMessage()
+                             + "\n 1) MAKE CERTAIN THAT YOU HAVE A NAMESPACE ON THE <entry> ELEMENT!"
+                             + "\n (i.e. <entry xmlns=\"http://www.w3.org/2005/Atom\">)" + errMsgPostfix;
+                log.error(msg, ee);
+                throw new BadContentException(msg, ee);
+            } catch (java.lang.ArrayIndexOutOfBoundsException ee) {
+                String msg = errMsgPrefix +
+                             "]\n Reason:: MOST LIKELY THE <content> IS EMPTY. " + ee.getMessage() + errMsgPostfix;
+                log.error(msg, ee);
+                throw new BadContentException(msg, ee);
+            } catch (org.apache.abdera.parser.ParseException ee) {
+                String msg = errMsgPrefix +
+                             "]\n Reason:: The <content> XML could not be parsed. " + ee.getMessage() +
+                             "\n If this was caused by an ArrayIndexOutOfBoundsException.  MOST LIKELY THE <content> IS EMPTY " +
+                             errMsgPostfix;
+                log.error(msg, ee);
+                throw new BadContentException(msg, ee);
+            } catch (Exception ee) {
+                String msg = errMsgPrefix +
+                             "]\n Reason:: UNKNOWN EXCEPTION THROWN while parsing the <entry>" + ee.getMessage() + errMsgPostfix;
+                log.error(msg, ee);
+                throw new BadContentException(msg, ee);
+            }
+            if (entry == null) {
+                String msg = errMsgPrefix +
+                             "]\n Reason:: Content is NULL. Is the <content> element missing? ";
+                log.error(msg);
+                throw new BadContentException(msg);
+            }
+            return entry;
+        } finally {
+            stopWatch.stop("AC.parseEntry", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryTarget));
         }
-        if (entry == null) {
-            String msg = errMsgPrefix +
-                         "]\n Reason:: Content is NULL. Is the <content> element missing? ";
-            log.error(msg);
-            throw new BadContentException(msg);
-        }
-        return entry;
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~
+
     protected Date getUpdatedMin(URITarget uriTarget, RequestContext request) {
         java.util.Date ifModifiedSinceDate = uriTarget.getUpdatedMinParam();
 
@@ -1071,6 +1101,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~
+
     protected Entry newEntry(Abdera abdera, EntryMetaData entryMetaData, EntryType entryType)
             throws AtomServerException {
 
@@ -1115,6 +1146,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~
+
     protected Entry newEntryWithCommonContentOnly(Abdera abdera, EntryDescriptor entryDescriptor)
             throws AtomServerException {
 
@@ -1151,7 +1183,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                                      String.valueOf(entryMetaData.getUpdateTimestamp()));
             if (entryMetaData.getRevision() >= 0) {
                 entry.addSimpleExtension(AtomServerConstants.REVISION,
-                                     String.valueOf(entryMetaData.getRevision()));
+                                         String.valueOf(entryMetaData.getRevision()));
             }
         }
 
@@ -1159,12 +1191,14 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~
+
     protected void addEditLink(int revision, Factory factory, Entry entry, String fileURI) {
         String editURL = (revision != URIHandler.REVISION_OVERRIDE) ? (fileURI + "/" + (revision + 1)) : fileURI;
         addLinkToEntry(factory, entry, editURL, "edit");
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~
+
     protected void addFullEntryContent(Abdera abdera, EntryDescriptor entryMetaData, Entry entry) {
         ContentStorage contentStorage = getContentStorage();
 
@@ -1180,6 +1214,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
 
     //~~~~~~~~~~~~~~~~~~~~~~
     // Add Categories to the Entry, if a CategoriesHandler has been registered
+
     protected void addCategoriesToEntry(Entry entry, EntryMetaData entryMetaData, Abdera abdera) {
         if ((entryMetaData.getCategories() != null) && (entryMetaData.getCategories().size() > 0)) {
             Collections.sort(entryMetaData.getCategories(),
@@ -1250,7 +1285,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         }
         if (content != null) {
             content = content.replaceFirst("<[?].*[?]>", "");
-            if ( content.startsWith( "<deletion" ) ) {
+            if (content.startsWith("<deletion")) {
                 return content;
             }
         }
@@ -1312,44 +1347,45 @@ abstract public class AbstractAtomCollection implements AtomCollection {
 // </workaround>
 
     protected boolean isContentChanged(EntryTarget entryTarget, EntryMetaData metaData) {
-        if((entryTarget == null) || (metaData == null) ||
-           (entryTarget.getContentHashCode() == null) || (metaData.getContentHashCode() == null)) {
+        if ((entryTarget == null) || (metaData == null) ||
+            (entryTarget.getContentHashCode() == null) || (metaData.getContentHashCode() == null)) {
             return true;
         }
         return !metaData.getContentHashCode().equals(entryTarget.getContentHashCode());
-   }
+    }
 
-   protected void setTargetContentHashCode(EntryTarget target, final Entry entry, final String entryXml) {
-       String clientHash = entry.getSimpleExtension(AtomServerConstants.CONTENT_HASH);
-       if(clientHash == null && entryXml != null) {
+    protected void setTargetContentHashCode(EntryTarget target, final Entry entry, final String entryXml) {
+        String clientHash = entry.getSimpleExtension(AtomServerConstants.CONTENT_HASH);
+        if (clientHash == null && entryXml != null) {
             clientHash = HashUtils.converToUUIDStandardFormat(getContentHashFunction().hashCode(entryXml));
-       } if(clientHash != null) {
-           clientHash = HashUtils.convertToUUIDStandardFormat(clientHash);
-       }
-       target.setContentHashCode(clientHash);
-   }
+        }
+        if (clientHash != null) {
+            clientHash = HashUtils.convertToUUIDStandardFormat(clientHash);
+        }
+        target.setContentHashCode(clientHash);
+    }
 
     /**
      * Wrapper class which holds EntryMetaData and a flag which indicates if it has been modified.
      * This object is returned from modifyEntry and reModifyEntry method calls.
      */
-   public class EntryMetaDataStatus {
-       private EntryMetaData entryMetaData;
-       private boolean modified;
+    public class EntryMetaDataStatus {
+        private EntryMetaData entryMetaData;
+        private boolean modified;
 
-       public EntryMetaDataStatus(EntryMetaData entryMetaData, boolean modified) {
-           this.entryMetaData = entryMetaData;
-           this.modified = modified;
-       }
+        public EntryMetaDataStatus(EntryMetaData entryMetaData, boolean modified) {
+            this.entryMetaData = entryMetaData;
+            this.modified = modified;
+        }
 
-       public EntryMetaData getEntryMetaData() {
-           return entryMetaData;
-       }
+        public EntryMetaData getEntryMetaData() {
+            return entryMetaData;
+        }
 
-       public boolean isModified() {
-           return modified;
-       }
+        public boolean isModified() {
+            return modified;
+        }
 
-   }
+    }
 
 }

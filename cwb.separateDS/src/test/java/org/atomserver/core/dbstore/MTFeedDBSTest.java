@@ -53,6 +53,9 @@ public class MTFeedDBSTest extends FeedDBSTestCase {
         mtTestCase.setUp();
         super.setUp();
         ((EntriesDAOiBatisImpl)entriesDao).setLatencySeconds(0);
+        entriesDao.ensureCollectionExists("widgets","mttest2");
+        entriesDao.ensureCollectionExists("dummy","mttest2");
+        entriesDao.ensureCollectionExists("widgets","dummy");
     }
 
     public void tearDown() throws Exception {

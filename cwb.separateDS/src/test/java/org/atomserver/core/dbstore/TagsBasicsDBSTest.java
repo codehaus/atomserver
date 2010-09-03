@@ -43,6 +43,9 @@ public class TagsBasicsDBSTest extends CRUDDBSTestCase {
     public void setUp() throws Exception { 
         super.setUp(); 
         entryCategoriesDAO.deleteAllRowsFromEntryCategories();
+
+        entriesDAO.ensureWorkspaceExists("widgets");
+        entriesDAO.ensureCollectionExists("widgets","acme");
     }
 
     public void tearDown() throws Exception

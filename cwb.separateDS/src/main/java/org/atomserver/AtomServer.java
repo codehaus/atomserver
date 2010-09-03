@@ -35,6 +35,7 @@ import org.atomserver.ext.batch.Status;
 import org.atomserver.uri.EntryTarget;
 import org.atomserver.uri.FeedTarget;
 import org.atomserver.utils.IOCLog;
+import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
 import org.atomserver.utils.perf.AtomServerStopWatch;
 import org.perf4j.StopWatch;
 
@@ -63,7 +64,7 @@ import java.util.regex.Pattern;
  * appropriate edit URI. All operations are performed using simple HTTP requests and can usually be performed
  * with nothing more than a simple text editor and a command prompt.
  * <p/>
- * 
+ * <p/>
  * <pre>
  * HTTP STATUS CODES
  * Code                                     Explanation
@@ -79,6 +80,7 @@ import java.util.regex.Pattern;
  * 500 INTERNAL SERVER ERROR 	Internal error. This is the default code that is used for all unrecognized errors.
  * </pre>
  * <p/>
+ *
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
@@ -106,7 +108,8 @@ public class AtomServer extends AbstractProvider {
     /**
      * Set the REQUIRED AtomService for use by this AtomServer. This method is meant to
      * inject an AtomService which has been configured externally in an IOC container like Spring.
-     * @param atomService  Value to set
+     *
+     * @param atomService Value to set
      */
     public void setService(AtomService atomService) {
         if (logger.isDebugEnabled()) {
@@ -127,9 +130,10 @@ public class AtomServer extends AbstractProvider {
      * inject an IOCLog which has been configured externally in an IOC container like Spring.
      * It is in this external configuration that you specify such details as the logger name, which, in turn,
      * will define the actual name of the error log file.
-     * @param errlog   Value to set
+     *
+     * @param errlog Value to set
      */
-    public void setErrorLog( IOCLog errlog ) {
+    public void setErrorLog(IOCLog errlog) {
         if (logger.isDebugEnabled()) {
             logger.debug("AtomServer.setErrorLog: errlog= " + errlog);
         }
@@ -143,9 +147,10 @@ public class AtomServer extends AbstractProvider {
      * and what types of resources those collections can contain.
      * The Atom protocol specification defines an XML format known as a service document that
      * a client can use to introspect an endpoint. This method returns that document
+     *
      * @param request The Abdera RequestContext
      * @return response The Abdera ResponseContext, which will contain the appropriate HTTP status code,
-     * as detailed above.
+     *         as detailed above.
      */
     public ResponseContext getService(RequestContext request) {
         StopWatch stopWatch = new AtomServerStopWatch();
@@ -162,9 +167,9 @@ public class AtomServer extends AbstractProvider {
             if (logger.isTraceEnabled()) {
                 logger.trace("AtomServer.getService:: workspaces= " + workspaces);
             }
-            if ( workspaces == null ) {
-               throw new BadRequestException( "The workspace indicated in the Service Request: " + request.getUri()
-                                              + " does NOT exist" );
+            if (workspaces == null) {
+                throw new BadRequestException("The workspace indicated in the Service Request: " + request.getUri()
+                                              + " does NOT exist");
             }
 
             for (String wsName : workspaces) {
@@ -182,8 +187,8 @@ public class AtomServer extends AbstractProvider {
                     for (Collection coll : collections) {
                         try {
                             String collName = coll.getTitle();
-                            org.apache.abdera.model.Collection collection = 
-                                workspace.addCollection(collName, wsName + '/' + coll.getTitle() + '/');
+                            org.apache.abdera.model.Collection collection =
+                                    workspace.addCollection(collName, wsName + '/' + coll.getTitle() + '/');
                             collection.setAccept("entry");
 
                             java.util.Collection<Category> categoryList =
@@ -226,9 +231,10 @@ public class AtomServer extends AbstractProvider {
      * The Atom protocol specification defines an XML format known as a feed document.
      * This method returns that document, responding to a HTTP GET. The URL defines precisely
      * which Atom workspace and collection to return.
+     *
      * @param request The Abdera RequestContext
      * @return response The Abdera ResponseContext, which will contain the appropriate HTTP status code,
-     * as detailed above.
+     *         as detailed above.
      */
     public ResponseContext getFeed(RequestContext request) {
         StopWatch stopWatch = new AtomServerStopWatch();
@@ -238,29 +244,34 @@ public class AtomServer extends AbstractProvider {
         Abdera abdera = request.getServiceContext().getAbdera();
         try {
             FeedTarget feedTarget = atomService.getURIHandler().getFeedTarget(request);
-                Feed feed = atomService.getAtomWorkspace(feedTarget.getWorkspace())
-                                .getAtomCollection(feedTarget.getCollection()).getEntries(request);
+            Feed feed = atomService.getAtomWorkspace(feedTarget.getWorkspace())
+                    .getAtomCollection(feedTarget.getCollection()).getEntries(request);
 
-            if (feed == null) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("AtomServer.getFeed() THE FEED IS NOT MODIFIED -- RETURNING 304");
+            StopWatch stopWatch2 = new AtomServerStopWatch();
+            try {
+                if (feed == null) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("AtomServer.getFeed() THE FEED IS NOT MODIFIED -- RETURNING 304");
+                    }
+                    return notmodified(abdera, request, "No Entries were found modified since " + request.getIfModifiedSince());
+                } else {
+                    Document<Feed> doc = feed.getDocument();
+                    BaseResponseContext rc = new BaseResponseContext<Document<Feed>>(doc);
+                    try {
+                        rc.setEntityTag(new EntityTag(feed.getId().toString()));
+                    } catch (IRISyntaxException e) {
+                        throw new BadRequestException(e);
+                    }
+                    return rc;
                 }
-                return notmodified(abdera, request, "No Entries were found modified since " + request.getIfModifiedSince());
-            } else {
-                Document<Feed> doc = feed.getDocument();
-                BaseResponseContext rc = new BaseResponseContext<Document<Feed>>(doc);
-                try {
-                    rc.setEntityTag(new EntityTag(feed.getId().toString()));
-                } catch (IRISyntaxException e) {
-                    throw new BadRequestException(e);
-                }
-                return rc;
+            } finally {
+                stopWatch2.stop("AS.buildResp.GET.feed", "");
             }
         } catch (Throwable e) {
             return handleTopLevelException(e, abdera, request);
         }
         finally {
-            stopWatch.stop("GET.feed", request.getUri().getPath()) ;
+            stopWatch.stop("GET.feed", request.getUri().getPath());
         }
     }
 
@@ -270,9 +281,10 @@ public class AtomServer extends AbstractProvider {
      * The Atom protocol specification defines an XML format known as a entry document.
      * This method returns that document, responding to an HTTP GET.  The URL defines precisely
      * which Atom workspace and collection to return.
+     *
      * @param request The Abdera RequestContext
      * @return response The Abdera ResponseContext, which will contain the appropriate HTTP status code,
-     * as detailed above
+     *         as detailed above
      */
     public ResponseContext getEntry(RequestContext request) {
         StopWatch stopWatch = new AtomServerStopWatch();
@@ -283,28 +295,33 @@ public class AtomServer extends AbstractProvider {
         try {
             EntryTarget entryTarget = atomService.getURIHandler().getEntryTarget(request, false);
             Entry entry = atomService.getAtomWorkspace(entryTarget.getWorkspace())
-                             .getAtomCollection(entryTarget.getCollection()).getEntry(request);
+                    .getAtomCollection(entryTarget.getCollection()).getEntry(request);
 
-            if (entry == null) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("AtomServer.getEntry() THE ENTRY IS NOT MODIFIED -- RETURNING 304");
+            StopWatch stopWatch2 = new AtomServerStopWatch();
+            try {
+                if (entry == null) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("AtomServer.getEntry() THE ENTRY IS NOT MODIFIED -- RETURNING 304");
+                    }
+                    return notmodified(abdera, request, "No Entry was found modified since " + request.getIfModifiedSince());
+                } else {
+                    Document<Entry> doc = entry.getDocument();
+                    BaseResponseContext rc = new BaseResponseContext<Document<Entry>>(doc);
+                    try {
+                        rc.setEntityTag(new EntityTag(entry.getId().toString()));
+                    } catch (IRISyntaxException e) {
+                        throw new BadRequestException(e);
+                    }
+                    return rc;
                 }
-                return notmodified(abdera, request, "No Entry was found modified since " + request.getIfModifiedSince());
-            } else {
-                Document<Entry> doc = entry.getDocument();
-                BaseResponseContext rc = new BaseResponseContext<Document<Entry>>(doc);
-                try {
-                    rc.setEntityTag(new EntityTag(entry.getId().toString()));
-                } catch (IRISyntaxException e) {
-                    throw new BadRequestException(e);
-                }
-                return rc;
+            } finally {
+                stopWatch2.stop("AS.buildResp.GET.entry", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryTarget));
             }
         } catch (Throwable e) {
             return handleTopLevelException(e, abdera, request);
         }
         finally {
-            stopWatch.stop("GET.entry", request.getUri().getPath()) ;
+            stopWatch.stop("GET.entry", request.getUri().getPath());
         }
     }
 
@@ -314,9 +331,10 @@ public class AtomServer extends AbstractProvider {
      * The Atom protocol specification defines an XML format known as a entry document.
      * This method accepts AND returns that document, responding to an HTTP POST.  The URL defines precisely
      * which Atom entry to create (i.e which workspace, collection, and entry).
+     *
      * @param request The Abdera RequestContext
      * @return response The Abdera ResponseContext, which will contain the appropriate HTTP status code,
-     * as detailed above. (201 indicates a successful creation)
+     *         as detailed above. (201 indicates a successful creation)
      */
     public ResponseContext createEntry(RequestContext request) {
         StopWatch stopWatch = new AtomServerStopWatch();
@@ -337,11 +355,12 @@ public class AtomServer extends AbstractProvider {
      * The URL defines precisely which Atom entry to delete. The semantics of what actually happens when
      * you delete an entry are, of course, undefined. In the default version of AtomServer (i.e. using
      * the DBBasedAtomService), we do not destroy the actual entry (i.e. remove the corresponding row from
-     * the database). Instead we simply mark it as deleted, so that Feed consumers can be alerted to the entries 
+     * the database). Instead we simply mark it as deleted, so that Feed consumers can be alerted to the entries
      * new state.
+     *
      * @param request The Abdera RequestContext
      * @return response The Abdera ResponseContext, which will contain the appropriate HTTP status code,
-     * as detailed above.
+     *         as detailed above.
      */
     public ResponseContext deleteEntry(RequestContext request) {
         StopWatch stopWatch = new AtomServerStopWatch();
@@ -353,17 +372,23 @@ public class AtomServer extends AbstractProvider {
 
             EntryTarget entryTarget = atomService.getURIHandler().getEntryTarget(request, false);
             Entry entry = atomService.getAtomWorkspace(entryTarget.getWorkspace())
-                             .getAtomCollection(entryTarget.getCollection()).deleteEntry(request);
+                    .getAtomCollection(entryTarget.getCollection()).deleteEntry(request);
 
-            AbstractResponseContext rc = null;
-            if (entry == null) {
-                rc = new EmptyResponseContext(200);
-            } else {
-                Document<Entry> doc = entry.getDocument();
-                rc = new BaseResponseContext<Document<Entry>>(doc);
-                rc.setEntityTag(new EntityTag(entry.getId().toString()));
+            StopWatch stopWatch2 = new AtomServerStopWatch();
+            try {
+                AbstractResponseContext rc = null;
+                if (entry == null) {
+                    rc = new EmptyResponseContext(200);
+                } else {
+                    Document<Entry> doc = entry.getDocument();
+                    rc = new BaseResponseContext<Document<Entry>>(doc);
+                    rc.setEntityTag(new EntityTag(entry.getId().toString()));
+                }
+                return rc;
+
+            } finally {
+                stopWatch2.stop("AS.buildResp.DELETE", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryTarget));
             }
-            return rc;
 
         } catch (Throwable e) {
             return handleTopLevelException(e, abdera, request);
@@ -385,10 +410,11 @@ public class AtomServer extends AbstractProvider {
      * in turn, labeled (i.e. given an Id) by that system. So the default version of AtomServer (i.e. using
      * the DBBasedAtomService) allows you to PUT that entry as you would PUT any entry, and then determines under
      * the covers whether this is a create or modify operation.
+     *
      * @param request The Abdera RequestContext
      * @return response The Abdera ResponseContext, which will contain the appropriate HTTP status code,
-     * as detailed above. Will return a status code of 201 if the document was successfully created,
-     * and otherwise, 200 for success.
+     *         as detailed above. Will return a status code of 201 if the document was successfully created,
+     *         and otherwise, 200 for success.
      */
     public ResponseContext updateEntry(RequestContext request) {
         StopWatch stopWatch = new AtomServerStopWatch();
@@ -415,7 +441,8 @@ public class AtomServer extends AbstractProvider {
 
     /**
      * Returns the default page size
-     * @return  the default page size
+     *
+     * @return the default page size
      */
     public int getDefaultPageSize() {
         return DEFAULT_PAGE_SIZE;
@@ -424,13 +451,15 @@ public class AtomServer extends AbstractProvider {
     //====================================
     //  Methods Not Currently Implemented
     //====================================
+
     /**
      * Called for a HTTP POST to an ENTRY URL.
      * NOT CURRENTLY IMPLEMENTED
      * <p/>
+     *
      * @param request The Abdera RequestContext
      * @return response The Abdera ResponseContext, which will contain the appropriate HTTP status code,
-     * as detailed above.
+     *         as detailed above.
      */
     public ResponseContext entryPost(RequestContext request) {
         return notImplemented(request, "POST to Entry");
@@ -439,10 +468,11 @@ public class AtomServer extends AbstractProvider {
     /**
      * Called for a HTTP GET for a Categories document.
      * NOT CURRENTLY IMPLEMENTED
-      * <p/>
+     * <p/>
+     *
      * @param request The Abdera RequestContext
      * @return response The Abdera ResponseContext, which will contain the appropriate HTTP status code,
-     * as detailed above.
+     *         as detailed above.
      */
     public ResponseContext getCategories(RequestContext request) {
         return notImplemented(request, "GET categories");
@@ -451,10 +481,11 @@ public class AtomServer extends AbstractProvider {
     /**
      * Called for a HTTP PUT to an ENTRY URL, where the Content type is some media.
      * NOT CURRENTLY IMPLEMENTED
-      * <p/>
+     * <p/>
+     *
      * @param request The Abdera RequestContext
      * @return response The Abdera ResponseContext, which will contain the appropriate HTTP status code,
-     * as detailed above.
+     *         as detailed above.
      */
     public ResponseContext updateMedia(RequestContext request) {
         return notImplemented(request, "PUT media");
@@ -463,10 +494,11 @@ public class AtomServer extends AbstractProvider {
     /**
      * Called for a HTTP DELETE to an ENTRY URL, where the Content type is some media.
      * NOT CURRENTLY IMPLEMENTED
-      * <p/>
+     * <p/>
+     *
      * @param request The Abdera RequestContext
      * @return response The Abdera ResponseContext, which will contain the appropriate HTTP status code,
-     * as detailed above.
+     *         as detailed above.
      */
     public ResponseContext deleteMedia(RequestContext request) {
         return notImplemented(request, "DELETE media");
@@ -476,10 +508,11 @@ public class AtomServer extends AbstractProvider {
     /**
      * Called for a HTTP GET to an ENTRY URL, where the Content type is some media.
      * NOT CURRENTLY IMPLEMENTED
-      * <p/>
+     * <p/>
+     *
      * @param request The Abdera RequestContext
      * @return response The Abdera ResponseContext, which will contain the appropriate HTTP status code,
-     * as detailed above.
+     *         as detailed above.
      */
     public ResponseContext getMedia(RequestContext request) {
         return notImplemented(request, "GET media");
@@ -488,10 +521,11 @@ public class AtomServer extends AbstractProvider {
     /**
      * Called for a HTTP POST to an ENTRY URL,, where the Content type is some media.
      * NOT CURRENTLY IMPLEMENTED
-      * <p/>
+     * <p/>
+     *
      * @param request The Abdera RequestContext
      * @return response The Abdera ResponseContext, which will contain the appropriate HTTP status code,
-     * as detailed above.
+     *         as detailed above.
      */
     public ResponseContext mediaPost(RequestContext request) {
         return notImplemented(request, "POST media");
@@ -502,20 +536,25 @@ public class AtomServer extends AbstractProvider {
             EntryTarget entryTarget = atomService.getURIHandler().getEntryTarget(request, false);
             UpdateCreateOrDeleteEntry.CreateOrUpdateEntry uEntry =
                     atomService.getAtomWorkspace(entryTarget.getWorkspace())
-                        .getAtomCollection(entryTarget.getCollection()).updateEntry(request);
-            Entry entry = uEntry.getEntry();
+                            .getAtomCollection(entryTarget.getCollection()).updateEntry(request);
 
-            Document<Entry> doc = entry.getDocument();
-            AbstractResponseContext rc = new BaseResponseContext<Document<Entry>>(doc);
-            rc.setEntityTag(new EntityTag(entry.getId().toString()));
+            StopWatch stopWatch = new AtomServerStopWatch();
+            try {
+                Entry entry = uEntry.getEntry();
+                Document<Entry> doc = entry.getDocument();
+                AbstractResponseContext rc = new BaseResponseContext<Document<Entry>>(doc);
+                rc.setEntityTag(new EntityTag(entry.getId().toString()));
 
-            if (uEntry.isNewlyCreated()) {
-                rc.setStatus(201);
+                if (uEntry.isNewlyCreated()) {
+                    rc.setStatus(201);
+                }
+                rc.setLocation(entry.getEditLinkResolvedHref().toString());
+                return rc;
+
+            } finally {
+                stopWatch.stop("AS.buildResp.PUT.entry", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryTarget));
             }
 
-            rc.setLocation( entry.getEditLinkResolvedHref().toString() );
-            
-            return rc;
         } catch (Throwable e) {
             return handleTopLevelException(e, abdera, request);
         }
@@ -523,58 +562,64 @@ public class AtomServer extends AbstractProvider {
 
     private ResponseContext handleBatch(RequestContext request, Abdera abdera) {
 
-        final Factory factory = getFactory(abdera);      
+        final Factory factory = getFactory(abdera);
 
         try {
             EntryTarget entryTarget = atomService.getURIHandler().getEntryTarget(request, false);
             java.util.Collection<UpdateCreateOrDeleteEntry> updateEntries =
                     atomService.getAtomWorkspace(entryTarget.getWorkspace())
-                        .getAtomCollection(entryTarget.getCollection()).updateEntries(request);
+                            .getAtomCollection(entryTarget.getCollection()).updateEntries(request);
 
-            Document<Feed> doc = factory.newFeed().getDocument();
+            StopWatch stopWatch = new AtomServerStopWatch();
+            try {
+                Document<Feed> doc = factory.newFeed().getDocument();
 
-            int inserts = 0, updates = 0, deletes = 0, errors = 0;
-            for (UpdateCreateOrDeleteEntry updateOrDeleteEntry : updateEntries) {
-                Entry entry = updateOrDeleteEntry.getEntry();
-           
-                Operation operation = factory.newExtensionElement(AtomServerConstants.OPERATION);
-                entry.addExtension(operation);
+                int inserts = 0, updates = 0, deletes = 0, errors = 0;
+                for (UpdateCreateOrDeleteEntry updateOrDeleteEntry : updateEntries) {
+                    Entry entry = updateOrDeleteEntry.getEntry();
 
-                operation.setType(updateOrDeleteEntry.isDeleted() ? "delete" :
-                                  updateOrDeleteEntry.isNewlyCreated() ? "insert" : "update");
-                if (updateOrDeleteEntry.getException() == null) {
+                    Operation operation = factory.newExtensionElement(AtomServerConstants.OPERATION);
+                    entry.addExtension(operation);
 
-                    Status status = factory.newExtensionElement(AtomServerConstants.STATUS);
-                    entry.addExtension(status);
+                    operation.setType(updateOrDeleteEntry.isDeleted() ? "delete" :
+                                      updateOrDeleteEntry.isNewlyCreated() ? "insert" : "update");
+                    if (updateOrDeleteEntry.getException() == null) {
 
-                    status.setCode(updateOrDeleteEntry.isNewlyCreated() ? "201" : "200");
-                    status.setReason(updateOrDeleteEntry.isNewlyCreated() ? "CREATED" : "OK");
+                        Status status = factory.newExtensionElement(AtomServerConstants.STATUS);
+                        entry.addExtension(status);
 
-                    if (updateOrDeleteEntry.isDeleted()) {
-                        deletes++;
-                    } else if (updateOrDeleteEntry.isNewlyCreated()) {
-                        inserts++;
+                        status.setCode(updateOrDeleteEntry.isNewlyCreated() ? "201" : "200");
+                        status.setReason(updateOrDeleteEntry.isNewlyCreated() ? "CREATED" : "OK");
+
+                        if (updateOrDeleteEntry.isDeleted()) {
+                            deletes++;
+                        } else if (updateOrDeleteEntry.isNewlyCreated()) {
+                            inserts++;
+                        } else {
+                            updates++;
+                        }
                     } else {
-                        updates++;
+                        handleBatchItemException(updateOrDeleteEntry.getException(), abdera, request, entry);
+                        errors++;
                     }
-                } else {
-                    handleBatchItemException(updateOrDeleteEntry.getException(), abdera, request, entry);
-                    errors++;
+                    doc.getRoot().addEntry(entry);
                 }
-                doc.getRoot().addEntry(entry);
+
+                Results results = factory.newExtensionElement(AtomServerConstants.RESULTS);
+                doc.getRoot().addExtension(results);
+                results.setInserts(inserts);
+                results.setUpdates(updates);
+                results.setDeletes(deletes);
+                results.setErrors(errors);
+
+                BaseResponseContext<Document<Feed>> responseContext = new BaseResponseContext<Document<Feed>>(doc);
+                responseContext.setStatus(200);
+                responseContext.setStatusText("BATCH OK");
+                return responseContext;
+            } finally {
+                stopWatch.stop("AS.buildResp.PUT.Batch", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryTarget));
             }
 
-            Results results = factory.newExtensionElement(AtomServerConstants.RESULTS);
-            doc.getRoot().addExtension(results);
-            results.setInserts(inserts);
-            results.setUpdates(updates);
-            results.setDeletes(deletes);
-            results.setErrors(errors);
-
-            BaseResponseContext<Document<Feed>> responseContext = new BaseResponseContext<Document<Feed>>(doc);
-            responseContext.setStatus(200);
-            responseContext.setStatusText("BATCH OK");
-            return responseContext;
         } catch (Throwable e) {
             return handleTopLevelException(e, abdera, request);
         }
@@ -584,8 +629,11 @@ public class AtomServer extends AbstractProvider {
     //====================================
     //  Special HTTP Error Codes/Returns 
     //====================================
-    /** Return a 403 FORBIDDEN error when a method has not yet been implemented
+
+    /**
+     * Return a 403 FORBIDDEN error when a method has not yet been implemented
      * <p/>
+     *
      * @param request The Abdera RequestContext
      * @param details Details concerning the error
      * @return response The Abdera ResponseContext, which will contain the 403 HTTP status code.
@@ -597,8 +645,10 @@ public class AtomServer extends AbstractProvider {
         return forbidden(abdera, request, msg);
     }
 
-    /** Return a 422 BAD CONTENT error
+    /**
+     * Return a 422 BAD CONTENT error
      * <p/>
+     *
      * @param abdera The Abdera Instance
      * @param reason Details concerning the error
      * @return response The Abdera ResponseContext, which will contain the 422 HTTP status code.
@@ -607,10 +657,12 @@ public class AtomServer extends AbstractProvider {
         return returnBase(createErrorDocument(abdera, 422, reason, null), 422, null);
     }
 
-    /** Return a 409 CONFLICT error when an optimistic concurrency error occurs
+    /**
+     * Return a 409 CONFLICT error when an optimistic concurrency error occurs
      * <p/>
-     * @param abdera The Abdera Instance
-     * @param reason Details concerning the error
+     *
+     * @param abdera  The Abdera Instance
+     * @param reason  Details concerning the error
      * @param editURI The edit URI that user should use to access the Entry.
      * @return response The Abdera ResponseContext, which will contain the 409 HTTP status code.
      */
@@ -619,8 +671,9 @@ public class AtomServer extends AbstractProvider {
     }
 
 
-    /**  Creates the a 409 Conflict error, when an optimistic concurrency error occurs,
-     * which looks something like this;  
+    /**
+     * Creates the a 409 Conflict error, when an optimistic concurrency error occurs,
+     * which looks something like this;
      * <pre>
      *  <error xmlns="http://incubator.apache.org/abdera">
      *    <code>409</code>
@@ -629,14 +682,15 @@ public class AtomServer extends AbstractProvider {
      *  </error>
      * </pre>
      * <p/>
-     * @param abdera The Abdera Instance
+     *
+     * @param abdera  The Abdera Instance
      * @param message Details concerning the error
      * @param editURI The edit URI that user should use to access the Entry.
      * @return error The Abdera Error, as shown above.
      */
     protected Error createOptimisticConcurrencyErrorDocument(Abdera abdera, String message, String editURI) {
 
-        Error error = Error.create( abdera, 409, ((message != null) ? message : "") );
+        Error error = Error.create(abdera, 409, ((message != null) ? message : ""));
 
         // create an Atom edit link, note that we must add it as an Extension
         //  so that we can access it later (in JUnits, etc)
@@ -653,8 +707,10 @@ public class AtomServer extends AbstractProvider {
         return error;
     }
 
-    /** Return a 301 MOVED PERMANANTLY error
+    /**
+     * Return a 301 MOVED PERMANANTLY error
      * <p/>
+     *
      * @param abdera The Abdera Instance
      * @param reason Details concerning the error
      * @param altURI The edit URI that user should use to access the Entry.
@@ -665,7 +721,8 @@ public class AtomServer extends AbstractProvider {
     }
 
 
-    /**  Creates the a 301 Moved Permanently error, which looks something like this;  
+    /**
+     * Creates the a 301 Moved Permanently error, which looks something like this;
      * <pre>
      *  <error xmlns="http://incubator.apache.org/abdera">
      *    <code>301</code>
@@ -673,18 +730,19 @@ public class AtomServer extends AbstractProvider {
      *    <link xmlns="http://www.w3.org/2005/Atom" href="/foobar/v1/widgets/acme" rel="alternate" />
      *  </error>
      * </pre>
-     * @param abdera The Abdera Instance
+     *
+     * @param abdera  The Abdera Instance
      * @param message Details concerning the error
-     * @param altURI The URI that user should use to access the Entry.
+     * @param altURI  The URI that user should use to access the Entry.
      * @return error The Abdera Error, as shown above.
      */
     protected Error createMovedPermanentlyErrorDocument(Abdera abdera, String message, String altURI) {
-        Error error = Error.create( abdera, 301, ((message != null) ? message : "") );
+        Error error = Error.create(abdera, 301, ((message != null) ? message : ""));
 
         // create an Atom alternative link, note that we must add it as an Extension
         //  so that we can access it later (in JUnits, etc)
         Factory factory = AtomServer.getFactory(abdera);
-        
+
         Link link = factory.newLink();
         link.setHref(altURI);
         link.setRel("alternate");
@@ -719,7 +777,7 @@ public class AtomServer extends AbstractProvider {
         TopLevelExceptionHandler<EntryNotFoundException> entryNotFoundHandler =
                 new TopLevelExceptionHandler<EntryNotFoundException>() {
                     public ResponseContext handle(EntryNotFoundException exception, Abdera abdera, RequestContext request) {
-                        String message = MessageFormat.format( "Unknown Entry:: {0}\nReason:: {1}", request.getUri(), exception.getMessage());
+                        String message = MessageFormat.format("Unknown Entry:: {0}\nReason:: {1}", request.getUri(), exception.getMessage());
                         ResponseContext response = unknown(abdera, request, message);
                         if (response instanceof BaseResponseContext) {
                             ((BaseResponseContext) response).setStatusText(message);
@@ -732,7 +790,7 @@ public class AtomServer extends AbstractProvider {
         TopLevelExceptionHandler<BadRequestException> badRequestHandler =
                 new TopLevelExceptionHandler<BadRequestException>() {
                     public ResponseContext handle(BadRequestException exception, Abdera abdera, RequestContext request) {
-                        String message = MessageFormat.format( "Bad Request:: {0}\nReason:: {1}", request.getUri(), exception.getMessage());
+                        String message = MessageFormat.format("Bad Request:: {0}\nReason:: {1}", request.getUri(), exception.getMessage());
                         ResponseContext response = badrequest(abdera, request, message);
                         if (response instanceof BaseResponseContext) {
                             ((BaseResponseContext) response).setStatusText(message);
@@ -747,7 +805,7 @@ public class AtomServer extends AbstractProvider {
         TopLevelExceptionHandler<BadContentException> badContentHandler =
                 new TopLevelExceptionHandler<BadContentException>() {
                     public ResponseContext handle(BadContentException exception, Abdera abdera, RequestContext request) {
-                        String message = MessageFormat.format( "Bad Content:: {0}\nReason:: {1}", request.getUri(), exception.getMessage());
+                        String message = MessageFormat.format("Bad Content:: {0}\nReason:: {1}", request.getUri(), exception.getMessage());
                         ResponseContext response = badcontent(abdera, message);
                         if (response instanceof BaseResponseContext) {
                             ((BaseResponseContext) response).setStatusText(message);
@@ -760,11 +818,11 @@ public class AtomServer extends AbstractProvider {
         TopLevelExceptionHandler<MovedPermanentlyException> movedPermanentlyHandler =
                 new TopLevelExceptionHandler<MovedPermanentlyException>() {
                     public ResponseContext handle(MovedPermanentlyException exception, Abdera abdera, RequestContext request) {
-                        String message = MessageFormat.format( "Moved Permanently:: {0}\nReason:: {1}", request.getUri(), exception.getMessage());
-                        ResponseContext response = movedPermanently(abdera, message, exception.getAlternateURI() );
+                        String message = MessageFormat.format("Moved Permanently:: {0}\nReason:: {1}", request.getUri(), exception.getMessage());
+                        ResponseContext response = movedPermanently(abdera, message, exception.getAlternateURI());
                         if (response instanceof BaseResponseContext) {
-                            ((BaseResponseContext) response).setStatusText( message );
-                            ((BaseResponseContext) response).setLocation( exception.getAlternateURI() );
+                            ((BaseResponseContext) response).setStatusText(message);
+                            ((BaseResponseContext) response).setLocation(exception.getAlternateURI());
                         }
                         return response;
                     }
@@ -785,12 +843,14 @@ public class AtomServer extends AbstractProvider {
         exceptionHandlers.put(OptimisticConcurrencyException.class, optimisticConcurrencyHandler);
     }
 
-    /** Handle a top-level Exception when using batched operations. This method delegates to handleTopLevelException.
-     * @param e  The Throwable that got you here.
-     * @param abdera The Abdera Instance
+    /**
+     * Handle a top-level Exception when using batched operations. This method delegates to handleTopLevelException.
+     *
+     * @param e       The Throwable that got you here.
+     * @param abdera  The Abdera Instance
      * @param request The Abdera RequestContext
-     * @param entry The Entry that threw the Exception
-    */
+     * @param entry   The Entry that threw the Exception
+     */
     protected void handleBatchItemException(Throwable e, Abdera abdera, RequestContext request, Entry entry) {
         final ResponseContext responseContext = handleTopLevelException(e, abdera, request);
         Status status = getFactory(abdera).newExtensionElement(AtomServerConstants.STATUS);
@@ -799,22 +859,24 @@ public class AtomServer extends AbstractProvider {
         status.setReason(responseContext.getStatusText());
     }
 
-    /** Handle a top-level Exception. This is the funnel point for Exception handling in the AtomServer.
+    /**
+     * Handle a top-level Exception. This is the funnel point for Exception handling in the AtomServer.
      * It allows a single entry point for the AtomServer methods, which provides maximal code reuse,
      * and insures that, for example all 500 errors get logged specially.
-     * @param e  The Throwable that got you here.
-     * @param abdera The Abdera Instance
+     *
+     * @param e       The Throwable that got you here.
+     * @param abdera  The Abdera Instance
      * @param request The Abdera RequestContext
-    */
+     */
     protected ResponseContext handleTopLevelException(Throwable e, Abdera abdera, RequestContext request) {
         TopLevelExceptionHandler exceptionHandler = exceptionHandlers.get(e.getClass());
-        String message = MessageFormat.format( "Unknown Error:: {0}\nReason:: {1}", request.getUri(), e.getMessage());
+        String message = MessageFormat.format("Unknown Error:: {0}\nReason:: {1}", request.getUri(), e.getMessage());
 
         ResponseContext response = null;
 
         // TODO: Refactor exception handling
         // Check for TooMuchDataException intercepted in ServletInputStream.
-        if(isTooMuchDataException(e)) {
+        if (isTooMuchDataException(e)) {
 
             response = tooMuchDataError(abdera, request);
 
@@ -824,17 +886,18 @@ public class AtomServer extends AbstractProvider {
                 ((BaseResponseContext) response).setStatusText(message);
             }
 
-            log500Error( e, abdera, request ); 
+            log500Error(e, abdera, request);
 
             // These Exceptions have probably been thrown all the way to here
             //  Thus, it has most likely NOT been logged to the "standard log" below
-            logger.error( message, e );
+            logger.error(message, e);
 
         } else {
-            if ( e instanceof EntryNotFoundException )
-                logger.warn( ("Error for [" + request.getUri() + "] Cause: " + e.getMessage()) );
-            else 
-                logger.error( ("Error for [" + request.getUri() + "] Cause: " + e.getMessage()), e );
+            if (e instanceof EntryNotFoundException) {
+                logger.warn(("Error for [" + request.getUri() + "] Cause: " + e.getMessage()));
+            } else {
+                logger.error(("Error for [" + request.getUri() + "] Cause: " + e.getMessage()), e);
+            }
             response = exceptionHandler.handle(e, abdera, request);
         }
         return response;
@@ -842,10 +905,10 @@ public class AtomServer extends AbstractProvider {
 
     private boolean isTooMuchDataException(Throwable e) {
         Throwable cause = e.getCause();
-        while( cause!= null && !(cause instanceof TooMuchDataException)) {
+        while (cause != null && !(cause instanceof TooMuchDataException)) {
             cause = cause.getCause();
         }
-        return (cause!=null);
+        return (cause != null);
     }
 
     private ResponseContext tooMuchDataError(Abdera abdera, RequestContext request) {
@@ -853,63 +916,64 @@ public class AtomServer extends AbstractProvider {
         logger.error(msg);
         return returnBase(
                 createErrorDocument(abdera, HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, msg, null),
-                        HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE,
-                        null);
+                HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE,
+                null);
     }
 
     static private final int MAX_REQ_BODY_DUMP = 500;
 
-    private void log500Error( Throwable e, Abdera abdera, RequestContext request ) {
-        if ( errlog != null ) { 
+    private void log500Error(Throwable e, Abdera abdera, RequestContext request) {
+        if (errlog != null) {
             Log http500log = errlog.getLog();
-            if ( http500log.isInfoEnabled() ) { 
-                try { 
-                    http500log.info( "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" );
-                    http500log.info( "==> 500 ERROR occurred for {" + request.getUri() +
-                                     "} Type:: " + e.getClass().getName() + " Reason:: " +  e.getMessage() );
-                    http500log.error( "500 Error:: ", e );
-                    http500log.info( "METHOD:: " + request.getMethod() );
-                    if ( request.getPrincipal() != null ) 
-                        http500log.info( "PRINCIPAL:: " + request.getPrincipal().getName() );
-                    http500log.info( "HEADERS:: " );
+            if (http500log.isInfoEnabled()) {
+                try {
+                    http500log.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+                    http500log.info("==> 500 ERROR occurred for {" + request.getUri() +
+                                    "} Type:: " + e.getClass().getName() + " Reason:: " + e.getMessage());
+                    http500log.error("500 Error:: ", e);
+                    http500log.info("METHOD:: " + request.getMethod());
+                    if (request.getPrincipal() != null) {
+                        http500log.info("PRINCIPAL:: " + request.getPrincipal().getName());
+                    }
+                    http500log.info("HEADERS:: ");
                     String[] headerNames = request.getHeaderNames();
-                    if ( headerNames != null ) {
-                        for( int ii = 0; ii < headerNames.length; ii++ ) { 
-                            http500log.info( "Header(" + headerNames[ii] + ")= " + request.getHeader( headerNames[ii] ));
+                    if (headerNames != null) {
+                        for (int ii = 0; ii < headerNames.length; ii++) {
+                            http500log.info("Header(" + headerNames[ii] + ")= " + request.getHeader(headerNames[ii]));
                         }
                     }
-                    http500log.info( "PARAMETERS:: " );
+                    http500log.info("PARAMETERS:: ");
                     String[] paramNames = request.getParameterNames();
-                    if ( paramNames != null ) {
-                        for( int ii = 0; ii < paramNames.length; ii++ ) { 
-                            http500log.info( "Parameter(" + paramNames[ii] + ")= " + request.getParameter( paramNames[ii] ));
+                    if (paramNames != null) {
+                        for (int ii = 0; ii < paramNames.length; ii++) {
+                            http500log.info("Parameter(" + paramNames[ii] + ")= " + request.getParameter(paramNames[ii]));
                         }
                     }
-                    if ( request instanceof HttpServletRequestContext ) { 
-                        HttpServletRequestContext httpRequest = (HttpServletRequestContext)request; 
+                    if (request instanceof HttpServletRequestContext) {
+                        HttpServletRequestContext httpRequest = (HttpServletRequestContext) request;
                         javax.servlet.http.HttpServletRequest servletRequest = httpRequest.getRequest();
-                        if ( servletRequest != null ) { 
-                            http500log.info("QUERY STRING::" + servletRequest.getQueryString() );
-                            http500log.info("AUTH TYPE:: " + servletRequest.getAuthType() );
-                            http500log.info("REMOTE USER:: "  + servletRequest.getRemoteUser() );
-                            http500log.info("REMOTE ADDR:: " + servletRequest.getRemoteAddr() );
-                            http500log.info("REMOTE HOST:: " + servletRequest.getRemoteHost() );
+                        if (servletRequest != null) {
+                            http500log.info("QUERY STRING::" + servletRequest.getQueryString());
+                            http500log.info("AUTH TYPE:: " + servletRequest.getAuthType());
+                            http500log.info("REMOTE USER:: " + servletRequest.getRemoteUser());
+                            http500log.info("REMOTE ADDR:: " + servletRequest.getRemoteAddr());
+                            http500log.info("REMOTE HOST:: " + servletRequest.getRemoteHost());
                         }
                     }
-                    http500log.info( "BODY:: " );
-                    if ( request.getDocument() != null ) { 
+                    http500log.info("BODY:: ");
+                    if (request.getDocument() != null) {
                         java.io.StringWriter stringWriter = new java.io.StringWriter();
-                        request.getDocument().writeTo( abdera.getWriterFactory().getWriter("PrettyXML"), stringWriter );
+                        request.getDocument().writeTo(abdera.getWriterFactory().getWriter("PrettyXML"), stringWriter);
 
                         //http500log.info( "\n" + stringWriter.toString() );
                         String requestString = stringWriter.toString();
-                        if ( requestString != null && requestString.length() > MAX_REQ_BODY_DUMP ) {
-                            requestString = requestString.substring(0, (MAX_REQ_BODY_DUMP-1) );
+                        if (requestString != null && requestString.length() > MAX_REQ_BODY_DUMP) {
+                            requestString = requestString.substring(0, (MAX_REQ_BODY_DUMP - 1));
                         }
 
-                        http500log.info( "\n" + requestString );
+                        http500log.info("\n" + requestString);
                     }
-                } catch ( Exception ee ) {}
+                } catch (Exception ee) {}
             }
         }
     }

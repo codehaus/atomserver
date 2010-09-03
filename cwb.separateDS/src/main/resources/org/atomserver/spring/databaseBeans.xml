@@ -88,6 +88,7 @@
           class="org.atomserver.core.dbstore.dao.ReadEntriesDAOiBatisImpl"
           parent="org.atomserver-base-entriesDAO">
         <property name="dataSource" ref="org.atomserver-read-dataSource"/>
+        <property name="useWorkspaceCollectionCache" value="${db.cache.workspaceCollections}" />
     </bean>
     <bean id="org.atomserver-aggregate-entriesDAO"
           class="org.atomserver.core.dbstore.dao.AggregateEntriesDAOiBatisImpl"
