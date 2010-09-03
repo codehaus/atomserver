@@ -22,6 +22,8 @@ import org.apache.commons.logging.LogFactory;
 import org.atomserver.core.WorkspaceOptions;
 import org.atomserver.core.autotaggers.XPathAutoTagger;
 import org.atomserver.core.dbstore.DBBasedContentStorage;
+import org.atomserver.core.dbstore.dao.EntriesDAO;
+import org.atomserver.core.dbstore.dao.EntriesDAOiBatisImpl;
 import org.atomserver.core.validators.RelaxNGValidator;
 import org.atomserver.server.servlet.AtomServerServlet;
 import org.atomserver.utils.hsql.HsqlBootstrapper;
@@ -309,6 +311,10 @@ public class TestingAtomServer {
         // register the servlets
         context.addServlet(new ServletHolder(servlet), "/v1/*");
         context.addServlet(new ServletHolder(servletV2), "/v2/*");
+
+
+        EntriesDAOiBatisImpl entriesDAO = (EntriesDAOiBatisImpl)appContext.getBean("org.atomserver-entriesDAO");
+        entriesDAO.setUseWorkspaceCollectionCache(false);
 
         // ready to be started
         return server;

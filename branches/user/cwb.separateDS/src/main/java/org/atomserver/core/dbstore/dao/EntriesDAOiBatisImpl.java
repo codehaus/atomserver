@@ -28,6 +28,7 @@ import org.atomserver.core.EntryMetaData;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.utils.logic.BooleanExpression;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
 
 import javax.sql.DataSource;
@@ -190,7 +191,6 @@ public class EntriesDAOiBatisImpl
     //-------------------
     //   WriteReadEntriesDAO
     //-------------------
-
     public void acquireLock() throws AtomServerException {writeEntriesDAO.acquireLock();}
 
     public Object insertEntry(EntryDescriptor entry) {return writeEntriesDAO.insertEntry(entry);}
@@ -238,6 +238,15 @@ public class EntriesDAOiBatisImpl
     //-------------------
     //   ReadEntriesDAO
     //-------------------
+    @ManagedAttribute(description="Set use the workspace, collection cache")
+    public void setUseWorkspaceCollectionCache(boolean useWorkspaceCollectionCache) {
+        readEntriesDAO.setUseWorkspaceCollectionCache(useWorkspaceCollectionCache);
+    }
+
+    @ManagedAttribute(description="Use the workspace, collection cache")
+    public boolean isUseWorkspaceCollectionCache() {
+        return readEntriesDAO.isUseWorkspaceCollectionCache();
+    }
 
     public EntryMetaData selectEntry(EntryDescriptor entry) {return readEntriesDAO.selectEntry(entry);}
 
