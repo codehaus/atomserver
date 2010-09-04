@@ -70,7 +70,7 @@ public class BaseEntryDescriptor implements EntryDescriptor {
 
     public String getEntryId() { return entryId; }
 
-    public void setEntryId(String entryId) { this.entryId = entryId; }
+    public void setEntryId(String entryId) { this.entryId = (entryId != null) ? entryId.trim() : entryId; }
 
     public Locale getLocale() { return locale; }
 

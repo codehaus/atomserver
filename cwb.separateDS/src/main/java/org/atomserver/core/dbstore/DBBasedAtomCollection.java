@@ -798,7 +798,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                 try {
                     feed.addEntry(entry);
                 } catch (Exception ee) {
-                    String msg = "Exception " + ee.getClass().getSimpleName() + "while adding: " + entryMetaData;
+                    String msg = "Exception " + ee.getClass().getSimpleName() + " while adding: " + entryMetaData;
                     log.error( ee );
                     throw (ee instanceof AtomServerException) ? (AtomServerException)ee : new AtomServerException( msg, ee );
                 }
