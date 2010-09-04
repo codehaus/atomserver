@@ -22,24 +22,4 @@ package org.atomserver.core.dbstore.dao;
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
-public interface ContentDAO extends WriteReadContentDAO {
-}
-
-/*
-    void putContent(EntryMetaData entry, String content);
-
-    String selectContent(EntryMetaData entry);
-
-    void deleteContent(EntryMetaData entry);
-
-    boolean contentExists(EntryMetaData entry);
-
-    //void deleteAllContent();
-
-    void deleteAllContent(String workspace);
-
-    void deleteAllContent(String workspace, String collection);
-
-    void deleteAllRowsFromContent();
-}
-*/
+public interface ContentDAO extends WriteReadContentDAO {}

@@ -21,6 +21,7 @@ import org.atomserver.core.dbstore.dao.ContentDAO;
 import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
 import org.atomserver.utils.perf.AtomServerStopWatch;
 import org.perf4j.StopWatch;
+import org.springframework.beans.factory.InitializingBean;
 
 import java.util.Map;
 
@@ -29,13 +30,66 @@ import java.util.Map;
  * @author Bryon Jacob (bryon at jacob.net)
  */
 public class ContentDAOiBatisImpl
-        extends AbstractDAOiBatisImpl
-        implements ContentDAO {
+        extends AbstractDAOiBatisImplDelegator
+        implements ContentDAO, InitializingBean {
 
+    private ReadContentDAOiBatisImpl readContentDAO;
+    private WriteReadContentDAOiBatisImpl writeReadContentDAO;
+
+    public WriteReadContentDAOiBatisImpl getWriteReadContentDAO() { return writeReadContentDAO; }
+
+    public void setWriteReadContentDAO(WriteReadContentDAOiBatisImpl writeReadContentDAO) {
+        this.writeReadContentDAO = writeReadContentDAO;
+    }
+
+    public ReadContentDAOiBatisImpl getReadContentDAO() { return readContentDAO; }
+
+    public void setReadContentDAO(ReadContentDAOiBatisImpl readContentDAO) { this.readContentDAO = readContentDAO; }
+
+    public void afterPropertiesSet() throws Exception {
+        if (dataSource != null) {
+            if (writeReadContentDAO == null) {
+                writeReadContentDAO = new WriteReadContentDAOiBatisImpl();
+                setupDAO(writeReadContentDAO);
+            }
+            if (readContentDAO == null) {
+                readContentDAO = new ReadContentDAOiBatisImpl();
+                setupDAO(readContentDAO);
+            }
+        }
+    }
+
+    private void setupDAO(ReadContentDAOiBatisImpl dao) {
+        dao.setSqlMapClient(sqlMapClient);
+        dao.setDatabaseType(dbType);
+        dao.setDataSource(dataSource);
+        dao.afterPropertiesSet();
+    }
+
+    
+    public AbstractDAOiBatisImpl getReadDAO() { return readContentDAO; }
+
+    public String selectContent(EntryMetaData entry) {return readContentDAO.selectContent(entry);}
+
+
+    public void deleteContent(EntryMetaData entry) {writeReadContentDAO.deleteContent(entry);}
+
+    public boolean contentExists(EntryMetaData entry) {return readContentDAO.contentExists(entry);}
+
+    public void deleteAllContent(String workspace) {writeReadContentDAO.deleteAllContent(workspace);}
+
+    public void deleteAllContent(String workspace, String collection) {
+        writeReadContentDAO.deleteAllContent(workspace, collection);
+    }
+
+    public void deleteAllRowsFromContent() {writeReadContentDAO.deleteAllRowsFromContent();}
+
+    public void putContent(EntryMetaData entry, String content) {writeReadContentDAO.putContent(entry, content);}
+}
+    /*
     public void putContent(EntryMetaData entry, String content) {
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
-
             Map paramMap = paramMap()
                     .param("entryStoreId", entry.getEntryStoreId())
                     .param("content", content);
@@ -100,3 +154,4 @@ public class ContentDAOiBatisImpl
 
 
 }
+*/

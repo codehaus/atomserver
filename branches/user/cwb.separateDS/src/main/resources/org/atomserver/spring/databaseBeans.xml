@@ -119,13 +119,28 @@
     <!-- +++++++++++++++++++++++++++++++++++ -->
     <!--               contentDAO            -->
     <!-- +++++++++++++++++++++++++++++++++++ -->
-
+    <bean id="org.atomserver-base-contentDAO"
+          class="org.atomserver.core.dbstore.dao.impl.ReadContentDAOiBatisImpl"
+          depends-on="org.atomserver-propertyConfigurer"
+          abstract="true" >
+        <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
+        <property name="databaseType" value="${db.type}"/>
+    </bean>
+    <bean id="org.atomserver-read-contentDAO"
+          class="org.atomserver.core.dbstore.dao.impl.ReadContentDAOiBatisImpl"
+          parent="org.atomserver-base-contentDAO">
+        <property name="dataSource" ref="org.atomserver-read-dataSource"/>
+    </bean>
+    <bean id="org.atomserver-write-contentDAO"
+          class="org.atomserver.core.dbstore.dao.impl.WriteReadContentDAOiBatisImpl"
+          parent="org.atomserver-base-contentDAO">
+        <property name="dataSource" ref="org.atomserver-dataSource"/>
+    </bean>
     <bean id="org.atomserver-contentDAO"
           class="org.atomserver.core.dbstore.dao.impl.ContentDAOiBatisImpl"
           depends-on="org.atomserver-propertyConfigurer">
-        <property name="dataSource" ref="org.atomserver-dataSource"/>
-        <property name="sqlMapClient" ref="org.atomserver-sqlMapClient"/>
-        <property name="databaseType" value="${db.type}"/>
+        <property name="readContentDAO" ref="org.atomserver-read-contentDAO" />
+        <property name="writeReadContentDAO" ref="org.atomserver-write-contentDAO" />
     </bean>
 
     <!-- +++++++++++++++++++++++++++++++++++ -->
