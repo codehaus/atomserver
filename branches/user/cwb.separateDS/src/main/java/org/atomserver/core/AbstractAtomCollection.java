@@ -1140,6 +1140,12 @@ abstract public class AbstractAtomCollection implements AtomCollection {
             }
 
             return entry;
+            
+        } catch (Exception ee ) {
+            String msg = "Exception " + ee.getClass().getSimpleName() + "while creating: " + entryMetaData;
+            log.error( ee );
+            throw (ee instanceof AtomServerException) ? (AtomServerException)ee : new AtomServerException( msg, ee );
+
         } finally {
             outerStopWatch.stop("XML.fine.entry", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryMetaData));
         }
