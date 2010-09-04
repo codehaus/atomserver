@@ -26,13 +26,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.lang.StringUtils;
 import org.atomserver.*;
-import org.atomserver.core.dbstore.dao.CategoryLogEventsDAO;
+import org.atomserver.core.dbstore.dao.*;
+import org.atomserver.core.dbstore.dao.impl.CategoriesDAOiBatisImpl;
+import org.atomserver.core.dbstore.dao.impl.CategoryLogEventsDAOiBatisImpl;
+import org.atomserver.core.dbstore.dao.impl.EntriesDAOiBatisImpl;
 import org.atomserver.ext.category.CategoryOperation;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.WorkspaceOptions;
 import org.atomserver.core.etc.AtomServerConstants;
-import org.atomserver.core.dbstore.dao.CategoriesDAO;
 import org.atomserver.core.dbstore.utils.SizeLimit;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.exceptions.BadRequestException;
@@ -86,6 +88,14 @@ public class EntryCategoriesHandler
         return catWorkspace;
     }
 
+    public WriteReadCategoriesDAO getWriteReadCategoriesDAO() {
+         return ((CategoriesDAOiBatisImpl)categoriesDAO).getWriteReadCategoriesDAO();
+    }
+
+    public WriteReadCategoryLogEventsDAO getWriteReadCategoryLogEventsDAO() {
+         return ((CategoryLogEventsDAOiBatisImpl)categoryLogEventsDAO).getWriteReadEntryCategoryLogEventDAO();
+    }
+
     // -----------------------------------
     //                IOC
     // -----------------------------------
@@ -126,8 +136,6 @@ public class EntryCategoriesHandler
 
     /**
      * Get the size limit settings
-     *
-     * @return
      */
     public SizeLimit getSizeLimit() {
         return sizeLimit;
@@ -135,8 +143,6 @@ public class EntryCategoriesHandler
 
     /**
      * Set the size limit settings
-     *
-     * @param sizeLimit
      */
     public void setSizeLimit(SizeLimit sizeLimit) {
         this.sizeLimit = sizeLimit;
@@ -182,11 +188,12 @@ public class EntryCategoriesHandler
     /* used only by obliterateEntry
     */
     public void deleteEntryCategories(EntryDescriptor entryQuery){
-        categoriesDAO.deleteEntryCategories(entryQuery);
+        getWriteReadCategoriesDAO().deleteEntryCategories(entryQuery);
     }
 
+    // USED BY THE AUTOTAGGER
     public List<EntryCategory> selectEntryCategories(EntryDescriptor entryQuery){
-        return categoriesDAO.selectEntryCategories(entryQuery);
+        return getWriteReadCategoriesDAO().selectEntryCategories(entryQuery);
     }
 
     public List<EntryCategory> selectEntriesCategories(String workspace, String collection, Set<String> entryIds){
@@ -198,16 +205,16 @@ public class EntryCategoriesHandler
             verifyEntryCategory( category );
         }
 
-        categoriesDAO.insertEntryCategoryBatch(entryCatList);
+        getWriteReadCategoriesDAO().insertEntryCategoryBatch(entryCatList);
 
         if (isLoggingAllCategoryEvents) {
-            categoryLogEventsDAO.insertEntryCategoryLogEventBatch(entryCatList);
+            getWriteReadCategoryLogEventsDAO().insertEntryCategoryLogEventBatch(entryCatList);
         }
     }
 
     public void deleteEntryCategoryBatch(List<EntryCategory> entryCategoryList) {
         // NOTE: we need to be able to delete Categories that may be bad, so do NOT verify here
-        categoriesDAO.deleteEntryCategoryBatch(entryCategoryList);
+        getWriteReadCategoriesDAO().deleteEntryCategoryBatch(entryCategoryList);
     }    
 
     // -----------------------------------
@@ -395,7 +402,7 @@ public class EntryCategoriesHandler
             log.trace("EntryCategoriesContentStorage:: getCategories:: [" + descriptor + "]");
         }
 
-        List categoryList = categoriesDAO.selectEntryCategories(descriptor);
+        List categoryList = getWriteReadCategoriesDAO().selectEntryCategories(descriptor);
         if (categoryList == null || categoryList.size() <= 0) {
             return null;
         }
@@ -459,7 +466,7 @@ public class EntryCategoriesHandler
         }
 
         // BATCH DELETE
-        categoriesDAO.deleteEntryCategoryBatch(entryCatList);
+        getWriteReadCategoriesDAO().deleteEntryCategoryBatch(entryCatList);
     }
 
     /**
@@ -492,10 +499,10 @@ public class EntryCategoriesHandler
         List<Category> catList = new ArrayList<Category>();
         catList.add(cat);
         List<EntryCategory> categoryList = getEntryCategoryList(descriptor, catList);
-        int rc = categoriesDAO.updateEntryCategory(categoryList.get(0), oldTerm );
+        int rc = getWriteReadCategoriesDAO().updateEntryCategory(categoryList.get(0), oldTerm );
 
         if (isLoggingAllCategoryEvents) {
-            categoryLogEventsDAO.insertEntryCategoryLogEventBatch(categoryList);
+            getWriteReadCategoryLogEventsDAO().insertEntryCategoryLogEventBatch(categoryList);
         }
         return rc;
     }
