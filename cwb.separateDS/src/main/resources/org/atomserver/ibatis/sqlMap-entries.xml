@@ -22,6 +22,7 @@
 <!--  iBatis SQL Map for EntryStore -->
 <sqlMap>
 
+    <!--
     <sql id="selectFeedPageIndexScan">
         SELECT <include refid="paginationPrefix"/>
                entry.EntryStoreId AS EntryStoreId,
@@ -99,9 +100,11 @@
         ORDER BY entry.UpdateTimestamp
         <include refid="paginationSuffix"/>
     </sql>
+    -->
 
     <!-- The following query is to improve performance on SQL Server by reducing columns in
     GROUP BY-HAVING and joining with EntryStore using a SQL server query join hint. -->
+    <!--
     <sql id="selectFeedPageIndexSeek" >
         SELECT 
                entry.EntryStoreId AS EntryStoreId,
@@ -161,11 +164,11 @@
               <isNotNull property="categoryQuerySql">HAVING $categoryQuerySql$</isNotNull>
                 ORDER BY entry.UpdateTimestamp <include refid="paginationSuffix"/>
        ) matchEntries
-       <!-- having an inner loop join here is important for performance -->
        <include refid="INNER_LOOP_JOIN"/> EntryStore entry
        ON entry.EntryStoreId = matchEntries.EntryStoreId
        ORDER BY entry.Updatetimestamp
      </sql>
+        -->
 
 
     <!--  The Improved Form, which spits out SQL something like this; 
@@ -260,6 +263,8 @@
       if sql server, use Index Seek or Index Scan version based on the parameter setting.
     -->
     <select id="selectFeedPage" parameterClass="map" resultMap="entryResultSansCategories">
+        <include refid="selectFeedPageSetOps"/>
+        <!--
         <isEqual property="usequery" compareValue="indexSeek">
           <include refid="selectFeedPageIndexSeek"/>
         </isEqual>
@@ -269,6 +274,7 @@
         <isEqual property="usequery" compareValue="setOps">
           <include refid="selectFeedPageSetOps"/>
         </isEqual>
+        -->
     </select>
 
 
