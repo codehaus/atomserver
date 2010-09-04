@@ -31,21 +31,6 @@
 
     <util:set id="org.atomserver-workspaces">
 
-<!--
-        <as:workspace name="testme" localized="true">
-            <as:validator class="blah">
-                <as:property name="foo" value="bar"/>
-            </as:validator>
-            <as:validator class="blah">
-                <as:property name="foo" value="bar"/>
-            </as:validator>
-
-
-            <as:autotagger-script>
-                NAMESPACE widgets = http://schemas.atomserver.org/widgets/v1/rev0;
-            </as:autotagger-script>
-        </as:workspace>
--->
         <!-- WIDGETS ... for testing ONLY -->
         <bean class="org.atomserver.core.WorkspaceOptions">
             <property name="name" value="widgets"/>
