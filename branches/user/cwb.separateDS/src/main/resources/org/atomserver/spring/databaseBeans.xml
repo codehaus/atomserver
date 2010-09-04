@@ -22,6 +22,10 @@
     <!-- +++++++++++++++++++++++++++++++++++ -->
     <!--           Data Sources              -->
     <!-- +++++++++++++++++++++++++++++++++++ -->
+    <!-- NOTE: We split into 3 datasources here so that
+    we can control read-only, read-write, and aggregate feeds separately.
+    This way we can set different timeouts and pool sizes for each.
+    -->
 
     <!-- NOTE: defaultAutoCommit must remain true here (the default)
                Otherwise, the Transaction (withing Spring's TransactionManager) will NOT commit -->
@@ -52,7 +56,22 @@
         <property name="url" value="${db.url}"/>
         <property name="username" value="${db.username}"/>
         <property name="password" value="${db.password}"/>
-        <property name="maxActive" value="${db.poolsize.max}"/>
+        <property name="maxActive" value="${db.read.poolsize.max}"/>
+        <property name="maxWait" value="10000"/>
+    </bean>
+
+    <!-- the AGGREGATE datasource -->
+    <bean id="org.atomserver-aggregate-dataSource"
+          class="org.apache.commons.dbcp.BasicDataSource"
+          destroy-method="close"
+          lazy-init="true"
+          depends-on="org.atomserver-propertyConfigurer">
+
+        <property name="driverClassName" value="${db.driver}"/>
+        <property name="url" value="${db.url}"/>
+        <property name="username" value="${db.username}"/>
+        <property name="password" value="${db.password}"/>
+        <property name="maxActive" value="${db.aggregate.poolsize.max}"/>
         <property name="maxWait" value="10000"/>
     </bean>
 
@@ -104,7 +123,7 @@
     <bean id="org.atomserver-aggregate-entriesDAO"
           class="org.atomserver.core.dbstore.dao.impl.AggregateEntriesDAOiBatisImpl"
           parent="org.atomserver-base-entriesDAO">
-        <property name="dataSource" ref="org.atomserver-read-dataSource"/>
+        <property name="dataSource" ref="org.atomserver-aggregate-dataSource"/>
     </bean>
 
     <bean id="org.atomserver-entriesDAO"
