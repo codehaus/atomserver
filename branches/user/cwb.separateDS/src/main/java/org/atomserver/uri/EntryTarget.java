@@ -53,7 +53,7 @@ public class EntryTarget extends URITarget implements EntryDescriptor {
         this.requestContext = requestContext;
         this.workspace = workspace;
         this.collection = collection;
-        this.entryId = entryId;
+        setEntryId(entryId);
         this.revision = revision;
         this.locale = locale;
     }
@@ -95,7 +95,7 @@ public class EntryTarget extends URITarget implements EntryDescriptor {
     }
 
     public void setEntryId( String entryId ) {
-        this.entryId = entryId;
+        this.entryId = (entryId != null) ? entryId.trim() : entryId;
     }
 
     public int getRevision() {
