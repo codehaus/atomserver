@@ -81,7 +81,7 @@
     <bean id="org.atomserver-sqlMapClient"
           class="org.springframework.orm.ibatis.SqlMapClientFactoryBean"
           depends-on="org.atomserver-propertyConfigurer">
-        <property name="configLocation" value="classpath:org/atomserver/ibatis/sqlMapConfig-${db.type}.xml"/>
+        <property name="configLocation" value="classpath:org/atomserver/ibatis/sqlMapConfig.xml"/>
         <property name="sqlMapClientProperties">
             <props>
                 <prop key="db.getdate.func">${db.getdate.func}</prop>
