@@ -28,6 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.*;
 import org.atomserver.core.etc.AtomServerConstants;
+import org.atomserver.core.hashgenerators.SimpleContentHashGenerator;
 import org.atomserver.core.utils.HashUtils;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.exceptions.BadContentException;
