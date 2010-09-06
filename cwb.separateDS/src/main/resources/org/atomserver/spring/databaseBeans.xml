@@ -85,7 +85,6 @@
         <property name="sqlMapClientProperties">
             <props>
                 <prop key="db.getdate.func">${db.getdate.func}</prop>
-                <prop key="db.timeout.sql.stmts">${db.timeout.sql.stmts}</prop>
                 <prop key="db.timeout.txn.put">${db.timeout.txn.put}</prop>
                 <prop key="db.timeout.applock">${db.timeout.applock}</prop>
             </props>

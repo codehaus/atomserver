@@ -7,7 +7,7 @@ public class LatencyUtil {
     private static final Logger log = Logger.getLogger(LatencyUtil.class);
 
     // NOTE: this defaults to 2.1s because we assume that the tests use;
-    //       db.latency.seconds=2  and  db.timeout.sql.stmts=1
+    //       db.latency.seconds=2  
     //       We can use the actual db.latency.seconds value
     //       but it should never be too large (i.e. at 10s the tests take ~1hr, which is unacceptable)
 
