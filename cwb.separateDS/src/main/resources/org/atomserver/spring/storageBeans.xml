@@ -50,7 +50,7 @@
     </bean>
 
     <bean id="org.atomserver-ContentHashGenerator"
-          class="org.atomserver.core.SimpleContentHashGenerator"
+          class="org.atomserver.core.hashgenerators.SimpleContentHashGenerator"
           depends-on="org.atomserver-propertyConfigurer"
           lazy-init="true">
     </bean>
