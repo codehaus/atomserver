@@ -1,7 +1,7 @@
 /* Copyright Homeaway, Inc 2005-2007. All Rights Reserved.
  * No unauthorized use of this software.
  */
-package org.atomserver.core.dbstore.dao.impl;
+package org.atomserver.core.dbstore.dao.impl.rwimpl;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;

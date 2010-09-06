@@ -1,10 +1,10 @@
 /* Copyright Homeaway, Inc 2005-2007. All Rights Reserved.
  * No unauthorized use of this software.
  */
-package org.atomserver.core.dbstore.dao.impl;
+package org.atomserver.core.dbstore.dao.impl.rwimpl;
 
 import org.atomserver.core.EntryMetaData;
-import org.atomserver.core.dbstore.dao.ReadContentDAO;
+import org.atomserver.core.dbstore.dao.rwdao.ReadContentDAO;
 import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
 import org.atomserver.utils.perf.AtomServerStopWatch;
 import org.perf4j.StopWatch;

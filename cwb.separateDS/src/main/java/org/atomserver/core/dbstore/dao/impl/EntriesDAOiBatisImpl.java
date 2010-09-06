@@ -22,10 +22,14 @@ import org.atomserver.FeedDescriptor;
 import org.atomserver.ServiceDescriptor;
 import org.atomserver.core.AggregateEntryMetaData;
 import org.atomserver.core.EntryMetaData;
-import org.atomserver.core.dbstore.dao.ContentDAO;
-import org.atomserver.core.dbstore.dao.EntriesDAO;
 import org.atomserver.core.dbstore.dao.CategoriesDAO;
 import org.atomserver.core.dbstore.dao.CategoryLogEventsDAO;
+import org.atomserver.core.dbstore.dao.ContentDAO;
+import org.atomserver.core.dbstore.dao.EntriesDAO;
+import org.atomserver.core.dbstore.dao.impl.rwimpl.AbstractDAOiBatisImpl;
+import org.atomserver.core.dbstore.dao.impl.rwimpl.BaseEntriesDAOiBatisImpl;
+import org.atomserver.core.dbstore.dao.impl.rwimpl.ReadEntriesDAOiBatisImpl;
+import org.atomserver.core.dbstore.dao.impl.rwimpl.WriteReadEntriesDAOiBatisImpl;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.utils.logic.BooleanExpression;
 import org.springframework.beans.factory.InitializingBean;
@@ -79,7 +83,9 @@ public class EntriesDAOiBatisImpl
 
     public WriteReadEntriesDAOiBatisImpl getWriteEntriesDAO() { return writeEntriesDAO; }
 
-    public void setWriteEntriesDAO(WriteReadEntriesDAOiBatisImpl writeEntriesDAO) { this.writeEntriesDAO = writeEntriesDAO; }
+    public void setWriteEntriesDAO(WriteReadEntriesDAOiBatisImpl writeEntriesDAO) {
+        this.writeEntriesDAO = writeEntriesDAO;
+    }
 
     public ReadEntriesDAOiBatisImpl getReadEntriesDAO() { return readEntriesDAO; }
 
@@ -87,7 +93,9 @@ public class EntriesDAOiBatisImpl
 
     public AggregateEntriesDAOiBatisImpl getAggregateEntriesDAO() { return aggregateEntriesDAO; }
 
-    public void setAggregateEntriesDAO(AggregateEntriesDAOiBatisImpl aggregateEntriesDAO) { this.aggregateEntriesDAO = aggregateEntriesDAO; }
+    public void setAggregateEntriesDAO(AggregateEntriesDAOiBatisImpl aggregateEntriesDAO) {
+        this.aggregateEntriesDAO = aggregateEntriesDAO;
+    }
 
     private void setupDAO(BaseEntriesDAOiBatisImpl dao) {
         dao.setContentDAO(contentDAO);
@@ -104,7 +112,9 @@ public class EntriesDAOiBatisImpl
 
     public void setEntryCategoriesDAO(CategoriesDAO categoriesDAO) { this.categoriesDAO = categoriesDAO; }
 
-    public void setEntryCategoryLogEventDAO(CategoryLogEventsDAO categoryLogEventsDAO) { this.categoryLogEventsDAO = categoryLogEventsDAO; }
+    public void setEntryCategoryLogEventDAO(CategoryLogEventsDAO categoryLogEventsDAO) {
+        this.categoryLogEventsDAO = categoryLogEventsDAO;
+    }
 
     public void setLatencySeconds(int latencySeconds) {
         this.latencySeconds = latencySeconds;

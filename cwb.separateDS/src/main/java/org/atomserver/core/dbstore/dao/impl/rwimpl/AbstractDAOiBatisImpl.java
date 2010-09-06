@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.atomserver.core.dbstore.dao.impl;
+package org.atomserver.core.dbstore.dao.impl.rwimpl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

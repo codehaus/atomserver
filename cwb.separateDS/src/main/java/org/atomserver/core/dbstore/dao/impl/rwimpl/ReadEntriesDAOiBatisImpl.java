@@ -1,14 +1,14 @@
 /* Copyright Homeaway, Inc 2005-2007. All Rights Reserved.
  * No unauthorized use of this software.
  */
-package org.atomserver.core.dbstore.dao.impl;
+package org.atomserver.core.dbstore.dao.impl.rwimpl;
 
 import org.atomserver.AtomCategory;
 import org.atomserver.EntryDescriptor;
 import org.atomserver.FeedDescriptor;
 import org.atomserver.ServiceDescriptor;
 import org.atomserver.core.EntryMetaData;
-import org.atomserver.core.dbstore.dao.ReadEntriesDAO;
+import org.atomserver.core.dbstore.dao.rwdao.ReadEntriesDAO;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.utils.logic.BooleanExpression;
 import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
@@ -56,7 +56,7 @@ public class ReadEntriesDAOiBatisImpl
     public List<EntryMetaData> selectEntryBatch(Collection<? extends EntryDescriptor> entryQueries) {
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
-            AbstractDAOiBatisImpl.ParamMap paramMap = prepareBatchParamMap(entryQueries);
+            ParamMap paramMap = prepareBatchParamMap(entryQueries);
 
             if (log.isTraceEnabled()) {
                 log.trace("SELECT EntriesDAOiBatisImpl selectEntryBatch:: paramMap= " + paramMap);
@@ -69,8 +69,8 @@ public class ReadEntriesDAOiBatisImpl
         }
     }
 
-    protected AbstractDAOiBatisImpl.ParamMap prepareBatchParamMap(Collection<? extends EntryDescriptor> entryQueries) {
-        AbstractDAOiBatisImpl.ParamMap paramMap = paramMap();
+    protected ParamMap prepareBatchParamMap(Collection<? extends EntryDescriptor> entryQueries) {
+        ParamMap paramMap = paramMap();
 
         String workspace = null;
         String collection = null;
@@ -190,9 +190,9 @@ public class ReadEntriesDAOiBatisImpl
                                               Collection<BooleanExpression<AtomCategory>> categoryQuery) {
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
-            AbstractDAOiBatisImpl.ParamMap paramMap = prepareParamMapForSelectEntries(updatedMin, updatedMax,
-                                                                                      startIndex, endIndex,
-                                                                                      pageSize, locale, feed);
+            ParamMap paramMap = prepareParamMapForSelectEntries(updatedMin, updatedMax,
+                                                                startIndex, endIndex,
+                                                                pageSize, locale, feed);
             addSetOpsSelectFeedPageParams(paramMap, categoryQuery);
             return getSqlMapClientTemplate().queryForList("selectFeedPage", paramMap);
         }
@@ -203,7 +203,7 @@ public class ReadEntriesDAOiBatisImpl
     }
 
 
-    private void addSetOpsSelectFeedPageParams(AbstractDAOiBatisImpl.ParamMap paramMap, Collection<BooleanExpression<AtomCategory>> categoryQuery) {
+    private void addSetOpsSelectFeedPageParams(ParamMap paramMap, Collection<BooleanExpression<AtomCategory>> categoryQuery) {
         if (categoryQuery != null && !categoryQuery.isEmpty()) {
             paramMap.param("categoryQuerySql",
                            SetOpCategoryQueryGenerator.generateCategorySearch(categoryQuery));
@@ -297,7 +297,7 @@ public class ReadEntriesDAOiBatisImpl
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
             ensureWorkspaceExists(workspace);
-            AbstractDAOiBatisImpl.ParamMap paramMap = paramMap()
+            ParamMap paramMap = paramMap()
                     .param("workspace", workspace)
                     .param("collection", collection);
             Integer count =
@@ -321,7 +321,7 @@ public class ReadEntriesDAOiBatisImpl
     public void ensureWorkspaceExists(String workspace) {
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
-            AbstractDAOiBatisImpl.ParamMap paramMap = paramMap().param("workspace", workspace);
+            ParamMap paramMap = paramMap().param("workspace", workspace);
             Integer count = workspace == null ? 0 :
                             (Integer) getSqlMapClientTemplate().queryForObject("workspaceExists", paramMap);
             if (count == 0) {
@@ -411,7 +411,7 @@ public class ReadEntriesDAOiBatisImpl
     public long selectMaxIndex(Date updatedMax) {
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
-            AbstractDAOiBatisImpl.ParamMap paramMap = paramMap();
+            ParamMap paramMap = paramMap();
             if (getLatencySeconds() > 0) {
                 paramMap.param("latencySeconds", getLatencySeconds());
             }

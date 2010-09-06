@@ -1,13 +1,14 @@
 /* Copyright Homeaway, Inc 2005-2007. All Rights Reserved.
  * No unauthorized use of this software.
  */
-package org.atomserver.core.dbstore.dao;
+package org.atomserver.core.dbstore.dao.rwdao;
 
 import org.atomserver.AtomCategory;
 import org.atomserver.EntryDescriptor;
 import org.atomserver.FeedDescriptor;
 import org.atomserver.ServiceDescriptor;
 import org.atomserver.core.EntryMetaData;
+import org.atomserver.core.dbstore.dao.AtomServerDAO;
 import org.atomserver.utils.logic.BooleanExpression;
 
 import java.util.Collection;

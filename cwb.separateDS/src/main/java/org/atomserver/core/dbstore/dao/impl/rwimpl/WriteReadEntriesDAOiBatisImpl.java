@@ -1,7 +1,7 @@
 /* Copyright Homeaway, Inc 2005-2007. All Rights Reserved.
  * No unauthorized use of this software.
  */
-package org.atomserver.core.dbstore.dao.impl;
+package org.atomserver.core.dbstore.dao.impl.rwimpl;
 
 import com.ibatis.sqlmap.client.SqlMapExecutor;
 import org.apache.commons.logging.Log;
@@ -11,7 +11,7 @@ import org.atomserver.FeedDescriptor;
 import org.atomserver.ServiceDescriptor;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryMetaData;
-import org.atomserver.core.dbstore.dao.WriteReadEntriesDAO;
+import org.atomserver.core.dbstore.dao.rwdao.WriteReadEntriesDAO;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
 import org.atomserver.utils.perf.AtomServerStopWatch;
@@ -162,7 +162,7 @@ public class WriteReadEntriesDAOiBatisImpl
 
         // now insert
         try {
-            AbstractDAOiBatisImpl.ParamMap paramMap = prepareInsertParamMap(entry);
+            ParamMap paramMap = prepareInsertParamMap(entry);
 
             if (isSeedingDB) {
                 paramMap.param("publishedDate", published)
@@ -179,8 +179,8 @@ public class WriteReadEntriesDAOiBatisImpl
         }
     }
 
-    AbstractDAOiBatisImpl.ParamMap prepareInsertParamMap(EntryDescriptor entryQuery) {
-        AbstractDAOiBatisImpl.ParamMap paramMap = paramMap()
+    ParamMap prepareInsertParamMap(EntryDescriptor entryQuery) {
+        ParamMap paramMap = paramMap()
                 .param("workspace", entryQuery.getWorkspace())
                 .param("collection", entryQuery.getCollection())
                 .param("entryId", entryQuery.getEntryId())
@@ -233,10 +233,10 @@ public class WriteReadEntriesDAOiBatisImpl
         }
     }
 
-    AbstractDAOiBatisImpl.ParamMap prepareUpdateParamMap(boolean deleted,
-                                                         int revision,
-                                                         EntryMetaData entryMetaData) {
-        AbstractDAOiBatisImpl.ParamMap paramMap = paramMap()
+    ParamMap prepareUpdateParamMap(boolean deleted,
+                                   int revision,
+                                   EntryMetaData entryMetaData) {
+        ParamMap paramMap = paramMap()
                 .param("entryStoreId", entryMetaData.getEntryStoreId())
                 .param("revision", revision)
                 .param("deleted", deleted)
@@ -421,7 +421,7 @@ public class WriteReadEntriesDAOiBatisImpl
 
     public void ensureCollectionExists(String workspace, String collection) {
         ensureWorkspaceExists(workspace);
-        AbstractDAOiBatisImpl.ParamMap paramMap = paramMap()
+        ParamMap paramMap = paramMap()
                 .param("workspace", workspace)
                 .param("collection", collection);
         Integer count =
@@ -438,7 +438,7 @@ public class WriteReadEntriesDAOiBatisImpl
     }
 
     public void ensureWorkspaceExists(String workspace) {
-        AbstractDAOiBatisImpl.ParamMap paramMap = paramMap().param("workspace", workspace);
+        ParamMap paramMap = paramMap().param("workspace", workspace);
         Integer count = workspace == null ? 0 :
                         (Integer) getSqlMapClientTemplate().queryForObject("workspaceExists",
                                                                            paramMap);
@@ -478,7 +478,7 @@ public class WriteReadEntriesDAOiBatisImpl
     }
 
     public long selectMaxIndex(Date updatedMax) {
-        AbstractDAOiBatisImpl.ParamMap paramMap = paramMap();
+        ParamMap paramMap = paramMap();
         if (getLatencySeconds() > 0) {
             paramMap.param("getLatencySeconds()", getLatencySeconds());
         }

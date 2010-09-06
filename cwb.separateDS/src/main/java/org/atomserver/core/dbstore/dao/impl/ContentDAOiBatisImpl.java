@@ -18,12 +18,10 @@ package org.atomserver.core.dbstore.dao.impl;
 
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.dbstore.dao.ContentDAO;
-import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
-import org.atomserver.utils.perf.AtomServerStopWatch;
-import org.perf4j.StopWatch;
+import org.atomserver.core.dbstore.dao.impl.rwimpl.AbstractDAOiBatisImpl;
+import org.atomserver.core.dbstore.dao.impl.rwimpl.ReadContentDAOiBatisImpl;
+import org.atomserver.core.dbstore.dao.impl.rwimpl.WriteReadContentDAOiBatisImpl;
 import org.springframework.beans.factory.InitializingBean;
-
-import java.util.Map;
 
 /**
  * @author Chris Berry  (chriswberry at gmail.com)
@@ -66,7 +64,7 @@ public class ContentDAOiBatisImpl
         dao.afterPropertiesSet();
     }
 
-    
+
     public AbstractDAOiBatisImpl getReadDAO() { return readContentDAO; }
 
     public String selectContent(EntryMetaData entry) {return readContentDAO.selectContent(entry);}
@@ -86,7 +84,7 @@ public class ContentDAOiBatisImpl
 
     public void putContent(EntryMetaData entry, String content) {writeReadContentDAO.putContent(entry, content);}
 }
-    /*
+/*
     public void putContent(EntryMetaData entry, String content) {
         StopWatch stopWatch = new AtomServerStopWatch();
         try {

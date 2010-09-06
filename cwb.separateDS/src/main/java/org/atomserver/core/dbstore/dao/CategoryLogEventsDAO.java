@@ -16,6 +16,8 @@
 
 package org.atomserver.core.dbstore.dao;
 
+import org.atomserver.core.dbstore.dao.rwdao.WriteReadCategoryLogEventsDAO;
+
 /**
  * The DAO for accessing an Entry's Category Log Events
  *
