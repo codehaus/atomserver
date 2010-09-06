@@ -20,6 +20,9 @@ import org.atomserver.EntryDescriptor;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryCategoryLogEvent;
 import org.atomserver.core.dbstore.dao.CategoryLogEventsDAO;
+import org.atomserver.core.dbstore.dao.impl.rwimpl.AbstractDAOiBatisImpl;
+import org.atomserver.core.dbstore.dao.impl.rwimpl.ReadCategoryLogEventsDAOiBatisImpl;
+import org.atomserver.core.dbstore.dao.impl.rwimpl.WriteReadCategoryLogEventsDAOiBatisImpl;
 import org.springframework.beans.factory.InitializingBean;
 
 import java.util.List;
@@ -62,7 +65,9 @@ public class CategoryLogEventsDAOiBatisImpl
 
     public WriteReadCategoryLogEventsDAOiBatisImpl getWriteReadEntryCategoryLogEventDAO() { return writeReadDAO; }
 
-    public void setWriteReadEntryCategoryLogEventDAO(WriteReadCategoryLogEventsDAOiBatisImpl writeReadDAO) { this.writeReadDAO = writeReadDAO; }
+    public void setWriteReadEntryCategoryLogEventDAO(WriteReadCategoryLogEventsDAOiBatisImpl writeReadDAO) {
+        this.writeReadDAO = writeReadDAO;
+    }
 
     public AbstractDAOiBatisImpl getReadDAO() { return readDAO; }
 

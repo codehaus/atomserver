@@ -16,10 +16,13 @@
 
 package org.atomserver.core.dbstore.dao;
 
+import org.atomserver.core.dbstore.dao.rwdao.WriteReadContentDAO;
+
 /**
  * The DAO for accessing Content
  *
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
-public interface ContentDAO extends WriteReadContentDAO {}
+public interface ContentDAO extends WriteReadContentDAO {
+}

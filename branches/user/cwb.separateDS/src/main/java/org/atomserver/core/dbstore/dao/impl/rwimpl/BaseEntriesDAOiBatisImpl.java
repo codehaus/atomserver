@@ -1,12 +1,12 @@
 /* Copyright Homeaway, Inc 2005-2007. All Rights Reserved.
  * No unauthorized use of this software.
  */
-package org.atomserver.core.dbstore.dao.impl;
+package org.atomserver.core.dbstore.dao.impl.rwimpl;
 
 import org.atomserver.FeedDescriptor;
 import org.atomserver.core.dbstore.dao.ContentDAO;
-import org.atomserver.core.dbstore.dao.WriteReadCategoriesDAO;
-import org.atomserver.core.dbstore.dao.WriteReadCategoryLogEventsDAO;
+import org.atomserver.core.dbstore.dao.rwdao.WriteReadCategoriesDAO;
+import org.atomserver.core.dbstore.dao.rwdao.WriteReadCategoryLogEventsDAO;
 import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
 import org.atomserver.utils.locale.LocaleUtils;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
@@ -75,7 +75,7 @@ public class BaseEntriesDAOiBatisImpl
         this.latencySeconds = latencySeconds;
     }
 
-    AbstractDAOiBatisImpl.ParamMap prepareParamMapForSelectEntries(Date updatedMin, Date updatedMax,
+    protected AbstractDAOiBatisImpl.ParamMap prepareParamMapForSelectEntries(Date updatedMin, Date updatedMax,
                                                                    int startIndex, int endIndex,
                                                                    int pageSize, String locale, FeedDescriptor feed) {
 

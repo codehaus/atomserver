@@ -21,6 +21,9 @@ import org.atomserver.EntryDescriptor;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.dbstore.dao.CategoriesDAO;
+import org.atomserver.core.dbstore.dao.impl.rwimpl.AbstractDAOiBatisImpl;
+import org.atomserver.core.dbstore.dao.impl.rwimpl.ReadCategoriesDAOiBatisImpl;
+import org.atomserver.core.dbstore.dao.impl.rwimpl.WriteReadCategoriesDAOiBatisImpl;
 import org.springframework.beans.factory.InitializingBean;
 
 import java.util.List;
@@ -41,7 +44,9 @@ public class CategoriesDAOiBatisImpl
 
     public ReadCategoriesDAOiBatisImpl getReadCategoriesDAO() { return readCategoriesDAO; }
 
-    public void setReadCategoriesDAO(ReadCategoriesDAOiBatisImpl readCategoriesDAO) { this.readCategoriesDAO = readCategoriesDAO;}
+    public void setReadCategoriesDAO(ReadCategoriesDAOiBatisImpl readCategoriesDAO) {
+        this.readCategoriesDAO = readCategoriesDAO;
+    }
 
     public WriteReadCategoriesDAOiBatisImpl getWriteReadCategoriesDAO() { return writeReadCategoriesDAO; }
 

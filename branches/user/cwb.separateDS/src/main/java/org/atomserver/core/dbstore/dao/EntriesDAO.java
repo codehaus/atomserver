@@ -16,6 +16,8 @@
 
 package org.atomserver.core.dbstore.dao;
 
+import org.atomserver.core.dbstore.dao.rwdao.WriteReadEntriesDAO;
+
 /**
  * The DAO for accessing Entries
  *

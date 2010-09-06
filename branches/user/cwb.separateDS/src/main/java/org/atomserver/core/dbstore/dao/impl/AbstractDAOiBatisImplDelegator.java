@@ -7,6 +7,7 @@ import com.ibatis.sqlmap.client.SqlMapClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.core.dbstore.dao.AtomServerDAO;
+import org.atomserver.core.dbstore.dao.impl.rwimpl.AbstractDAOiBatisImpl;
 
 import javax.sql.DataSource;
 import java.util.Date;
