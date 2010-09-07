@@ -785,7 +785,13 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                 }
 
                 Entry entry = newEntry( abdera, entryMetaData, entryType );
-                feed.addEntry(entry);
+                try {
+                    feed.addEntry(entry);
+                } catch (Exception ee) {
+                    String msg = "Exception " + ee.getClass().getSimpleName() + " while adding: " + entryMetaData;
+                    log.error( ee );
+                    throw (ee instanceof AtomServerException) ? (AtomServerException)ee : new AtomServerException( msg, ee );
+                }
             }
             knt++;
         }
