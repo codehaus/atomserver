@@ -7,25 +7,24 @@
     </properties>
 
     <body>
-        <section name="Release 2.2.1 (09/01/10)">
+        <section name="Release 2.2.1 (09/07/10)">
             <ul>
-                <li>Cache collections and workspaces lists, instead of going to the DB for the lists
-                    The listCollections() DB operation was being called frequently, and was taking enough time (~50ms per),
-                    that we simply cached the results. Since Collections and Workspaces are basically fixed,
-                    there is little reason to go to DB for this list every time. Now it has a 60s expiry.
-                    And we can still add new Collections on the fly.
-                </li>
                 <li>Explicit CASTs on all SQL parameters within WHERE clauses. This should not be necessary,
                     but we've found that SQLServer will sometimes create horrendous query plans, and these hints
                     help it immensely</li>
                 <li>More extensive performance logging</li>
-                <li>The system has been verified extensively for JTDS/DBCP for SQLServer.
-                    We switched from the Merlia driver to JTDS for SQLServer.</li>
                 <li>Attempting to DELETE a non-existent Entry is now logged as a WARN, instead of an ERROR</li>
                 <li>Upgraded woodstox to 3.2.4 to fix occassional ArrayIndexOutOfBoundsException</li>
                 <li>Upgraded iBatis to 2.3.4.726</li>
-                <li>Added support for updating a single category using category document with an extension element (CategoryOperation) and 
-		   additional attributes on Category.</li>
+                <li>Added support for updating a single category using the Category document with an extension element
+                    (CategoryOperation) and additional extension attributes on Category.</li>
+                <li>Cache collections and workspaces lists, instead of going to the DB for the lists
+                    The listCollections() DB operation was being called frequently, and was taking enough time (~50ms per),
+                    that we simply cached the results. Since Collections and Workspaces are basically fixed,
+                    there is little reason to go to DB for this list every time. Now it has a 60s expiry.
+                    And we can still add new Collections on the fly.</li>
+                <li>Now trim() EntryIds before they are used. This fixes a bug where EntryIds with leading/trailing
+                    blanks were stored, and then used again in Feeds. </li>
             </ul>
         </section>
         <section name="Release 2.2.0 (07/21/10)">
