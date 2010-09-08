@@ -13,7 +13,15 @@ import javax.sql.DataSource;
 import java.util.Date;
 
 /**
- *
+ * A Delegator for the original DAOs.
+ * We had to leave the single DAOs around, as well as the single Impls.
+ * Both of which now delegate to the new forms.
+ * This way we did not have to rewrite tests, and more important,
+ * the change is, essentially, transparent to the end users.
+ * They only need to add a couple of properties, and change
+ * the location of the Impl in their Spring config.
+ * @author Chris Berry  (chriswberry at gmail.com)
+ * @author Bryon Jacob (bryon at jacob.net)
  */
 abstract public class AbstractDAOiBatisImplDelegator {
     static protected final Log log = LogFactory.getLog(AbstractDAOiBatisImpl.class);

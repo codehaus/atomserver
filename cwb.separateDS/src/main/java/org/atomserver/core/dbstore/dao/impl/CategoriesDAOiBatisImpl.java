@@ -32,6 +32,7 @@ import java.util.Set;
 
 
 /**
+ * The original implementation of the CategoriesDAO.
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */

@@ -18,6 +18,8 @@ import java.util.List;
  * This DAO must extend the ReadEntriesDAO because the POST,PUT,DELETE sequence
  * will need to perform read queries as well as write queries.
  * <b>And ALL queries in a given transaction MUST take place within the same DataSource.</b>
+ * @author Chris Berry  (chriswberry at gmail.com)
+ * @author Bryon Jacob (bryon at jacob.net)
  */
 public interface WriteReadEntriesDAO
         extends ReadEntriesDAO {

@@ -24,7 +24,8 @@ import java.sql.SQLException;
 import java.util.*;
 
 /**
- *
+ * @author Chris Berry  (chriswberry at gmail.com)
+ * @author Bryon Jacob (bryon at jacob.net)
  */
 @ManagedResource(description = "WriteReadEntriesDAO")
 public class WriteReadEntriesDAOiBatisImpl

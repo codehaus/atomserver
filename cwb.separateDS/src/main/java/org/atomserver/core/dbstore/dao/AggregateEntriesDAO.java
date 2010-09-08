@@ -15,7 +15,10 @@ import java.util.List;
 import java.util.Locale;
 
 /**
+ * The DAO API for Aggregate Feeds and Entries
  *
+ * @author Chris Berry  (chriswberry at gmail.com)
+ * @author Bryon Jacob (bryon at jacob.net)
  */
 public interface AggregateEntriesDAO extends AtomServerDAO {
     List<AggregateEntryMetaData> selectAggregateEntriesByPage(FeedDescriptor feed,

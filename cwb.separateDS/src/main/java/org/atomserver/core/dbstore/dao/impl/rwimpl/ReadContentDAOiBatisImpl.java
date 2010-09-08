@@ -10,7 +10,8 @@ import org.atomserver.utils.perf.AtomServerStopWatch;
 import org.perf4j.StopWatch;
 
 /**
- *
+ * @author Chris Berry  (chriswberry at gmail.com)
+ * @author Bryon Jacob (bryon at jacob.net)
  */
 public class ReadContentDAOiBatisImpl
         extends AbstractDAOiBatisImpl

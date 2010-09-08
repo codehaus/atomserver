@@ -29,6 +29,8 @@ import java.util.List;
 
 
 /**
+ * The original implementation of the CategoryLogEventsDAO,
+ * which now delegates to the read-write/read-only Impls.
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */

@@ -42,6 +42,8 @@ import java.util.List;
 import java.util.Locale;
 
 /**
+ * The original implementation of the EntriesDAO,
+ * which now delegates to the read-write/read-only Impls.
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */

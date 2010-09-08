@@ -19,7 +19,8 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- *
+ * @author Chris Berry  (chriswberry at gmail.com)
+ * @author Bryon Jacob (bryon at jacob.net)
  */
 public class WriteReadCategoriesDAOiBatisImpl
         extends ReadCategoriesDAOiBatisImpl

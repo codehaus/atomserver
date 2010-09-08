@@ -10,7 +10,12 @@ import org.atomserver.core.EntryMetaData;
 import java.util.List;
 
 /**
- *
+ * The Read-write DAO for accessing an Entry's Categories
+ * This DAO must extend the ReadCategoriesDAO because the POST,PUT,DELETE sequence
+ * will need to perform read queries as well as write queries.
+ * <b>And ALL queries in a given transaction MUST take place within the same DataSource.</b>
+ * @author Chris Berry  (chriswberry at gmail.com)
+ * @author Bryon Jacob (bryon at jacob.net)
  */
 public interface WriteReadCategoriesDAO
         extends ReadCategoriesDAO {

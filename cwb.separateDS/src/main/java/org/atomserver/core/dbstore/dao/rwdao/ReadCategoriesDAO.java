@@ -12,7 +12,10 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * The Read-only DAO for accessing an Entry's Categories
  *
+ * @author Chris Berry  (chriswberry at gmail.com)
+ * @author Bryon Jacob (bryon at jacob.net)
  */
 public interface ReadCategoriesDAO
         extends AtomServerDAO {

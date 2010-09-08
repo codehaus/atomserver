@@ -12,7 +12,8 @@ import org.perf4j.StopWatch;
 import java.util.Map;
 
 /**
- *
+ * @author Chris Berry  (chriswberry at gmail.com)
+ * @author Bryon Jacob (bryon at jacob.net)
  */
 public class WriteReadContentDAOiBatisImpl
         extends ReadContentDAOiBatisImpl
