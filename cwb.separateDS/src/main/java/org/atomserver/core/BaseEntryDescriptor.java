@@ -45,7 +45,7 @@ public class BaseEntryDescriptor implements EntryDescriptor {
     public BaseEntryDescriptor(String workspace, String collection, String entryId, Locale locale, int revision) {
         this.workspace = workspace;
         this.collection = collection;
-        this.entryId = entryId;
+        setEntryId(entryId);
         this.locale = locale;
         this.revision = revision;
     }
