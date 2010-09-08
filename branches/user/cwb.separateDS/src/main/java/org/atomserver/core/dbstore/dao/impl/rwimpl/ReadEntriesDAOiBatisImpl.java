@@ -21,7 +21,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
- *
+ * @author Chris Berry  (chriswberry at gmail.com)
+ * @author Bryon Jacob (bryon at jacob.net)
  */
 public class ReadEntriesDAOiBatisImpl
         extends BaseEntriesDAOiBatisImpl

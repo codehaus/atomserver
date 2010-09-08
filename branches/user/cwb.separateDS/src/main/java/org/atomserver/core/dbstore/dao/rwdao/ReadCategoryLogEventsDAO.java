@@ -10,7 +10,10 @@ import org.atomserver.core.dbstore.dao.AtomServerDAO;
 import java.util.List;
 
 /**
+ * The Read-only DAO for accessing an Entry's Category Log Events
  *
+ * @author Chris Berry  (chriswberry at gmail.com)
+ * @author Bryon Jacob (bryon at jacob.net)
  */
 public interface ReadCategoryLogEventsDAO
         extends AtomServerDAO {

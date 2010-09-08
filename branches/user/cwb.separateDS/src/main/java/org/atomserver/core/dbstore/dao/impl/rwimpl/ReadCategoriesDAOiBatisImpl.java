@@ -17,7 +17,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- *
+ * @author Chris Berry  (chriswberry at gmail.com)
+ * @author Bryon Jacob (bryon at jacob.net)
  */
 public class ReadCategoriesDAOiBatisImpl
         extends AbstractDAOiBatisImpl

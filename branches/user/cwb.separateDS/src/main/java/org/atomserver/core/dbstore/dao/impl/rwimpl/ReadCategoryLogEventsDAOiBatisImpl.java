@@ -13,7 +13,8 @@ import org.perf4j.StopWatch;
 import java.util.List;
 
 /**
- *
+ * @author Chris Berry  (chriswberry at gmail.com)
+ * @author Bryon Jacob (bryon at jacob.net)
  */
 public class ReadCategoryLogEventsDAOiBatisImpl
         extends AbstractDAOiBatisImpl

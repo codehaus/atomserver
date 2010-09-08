@@ -21,7 +21,8 @@ import org.springframework.jmx.export.annotation.ManagedOperation;
 import java.util.*;
 
 /**
- *
+ * The original implementation of the AggregateEntriesDAO,
+ * which now delegates to the read-write/read-only Impls.
  */
 public class AggregateEntriesDAOiBatisImpl
         extends BaseEntriesDAOiBatisImpl
