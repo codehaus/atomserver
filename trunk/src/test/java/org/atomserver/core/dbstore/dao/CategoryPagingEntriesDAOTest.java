@@ -43,8 +43,8 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         super.setUp();
         //contentDAO.deleteAllContent();
         contentDAO.deleteAllRowsFromContent();
-        entryCategoryLogEventDAO.deleteAllRowsFromEntryCategoryLogEvent();
-        entryCategoriesDAO.deleteAllRowsFromEntryCategories();
+        categoryLogEventsDAO.deleteAllRowsFromEntryCategoryLogEvent();
+        categoriesDAO.deleteAllRowsFromEntryCategories();
         entriesDAO.deleteAllRowsFromEntries();
     }
 
@@ -106,7 +106,7 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         //------------------------
         // Now create the Categories
 
-        int startCountEC = entryCategoriesDAO.getTotalCount(workspace);
+        int startCountEC = categoriesDAO.getTotalCount(workspace);
         log.debug("startCountEC = " + startCountEC);
 
         String scheme = "urn:ha/widgets";
@@ -123,7 +123,7 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
             entryIn.setScheme( scheme );
             entryIn.setTerm( termSeed + ( ii % 4 ) );
             
-            int inserts = entryCategoriesDAO.insertEntryCategory(entryIn);
+            int inserts = categoriesDAO.insertEntryCategory(entryIn);
             assertTrue(inserts > 0);
         }
 
@@ -139,13 +139,13 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
             entryIn.setScheme( scheme );
             entryIn.setTerm( termSeed2 + ( ii % 2 ) );
             
-            int inserts = entryCategoriesDAO.insertEntryCategory(entryIn);
+            int inserts = categoriesDAO.insertEntryCategory(entryIn);
             assertTrue(inserts > 0);
         }
 
         LatencyUtil.updateLastWrote();
 
-        int countEC = entryCategoriesDAO.getTotalCount(workspace);
+        int countEC = categoriesDAO.getTotalCount(workspace);
         assertEquals((startCountEC + numRecs*2), countEC);
  
         /* so the DB should look like this now
@@ -443,7 +443,7 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
             entryIn.setLocale( locales[(ii % 6 )] );
             entryIn.setScheme( scheme );
             entryIn.setTerm( termSeed + ( ii % 4 ) );
-            entryCategoriesDAO.deleteEntryCategory(entryIn);
+            categoriesDAO.deleteEntryCategory(entryIn);
         }
 
         for ( int ii=0; ii< numRecs; ii++ ) {
@@ -455,11 +455,11 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
             entryIn.setLocale( locales[(ii % 6 )] );
             entryIn.setScheme( scheme );
             entryIn.setTerm( termSeed2 + ( ii % 2 ) );
-            entryCategoriesDAO.deleteEntryCategory(entryIn);
+            categoriesDAO.deleteEntryCategory(entryIn);
         }
         // COUNT
         Thread.sleep( DB_CATCHUP_SLEEP); // give the DB a chance to catch up
-        int finalCountEC = entryCategoriesDAO.getTotalCount(workspace);
+        int finalCountEC = categoriesDAO.getTotalCount(workspace);
         log.debug("finalCount = " + finalCountEC);
         assertEquals(startCountEC, finalCountEC);
     }

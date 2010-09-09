@@ -5,7 +5,7 @@ import org.apache.abdera.model.Feed;
 import org.atomserver.EntryDescriptor;
 import org.atomserver.core.BaseEntryDescriptor;
 import org.atomserver.core.EntryMetaData;
-import org.atomserver.core.dbstore.dao.EntriesDAOiBatisImpl;
+import org.atomserver.core.dbstore.dao.impl.EntriesDAOiBatisImpl;
 import org.atomserver.core.etc.AtomServerConstants;
 import org.atomserver.testutils.latency.TimeLine;
 import static org.atomserver.uri.URIHandler.REVISION_OVERRIDE;
@@ -34,7 +34,7 @@ public class EnforcedLatencyTest extends DBSTestCase {
         super.setUp();
         ((EntriesDAOiBatisImpl) entriesDao).setLatencySeconds(LATENCY_SECONDS);
 
-        entryCategoriesDAO.deleteAllRowsFromEntryCategories();
+        categoriesDAO.deleteAllRowsFromEntryCategories();
         entriesDao.deleteAllRowsFromEntries();
 
         DBBasedAtomService service =
@@ -133,7 +133,7 @@ public class EnforcedLatencyTest extends DBSTestCase {
                             EntryDescriptor entry = new BaseEntryDescriptor(WIDGETS, ACME, "2",
                                                                             US, REVISION_OVERRIDE);
                             entriesDao.updateEntry(entry, false);
-                            EntryMetaData emd = entriesDao.selectEntry(entry);
+                            EntryMetaData emd = entriesDao.getWriteEntriesDAO().selectEntry(entry);
                             contentStorage.revisionChangedWithoutContentChanging(emd);
                             log.debug("::trace-race-condition:: updated 2 to " +
                                                emd.getUpdateTimestamp() + ", " +
@@ -162,7 +162,7 @@ public class EnforcedLatencyTest extends DBSTestCase {
                             EntryDescriptor entry = new BaseEntryDescriptor(WIDGETS, ACME, "1",
                                                                             US, REVISION_OVERRIDE);
                             entriesDao.updateEntry(entry, false);
-                            EntryMetaData emd = entriesDao.selectEntry(entry);
+                            EntryMetaData emd = entriesDao.getWriteEntriesDAO().selectEntry(entry);
                             contentStorage.revisionChangedWithoutContentChanging(emd);
                             log.debug("::trace-race-condition:: updated 1 to " +
                                                emd.getUpdateTimestamp() + ", " +
@@ -221,7 +221,7 @@ public class EnforcedLatencyTest extends DBSTestCase {
             visibleFromDatabase = new HashSet<String>();
             Connection conn = null;
             try {
-                conn = ((EntriesDAOiBatisImpl) entriesDao).getDataSource().getConnection();
+                conn = entriesDao.getWriteEntriesDAO().getDataSource().getConnection();
                 ResultSet resultSet = conn.createStatement().executeQuery(
                         "SELECT EntryId FROM EntryStore WHERE UpdateTimestamp > " + updateIndex);
                 while (resultSet.next()) {

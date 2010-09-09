@@ -19,7 +19,6 @@ package org.atomserver.core.dbstore;
 
 import org.atomserver.core.CRUDAtomServerTestCase;
 import org.atomserver.uri.EntryTarget;
-import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
 import org.atomserver.testutils.client.MockRequestContext;
 import org.apache.commons.io.IOUtils;

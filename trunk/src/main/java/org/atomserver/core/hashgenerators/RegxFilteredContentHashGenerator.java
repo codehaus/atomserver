@@ -1,7 +1,7 @@
 /* Copyright Homeaway, Inc 2005-2008. All Rights Reserved.
  * No unauthorized use of this software.
  */
-package org.atomserver.core;
+package org.atomserver.core.hashgenerators;
 
 import org.atomserver.ContentHashGenerator;
 import org.apache.commons.logging.Log;
@@ -19,7 +19,7 @@ import java.util.List;
  * pattern from the content String.
  * <code>
  *   <bean id="org.atomserver-ContentHashGenerator"
- *        class="org.atomserver.core.RegxFilteredContentHashGenerator"
+ *        class="org.atomserver.core.hashgenerators.RegxFilteredContentHashGenerator"
  *        depends-on="org.atomserver-propertyConfigurer"
  *        lazy-init="true">
  *      <property name="regularExpressions">

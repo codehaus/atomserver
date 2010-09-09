@@ -23,7 +23,6 @@ import org.apache.abdera.i18n.iri.IRI;
 import org.apache.commons.io.FileUtils;
 import org.atomserver.testutils.client.MockRequestContext;
 import org.atomserver.uri.EntryTarget;
-import org.atomserver.core.dbstore.dao.EntriesDAOiBatisImpl;
 
 import java.io.File;
 import java.util.Locale;
@@ -85,7 +84,7 @@ public class NoDirDBSTest extends CRUDDBSTestCase {
         // clean up the categories created by this test.
         Connection conn = null;
         try {
-            conn = ((EntriesDAOiBatisImpl) entriesDAO).getDataSource().getConnection();
+            conn = entriesDAO.getWriteEntriesDAO().getDataSource().getConnection();
             conn.createStatement()
                 .execute("DELETE FROM AtomCollection WHERE Collection LIKE 'Foo-%'");
         } finally {

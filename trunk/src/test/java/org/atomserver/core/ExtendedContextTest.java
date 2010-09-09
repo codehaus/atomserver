@@ -39,6 +39,11 @@ public class ExtendedContextTest extends JettyWebAppTestCase {
         GetMethod get = new GetMethod("http://localhost:" + getPort() + "/atomserver/v1");
         client.executeMethod(get);
 
+        String response = get.getResponseBodyAsString();
+        log.debug("*****************************");
+        log.debug("response= \n" + response);
+        log.debug("*****************************");
+
         assertEquals("<?xml version='1.0' encoding='UTF-8'?>" +
                      "<service xmlns=\"http://www.w3.org/2007/app\" " +
                      "xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
@@ -46,7 +51,7 @@ public class ExtendedContextTest extends JettyWebAppTestCase {
                      "<atom:title type=\"text\">exttest</atom:title>" +
                      "</workspace>" +
                      "</service>",
-                     get.getResponseBodyAsString());
+                     response);
 
         assertEquals("ext lib works", getSpringFactory().getBean("foobarbean").toString());
     }

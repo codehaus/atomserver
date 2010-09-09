@@ -72,7 +72,7 @@ public class TransactionTest extends DAOTestCase {
                             public void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                                 // first, we insert the entry and select it back
                                 entriesDAO.insertEntry(entryIn);
-                                EntryMetaData metaData = entriesDAO.selectEntry(entryIn);
+                                EntryMetaData metaData = entriesDAO.getWriteEntriesDAO().selectEntry(entryIn);
                                 idWithinTransaction.setValue(metaData.getEntryStoreId());
 
                                 // sync up at t0 - the entry has been inserted IN txn, but not committed
@@ -158,7 +158,7 @@ public class TransactionTest extends DAOTestCase {
                             public void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                                 entriesDAO.updateEntry(entryMetaData, false);
 
-                                List<EntryMetaData> list = entriesDAO.selectFeedPage(
+                                List<EntryMetaData> list = entriesDAO.getWriteEntriesDAO().selectFeedPage(
                                         new Date(0L), AtomServerConstants.FAR_FUTURE_DATE, startIndex, -1, 10, entryIn.getLocale().toString(),
                                         new BaseFeedDescriptor(entryIn.getWorkspace(), entryIn.getCollection()),
                                         null);

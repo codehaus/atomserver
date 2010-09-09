@@ -22,8 +22,8 @@
 <!-- iBatis SQL Map CONFIG -->
 <sqlMapConfig>
 
-    <settings defaultStatementTimeout="${db.timeout.sql.stmts}"
-              classInfoCacheEnabled="true"
+    <!-- NOTE: do not set defaultStatementTimeout because it will override the settings on the DataSource --> 
+    <settings classInfoCacheEnabled="true"
               statementCachingEnabled="true"/>
 
     <!-- reusable SQL fragments and type definitions shared by the sqlMaps below

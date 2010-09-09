@@ -35,8 +35,8 @@ public class TagsLogEventDBSTest extends CRUDDBSTestCase {
     public void setUp() throws Exception {
         TestConfUtil.preSetup("logevents");
         super.setUp();
-        entryCategoriesDAO.deleteAllRowsFromEntryCategories();
-        entryCategoryLogEventDAO.deleteAllRowsFromEntryCategoryLogEvent();
+        categoriesDAO.deleteAllRowsFromEntryCategories();
+        categoryLogEventsDAO.deleteAllRowsFromEntryCategoryLogEvent();
     }
 
     public void tearDown() throws Exception {
@@ -96,7 +96,7 @@ public class TagsLogEventDBSTest extends CRUDDBSTestCase {
         */
 
         // COUNT
-        int startCount = entryCategoryLogEventDAO.getTotalCount("widgets");
+        int startCount = categoryLogEventsDAO.getTotalCount("widgets");
         log.debug("startCount = " + startCount);
 
         // First let's add a bunch of Categories for the Entry
@@ -123,9 +123,9 @@ public class TagsLogEventDBSTest extends CRUDDBSTestCase {
         //INSERT to tags:widgets
         String editURI = update(id, fullURL, categoriesXML);
 
-        int count = entryCategoriesDAO.getTotalCount("widgets");
+        int count = categoriesDAO.getTotalCount("widgets");
         assertEquals((startCount + numCats), count);
-        count = entryCategoryLogEventDAO.getTotalCount("widgets");
+        count = categoryLogEventsDAO.getTotalCount("widgets");
         assertEquals((startCount + numCats), count);
 
         EntryCategory entryIn = new EntryCategory();
@@ -133,13 +133,13 @@ public class TagsLogEventDBSTest extends CRUDDBSTestCase {
         entryIn.setCollection("acme");
         entryIn.setEntryId("4");
         entryIn.setLanguage("en");
-        List<EntryCategoryLogEvent> logEvents = entryCategoryLogEventDAO.selectEntryCategoryLogEvent(entryIn);
+        List<EntryCategoryLogEvent> logEvents = categoryLogEventsDAO.selectEntryCategoryLogEvent(entryIn);
         log.debug("====> logEvents = " + logEvents);
         assertNotNull(logEvents);
         assertTrue(logEvents.size() == numCats);
 
         //Date lastDate = new Date();
-        Date lastDate = entryCategoriesDAO.selectSysDate();
+        Date lastDate = categoriesDAO.selectSysDate();
 
         for( EntryCategoryLogEvent event : logEvents ) {
             assertTrue( (event.getCreateDate().compareTo(lastDate) <= 0) );
@@ -147,13 +147,13 @@ public class TagsLogEventDBSTest extends CRUDDBSTestCase {
         }
 
         entryIn.setScheme( "urn:widgets/foo" );
-        logEvents = entryCategoryLogEventDAO.selectEntryCategoryLogEventByScheme(entryIn);
+        logEvents = categoryLogEventsDAO.selectEntryCategoryLogEventByScheme(entryIn);
         log.debug("====> logEvents = " + logEvents);
         assertNotNull(logEvents);
         assertTrue(logEvents.size() == numCats);
 
         //lastDate = new Date();
-        lastDate = entryCategoriesDAO.selectSysDate();
+        lastDate = categoriesDAO.selectSysDate();
 
         for( EntryCategoryLogEvent event : logEvents ) {
             assertTrue( (event.getCreateDate().compareTo(lastDate) <= 0) );
@@ -161,7 +161,7 @@ public class TagsLogEventDBSTest extends CRUDDBSTestCase {
         }
         
         entryIn.setTerm( "testutils:1" );
-        logEvents = entryCategoryLogEventDAO.selectEntryCategoryLogEventBySchemeAndTerm(entryIn);
+        logEvents = categoryLogEventsDAO.selectEntryCategoryLogEventBySchemeAndTerm(entryIn);
         log.debug("====> logEvents = " + logEvents);
         assertNotNull(logEvents);
         assertTrue(logEvents.size() == 1);
@@ -169,20 +169,20 @@ public class TagsLogEventDBSTest extends CRUDDBSTestCase {
         //INSERT to tags:widgets
         editURI = update(id, fullURL, categoriesXML);
 
-        count = entryCategoriesDAO.getTotalCount("widgets");
+        count = categoriesDAO.getTotalCount("widgets");
         assertEquals((startCount + numCats), count);
-        count = entryCategoryLogEventDAO.getTotalCount("widgets");
+        count = categoryLogEventsDAO.getTotalCount("widgets");
         assertEquals((startCount + numCats*2), count);
 
         //INSERT to tags:widgets
         editURI = update(id, fullURL, categoriesXML);
 
-        count = entryCategoriesDAO.getTotalCount("widgets");
+        count = categoriesDAO.getTotalCount("widgets");
         assertEquals((startCount + numCats), count);
-        count = entryCategoryLogEventDAO.getTotalCount("widgets");
+        count = categoryLogEventsDAO.getTotalCount("widgets");
         assertEquals((startCount + numCats*3), count);
 
-        entryCategoriesDAO.deleteAllRowsFromEntryCategories();
-        entryCategoryLogEventDAO.deleteAllRowsFromEntryCategoryLogEvent();       
+        categoriesDAO.deleteAllRowsFromEntryCategories();
+        categoryLogEventsDAO.deleteAllRowsFromEntryCategoryLogEvent();
     }
 }

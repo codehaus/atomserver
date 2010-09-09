@@ -39,7 +39,7 @@ public class EntryCategoriesDAOTest extends DAOTestCase {
     // -------------------------------------------------------
     protected void setUp() throws Exception {
         super.setUp();
-        entryCategoriesDAO.deleteAllRowsFromEntryCategories();
+        categoriesDAO.deleteAllRowsFromEntryCategories();
     }
 
     // -------------------------------------------------------
@@ -49,7 +49,7 @@ public class EntryCategoriesDAOTest extends DAOTestCase {
     //          Tests 
     //----------------------------
     public void testSelectDistictCategoriesPerCollection() throws Exception {
-        int startCount = entryCategoriesDAO.getTotalCount(workspace);
+        int startCount = categoriesDAO.getTotalCount(workspace);
         log.debug("startCount = " + startCount);
 
         String[] collections = {  "fred",  "fred",  "fred", "wilma", "betty", "wilma", "wilma", "betty" };
@@ -74,24 +74,24 @@ public class EntryCategoriesDAOTest extends DAOTestCase {
             entryIn.setScheme( schemes[ii] );
             entryIn.setTerm( terms[ii] );
 
-            int inserts = entryCategoriesDAO.insertEntryCategory(entryIn);
+            int inserts = categoriesDAO.insertEntryCategory(entryIn);
             assertTrue(inserts > 0);
         }
 
-        int count = entryCategoriesDAO.getTotalCount(workspace);
+        int count = categoriesDAO.getTotalCount(workspace);
         assertEquals((startCount + numRows), count);
        
-        List colls = entryCategoriesDAO.selectDistictCategoriesPerCollection( workspace, "fred" ); 
+        List colls = categoriesDAO.selectDistictCategoriesPerCollection( workspace, "fred" );
         log.debug("====> colls for FRED= " + colls);
         assertNotNull( colls );
         assertEquals( 2, colls.size() );
 
-        colls = entryCategoriesDAO.selectDistictCategoriesPerCollection( workspace, "wilma" ); 
+        colls = categoriesDAO.selectDistictCategoriesPerCollection( workspace, "wilma" );
         log.debug("====> colls for WILMA= " + colls);
         assertNotNull( colls );
         assertEquals( 1, colls.size() );
 
-        colls = entryCategoriesDAO.selectDistictCategoriesPerCollection( workspace, "betty" ); 
+        colls = categoriesDAO.selectDistictCategoriesPerCollection( workspace, "betty" );
         log.debug("====> colls for BETTY= " + colls);
         assertNotNull( colls );
         assertEquals( 2, colls.size() );
@@ -101,13 +101,13 @@ public class EntryCategoriesDAOTest extends DAOTestCase {
         }
         // COUNT
         Thread.sleep( DB_CATCHUP_SLEEP); // give the DB a chance to catch up
-        int finalCount = entryCategoriesDAO.getTotalCount(workspace);
+        int finalCount = categoriesDAO.getTotalCount(workspace);
         log.debug("finalCount = " + finalCount);
         assertEquals(startCount, finalCount);
     }
 
     public void testSelectDistinctCollections() throws Exception {
-        int startCount = entryCategoriesDAO.getTotalCount(workspace);
+        int startCount = categoriesDAO.getTotalCount(workspace);
         log.debug("startCount = " + startCount);
 
         String[] collections = { "fred", "fred", "barney", "wilma", "betty", "wilma" } ;
@@ -131,14 +131,14 @@ public class EntryCategoriesDAOTest extends DAOTestCase {
             entryIn.setScheme( scheme );
             entryIn.setTerm( term );
             
-            int inserts = entryCategoriesDAO.insertEntryCategory(entryIn);
+            int inserts = categoriesDAO.insertEntryCategory(entryIn);
             assertTrue(inserts > 0);
         }
 
-        int count = entryCategoriesDAO.getTotalCount(workspace);
+        int count = categoriesDAO.getTotalCount(workspace);
         assertEquals((startCount + numRows), count);
 
-        List colls = entryCategoriesDAO.selectDistictCollections( workspace ); 
+        List colls = categoriesDAO.selectDistictCollections( workspace );
         log.debug("====> colls = " + colls);
         assertNotNull( colls );
         assertEquals( colls.size(), 4 );
@@ -152,14 +152,14 @@ public class EntryCategoriesDAOTest extends DAOTestCase {
         }
         // COUNT
         Thread.sleep( DB_CATCHUP_SLEEP); // give the DB a chance to catch up
-        int finalCount = entryCategoriesDAO.getTotalCount(workspace);
+        int finalCount = categoriesDAO.getTotalCount(workspace);
         log.debug("finalCount = " + finalCount);
         assertEquals(startCount, finalCount);
     }
 
     public void testCRUD() throws Exception {
         // COUNT
-        int startCount = entryCategoriesDAO.getTotalCount(workspace);
+        int startCount = categoriesDAO.getTotalCount(workspace);
         log.debug("startCount = " + startCount);
 
         //String workspace = "widgets";
@@ -178,36 +178,36 @@ public class EntryCategoriesDAOTest extends DAOTestCase {
         entryIn.setScheme( scheme );
         entryIn.setTerm( term );
 
-        int numRows = entryCategoriesDAO.insertEntryCategory(entryIn);
+        int numRows = categoriesDAO.insertEntryCategory(entryIn);
         assertTrue(numRows > 0);
 
-        int count = entryCategoriesDAO.getTotalCount(workspace);
+        int count = categoriesDAO.getTotalCount(workspace);
         assertEquals((startCount + 1), count);
 
         // SELECT 
-        EntryCategory entryOut = entryCategoriesDAO.selectEntryCategory(entryIn);
+        EntryCategory entryOut = categoriesDAO.selectEntryCategory(entryIn);
         log.debug("====> entryOut = " + entryOut);
         assertNotNull(entryOut);
 
         // DELETE
-        entryCategoriesDAO.deleteEntryCategory(entryIn);
+        categoriesDAO.deleteEntryCategory(entryIn);
         entriesDAO.obliterateEntry(descriptor);
 
         // SELECT again
-        EntryCategory entryOut2 = entryCategoriesDAO.selectEntryCategory(entryIn);
+        EntryCategory entryOut2 = categoriesDAO.selectEntryCategory(entryIn);
         log.debug("====> entryOut2 = " + entryOut2);
         assertNull(entryOut2);
 
         // COUNT
         Thread.sleep( DB_CATCHUP_SLEEP); // give the DB a chance to catch up
-        int finalCount = entryCategoriesDAO.getTotalCount(workspace);
+        int finalCount = categoriesDAO.getTotalCount(workspace);
         log.debug("finalCount = " + finalCount);
         assertEquals(startCount, finalCount);
     }
 
     public void testBatch() throws Exception {
         // COUNT
-        int startCount = entryCategoriesDAO.getTotalCount(workspace);
+        int startCount = categoriesDAO.getTotalCount(workspace);
         log.debug("startCount = " + startCount);
 
         //String workspace = "widgets";
@@ -235,9 +235,9 @@ public class EntryCategoriesDAOTest extends DAOTestCase {
             ecList.add( entryIn );
         }
 
-        entryCategoriesDAO.insertEntryCategoryBatch( ecList );
+        categoriesDAO.insertEntryCategoryBatch( ecList );
 
-        int count = entryCategoriesDAO.getTotalCount(workspace);
+        int count = categoriesDAO.getTotalCount(workspace);
         assertEquals((startCount + numTags), count);
 
         // SELECT 
@@ -246,7 +246,7 @@ public class EntryCategoriesDAOTest extends DAOTestCase {
         EntryTarget entryTarget =
                 entryURIHelper.getEntryTarget(new MockRequestContext(serviceContext, "GET", iri.toString()), true);
 
-        List tags = entryCategoriesDAO.selectEntryCategories(entryTarget);
+        List tags = categoriesDAO.selectEntryCategories(entryTarget);
         log.debug("====> tags = " + tags);
         assertNotNull( tags );
                                  
@@ -277,19 +277,19 @@ public class EntryCategoriesDAOTest extends DAOTestCase {
             ecList.add( entryIn );
         }
 
-        entryCategoriesDAO.deleteEntryCategoryBatch( ecList );
+        categoriesDAO.deleteEntryCategoryBatch( ecList );
         entriesDAO.obliterateEntry(descriptor);
 
         // COUNT
         Thread.sleep( DB_CATCHUP_SLEEP); // give the DB a chance to catch up
-        int finalCount = entryCategoriesDAO.getTotalCount(workspace);
+        int finalCount = categoriesDAO.getTotalCount(workspace);
         log.debug("finalCount = " + finalCount);
         assertEquals(startCount, finalCount);
     }
 
     public void testSelectEntryCategories() throws Exception {
         // COUNT
-        int startCount = entryCategoriesDAO.getTotalCount(workspace);
+        int startCount = categoriesDAO.getTotalCount(workspace);
         log.debug("startCount = " + startCount);
 
         //String workspace = "widgets";
@@ -311,11 +311,11 @@ public class EntryCategoriesDAOTest extends DAOTestCase {
             entryIn.setScheme( scheme );
             entryIn.setTerm( term + ii );
 
-            int numRows = entryCategoriesDAO.insertEntryCategory(entryIn);
+            int numRows = categoriesDAO.insertEntryCategory(entryIn);
             assertTrue(numRows > 0);
         }
 
-        int count = entryCategoriesDAO.getTotalCount(workspace);
+        int count = categoriesDAO.getTotalCount(workspace);
         assertEquals((startCount + numTags), count);
 
         // SELECT 
@@ -324,7 +324,7 @@ public class EntryCategoriesDAOTest extends DAOTestCase {
         EntryTarget entryTarget =
                 entryURIHelper.getEntryTarget(new MockRequestContext(serviceContext, "GET", iri.toString()), true);
 
-        List tags = entryCategoriesDAO.selectEntryCategories(entryTarget);
+        List tags = categoriesDAO.selectEntryCategories(entryTarget);
         log.debug("====> tags = " + tags);
         assertNotNull( tags );
                                  
@@ -350,13 +350,13 @@ public class EntryCategoriesDAOTest extends DAOTestCase {
             // TODO: locale "en"?
             entryIn.setScheme( scheme );
             entryIn.setTerm( term + ii );
-            entryCategoriesDAO.deleteEntryCategory(entryIn);
+            categoriesDAO.deleteEntryCategory(entryIn);
         }
         entriesDAO.deleteEntry(descriptor);
 
         // COUNT
         Thread.sleep(500); // give the DB a chance to catch up
-        int finalCount = entryCategoriesDAO.getTotalCount(workspace);
+        int finalCount = categoriesDAO.getTotalCount(workspace);
         log.debug("finalCount = " + finalCount);
         assertEquals(startCount, finalCount);
     }

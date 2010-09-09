@@ -7,6 +7,24 @@
     </properties>
 
     <body>
+        <section name="Release 2.3 (09/08/10)">
+            <ul>
+                <li>Split the current single DataSource into 3 DataSources; a read-only, a read-write,
+                and a Aggregate datasource. This is a good thing because it allows us to control them separately.
+                In particular, (1) Different timeouts at the JDBC layer. This is critical, since a
+                JDBC timeout signals the DB to stop (as well as the Server).
+                This means that we actually remove the load from the DB.
+                Note that today the timeout is based on Aggregate Feeds, so it is way long, and relatively useless.
+                These new timeouts will be something like; Read-write = latency time, Read-only = 300s (or some such),
+                Aggregate = 1200s. (2) Different pool sizes. This will provide throttling, particularly for Aggregates.
+                Which will allow us a certain level of protection from Aggregates gone wild.
+                Both JTDS and the newer Merlia have socket timeout settings.
+                This change as backwards compatible as possible. I.e. we left around the original DAOs,
+                which delegate to the Read/Write DAOs.
+                See <a href="docs/upgrade_to_2.3.html">upgrading to 2.3</a> for details.</li>
+            </ul>
+        </section>
+
         <section name="Release 2.2.1 (09/07/10)">
             <ul>
                 <li>Explicit CASTs on all SQL parameters within WHERE clauses. This should not be necessary,
@@ -303,7 +321,7 @@
             entirely transparent.
             <ul>
                 <li>The Spring configuration has changed somewhat. The wiring of XPathAutoTaggers for a workspace
-                    has slightly changed; the entryCategoriesDAO property should be
+                    has slightly changed; the categoriesDAO property should be
                     replaced with a categoriesHandler property. This change plugs a leaky abstraction,
                     and allows all Category operations to happen through the CategoriesHander.
                 </li>

@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package org.atomserver.core.dbstore.dao;
+package org.atomserver.core.dbstore.dao.impl.rwimpl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.atomserver.core.dbstore.dao.AtomServerDAO;
 import org.atomserver.utils.perf.AtomServerStopWatch;
 import org.perf4j.StopWatch;
 import org.springframework.orm.ibatis.support.SqlMapClientDaoSupport;
@@ -41,10 +42,10 @@ abstract public class AbstractDAOiBatisImpl
     //    FOR TESTING ONLY 
     static private boolean testingForceFailure = false;
 
-    static public void setTestingForceFailure( boolean tORf ) {
+    static public void setTestingForceFailure(boolean tORf) {
         testingForceFailure = tORf;
     }
- 
+
     //======================================
     //   set the database type from Spring
     //======================================
@@ -69,7 +70,8 @@ abstract public class AbstractDAOiBatisImpl
     //======================================
     //          COUNT QUERIES
     //======================================
-    public int getTotalCountInternal(String workspace, String collection, String iBatisSQLId ) {
+
+    public int getTotalCountInternal(String workspace, String collection, String iBatisSQLId) {
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
             HashMap paramMap = new HashMap();
@@ -77,7 +79,7 @@ abstract public class AbstractDAOiBatisImpl
             if (collection != null) {
                 paramMap.put("collection", collection);
             }
-            Integer count = (Integer) (getSqlMapClientTemplate().queryForObject( iBatisSQLId, paramMap));
+            Integer count = (Integer) (getSqlMapClientTemplate().queryForObject(iBatisSQLId, paramMap));
             return ((count == null) ? 0 : count);
         }
         finally {
@@ -88,11 +90,12 @@ abstract public class AbstractDAOiBatisImpl
     //======================================
     //          DELETE ALL ROWS
     //======================================
-    public void deleteAllEntriesInternal(String workspace, String collection, String iBatisSQLId ) {
+
+    public void deleteAllEntriesInternal(String workspace, String collection, String iBatisSQLId) {
         HashMap paramMap = new HashMap();
-        paramMap.put( "workspace", workspace );
+        paramMap.put("workspace", workspace);
         if (collection != null) {
-            paramMap.put( "collection", collection );
+            paramMap.put("collection", collection);
         }
 
         final int deletedRows = getSqlMapClientTemplate().delete(iBatisSQLId, paramMap);
@@ -102,9 +105,10 @@ abstract public class AbstractDAOiBatisImpl
     //======================================
     //        GET THE SERVER'S DATE
     //======================================
+
     public Date selectSysDate() {
-        if ( testingForceFailure ) {
-            throw new RuntimeException( "THIS IS A FAKE FAILURE FROM AbstractDAOiBatisImpl.testingForceFailure" );
+        if (testingForceFailure) {
+            throw new RuntimeException("THIS IS A FAKE FAILURE FROM AbstractDAOiBatisImpl.testingForceFailure");
         }
 
         return (Date) (getSqlMapClientTemplate().queryForObject("selectSysDate",
@@ -137,13 +141,15 @@ abstract public class AbstractDAOiBatisImpl
     //======================================
     //        TEST AVAILABILTY
     //======================================
+
     /**
      * {@inheritDoc}
      */
     public void testAvailability() {
         Date dbDate = selectSysDate();
-        if (log.isTraceEnabled())
+        if (log.isTraceEnabled()) {
             log.trace("dbDate= " + dbDate);
+        }
     }
 
 }

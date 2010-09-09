@@ -35,7 +35,7 @@ public class AggregateFeedsDBSTest extends DBSTestCase {
         // TODO: FIXME
         System.setProperty( "bootstrappers", "" );
         super.setUp();
-        entryCategoriesDAO.deleteAllRowsFromEntryCategories();
+        categoriesDAO.deleteAllRowsFromEntryCategories();
         entriesDao.deleteAllRowsFromEntries();
     }
 

@@ -28,6 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.*;
 import org.atomserver.core.etc.AtomServerConstants;
+import org.atomserver.core.hashgenerators.SimpleContentHashGenerator;
 import org.atomserver.core.utils.HashUtils;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.exceptions.BadContentException;
@@ -1146,7 +1147,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
             log.error( ee );
             throw (ee instanceof AtomServerException) ? (AtomServerException)ee : new AtomServerException( msg, ee );
 
-         } finally {
+        } finally {
             outerStopWatch.stop("XML.fine.entry", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryMetaData));
         }
     }

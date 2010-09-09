@@ -102,6 +102,7 @@ public class TxnDBSTest extends CRUDDBSTestCase {
             assertNotNull( propFile );
             log.debug(propFile);
             assertTrue(propFile.exists());
+            log.debug("************** propFile= " + propFile);
         }
 
         int rev = extractRevisionFromURI(editURI);
