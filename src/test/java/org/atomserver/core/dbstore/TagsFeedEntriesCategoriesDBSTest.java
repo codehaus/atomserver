@@ -39,7 +39,7 @@ public class TagsFeedEntriesCategoriesDBSTest extends DBSTestCase {
 
     public void setUp() throws Exception { 
         super.setUp();         
-        entryCategoriesDAO.deleteAllRowsFromEntryCategories();
+        categoriesDAO.deleteAllRowsFromEntryCategories();
     }
 
     public void tearDown() throws Exception
@@ -87,7 +87,7 @@ public class TagsFeedEntriesCategoriesDBSTest extends DBSTestCase {
         //====================
         // Create a standard APP Categories doc
         //  which is the Content for this "tags:widgets" Entry
-        int startCountEC = entryCategoriesDAO.getTotalCount(workspace);
+        int startCountEC = categoriesDAO.getTotalCount(workspace);
         log.debug( "startCountEC = " + startCountEC );
        
         String scheme = "urn:widgets.foo";
@@ -196,7 +196,7 @@ public class TagsFeedEntriesCategoriesDBSTest extends DBSTestCase {
             assertTrue( content.indexOf( "category" ) >= 0 );
         }
 
-        int finalCountEC = entryCategoriesDAO.getTotalCount(workspace);
+        int finalCountEC = categoriesDAO.getTotalCount(workspace);
         log.debug( "finalCountEC = " + finalCountEC );
         // check that there was one category entered for each record
         assertEquals( numRecs, finalCountEC );

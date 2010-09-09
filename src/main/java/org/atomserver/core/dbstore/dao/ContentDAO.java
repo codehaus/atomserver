@@ -16,27 +16,13 @@
 
 package org.atomserver.core.dbstore.dao;
 
-import org.atomserver.core.EntryMetaData;
+import org.atomserver.core.dbstore.dao.rwdao.WriteReadContentDAO;
 
 /**
  * The DAO for accessing Content
+ *
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
-public interface ContentDAO {
-    void putContent(EntryMetaData entry, String content);
-
-    String selectContent(EntryMetaData entry);
-
-    void deleteContent(EntryMetaData entry);
-
-    boolean contentExists(EntryMetaData entry);
-
-    //void deleteAllContent();
-
-    void deleteAllContent(String workspace);
-
-    void deleteAllContent(String workspace, String collection);
-
-    void deleteAllRowsFromContent();
+public interface ContentDAO extends WriteReadContentDAO {
 }

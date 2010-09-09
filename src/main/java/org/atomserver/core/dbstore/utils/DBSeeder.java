@@ -26,10 +26,10 @@ import org.atomserver.core.BaseEntryDescriptor;
 import org.atomserver.core.BaseServiceDescriptor;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.dbstore.DBBasedContentStorage;
+import org.atomserver.core.dbstore.dao.CategoriesDAO;
+import org.atomserver.core.dbstore.dao.CategoryLogEventsDAO;
 import org.atomserver.core.dbstore.dao.ContentDAO;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
-import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
-import org.atomserver.core.dbstore.dao.EntryCategoryLogEventDAO;
 import org.atomserver.core.filestore.FileBasedContentStorage;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.utils.io.JarUtils;
@@ -63,8 +63,8 @@ public class DBSeeder extends DBTool {
     static private ClassPathXmlApplicationContext springFactory = null;
 
     private EntriesDAO entriesDAO;
-    private EntryCategoryLogEventDAO entryCategoryLogEventDAO;
-    private EntryCategoriesDAO entryCategoriesDAO;
+    private CategoryLogEventsDAO categoryLogEventsDAO;
+    private CategoriesDAO categoriesDAO;
     private ContentStorage contentStorage;
     private ContentDAO contentDAO;
 
@@ -100,12 +100,12 @@ public class DBSeeder extends DBTool {
         this.contentDAO = contentDAO;
     }
 
-    public void setEntryCategoriesDAO(EntryCategoriesDAO entryCategoriesDAO) {
-        this.entryCategoriesDAO = entryCategoriesDAO;
+    public void setEntryCategoriesDAO(CategoriesDAO categoriesDAO) {
+        this.categoriesDAO = categoriesDAO;
     }
 
-    public void setEntryCategoryLogEventDAO(EntryCategoryLogEventDAO entryCategoryLogEventDAO) {
-        this.entryCategoryLogEventDAO = entryCategoryLogEventDAO;
+    public void setEntryCategoryLogEventDAO(CategoryLogEventsDAO categoryLogEventsDAO) {
+        this.categoryLogEventsDAO = categoryLogEventsDAO;
     }
 
     public void setContentStorage(ContentStorage physicalStorage) {
@@ -126,12 +126,12 @@ public class DBSeeder extends DBTool {
         log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.info("==========> DELETING *ALL* ROWS in EntryCategoryLogEvent !!!!!!!!!!!!!");
         log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-        entryCategoryLogEventDAO.deleteAllRowsFromEntryCategoryLogEvent();
+        categoryLogEventsDAO.deleteAllRowsFromEntryCategoryLogEvent();
 
         log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.info("==========> DELETING *ALL* ROWS in EntryCategory !!!!!!!!!!!!!");
         log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-        entryCategoriesDAO.deleteAllRowsFromEntryCategories();
+        categoriesDAO.deleteAllRowsFromEntryCategories();
 
         log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         log.info("==========> DELETING *ALL* ROWS in EntryStore  !!!!!!!!!!!!!");
@@ -182,7 +182,7 @@ public class DBSeeder extends DBTool {
             }
 
             entriesDAO.deleteAllEntries(new BaseServiceDescriptor("widgets"));
-            entryCategoriesDAO.deleteAllEntryCategories("widgets");
+            categoriesDAO.deleteAllEntryCategories("widgets");
 
             entriesDAO.ensureCollectionExists("widgets", "acme");
             insertWidget(new BaseEntryDescriptor("widgets", "acme", "2787", en, 0));
@@ -233,7 +233,7 @@ public class DBSeeder extends DBTool {
                 }
             }
 
-            entryCategoriesDAO.deleteAllEntryCategories("pets");
+            categoriesDAO.deleteAllEntryCategories("pets");
             entriesDAO.deleteAllEntries(new BaseServiceDescriptor("pets"));
 
             entriesDAO.ensureCollectionExists("pets", "cats");
@@ -263,7 +263,7 @@ public class DBSeeder extends DBTool {
         entryCategory.setEntryId( id );
         entryCategory.setScheme( "urn:pets.breeds" );
         entryCategory.setTerm( term );
-        entryCategoriesDAO.insertEntryCategory( entryCategory );
+        categoriesDAO.insertEntryCategory( entryCategory );
     }
 
 

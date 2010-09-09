@@ -7,7 +7,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.atomserver.core.AtomServerTestCase;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
-import org.atomserver.core.dbstore.dao.EntriesDAOiBatisImpl;
+import org.atomserver.core.dbstore.dao.impl.EntriesDAOiBatisImpl;
 
 import java.util.Map;
 import java.util.List;

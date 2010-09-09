@@ -21,10 +21,10 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.atomserver.core.dbstore.dao.impl.EntriesDAOiBatisImpl;
 import org.atomserver.testutils.mt.MultiThreadedTestCase;
 import org.atomserver.testutils.mt.MultiThreadedTestThread;
 import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
-import org.atomserver.core.dbstore.dao.EntriesDAOiBatisImpl;
 
 import java.util.HashSet;
 import java.util.Random;

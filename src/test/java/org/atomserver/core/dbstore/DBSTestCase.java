@@ -30,9 +30,9 @@ import org.atomserver.core.AtomServerTestCase;
 import org.atomserver.core.BaseEntryDescriptor;
 import org.atomserver.core.BaseFeedDescriptor;
 import org.atomserver.core.BaseServiceDescriptor;
+import org.atomserver.core.dbstore.dao.CategoriesDAO;
 import org.atomserver.core.dbstore.dao.ContentDAO;
-import org.atomserver.core.dbstore.dao.EntriesDAO;
-import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
+import org.atomserver.core.dbstore.dao.impl.EntriesDAOiBatisImpl;
 import org.atomserver.core.dbstore.utils.DBSeeder;
 import org.atomserver.core.etc.AtomServerConstants;
 import org.atomserver.core.filestore.FileBasedContentStorage;
@@ -44,15 +44,14 @@ import org.atomserver.monitor.EntriesMonitor;
 import org.springframework.context.ApplicationContext;
 
 import java.io.File;
-import java.io.InputStream;
 import java.text.MessageFormat;
 
 /**
  */
 public class DBSTestCase extends AtomServerTestCase {
 
-    protected EntriesDAO entriesDao = null;
-    protected EntryCategoriesDAO entryCategoriesDAO = null;
+    protected EntriesDAOiBatisImpl entriesDao = null;
+    protected CategoriesDAO categoriesDAO = null;
 
     protected ContentDAO contentDAO = null;
 
@@ -95,8 +94,8 @@ public class DBSTestCase extends AtomServerTestCase {
 
         ApplicationContext springContext = getSpringFactory();
 
-        entriesDao = (EntriesDAO) springContext.getBean("org.atomserver-entriesDAO");
-        entryCategoriesDAO = (EntryCategoriesDAO) springContext.getBean("org.atomserver-entryCategoriesDAO");
+        entriesDao = (EntriesDAOiBatisImpl) springContext.getBean("org.atomserver-entriesDAO");
+        categoriesDAO = (CategoriesDAO) springContext.getBean("org.atomserver-entryCategoriesDAO");
 
         contentDAO = (ContentDAO) springContext.getBean("org.atomserver-contentDAO");
         entriesMonitor = (EntriesMonitor) springContext.getBean("org.atomserver-entriesMonitor");

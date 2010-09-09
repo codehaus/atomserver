@@ -26,13 +26,16 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.lang.StringUtils;
 import org.atomserver.*;
+import org.atomserver.core.dbstore.dao.*;
+import org.atomserver.core.dbstore.dao.impl.CategoriesDAOiBatisImpl;
+import org.atomserver.core.dbstore.dao.impl.CategoryLogEventsDAOiBatisImpl;
+import org.atomserver.core.dbstore.dao.rwdao.WriteReadCategoriesDAO;
+import org.atomserver.core.dbstore.dao.rwdao.WriteReadCategoryLogEventsDAO;
 import org.atomserver.ext.category.CategoryOperation;
 import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.WorkspaceOptions;
 import org.atomserver.core.etc.AtomServerConstants;
-import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
-import org.atomserver.core.dbstore.dao.EntryCategoryLogEventDAO;
 import org.atomserver.core.dbstore.utils.SizeLimit;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.exceptions.BadRequestException;
@@ -54,10 +57,10 @@ public class EntryCategoriesHandler
     static public final String DEFAULT_CATEGORIES_WORKSPACE_PREFIX = "tags:";
     
     private AtomService atomService;
-    private EntryCategoriesDAO entryCategoriesDAO;
+    private CategoriesDAO categoriesDAO;
 
     private boolean isLoggingAllCategoryEvents = false;
-    private EntryCategoryLogEventDAO entryCategoryLogEventDAO;
+    private CategoryLogEventsDAO categoryLogEventsDAO;
 
     private SizeLimit sizeLimit = null;
 
@@ -86,6 +89,14 @@ public class EntryCategoriesHandler
         return catWorkspace;
     }
 
+    public WriteReadCategoriesDAO getWriteReadCategoriesDAO() {
+         return ((CategoriesDAOiBatisImpl)categoriesDAO).getWriteReadCategoriesDAO();
+    }
+
+    public WriteReadCategoryLogEventsDAO getWriteReadCategoryLogEventsDAO() {
+         return ((CategoryLogEventsDAOiBatisImpl)categoryLogEventsDAO).getWriteReadEntryCategoryLogEventDAO();
+    }
+
     // -----------------------------------
     //                IOC
     // -----------------------------------
@@ -103,11 +114,11 @@ public class EntryCategoriesHandler
     /**
      * Set by Spring
      */
-    public void setEntryCategoriesDAO(EntryCategoriesDAO entryCategoriesDAO) {
-        this.entryCategoriesDAO = entryCategoriesDAO;
+    public void setEntryCategoriesDAO(CategoriesDAO categoriesDAO) {
+        this.categoriesDAO = categoriesDAO;
     }
-    public EntryCategoriesDAO getEntryCategoriesDAO() {
-        return entryCategoriesDAO;
+    public CategoriesDAO getEntryCategoriesDAO() {
+        return categoriesDAO;
     }
 
     public boolean isLoggingAllCategoryEvents() {
@@ -117,17 +128,15 @@ public class EntryCategoriesHandler
         isLoggingAllCategoryEvents = loggingAllCategoryEvents;
     }
 
-    public EntryCategoryLogEventDAO getEntryCategoryLogEventDAO() {
-        return entryCategoryLogEventDAO;
+    public CategoryLogEventsDAO getEntryCategoryLogEventDAO() {
+        return categoryLogEventsDAO;
     }
-    public void setEntryCategoryLogEventDAO(EntryCategoryLogEventDAO entryCategoryLogEventDAO) {
-        this.entryCategoryLogEventDAO = entryCategoryLogEventDAO;
+    public void setEntryCategoryLogEventDAO(CategoryLogEventsDAO categoryLogEventsDAO) {
+        this.categoryLogEventsDAO = categoryLogEventsDAO;
     }
 
     /**
      * Get the size limit settings
-     *
-     * @return
      */
     public SizeLimit getSizeLimit() {
         return sizeLimit;
@@ -135,8 +144,6 @@ public class EntryCategoriesHandler
 
     /**
      * Set the size limit settings
-     *
-     * @param sizeLimit
      */
     public void setSizeLimit(SizeLimit sizeLimit) {
         this.sizeLimit = sizeLimit;
@@ -158,7 +165,7 @@ public class EntryCategoriesHandler
             log.trace("EntryCategoriesContentStorage:: listCategories:: [" + workspace + ", " + collection + "]");
         }
 
-        List schemeTermMapList = entryCategoriesDAO.selectDistictCategoriesPerCollection(workspace, collection);
+        List schemeTermMapList = categoriesDAO.selectDistictCategoriesPerCollection(workspace, collection);
         if (schemeTermMapList == null || schemeTermMapList.size() <= 0) {
             return null;
         }
@@ -182,15 +189,16 @@ public class EntryCategoriesHandler
     /* used only by obliterateEntry
     */
     public void deleteEntryCategories(EntryDescriptor entryQuery){
-        entryCategoriesDAO.deleteEntryCategories(entryQuery);
+        getWriteReadCategoriesDAO().deleteEntryCategories(entryQuery);
     }
 
+    // USED BY THE AUTOTAGGER
     public List<EntryCategory> selectEntryCategories(EntryDescriptor entryQuery){
-        return entryCategoriesDAO.selectEntryCategories(entryQuery);
+        return getWriteReadCategoriesDAO().selectEntryCategories(entryQuery);
     }
 
     public List<EntryCategory> selectEntriesCategories(String workspace, String collection, Set<String> entryIds){
-        return entryCategoriesDAO.selectEntriesCategories(workspace, collection, entryIds);
+        return categoriesDAO.selectEntriesCategories(workspace, collection, entryIds);
     }
 
     public void insertEntryCategoryBatch(List<EntryCategory> entryCatList) {
@@ -198,16 +206,16 @@ public class EntryCategoriesHandler
             verifyEntryCategory( category );
         }
 
-        entryCategoriesDAO.insertEntryCategoryBatch(entryCatList);
+        getWriteReadCategoriesDAO().insertEntryCategoryBatch(entryCatList);
 
         if (isLoggingAllCategoryEvents) {
-            entryCategoryLogEventDAO.insertEntryCategoryLogEventBatch(entryCatList);
+            getWriteReadCategoryLogEventsDAO().insertEntryCategoryLogEventBatch(entryCatList);
         }
     }
 
     public void deleteEntryCategoryBatch(List<EntryCategory> entryCategoryList) {
         // NOTE: we need to be able to delete Categories that may be bad, so do NOT verify here
-        entryCategoriesDAO.deleteEntryCategoryBatch(entryCategoryList);
+        getWriteReadCategoriesDAO().deleteEntryCategoryBatch(entryCategoryList);
     }    
 
     // -----------------------------------
@@ -218,7 +226,7 @@ public class EntryCategoriesHandler
     }
 
     public void testAvailability() {
-        entryCategoriesDAO.selectSysDate();
+        categoriesDAO.selectSysDate();
     }
 
     /**
@@ -309,7 +317,7 @@ public class EntryCategoriesHandler
     }
 
     public boolean contentExists(EntryDescriptor descriptor) {
-        List categoryList = entryCategoriesDAO.selectEntryCategories(descriptor);
+        List categoryList = categoriesDAO.selectEntryCategories(descriptor);
         return !(categoryList == null || categoryList.size() <= 0);
     }
 
@@ -395,7 +403,7 @@ public class EntryCategoriesHandler
             log.trace("EntryCategoriesContentStorage:: getCategories:: [" + descriptor + "]");
         }
 
-        List categoryList = entryCategoriesDAO.selectEntryCategories(descriptor);
+        List categoryList = getWriteReadCategoriesDAO().selectEntryCategories(descriptor);
         if (categoryList == null || categoryList.size() <= 0) {
             return null;
         }
@@ -459,7 +467,7 @@ public class EntryCategoriesHandler
         }
 
         // BATCH DELETE
-        entryCategoriesDAO.deleteEntryCategoryBatch(entryCatList);
+        getWriteReadCategoriesDAO().deleteEntryCategoryBatch(entryCatList);
     }
 
     /**
@@ -492,10 +500,10 @@ public class EntryCategoriesHandler
         List<Category> catList = new ArrayList<Category>();
         catList.add(cat);
         List<EntryCategory> categoryList = getEntryCategoryList(descriptor, catList);
-        int rc = entryCategoriesDAO.updateEntryCategory(categoryList.get(0), oldTerm );
+        int rc = getWriteReadCategoriesDAO().updateEntryCategory(categoryList.get(0), oldTerm );
 
         if (isLoggingAllCategoryEvents) {
-            entryCategoryLogEventDAO.insertEntryCategoryLogEventBatch(categoryList);
+            getWriteReadCategoryLogEventsDAO().insertEntryCategoryLogEventBatch(categoryList);
         }
         return rc;
     }

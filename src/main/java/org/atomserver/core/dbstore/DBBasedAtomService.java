@@ -24,8 +24,8 @@ import org.atomserver.core.AbstractAtomService;
 import org.atomserver.core.BaseEntryDescriptor;
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.WorkspaceOptions;
+import org.atomserver.core.dbstore.dao.CategoriesDAO;
 import org.atomserver.core.dbstore.dao.EntriesDAO;
-import org.atomserver.core.dbstore.dao.EntryCategoriesDAO;
 import org.atomserver.utils.locale.LocaleUtils;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedOperation;
@@ -158,15 +158,15 @@ public class DBBasedAtomService extends AbstractAtomService {
     /**
      * @deprecated
      */
-    public void setEntryCategoriesDAO(EntryCategoriesDAO entryCategoriesDAO) {
-        log.error("setEntryCategoriesDAO() is no longer valid on Atomservice. It is ignored");
+    public void setEntryCategoriesDAO(CategoriesDAO categoriesDAO) {
+        log.error("setCategoriesDAO() is no longer valid on Atomservice. It is ignored");
     }
 
     /**
      * @deprecated
      */
     public void setCategoriesContentStorage(ContentStorage categoriesContentStorage) {
-        log.error("setEntryCategoriesDAO() is no longer valid on Atomservice. It is DEPRECATED");
+        log.error("setCategoriesDAO() is no longer valid on Atomservice. It is DEPRECATED");
         addVirtualWorkspaceHandler( VirtualWorkspaceHandler.CATEGORIES,
                                     (CategoriesHandler) categoriesContentStorage );
     }

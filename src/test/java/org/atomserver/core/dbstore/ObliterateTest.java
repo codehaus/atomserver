@@ -70,7 +70,7 @@ public class ObliterateTest extends CRUDDBSTestCase {
         entryIn.setScheme( scheme );
         entryIn.setTerm( term );
 
-        int numRows = entryCategoriesDAO.insertEntryCategory(entryIn);
+        int numRows = categoriesDAO.insertEntryCategory(entryIn);
         assertTrue(numRows > 0);
 
         // DELETE

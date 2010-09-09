@@ -27,7 +27,7 @@
     <typeAlias type="org.atomserver.core.EntryCategory" alias="entryCategory"/>
     <typeAlias type="org.atomserver.EntryDescriptor" alias="entryDescriptor"/>
     <typeAlias type="org.atomserver.core.EntryCategoryLogEvent" alias="entryCategoryLogEvent"/>
-    <typeAlias type="org.atomserver.core.dbstore.dao.EntriesDAOiBatisImpl$EntryStats" alias="entryStats"/>
+    <typeAlias type="org.atomserver.core.dbstore.dao.impl.AggregateEntriesDAOiBatisImpl$EntryStats" alias="entryStats"/>
 
 
     <resultMap class="entryMetaData" id="entryResultSansCategories">

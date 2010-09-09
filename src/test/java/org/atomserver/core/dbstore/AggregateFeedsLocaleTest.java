@@ -16,9 +16,9 @@ public class AggregateFeedsLocaleTest extends DBSTestCase {
         TestConfUtil.preSetup("aggregates2");
         super.setUp();
 
-        entryCategoriesDAO.deleteAllEntryCategories("foos");
-        entryCategoriesDAO.deleteAllEntryCategories("boos");
-        entryCategoriesDAO.deleteAllEntryCategories("bars");
+        categoriesDAO.deleteAllEntryCategories("foos");
+        categoriesDAO.deleteAllEntryCategories("boos");
+        categoriesDAO.deleteAllEntryCategories("bars");
 
         entriesDao.deleteAllEntries(new BaseServiceDescriptor("foos"));
         entriesDao.deleteAllEntries(new BaseServiceDescriptor("boos"));

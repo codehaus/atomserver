@@ -1,7 +1,7 @@
 /* Copyright Homeaway, Inc 2005-2008. All Rights Reserved.
  * No unauthorized use of this software.
  */
-package org.atomserver.core;
+package org.atomserver.core.hashgenerators;
 
 import org.atomserver.ContentHashGenerator;
 import org.apache.commons.codec.digest.DigestUtils;

@@ -16,14 +16,13 @@
 */
 package org.atomserver.core.dbstore.dao;
 
-import org.atomserver.monitor.WorkspaceCollectionMaxIndex;
 import org.atomserver.monitor.WorkspaceCollectionDocumentCount;
+import org.atomserver.monitor.WorkspaceCollectionMaxIndex;
 
 import java.util.List;
 
 /**
  * StatisticsMonitorDAO - DAO to retrieve statistical values
- *
  */
 public interface StatisticsMonitorDAO extends AtomServerDAO {
 
