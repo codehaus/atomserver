@@ -298,11 +298,8 @@ public class ReadEntriesDAOiBatisImpl
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
             ensureWorkspaceExists(workspace);
-            ParamMap paramMap = paramMap()
-                    .param("workspace", workspace)
-                    .param("collection", collection);
-            Integer count =
-                    (Integer) getSqlMapClientTemplate().queryForObject("collectionExists", paramMap);
+            ParamMap paramMap = paramMap().param("workspace", workspace).param("collection", collection);
+            Integer count = (Integer) getSqlMapClientTemplate().queryForObject("collectionExists", paramMap);
             if (count == 0) {
                 try {
                     getSqlMapClientTemplate().insert("createCollection", paramMap);
@@ -310,8 +307,10 @@ public class ReadEntriesDAOiBatisImpl
                     log.warn("race condition while guaranteeing existence of collection " +
                              workspace + "/" + collection + " - this is probably okay.");
                 }
-                HashSet<String> workspaceCollections = getWorkspaceCollections(workspace);
-                workspaceCollections.add(collection);
+                if ( useWorkspaceCollectionCache ) {
+                    HashSet<String> workspaceCollections = getWorkspaceCollections(workspace);
+                    workspaceCollections.add(collection);
+                }
             }
         }
         finally {
@@ -332,7 +331,7 @@ public class ReadEntriesDAOiBatisImpl
                     log.warn("race condition while guaranteeing existence of workspace " +
                              workspace + " - this is probably okay.");
                 }
-                workspaces.add(workspace);
+                if ( useWorkspaceCollectionCache ) workspaces.add(workspace);
             }
         }
         finally {
@@ -343,14 +342,18 @@ public class ReadEntriesDAOiBatisImpl
     public List<String> listWorkspaces() {
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
-            if (!useWorkspaceCollectionCache || workspacesIsExpired()) {
-                lastWorkspacesSelectTime = System.currentTimeMillis();
-                List<String> dbworkspaces = getSqlMapClientTemplate().queryForList("listWorkspaces");
-                if ((dbworkspaces != null) && (!workspaces.equals(dbworkspaces))) {
-                    workspaces.addAll(dbworkspaces);
+            if (!useWorkspaceCollectionCache ) {
+                return getSqlMapClientTemplate().queryForList("listWorkspaces");
+            } else {
+                if ( workspacesIsExpired() ) {
+                    lastWorkspacesSelectTime = System.currentTimeMillis();
+                    List<String> dbworkspaces = getSqlMapClientTemplate().queryForList("listWorkspaces");
+                    if ((dbworkspaces != null) && (!workspaces.equals(dbworkspaces))) {
+                        workspaces.addAll(dbworkspaces);
+                    }
                 }
+                return new ArrayList(workspaces);
             }
-            return new ArrayList(workspaces);
         }
         finally {
             stopWatch.stop("DB.listWorkspaces", "");
@@ -360,16 +363,26 @@ public class ReadEntriesDAOiBatisImpl
     public List<String> listCollections(String workspace) {
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
-            HashSet<String> workspaceCollections = getWorkspaceCollections(workspace);
-            if (!useWorkspaceCollectionCache || collectionsIsExpired()) {
-                lastCollectionsSelectTime = System.currentTimeMillis();
-                List<String> dbcollections = getSqlMapClientTemplate().queryForList("listCollections",
-                                                                                    paramMap().param("workspace", workspace));
-                if ((dbcollections != null) && (!workspaceCollections.equals(dbcollections))) {
-                    workspaceCollections.addAll(dbcollections);
+            if ( !useWorkspaceCollectionCache ) {
+                return getSqlMapClientTemplate().queryForList("listCollections",
+                                                              paramMap().param("workspace", workspace));
+            } else {
+                HashSet<String> workspaceCollections = getWorkspaceCollections(workspace);
+                if ( collectionsIsExpired() ) {
+                    lastCollectionsSelectTime = System.currentTimeMillis();
+                    if ( collections.isEmpty() ) {
+                        loadWorkspaceCollections();
+                        workspaceCollections = getWorkspaceCollections(workspace);
+                    } else {
+                        List<String> dbcollections = getSqlMapClientTemplate().queryForList("listCollections",
+                                                                                            paramMap().param("workspace", workspace));
+                        if ((dbcollections != null) && (!workspaceCollections.equals(dbcollections))) {
+                            workspaceCollections.addAll(dbcollections);
+                        }
+                    }
                 }
+                return new ArrayList(workspaceCollections);
             }
-            return new ArrayList(workspaceCollections);
         }
         finally {
             stopWatch.stop("DB.listCollections", "");
@@ -403,6 +416,21 @@ public class ReadEntriesDAOiBatisImpl
                  ? true
                  : ((currentTime - startupTime) > STARTUP_INTERVAL)
                    ? false : true;
+    }
+
+    public void loadWorkspaceCollections() {
+        StopWatch stopWatch = new AtomServerStopWatch();
+        try {
+            List<WorkspaceCollection> wcs = getSqlMapClientTemplate().queryForList("selectWorkspaceCollections", paramMap());
+            if (wcs != null) {
+                for( WorkspaceCollection wc : wcs ) {
+                    HashSet<String> workspaceCollections = getWorkspaceCollections(wc.getWorkspace());
+                    workspaceCollections.add(wc.getCollection());
+                }
+            }
+        } finally {
+            stopWatch.stop("DB.loadWorkspaceCollections", "");
+        }
     }
 
 //======================================

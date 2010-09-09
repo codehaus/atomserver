@@ -20,7 +20,8 @@
                 Which will allow us a certain level of protection from Aggregates gone wild.
                 Both JTDS and the newer Merlia have socket timeout settings.
                 This change as backwards compatible as possible. I.e. we left around the original DAOs,
-                which delegate to the Read/Write DAOs.</li>
+                which delegate to the Read/Write DAOs.
+                See <a href="docs/upgrade_to_2.3.html">upgrading to 2.3</a> for details.</li>
             </ul>
         </section>
 
