@@ -987,7 +987,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
             try {
                 return autoTagger.tag(entryMetaData, entryXml);
             } finally {
-                stopWatch.stop("XML.autoTagger", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryMetaData));
+                stopWatch.stop("AC.postProcContent", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryMetaData));
 
             }
         }

@@ -19,6 +19,9 @@ package org.atomserver.core.autotaggers;
 
 import org.atomserver.EntryAutoTagger;
 import org.atomserver.core.EntryMetaData;
+import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
+import org.atomserver.utils.perf.AtomServerStopWatch;
+import org.perf4j.StopWatch;
 
 import java.util.List;
 
@@ -36,11 +39,16 @@ public class MultiAutoTagger implements EntryAutoTagger {
      * {@inheritDoc}
      */
     public boolean tag(EntryMetaData entry, String contentXML) {
-        boolean modified = false;
-        for (EntryAutoTagger tagger : taggers) {
-            modified |= tagger.tag(entry, contentXML);
+        StopWatch stopWatch = new AtomServerStopWatch();
+        try {
+            boolean modified = false;
+            for (EntryAutoTagger tagger : taggers) {
+                modified |= tagger.tag(entry, contentXML);
+            }
+            return modified;
+        } finally {
+            stopWatch.stop("AutoTagger.multi", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
         }
-        return modified;
     }
 
     /**
