@@ -46,22 +46,38 @@ public class StripingAutoTagger extends BaseAutoTagger {
         return entry.getEntryId();
     }
 
+    private static final List<EntryCategory> EMPTY_CAT_LIST = new ArrayList<EntryCategory>();
+
     public boolean tag(EntryMetaData entry, String content) {
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
             // compute what the stripe term SHOULD be
-            String stripeTerm =
-                    ShardedPathGenerator.computeShard(getStripeBasis(entry, content), numStripes, radix);
+            String stripeTerm = ShardedPathGenerator.computeShard(getStripeBasis(entry, content), numStripes, radix);
 
             // select the current set of categories, and check anything in the stripe scheme to see
             // whether it matches the correct term.  if there is already a category with the proper
             // scheme AND term, set a flag so we don't insert it again.  if there are any with the
             // right scheme but a DIFFERENT term, add them to a list which we will delete in a batch
             // after.
+
+            // TODO: TESTING >>>>>>>>>>>>>>>>>>>>
+            //List<EntryCategory> list = getCategoriesHandler().selectEntryCategories(entry);
+            List<EntryCategory> list = entry.getCategories();
+            if ( (list.size() == 1)
+                 && ((list.get(0).getScheme() == null) && (list.get(0).getTerm() == null)) ) {
+                log.debug("returning empty list: " + EMPTY_CAT_LIST);
+                list = EMPTY_CAT_LIST;
+            }
+            if (log.isDebugEnabled()) {
+                for (EntryCategory entryCategory : list) {
+                    log.debug("TAG-INITIAL:" + entryCategory);
+                }
+            }
+
             boolean alreadyExists = false;
-            List<EntryCategory> list = getCategoriesHandler().selectEntryCategories(entry);
             List<EntryCategory> toDelete = new ArrayList<EntryCategory>();
             for (EntryCategory entryCategory : list) {
+                log.debug("entryCategory= " + entryCategory);
                 if (entryCategory.getScheme().equals(stripeScheme)) {
                     if (entryCategory.getTerm().equals(stripeTerm)) {
                         alreadyExists = true;
@@ -70,10 +86,12 @@ public class StripingAutoTagger extends BaseAutoTagger {
                     }
                 }
             }
+
             // if there were any to delete - delete them now.
             if (!toDelete.isEmpty()) {
                 getCategoriesHandler().deleteEntryCategoryBatch(toDelete);
             }
+            
             // if we didn't already have the proper category, set it now.
             if (!alreadyExists) {
                 EntryCategory category = new EntryCategory();
