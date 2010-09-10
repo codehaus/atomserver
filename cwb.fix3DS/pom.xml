@@ -152,7 +152,7 @@
         <rootAppender>Stdout</rootAppender>
 
         <rootLogLevel>WARN</rootLogLevel>
-        <logLevel>INFO</logLevel>
+        <logLevel>DEBUG</logLevel>
         <logDir>${basedir}/target</logDir>
         <logFileNamePrefix>atomserver</logFileNamePrefix>
 

@@ -592,9 +592,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                                 }
                             }
                             final Object internalId = getInternalId(target);
-                            EntryMetaDataStatus metaDataStatus = modifyEntry(internalId,
-                                                                             target,
-                                                                             mustAlreadyExist());
+                            EntryMetaDataStatus metaDataStatus = modifyEntry(internalId, target, mustAlreadyExist());
 
                             // Update category to see if there are changes.
                             // Assumption here: postProcessEntryContents method does not need entry revision or timestamps.
@@ -973,14 +971,13 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                     }
                 }
         );
-        return (entryMetaData == null) ?
-               null :
-               newEntry(abdera, entryMetaData, EntryType.link);
+        return (entryMetaData == null) ? null : newEntry(abdera, entryMetaData, EntryType.link);
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~
 
     private boolean postProcessEntryContents(String entryXml, EntryMetaData entryMetaData) {
+        log.debug("BEGIN AUTO_TAGGING................");
         EntryAutoTagger autoTagger = getAutoTagger();
         if (autoTagger != null) {
             StopWatch stopWatch = new AtomServerStopWatch();
