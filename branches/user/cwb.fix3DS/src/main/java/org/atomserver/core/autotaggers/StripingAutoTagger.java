@@ -51,6 +51,8 @@ public class StripingAutoTagger extends BaseAutoTagger {
     public boolean tag(EntryMetaData entry, String content) {
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
+            log.debug("StripingAutoTagger.tag");
+
             // compute what the stripe term SHOULD be
             String stripeTerm = ShardedPathGenerator.computeShard(getStripeBasis(entry, content), numStripes, radix);
 
@@ -65,12 +67,11 @@ public class StripingAutoTagger extends BaseAutoTagger {
             List<EntryCategory> list = entry.getCategories();
             if ( (list.size() == 1)
                  && ((list.get(0).getScheme() == null) && (list.get(0).getTerm() == null)) ) {
-                log.debug("returning empty list: " + EMPTY_CAT_LIST);
                 list = EMPTY_CAT_LIST;
             }
             if (log.isDebugEnabled()) {
                 for (EntryCategory entryCategory : list) {
-                    log.debug("TAG-INITIAL:" + entryCategory);
+                    log.trace("TAG-INITIAL:" + entryCategory);
                 }
             }
 
