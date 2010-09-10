@@ -150,22 +150,21 @@ public class ShardedPathGenerator implements PartitionPathGenerator {
         String rootPath = root.getAbsolutePath();
         String relativePath = filePath.replace(rootPath, "");
         final Matcher matcher = pattern.matcher(relativePath);
-        return matcher.matches() &&
-               matcher.group(1).equals(StringUtils.join(computeShards(matcher.group(2)), "/")) ?
-                                                                                               new ReverseMatch() {
-                                                                                                   public String getPartition() {
-                                                                                                       return matcher.group(1);
-                                                                                                   }
+        return (matcher.matches() &&
+                matcher.group(1).equals(StringUtils.join(computeShards(matcher.group(2)), "/")))
+               ? new ReverseMatch() {   public String getPartition() {
+                                            return matcher.group(1);
+                                        }
 
-                                                                                                   public String getSeed() {
-                                                                                                       return matcher.group(2);
-                                                                                                   }
+                                        public String getSeed() {
+                                            return matcher.group(2);
+                                        }
 
-                                                                                                   public String getRest() {
-                                                                                                       return matcher.group(3);
-                                                                                                   }
-                                                                                               } :
-                                                                                                 null;
+                                        public String getRest() {
+                                            return matcher.group(3);
+                                        }
+                                    }
+               : null;
     }
 
     private static final int[] PRIMES = {8675309, 16661, 17};

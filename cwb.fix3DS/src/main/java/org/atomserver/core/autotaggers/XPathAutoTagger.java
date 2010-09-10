@@ -179,6 +179,8 @@ public class XPathAutoTagger
     public boolean tag(EntryMetaData entry, String contentXML) {
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
+            log.debug("XPathAutoTagger.tag");
+
             // this method selects the list of current categories for the entry from the DB, does all
             // modifications in memory, and then updates the DB as a batch at the end.  In the vast
             // majority of cases, these tags will not actually change as a result of auto-tagging, and
@@ -193,7 +195,7 @@ public class XPathAutoTagger
 
             if (log.isDebugEnabled()) {
                 for (EntryCategory entryCategory : initialState) {
-                    log.debug("TAG-INITIAL:" + entryCategory);
+                    log.trace("TAG-INITIAL:" + entryCategory);
                 }
             }
 
@@ -315,6 +317,7 @@ public class XPathAutoTagger
         private String scheme;
 
         public void tag(EntryMetaData entry, InputSource inputSource, Set<EntryCategory> categoryMods, XPath xPath) {
+            log.debug("DeleteSchemeAction.tag");
             StopWatch stopWatch0 = new AtomServerStopWatch();
             try {
                 Set<String> deleteSchemes = new HashSet<String>();
@@ -376,6 +379,7 @@ public class XPathAutoTagger
         private String labelPattern;
 
         public void tag(EntryMetaData entry, InputSource inputSource, Set<EntryCategory> categoryMods, XPath xPath) {
+            log.debug("XPathMatchAction.tag");            
             StopWatch stopWatch0 = new AtomServerStopWatch();
             try {
                 try {
@@ -409,7 +413,7 @@ public class XPathAutoTagger
                         category.setScheme(MessageFormat.format(scheme, replacements));
                         category.setTerm(MessageFormat.format(termPattern, replacements));
                         category.setLabel(labelPattern == null ? null : MessageFormat.format(labelPattern, replacements));
-                        log.debug("creating category : " + category);
+                        log.trace("creating category : " + category);
                         categoryMods.add(category);
                     }
                 } catch (XPathExpressionException e) {
