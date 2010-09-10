@@ -353,7 +353,7 @@ public class XPathAutoTagger
                     }
                 }
             } finally {
-                stopWatch0.stop("AutoTagger.delete", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
+                stopWatch0.stop("AutoTagger.action.delete", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
             }
         }
 
@@ -391,11 +391,18 @@ public class XPathAutoTagger
                     for (int i = 0; i < nodeList.getLength(); i++) {
                         List<String> values = new ArrayList<String>(this.subExpressions.size() + 1);
                         values.add(nodeList.item(i).getTextContent());
-                        for (String subExpression : this.subExpressions) {
-                            NodeList subValue =
-                                    (NodeList) xPath.evaluate(subExpression, nodeList.item(i), XPathConstants.NODESET);
-                            values.add(subValue.item(0).getTextContent());
+
+                        StopWatch stopWatch2 = new AtomServerStopWatch();
+                        try {
+                            for (String subExpression : this.subExpressions) {
+                                NodeList subValue =
+                                        (NodeList) xPath.evaluate(subExpression, nodeList.item(i), XPathConstants.NODESET);
+                                values.add(subValue.item(0).getTextContent());
+                            }
+                        } finally {
+                            stopWatch2.stop("XML.fine.xpath", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
                         }
+
                         EntryCategory category = new EntryCategory();
                         category.setEntryStoreId(entry.getEntryStoreId());
                         String[] replacements = values.toArray(new String[values.size()]);
@@ -409,7 +416,7 @@ public class XPathAutoTagger
                     log.error("unable to complete tagging - exception executing XPath expression", e);
                 }
             } finally {
-                stopWatch0.stop("AutoTagger.match", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
+                stopWatch0.stop("AutoTagger.action.match", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
             }
         }
 
