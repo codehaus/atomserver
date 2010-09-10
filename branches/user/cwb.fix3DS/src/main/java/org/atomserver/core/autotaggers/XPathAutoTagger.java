@@ -27,7 +27,10 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import javax.xml.namespace.NamespaceContext;
-import javax.xml.xpath.*;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 import java.io.StringReader;
 import java.text.MessageFormat;
 import java.util.*;
@@ -86,6 +89,7 @@ import java.util.regex.Pattern;
  * MATCH "//widgets:brand[@isMaster='true']" {urn:foo.brands}MASTER:$[Entry has master brand $]
  * </pre>
  * for example.
+ *
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
@@ -264,43 +268,49 @@ public class XPathAutoTagger
                         InputSource inputSource,
                         Set<EntryCategory> categoryMods,
                         XPath xPath) {
-            Set<String> deleteSchemes = new HashSet<String>();
-            if (xpath != null) {
-                try {
-                    NodeList nodeList = null;
-                    StopWatch stopWatch = new AtomServerStopWatch();
+            StopWatch stopWatch0 = new AtomServerStopWatch();
+            try {
+                Set<String> deleteSchemes = new HashSet<String>();
+                if (xpath != null) {
                     try {
-                        if (log.isDebugEnabled())
-                            log.debug("executing XPATH expression : " + xpath);
-                        nodeList = (NodeList) xPath.evaluate( xpath, inputSource, XPathConstants.NODESET);
-                    } finally {
-                        stopWatch.stop("XML.fine.xpath", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
-                    }
-                    for (int i = 0; i < nodeList.getLength(); i++) {
-                        List<String> values = new ArrayList<String>(this.subExpressions.size() + 1);
-                        values.add(nodeList.item(i).getTextContent());
-                        for (String subExpression : this.subExpressions) {
-                            NodeList subValue =
-                                    (NodeList) xPath.evaluate(subExpression,
-                                                              nodeList.item(i),
-                                                              XPathConstants.NODESET);
-                            values.add(subValue.item(i).getTextContent());
+                        NodeList nodeList = null;
+                        StopWatch stopWatch1 = new AtomServerStopWatch();
+                        try {
+                            if (log.isDebugEnabled()) {
+                                log.debug("executing XPATH expression : " + xpath);
+                            }
+                            nodeList = (NodeList) xPath.evaluate(xpath, inputSource, XPathConstants.NODESET);
+                        } finally {
+                            stopWatch1.stop("XML.fine.xpath", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
                         }
-                        String[] replacements = values.toArray(new String[values.size()]);
-                        deleteSchemes.add(MessageFormat.format(scheme, replacements));
+                        for (int i = 0; i < nodeList.getLength(); i++) {
+                            List<String> values = new ArrayList<String>(this.subExpressions.size() + 1);
+                            values.add(nodeList.item(i).getTextContent());
+                            for (String subExpression : this.subExpressions) {
+                                NodeList subValue =
+                                        (NodeList) xPath.evaluate(subExpression,
+                                                                  nodeList.item(i),
+                                                                  XPathConstants.NODESET);
+                                values.add(subValue.item(i).getTextContent());
+                            }
+                            String[] replacements = values.toArray(new String[values.size()]);
+                            deleteSchemes.add(MessageFormat.format(scheme, replacements));
+                        }
+                    } catch (XPathExpressionException e) {
+                        log.error("unable to delete scheme - exception executing XPath expression", e);
                     }
-                } catch (XPathExpressionException e) {
-                    log.error("unable to delete scheme - exception executing XPath expression", e);
+                } else {
+                    deleteSchemes.add(this.scheme);
                 }
-            } else {
-                deleteSchemes.add(this.scheme);
-            }
 
-            Iterator<EntryCategory> iterator = categoryMods.iterator();
-            while (iterator.hasNext()) {
-                if (deleteSchemes.contains(iterator.next().getScheme())) {
-                    iterator.remove();
+                Iterator<EntryCategory> iterator = categoryMods.iterator();
+                while (iterator.hasNext()) {
+                    if (deleteSchemes.contains(iterator.next().getScheme())) {
+                        iterator.remove();
+                    }
                 }
+            } finally {
+                stopWatch0.stop("AutoTagger.delete", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
             }
         }
 
@@ -337,41 +347,47 @@ public class XPathAutoTagger
                         InputSource inputSource,
                         Set<EntryCategory> categoryMods,
                         XPath xPath) {
+            StopWatch stopWatch0 = new AtomServerStopWatch();
             try {
-                NodeList nodeList = null;
-                StopWatch stopWatch = new AtomServerStopWatch();
-                try { 
-                    if (log.isDebugEnabled()) 
-                        log.debug("executing XPATH expression : " + xpath);
-                    nodeList = (NodeList) xPath.evaluate( xpath, inputSource, XPathConstants.NODESET);
-                } finally {
-                    stopWatch.stop("XML.fine.xpath", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
-                }
+                try {
+                    NodeList nodeList = null;
+                    StopWatch stopWatch1 = new AtomServerStopWatch();
+                    try {
+                        if (log.isDebugEnabled()) {
+                            log.debug("executing XPATH expression : " + xpath);
+                        }
+                        nodeList = (NodeList) xPath.evaluate(xpath, inputSource, XPathConstants.NODESET);
+                    } finally {
+                        stopWatch1.stop("XML.fine.xpath", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
+                    }
 
-                for (int i = 0; i < nodeList.getLength(); i++) {
-                    List<String> values = new ArrayList<String>(this.subExpressions.size() + 1);
-                    values.add(nodeList.item(i).getTextContent());
-                    for (String subExpression : this.subExpressions) {
-                        NodeList subValue =
-                                (NodeList) xPath.evaluate(subExpression,
-                                                          nodeList.item(i),
-                                                          XPathConstants.NODESET);
-                        values.add(subValue.item(0).getTextContent());
+                    for (int i = 0; i < nodeList.getLength(); i++) {
+                        List<String> values = new ArrayList<String>(this.subExpressions.size() + 1);
+                        values.add(nodeList.item(i).getTextContent());
+                        for (String subExpression : this.subExpressions) {
+                            NodeList subValue =
+                                    (NodeList) xPath.evaluate(subExpression,
+                                                              nodeList.item(i),
+                                                              XPathConstants.NODESET);
+                            values.add(subValue.item(0).getTextContent());
+                        }
+                        EntryCategory category = new EntryCategory();
+                        category.setEntryStoreId(entry.getEntryStoreId());
+                        String[] replacements = values.toArray(new String[values.size()]);
+                        category.setScheme(MessageFormat.format(scheme, replacements));
+                        category.setTerm(MessageFormat.format(termPattern, replacements));
+                        category.setLabel(labelPattern == null ? null :
+                                          MessageFormat.format(labelPattern, replacements));
+                        if (log.isDebugEnabled()) {
+                            log.debug("creating category : " + category);
+                        }
+                        categoryMods.add(category);
                     }
-                    EntryCategory category = new EntryCategory();
-                    category.setEntryStoreId(entry.getEntryStoreId());
-                    String[] replacements = values.toArray(new String[values.size()]);
-                    category.setScheme(MessageFormat.format(scheme, replacements));
-                    category.setTerm(MessageFormat.format(termPattern, replacements));
-                    category.setLabel(labelPattern == null ? null :
-                                      MessageFormat.format(labelPattern, replacements));
-                    if (log.isDebugEnabled()) {
-                        log.debug("creating category : " + category);
-                    }
-                    categoryMods.add(category);
+                } catch (XPathExpressionException e) {
+                    log.error("unable to complete tagging - exception executing XPath expression", e);
                 }
-            } catch (XPathExpressionException e) {
-                log.error("unable to complete tagging - exception executing XPath expression", e);
+            } finally {
+                stopWatch0.stop("AutoTagger.match", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
             }
         }
 
@@ -413,17 +429,18 @@ public class XPathAutoTagger
         }
     }
 
-    private static final Pattern NAMESPACE = Pattern.compile(
-            "namespace (\\w+)\\s*=\\s*(\\S*)", Pattern.CASE_INSENSITIVE);
-    private static final Pattern DELETE_ALL = Pattern.compile(
-            "delete\\s+all", Pattern.CASE_INSENSITIVE);
-    private static final Pattern DELETE_SCHEME = Pattern.compile(
-            "delete(?:\\s+scheme )?\\s*(?:\"([^\"\\\\]*(?:\\\\.[^\"\\\\]*)*)\")?\\s*\\{([^\\}]*)\\}", Pattern.CASE_INSENSITIVE);
-    private static final Pattern MATCH_XPATH = Pattern.compile(
-            "match\\s*\"([^\"\\\\]*(?:\\\\.[^\"\\\\]*)*)\"\\s*\\{([^\\}]*)\\}([^\\[]*)(?:\\[([^\\]]*)\\]|())",
-            Pattern.CASE_INSENSITIVE);
-    private static final Pattern XPATH_SUBEXPRESSION = Pattern.compile(
-            "\\$\\|([^\\|]+)\\|", Pattern.CASE_INSENSITIVE);
+    private static final Pattern NAMESPACE =
+            Pattern.compile("namespace (\\w+)\\s*=\\s*(\\S*)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern DELETE_ALL =
+            Pattern.compile("delete\\s+all", Pattern.CASE_INSENSITIVE);
+    private static final Pattern DELETE_SCHEME =
+            Pattern.compile("delete(?:\\s+scheme )?\\s*(?:\"([^\"\\\\]*(?:\\\\.[^\"\\\\]*)*)\")?\\s*\\{([^\\}]*)\\}",
+                            Pattern.CASE_INSENSITIVE);
+    private static final Pattern MATCH_XPATH =
+            Pattern.compile("match\\s*\"([^\"\\\\]*(?:\\\\.[^\"\\\\]*)*)\"\\s*\\{([^\\}]*)\\}([^\\[]*)(?:\\[([^\\]]*)\\]|())",
+                            Pattern.CASE_INSENSITIVE);
+    private static final Pattern XPATH_SUBEXPRESSION =
+            Pattern.compile("\\$\\|([^\\|]+)\\|", Pattern.CASE_INSENSITIVE);
 
     /**
      * Setter for property 'script'.

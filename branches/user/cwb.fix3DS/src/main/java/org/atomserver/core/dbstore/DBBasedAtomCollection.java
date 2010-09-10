@@ -794,13 +794,18 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                     log.debug("addFeedEntries ADD:: " + entryMetaData );
                 }
 
-                Entry entry = newEntry( abdera, entryMetaData, entryType );
+                StopWatch stopWatch = new AtomServerStopWatch();
                 try {
-                    feed.addEntry(entry);
-                } catch (Exception ee) {
-                    String msg = "Exception " + ee.getClass().getSimpleName() + " while adding: " + entryMetaData;
-                    log.error( ee );
-                    throw (ee instanceof AtomServerException) ? (AtomServerException)ee : new AtomServerException( msg, ee );
+                    Entry entry = newEntry( abdera, entryMetaData, entryType );
+                    try {
+                        feed.addEntry(entry);
+                    } catch (Exception ee) {
+                        String msg = "Exception " + ee.getClass().getSimpleName() + " while adding: " + entryMetaData;
+                        log.error( ee );
+                        throw (ee instanceof AtomServerException) ? (AtomServerException)ee : new AtomServerException( msg, ee );
+                    }
+                } finally {
+                    stopWatch.stop("XML.fine.feed.addEntry", "");
                 }
             }
             knt++;
