@@ -108,64 +108,70 @@ public class XPathAutoTagger
      * {@inheritDoc}
      */
     public boolean tag(EntryMetaData entry, String contentXML) {
-        // this method selects the list of current categories for the entry from the DB, does all
-        // modifications in memory, and then updates the DB as a batch at the end.  In the vast
-        // majority of cases, these tags will not actually change as a result of auto-tagging, and
-        // in all of those cases we get away with only doing a single select against the DB to
-        // verify that nothing needs to change.
+        StopWatch stopWatch = new AtomServerStopWatch();
+        try {
+            // this method selects the list of current categories for the entry from the DB, does all
+            // modifications in memory, and then updates the DB as a batch at the end.  In the vast
+            // majority of cases, these tags will not actually change as a result of auto-tagging, and
+            // in all of those cases we get away with only doing a single select against the DB to
+            // verify that nothing needs to change.
 
-        // load the initial list of categories for the entry
-        List<EntryCategory> initialState = getCategoriesHandler().selectEntryCategories(entry);
-        for (EntryCategory entryCategory : initialState) {
-            log.debug("TAG-INITIAL:" + entryCategory);
-        }
-
-        // make a COPY of that list as a Set -- this is the data structure we will modify
-        Set<EntryCategory> categoryMods = new HashSet<EntryCategory>(initialState);
-        log.debug("XPathAutoTagger.tag");
-        // iterate through the actions and modify the category set as we go
-        for (Action action : actions) {
-            log.debug(":: action : " + action.getClass());
-            action.tag(entry,
-                       new InputSource(new StringReader(contentXML)),
-                       categoryMods,
-                       xPath.get());
-        }
-
-        List<EntryCategory> toDelete = new ArrayList<EntryCategory>();
-        // for each category from the initial set...
-        for (EntryCategory entryCategory : initialState) {            
-            // if it's in the mods set, remove it -- we don't need to do anything for that category,
-            // because it should end up in the DB, and its already there!
-            if (categoryMods.contains(entryCategory)) {
-                categoryMods.remove(entryCategory);
-            } else {
-                // otherwise, we need to delete it
-                toDelete.add(entryCategory);
+            // load the initial list of categories for the entry
+            List<EntryCategory> initialState = getCategoriesHandler().selectEntryCategories(entry);
+            for (EntryCategory entryCategory : initialState) {
+                log.debug("TAG-INITIAL:" + entryCategory);
             }
-        }
 
-        // delete anything that needs to be deleted. Delete should be done first to avoid
-        // database case-sensitivity.
-        if (!toDelete.isEmpty()) {
-            if (log.isDebugEnabled()) {
-                log.debug("autotagger performing " + toDelete.size() + " deletes");
+            // make a COPY of that list as a Set -- this is the data structure we will modify
+            Set<EntryCategory> categoryMods = new HashSet<EntryCategory>(initialState);
+            log.debug("XPathAutoTagger.tag");
+            // iterate through the actions and modify the category set as we go
+            for (Action action : actions) {
+                log.debug(":: action : " + action.getClass());
+                action.tag(entry,
+                           new InputSource(new StringReader(contentXML)),
+                           categoryMods,
+                           xPath.get());
             }
-            getCategoriesHandler().deleteEntryCategoryBatch(toDelete);
-        }
 
-        // if there is anything left over in the mods set, it must be inserted.
-        if (!categoryMods.isEmpty()) {
-            if (log.isDebugEnabled()) {
-                log.debug("autotagger performing " + categoryMods.size() + " inserts");
-                for (EntryCategory entryCategory : categoryMods) {
-                    log.debug("TAG-WRITE:" + entryCategory);
+            List<EntryCategory> toDelete = new ArrayList<EntryCategory>();
+            // for each category from the initial set...
+            for (EntryCategory entryCategory : initialState) {
+                // if it's in the mods set, remove it -- we don't need to do anything for that category,
+                // because it should end up in the DB, and its already there!
+                if (categoryMods.contains(entryCategory)) {
+                    categoryMods.remove(entryCategory);
+                } else {
+                    // otherwise, we need to delete it
+                    toDelete.add(entryCategory);
                 }
             }
-            getCategoriesHandler().insertEntryCategoryBatch(new ArrayList<EntryCategory>(categoryMods));
-        }
 
-        return (!categoryMods.isEmpty() || !toDelete.isEmpty());
+            // delete anything that needs to be deleted. Delete should be done first to avoid
+            // database case-sensitivity.
+            if (!toDelete.isEmpty()) {
+                if (log.isDebugEnabled()) {
+                    log.debug("autotagger performing " + toDelete.size() + " deletes");
+                }
+                getCategoriesHandler().deleteEntryCategoryBatch(toDelete);
+            }
+
+            // if there is anything left over in the mods set, it must be inserted.
+            if (!categoryMods.isEmpty()) {
+                if (log.isDebugEnabled()) {
+                    log.debug("autotagger performing " + categoryMods.size() + " inserts");
+                    for (EntryCategory entryCategory : categoryMods) {
+                        log.debug("TAG-WRITE:" + entryCategory);
+                    }
+                }
+                getCategoriesHandler().insertEntryCategoryBatch(new ArrayList<EntryCategory>(categoryMods));
+            }
+
+            return (!categoryMods.isEmpty() || !toDelete.isEmpty());
+
+        } finally {
+            stopWatch.stop("AutoTagger.xpath", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
+        }
     }
 
     /**
