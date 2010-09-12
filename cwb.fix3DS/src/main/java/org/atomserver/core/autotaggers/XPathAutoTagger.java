@@ -202,7 +202,7 @@ public class XPathAutoTagger
             // make a COPY of that list as a Set -- this is the data structure we will modify
             Set<EntryCategory> categoryMods = new HashSet<EntryCategory>(initialState);
             log.debug("XPathAutoTagger.tag");
-            
+
             // iterate through the actions and modify the category set as we go
             for (Action action : actions) {
                 log.debug(":: action : " + action.getClass());
@@ -329,18 +329,26 @@ public class XPathAutoTagger
                             log.debug("executing XPATH expression : " + xpath);
                             nodeList = (NodeList) xPath.evaluate(xpath, inputSource, XPathConstants.NODESET);
                         } finally {
-                            stopWatch1.stop("XML.fine.xpath", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
+                            stopWatch1.stop("XML.fine.xpath.1", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
                         }
+
                         for (int i = 0; i < nodeList.getLength(); i++) {
                             List<String> values = new ArrayList<String>(this.subExpressions.size() + 1);
                             values.add(nodeList.item(i).getTextContent());
-                            for (String subExpression : this.subExpressions) {
-                                NodeList subValue =
-                                        (NodeList) xPath.evaluate(subExpression, nodeList.item(i), XPathConstants.NODESET);
-                                values.add(subValue.item(i).getTextContent());
+
+                            StopWatch stopWatch2 = new AtomServerStopWatch();
+                            try {
+                                for (String subExpression : this.subExpressions) {
+                                    log.trace("executing XPATH subExpression : " + subExpression);
+                                    NodeList subValue =
+                                            (NodeList) xPath.evaluate(subExpression, nodeList.item(i), XPathConstants.NODESET);
+                                    values.add(subValue.item(i).getTextContent());
+                                }
+                                String[] replacements = values.toArray(new String[values.size()]);
+                                deleteSchemes.add(MessageFormat.format(scheme, replacements));
+                            } finally {
+                                stopWatch2.stop("XML.fine.xpath.2", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
                             }
-                            String[] replacements = values.toArray(new String[values.size()]);
-                            deleteSchemes.add(MessageFormat.format(scheme, replacements));
                         }
                     } catch (XPathExpressionException e) {
                         log.error("unable to delete scheme - exception executing XPath expression", e);
@@ -379,7 +387,7 @@ public class XPathAutoTagger
         private String labelPattern;
 
         public void tag(EntryMetaData entry, InputSource inputSource, Set<EntryCategory> categoryMods, XPath xPath) {
-            log.debug("XPathMatchAction.tag");            
+            log.debug("XPathMatchAction.tag");
             StopWatch stopWatch0 = new AtomServerStopWatch();
             try {
                 try {
@@ -389,7 +397,7 @@ public class XPathAutoTagger
                         log.debug("executing XPATH expression : " + xpath);
                         nodeList = (NodeList) xPath.evaluate(xpath, inputSource, XPathConstants.NODESET);
                     } finally {
-                        stopWatch1.stop("XML.fine.xpath", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
+                        stopWatch1.stop("XML.fine.xpath.3", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
                     }
 
                     for (int i = 0; i < nodeList.getLength(); i++) {
@@ -399,12 +407,13 @@ public class XPathAutoTagger
                         StopWatch stopWatch2 = new AtomServerStopWatch();
                         try {
                             for (String subExpression : this.subExpressions) {
+                                log.trace("executing XPATH subExpression : " + subExpression);
                                 NodeList subValue =
                                         (NodeList) xPath.evaluate(subExpression, nodeList.item(i), XPathConstants.NODESET);
                                 values.add(subValue.item(0).getTextContent());
                             }
                         } finally {
-                            stopWatch2.stop("XML.fine.xpath", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
+                            stopWatch2.stop("XML.fine.xpath.4", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
                         }
 
                         EntryCategory category = new EntryCategory();
