@@ -17,6 +17,7 @@
 package org.atomserver;
 
 import org.atomserver.core.EntryMetaData;
+import org.w3c.dom.Document;
 
 /**
  * EntryAutoTagger - API for automatically applying categories to entries as they are written to
@@ -33,4 +34,7 @@ public interface EntryAutoTagger {
      * @return a boolean flag set to true if the set of categories has changed and false otherwise.
      */
     boolean tag(EntryMetaData entry, String content);
+
+    // TODO: javadoc
+    boolean tag(EntryMetaData entry, Document doc);
 }
