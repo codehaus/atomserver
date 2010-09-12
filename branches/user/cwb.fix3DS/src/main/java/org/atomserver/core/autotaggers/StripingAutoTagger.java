@@ -6,6 +6,7 @@ import org.atomserver.utils.ShardedPathGenerator;
 import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
 import org.atomserver.utils.perf.AtomServerStopWatch;
 import org.perf4j.StopWatch;
+import org.w3c.dom.Document;
 
 import java.util.List;
 import java.util.Arrays;
@@ -42,19 +43,21 @@ public class StripingAutoTagger extends BaseAutoTagger {
         this.label = label;
     }
 
-    public String getStripeBasis(EntryMetaData entry, String content) {
+    // TODO : ??????
+    //public String getStripeBasis(EntryMetaData entry, String content) {
+    public String getStripeBasis(EntryMetaData entry) {
         return entry.getEntryId();
     }
 
     private static final List<EntryCategory> EMPTY_CAT_LIST = new ArrayList<EntryCategory>();
 
-    public boolean tag(EntryMetaData entry, String content) {
+    public boolean tag(EntryMetaData entry, Document doc) {
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
             log.debug("StripingAutoTagger.tag");
 
             // compute what the stripe term SHOULD be
-            String stripeTerm = ShardedPathGenerator.computeShard(getStripeBasis(entry, content), numStripes, radix);
+            String stripeTerm = ShardedPathGenerator.computeShard(getStripeBasis(entry), numStripes, radix);
 
             // select the current set of categories, and check anything in the stripe scheme to see
             // whether it matches the correct term.  if there is already a category with the proper
@@ -65,6 +68,7 @@ public class StripingAutoTagger extends BaseAutoTagger {
             // TODO: TESTING >>>>>>>>>>>>>>>>>>>>
             //List<EntryCategory> list = getCategoriesHandler().selectEntryCategories(entry);
             List<EntryCategory> list = entry.getCategories();
+            // TODO : ?????????
             if ( (list.size() == 1)
                  && ((list.get(0).getScheme() == null) && (list.get(0).getTerm() == null)) ) {
                 list = EMPTY_CAT_LIST;

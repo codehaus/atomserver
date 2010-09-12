@@ -22,6 +22,7 @@ import org.atomserver.core.EntryMetaData;
 import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
 import org.atomserver.utils.perf.AtomServerStopWatch;
 import org.perf4j.StopWatch;
+import org.w3c.dom.Document;
 
 import java.util.List;
 
@@ -31,19 +32,19 @@ import java.util.List;
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
-public class MultiAutoTagger implements EntryAutoTagger {
+public class MultiAutoTagger extends BaseAutoTagger {
 
     private List<EntryAutoTagger> taggers;
 
     /**
      * {@inheritDoc}
      */
-    public boolean tag(EntryMetaData entry, String contentXML) {
+    public boolean tag(EntryMetaData entry, Document doc) {
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
             boolean modified = false;
             for (EntryAutoTagger tagger : taggers) {
-                modified |= tagger.tag(entry, contentXML);
+                modified |= tagger.tag(entry, doc);
             }
             return modified;
         } finally {
