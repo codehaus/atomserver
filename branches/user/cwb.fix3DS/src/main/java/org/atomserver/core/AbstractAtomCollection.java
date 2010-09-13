@@ -1002,6 +1002,8 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         String entryId = entryTarget.getEntryId();
         int revision = entryTarget.getRevision();
         String entryXml = null;
+
+        StopWatch stopWatch1 = new AtomServerStopWatch();
         try {
             entryXml = entry.getContent();
         } catch (Exception ee) {
@@ -1012,7 +1014,10 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                          + "\n 2) MAKE CERTAIN THAT YOU ARE INDEED SENDING UTF-8 CHARACTERS";
             log.error(msg, ee);
             throw new BadContentException(msg, ee);
+        } finally {
+             stopWatch1.stop("AC.entry.getContent", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryTarget));
         }
+
         if (entryXml == null) {
             String msg = "Could not process PUT for [" + workspace + ", " + collection + ", "
                          + locale + ", " + entryId + ", " + revision + "]\n Reason:: Content is NULL";
@@ -1023,11 +1028,11 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         // now validate the <content> with whatever Validator was registered (if any)
         ContentValidator validator = getContentValidator();
         if (validator != null) {
-            StopWatch stopWatch = new AtomServerStopWatch();
+            StopWatch stopWatch2 = new AtomServerStopWatch();
             try {
                 validator.validate(entryXml);
             } finally {
-                stopWatch.stop("XML.validator", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryTarget));
+                stopWatch2.stop("XML.validator", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryTarget));
             }
         }
 
@@ -1039,7 +1044,6 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     private Entry parseEntry(EntryTarget entryTarget, RequestContext request) {
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
-
             String errMsgPrefix = "Could not process PUT for [" + entryTarget.getWorkspace()
                                   + ", " + entryTarget.getCollection() + ", " + entryTarget.getLocale() +
                                   ", " + entryTarget.getEntryId() + ", " + entryTarget.getRevision();
