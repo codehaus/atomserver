@@ -43,8 +43,6 @@ public class StripingAutoTagger extends BaseAutoTagger {
         this.label = label;
     }
 
-    // TODO : ??????
-    //public String getStripeBasis(EntryMetaData entry, String content) {
     public String getStripeBasis(EntryMetaData entry) {
         return entry.getEntryId();
     }
@@ -65,10 +63,8 @@ public class StripingAutoTagger extends BaseAutoTagger {
             // right scheme but a DIFFERENT term, add them to a list which we will delete in a batch
             // after.
 
-            // TODO: TESTING >>>>>>>>>>>>>>>>>>>>
-            //List<EntryCategory> list = getCategoriesHandler().selectEntryCategories(entry);
             List<EntryCategory> list = entry.getCategories();
-            // TODO : ?????????
+            // getCategories can return nulls when an empty set is loaded by iBatis
             if ( (list.size() == 1)
                  && ((list.get(0).getScheme() == null) && (list.get(0).getTerm() == null)) ) {
                 list = EMPTY_CAT_LIST;
