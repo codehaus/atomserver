@@ -24,6 +24,7 @@ import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
 import org.atomserver.utils.perf.AtomServerStopWatch;
 import org.perf4j.StopWatch;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.xml.namespace.NamespaceContext;
@@ -119,6 +120,7 @@ public class XPathAutoTagger
     private List<Action> actions = null;
 
     public void setScript(String script) {
+        log.debug("COMPILING AUTOTAGGER SCRIPT.............");
         Map<String, String> namespaceMap = new HashMap<String, String>();
         List<Action> actions = new ArrayList<Action>();
 
@@ -368,7 +370,12 @@ public class XPathAutoTagger
 
                         for (int ii = 0; ii < nodeList.getLength(); ii++) {
                             List<String> values = new ArrayList<String>(this.subExpressionStrings.size() + 1);
-                            values.add(nodeList.item(ii).getTextContent());
+
+                            Node parent = nodeList.item(ii).getParentNode();
+                            Node node = parent.removeChild(nodeList.item(ii));
+
+                            //values.add(nodeList.item(ii).getTextContent());
+                            values.add(node.getTextContent());
 
                             StopWatch stopWatch2 = new AtomServerStopWatch();
                             try {
@@ -377,8 +384,10 @@ public class XPathAutoTagger
                                     log.debug("executing XPATH subExpression : " + subExpression);
 
                                     XPathExpression expression = getXPathSubExpression(jj, xPath);
-                                    NodeList subValue =
-                                            (NodeList) expression.evaluate(nodeList.item(ii), XPathConstants.NODESET);
+                                    NodeList subValue = (NodeList) expression.evaluate(node, XPathConstants.NODESET);
+                                    //NodeList subValue =
+                                    //        (NodeList) expression.evaluate(nodeList.item(ii), XPathConstants.NODESET);
+                                    
                                     // TODO: is this right??
                                     log.debug("Adding : " + subValue.item(ii).getTextContent());
                                     values.add(subValue.item(ii).getTextContent());
@@ -392,6 +401,9 @@ public class XPathAutoTagger
                             } finally {
                                 stopWatch2.stop("XML.fine.xpath.2", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
                             }
+
+                            parent.appendChild(node);
+
                         }
                     } catch (XPathExpressionException e) {
                         log.error("unable to delete scheme - exception executing XPath expression", e);
@@ -447,8 +459,14 @@ public class XPathAutoTagger
                     }
 
                     for (int ii = 0; ii < nodeList.getLength(); ii++) {
+
+                        Node parent = nodeList.item(ii).getParentNode();
+                        Node node = parent.removeChild(nodeList.item(ii));
+
                         List<String> values = new ArrayList<String>(subExpressionStrings.size() + 1);
-                        values.add(nodeList.item(ii).getTextContent());
+
+                        //values.add(nodeList.item(ii).getTextContent());
+                        values.add(node.getTextContent());
 
                         StopWatch stopWatch2 = new AtomServerStopWatch();
                         try {
@@ -457,9 +475,10 @@ public class XPathAutoTagger
                                 log.debug("executing XPATH subExpression : " + subExpression);
 
                                 XPathExpression expression = getXPathSubExpression(jj, xPath);
-                                NodeList subValue =
-                                        (NodeList) expression.evaluate(nodeList.item(ii), XPathConstants.NODESET);
-                                // TODO: is this right??
+                                NodeList subValue = (NodeList) expression.evaluate(node, XPathConstants.NODESET);
+                                //NodeList subValue =
+                                //        (NodeList) expression.evaluate(nodeList.item(ii), XPathConstants.NODESET);
+
                                 log.debug("Adding " + subValue.item(0).getTextContent());
                                 values.add(subValue.item(0).getTextContent());
 
@@ -467,6 +486,9 @@ public class XPathAutoTagger
                                 //        (NodeList) xPath.evaluate(subExpression, nodeList.item(i), XPathConstants.NODESET);
                                 //values.add(subValue.item(0).getTextContent());
                             }
+
+                            parent.appendChild(node);
+                            
                         } finally {
                             stopWatch2.stop("XML.fine.xpath.4", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
                         }
