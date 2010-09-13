@@ -107,6 +107,7 @@ public class XPathAutoTagger
     private static final Pattern XPATH_SUBEXPRESSION =
             Pattern.compile("\\$\\|([^\\|]+)\\|", Pattern.CASE_INSENSITIVE);
 
+    private static final boolean CACHE_XPATH_EXPRESSIONS = true;
 
     private final ThreadLocal<XPath> xPath = new ThreadLocal<XPath>() {
         protected XPath initialValue() {
@@ -186,12 +187,8 @@ public class XPathAutoTagger
             // in all of those cases we get away with only doing a single select against the DB to
             // verify that nothing needs to change.
 
-            // load the initial list of categories for the entry [DB CALL]
-
-            // TODO: TESTING >>>>>>>>>>>>>>>>>>>>
-            //List<EntryCategory> initialState = getCategoriesHandler().selectEntryCategories(entry);
+            // load the initial list of categories for the entry
             List<EntryCategory> initialState = entry.getCategories();
-
             if (log.isDebugEnabled()) {
                 for (EntryCategory entryCategory : initialState) {
                     log.trace("TAG-INITIAL:" + entryCategory);
@@ -286,9 +283,7 @@ public class XPathAutoTagger
      */
     private static abstract class AbstractAction implements Action {
         protected List<String> subExpressionStrings = new ArrayList<String>();
-
         protected ThreadLocal<ArrayList<XPathExpression>> xPathSubExpressions = new ThreadLocal<ArrayList<XPathExpression>>();
-
         protected ThreadLocal<XPathExpression> xPathExpression = new ThreadLocal<XPathExpression>();
 
         protected String transformReplacements(String pattern) {
@@ -303,30 +298,40 @@ public class XPathAutoTagger
         }
 
         protected XPathExpression getXPathExpression( XPath xPath, String xpathString ) throws XPathExpressionException {
-            XPathExpression expression = xPathExpression.get();
-            if ( expression == null ){
+            XPathExpression expression = null;
+            if ( CACHE_XPATH_EXPRESSIONS ) {
+                expression = xPathExpression.get();
+                if ( expression == null ){
+                    expression = xPath.compile(xpathString);
+                }
+            } else {
                 expression = xPath.compile(xpathString);
             }
             return expression;
         }
 
         protected XPathExpression getXPathSubExpression( int index, XPath xPath ) throws XPathExpressionException {
-            if ( subExpressionStrings.size() == 0 ) {
-                return null;
-            }
-            ArrayList<XPathExpression> expressions = xPathSubExpressions.get();
-            if ( expressions == null ){
-                log.debug("CREATING XPathExpressions Array (" + subExpressionStrings.size() );
-                expressions = new ArrayList<XPathExpression>(subExpressionStrings.size());
-                xPathSubExpressions.set(expressions);
-                for (int jj=0; jj < subExpressionStrings.size(); jj++) {
-                    expressions.add(null);
-                }              
-            }
-            XPathExpression expression = expressions.get(index);
-            if ( expression == null ){
+            XPathExpression expression = null;
+            if ( CACHE_XPATH_EXPRESSIONS ) {
+                if ( subExpressionStrings.size() == 0 ) {
+                    return null;
+                }
+                ArrayList<XPathExpression> expressions = xPathSubExpressions.get();
+                if ( expressions == null ){
+                    log.debug("CREATING XPathExpressions Array (" + subExpressionStrings.size() );
+                    expressions = new ArrayList<XPathExpression>(subExpressionStrings.size());
+                    xPathSubExpressions.set(expressions);
+                    for (int jj=0; jj < subExpressionStrings.size(); jj++) {
+                        expressions.add(null);
+                    }
+                }
+                expression = expressions.get(index);
+                if ( expression == null ){
+                    expression = xPath.compile(subExpressionStrings.get(index));
+                    expressions.add(index, expression);
+                }
+            } else {
                 expression = xPath.compile(subExpressionStrings.get(index));
-                expressions.add(index, expression);
             }
             return expression;
         }
@@ -362,8 +367,6 @@ public class XPathAutoTagger
                             log.debug("executing XPATH expression : " + xpathString);
                             XPathExpression expression = getXPathExpression(xPath, xpathString);
                             nodeList = (NodeList) expression.evaluate(doc, XPathConstants.NODESET);
-
-                            //nodeList = (NodeList) xPath.evaluate(xpathString, doc, XPathConstants.NODESET);
                         } finally {
                             stopWatch1.stop("XML.fine.xpath.1", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
                         }
@@ -374,7 +377,6 @@ public class XPathAutoTagger
                             Node parent = nodeList.item(ii).getParentNode();
                             Node node = parent.removeChild(nodeList.item(ii));
 
-                            //values.add(nodeList.item(ii).getTextContent());
                             values.add(node.getTextContent());
 
                             StopWatch stopWatch2 = new AtomServerStopWatch();
@@ -385,16 +387,10 @@ public class XPathAutoTagger
 
                                     XPathExpression expression = getXPathSubExpression(jj, xPath);
                                     NodeList subValue = (NodeList) expression.evaluate(node, XPathConstants.NODESET);
-                                    //NodeList subValue =
-                                    //        (NodeList) expression.evaluate(nodeList.item(ii), XPathConstants.NODESET);
-                                    
+
                                     // TODO: is this right??
                                     log.debug("Adding : " + subValue.item(ii).getTextContent());
                                     values.add(subValue.item(ii).getTextContent());
-
-                                    //NodeList subValue =
-                                    //        (NodeList) xPath.evaluate(subExpression, nodeList.item(i), XPathConstants.NODESET);
-                                    //values.add(subValue.item(i).getTextContent());
                                 }
                                 String[] replacements = values.toArray(new String[values.size()]);
                                 deleteSchemes.add(MessageFormat.format(scheme, replacements));
@@ -452,20 +448,16 @@ public class XPathAutoTagger
                         log.debug("executing XPATH expression : " + xpathString);
                         XPathExpression expression = getXPathExpression(xPath, xpathString);
                         nodeList = (NodeList) expression.evaluate(doc, XPathConstants.NODESET);
-                        
-                        //nodeList = (NodeList) xPath.evaluate(xpathString, doc, XPathConstants.NODESET);
                     } finally {
                         stopWatch1.stop("XML.fine.xpath.3", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
                     }
 
                     for (int ii = 0; ii < nodeList.getLength(); ii++) {
+                        List<String> values = new ArrayList<String>(subExpressionStrings.size() + 1);
 
                         Node parent = nodeList.item(ii).getParentNode();
                         Node node = parent.removeChild(nodeList.item(ii));
 
-                        List<String> values = new ArrayList<String>(subExpressionStrings.size() + 1);
-
-                        //values.add(nodeList.item(ii).getTextContent());
                         values.add(node.getTextContent());
 
                         StopWatch stopWatch2 = new AtomServerStopWatch();
@@ -476,22 +468,15 @@ public class XPathAutoTagger
 
                                 XPathExpression expression = getXPathSubExpression(jj, xPath);
                                 NodeList subValue = (NodeList) expression.evaluate(node, XPathConstants.NODESET);
-                                //NodeList subValue =
-                                //        (NodeList) expression.evaluate(nodeList.item(ii), XPathConstants.NODESET);
 
                                 log.debug("Adding " + subValue.item(0).getTextContent());
                                 values.add(subValue.item(0).getTextContent());
-
-                                //NodeList subValue =
-                                //        (NodeList) xPath.evaluate(subExpression, nodeList.item(i), XPathConstants.NODESET);
-                                //values.add(subValue.item(0).getTextContent());
-                            }
-
-                            parent.appendChild(node);
-                            
+                            }                            
                         } finally {
                             stopWatch2.stop("XML.fine.xpath.4", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
                         }
+
+                        parent.appendChild(node);
 
                         EntryCategory category = new EntryCategory();
                         category.setEntryStoreId(entry.getEntryStoreId());
