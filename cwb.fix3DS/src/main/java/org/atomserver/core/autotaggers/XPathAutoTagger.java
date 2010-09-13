@@ -107,7 +107,7 @@ public class XPathAutoTagger
     private static final Pattern XPATH_SUBEXPRESSION =
             Pattern.compile("\\$\\|([^\\|]+)\\|", Pattern.CASE_INSENSITIVE);
 
-    private static final boolean CACHE_XPATH_EXPRESSIONS = true;
+    private static final boolean CACHE_XPATH_EXPRESSIONS = false;
 
     private final ThreadLocal<XPath> xPath = new ThreadLocal<XPath>() {
         protected XPath initialValue() {
