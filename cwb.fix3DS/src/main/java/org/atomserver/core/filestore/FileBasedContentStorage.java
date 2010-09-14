@@ -746,7 +746,7 @@ public class FileBasedContentStorage implements ContentStorage {
                     }
                     return entryFile;
                 } else {
-                    log.warn("Could not locate the GZIP file: " + entryFile + " " + entry);
+                    log.info("Could not locate the GZIP file: " + entryFile + " " + entry);
                 }
             }
             File entryFile = generateEntryFilePath(entry, pathGenerator, false,
@@ -760,7 +760,7 @@ public class FileBasedContentStorage implements ContentStorage {
                 }
                 return entryFile;
             } else {
-                log.warn("Could not locate the file: " + entryFile + " " + entry);
+                log.info("Could not locate the file: " + entryFile + " " + entry);
             }
         }
         return null;
