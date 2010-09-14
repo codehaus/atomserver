@@ -32,6 +32,7 @@ public class ReadEntriesDAOiBatisImpl
     static public final long STARTUP_INTERVAL = 900000;
 
     static private long startupTime = System.currentTimeMillis();
+    static private boolean isFirstPass = true;
 
     static private Set<String> workspaces = new CopyOnWriteArraySet<String>();
     static long lastWorkspacesSelectTime = 0L;
@@ -307,6 +308,7 @@ public class ReadEntriesDAOiBatisImpl
                              workspace + "/" + collection + " - this is probably okay.");
                 }
                 if ( useWorkspaceCollectionCache ) {
+                    log.debug("Adding " + workspace + " " + collection );
                     HashSet<String> workspaceCollections = getWorkspaceCollections(workspace);
                     workspaceCollections.add(collection);
                 }
@@ -369,9 +371,10 @@ public class ReadEntriesDAOiBatisImpl
                 HashSet<String> workspaceCollections = getWorkspaceCollections(workspace);
                 if ( collectionsIsExpired() ) {
                     lastCollectionsSelectTime = System.currentTimeMillis();
-                    if ( collections.isEmpty() ) {
+                    if ( isFirstPass ) {
                         loadWorkspaceCollections();
                         workspaceCollections = getWorkspaceCollections(workspace);
+                        isFirstPass = false;
                     } else {
                         List<String> dbcollections = getSqlMapClientTemplate().queryForList("listCollections",
                                                                                             paramMap().param("workspace", workspace));
