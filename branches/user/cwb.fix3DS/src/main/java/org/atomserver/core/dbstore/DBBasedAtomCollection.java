@@ -168,10 +168,12 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             throw ee;
         } catch ( ExecutionException ee ) {
             log.debug("Exception in DB TXN: " + ee.getClass().getSimpleName() + " " + ee.getMessage() );
-            throw ee.getCause() instanceof AtomServerException ?
-                    (AtomServerException)ee.getCause() :
-                    new AtomServerException("A " + ee.getCause().getClass().getSimpleName() +
-                            " caught in Transaction", ee.getCause());
+            throw (ee.getCause() == null)
+                  ? new AtomServerException("A " + ee.getClass().getSimpleName() + " caught in Transaction", ee)
+                  : (ee.getCause() instanceof AtomServerException)
+                    ? (AtomServerException)ee.getCause()
+                    : new AtomServerException("A " + ee.getCause().getClass().getSimpleName() +
+                                              " caught in Transaction", ee.getCause());
         } catch( Exception ee ) {
             log.debug("Exception in DB TXN: " + ee.getClass().getSimpleName() + " " + ee.getMessage() );
             throw new AtomServerException("A " + ee.getClass().getSimpleName() + " caught in Transaction", ee);
