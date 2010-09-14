@@ -39,7 +39,7 @@ public class ReadEntriesDAOiBatisImpl
     private ConcurrentHashMap<String, HashSet<String>> collections = new ConcurrentHashMap<String, HashSet<String>>();
     static long lastCollectionsSelectTime = 0L;
 
-    private boolean useWorkspaceCollectionCache = false;
+    private boolean useWorkspaceCollectionCache = true;
 
     public boolean isUseWorkspaceCollectionCache() {
         return useWorkspaceCollectionCache;
