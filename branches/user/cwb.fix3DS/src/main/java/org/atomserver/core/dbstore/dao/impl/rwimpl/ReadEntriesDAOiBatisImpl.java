@@ -36,7 +36,7 @@ public class ReadEntriesDAOiBatisImpl
     static private Set<String> workspaces = new CopyOnWriteArraySet<String>();
     static long lastWorkspacesSelectTime = 0L;
 
-    private ConcurrentHashMap<String, HashSet<String>> collections = new ConcurrentHashMap<String, HashSet<String>>();
+    static private ConcurrentHashMap<String, HashSet<String>> collections = new ConcurrentHashMap<String, HashSet<String>>();
     static long lastCollectionsSelectTime = 0L;
 
     private boolean useWorkspaceCollectionCache = true;
@@ -45,9 +45,8 @@ public class ReadEntriesDAOiBatisImpl
         return useWorkspaceCollectionCache;
     }
 
-    public void setUseWorkspaceCollectionCache(boolean useWorkspaceCollectionCache) {
-        this.useWorkspaceCollectionCache = useWorkspaceCollectionCache;
-        clearWorkspaceCollectionCaches();
+    public void setUseWorkspaceCollectionCache(boolean useCache) {
+        useWorkspaceCollectionCache = useCache;
     }
 
 //-----------------------
