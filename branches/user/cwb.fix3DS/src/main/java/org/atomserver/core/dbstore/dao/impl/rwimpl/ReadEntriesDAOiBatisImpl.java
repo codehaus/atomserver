@@ -423,6 +423,7 @@ public class ReadEntriesDAOiBatisImpl
             List<WorkspaceCollection> wcs = getSqlMapClientTemplate().queryForList("selectWorkspaceCollections", paramMap());
             if (wcs != null) {
                 for( WorkspaceCollection wc : wcs ) {
+                    log.info("ADDING " + wc.getWorkspace() + " " + wc.getCollection() );
                     HashSet<String> workspaceCollections = getWorkspaceCollections(wc.getWorkspace());
                     workspaceCollections.add(wc.getCollection());
                 }
