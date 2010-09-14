@@ -389,8 +389,10 @@ public class XPathAutoTagger
                                     NodeList subValue = (NodeList) expression.evaluate(node, XPathConstants.NODESET);
 
                                     // TODO: is this right??
-                                    log.debug("Adding : " + subValue.item(ii).getTextContent());
-                                    values.add(subValue.item(ii).getTextContent());
+                                    //log.debug("Adding : " + subValue.item(ii).getTextContent());
+                                    //values.add(subValue.item(ii).getTextContent());
+                                    log.debug("Adding : " + subValue.item(0).getTextContent());
+                                    values.add(subValue.item(0).getTextContent());
                                 }
                                 String[] replacements = values.toArray(new String[values.size()]);
                                 deleteSchemes.add(MessageFormat.format(scheme, replacements));
