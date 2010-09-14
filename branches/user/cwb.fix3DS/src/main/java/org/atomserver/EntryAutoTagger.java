@@ -35,6 +35,12 @@ public interface EntryAutoTagger {
      */
     boolean tag(EntryMetaData entry, String content);
 
-    // TODO: javadoc
+    /**
+     * Implementations should implement this method to write categories for each entry as it is
+     * written.
+     * @param entry   The metadata about the entry being written
+     * @param doc The content of the entry as an XML Document
+     * @return a boolean flag set to true if the set of categories has changed and false otherwise.
+      */
     boolean tag(EntryMetaData entry, Document doc);
 }
