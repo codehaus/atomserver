@@ -375,7 +375,8 @@ public class XPathAutoTagger
                             List<String> values = new ArrayList<String>(this.subExpressionStrings.size() + 1);
 
                             Node parent = nodeList.item(ii).getParentNode();
-                            Node node = parent.removeChild(nodeList.item(ii));
+
+                            Node node = ( parent == null ) ? nodeList.item(ii) : parent.removeChild(nodeList.item(ii));
 
                             values.add(node.getTextContent());
 
@@ -388,9 +389,6 @@ public class XPathAutoTagger
                                     XPathExpression expression = getXPathSubExpression(jj, xPath);
                                     NodeList subValue = (NodeList) expression.evaluate(node, XPathConstants.NODESET);
 
-                                    // TODO: is this right??
-                                    //log.debug("Adding : " + subValue.item(ii).getTextContent());
-                                    //values.add(subValue.item(ii).getTextContent());
                                     log.debug("Adding : " + subValue.item(0).getTextContent());
                                     values.add(subValue.item(0).getTextContent());
                                 }
@@ -400,7 +398,9 @@ public class XPathAutoTagger
                                 stopWatch2.stop("XML.fine.xpath.2", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
                             }
 
-                            parent.appendChild(node);
+                            if ( parent != null ) {
+                                parent.appendChild(node);
+                            }
 
                         }
                     } catch (XPathExpressionException e) {
@@ -458,7 +458,7 @@ public class XPathAutoTagger
                         List<String> values = new ArrayList<String>(subExpressionStrings.size() + 1);
 
                         Node parent = nodeList.item(ii).getParentNode();
-                        Node node = parent.removeChild(nodeList.item(ii));
+                        Node node = ( parent == null ) ? nodeList.item(ii) : parent.removeChild(nodeList.item(ii));
 
                         values.add(node.getTextContent());
 
@@ -478,7 +478,9 @@ public class XPathAutoTagger
                             stopWatch2.stop("XML.fine.xpath.4", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
                         }
 
-                        parent.appendChild(node);
+                        if ( parent != null ) {
+                            parent.appendChild(node);
+                        }
 
                         EntryCategory category = new EntryCategory();
                         category.setEntryStoreId(entry.getEntryStoreId());
