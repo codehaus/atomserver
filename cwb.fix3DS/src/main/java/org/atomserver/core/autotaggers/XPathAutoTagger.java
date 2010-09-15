@@ -389,8 +389,10 @@ public class XPathAutoTagger
                                     XPathExpression expression = getXPathSubExpression(jj, xPath);
                                     NodeList subValue = (NodeList) expression.evaluate(node, XPathConstants.NODESET);
 
-                                    log.debug("Adding : " + subValue.item(0).getTextContent());
-                                    values.add(subValue.item(0).getTextContent());
+                                    if ( (subValue != null) && (subValue.item(0) != null) ) {
+                                        log.debug("Adding : " + subValue.item(0).getTextContent());
+                                        values.add(subValue.item(0).getTextContent());
+                                    }
                                 }
                                 String[] replacements = values.toArray(new String[values.size()]);
                                 deleteSchemes.add(MessageFormat.format(scheme, replacements));
@@ -471,8 +473,10 @@ public class XPathAutoTagger
                                 XPathExpression expression = getXPathSubExpression(jj, xPath);
                                 NodeList subValue = (NodeList) expression.evaluate(node, XPathConstants.NODESET);
 
-                                log.debug("Adding " + subValue.item(0).getTextContent());
-                                values.add(subValue.item(0).getTextContent());
+                                if ( (subValue != null) && (subValue.item(0) != null) ) {
+                                    log.debug("Adding " + subValue.item(0).getTextContent());
+                                    values.add(subValue.item(0).getTextContent());
+                                }
                             }                            
                         } finally {
                             stopWatch2.stop("XML.fine.xpath.4", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
