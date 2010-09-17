@@ -89,6 +89,7 @@ public class CategoriesDAOiBatisImpl
         return readCategoriesDAO.selectEntriesCategories(workspace, collection, entryIds);
     }
 
+    /*
     public List<EntryCategory> selectEntryCategories(EntryDescriptor entryQuery) {
         return readCategoriesDAO.selectEntryCategories(entryQuery);
     }
@@ -96,6 +97,7 @@ public class CategoriesDAOiBatisImpl
     public List<EntryCategory> selectEntryCategoriesInScheme(EntryDescriptor entryQuery, String scheme) {
         return readCategoriesDAO.selectEntryCategoriesInScheme(entryQuery, scheme);
     }
+    */
 
     public List<String> selectDistictCollections(String workspace) {
         return readCategoriesDAO.selectDistictCollections(workspace);
@@ -114,6 +116,16 @@ public class CategoriesDAOiBatisImpl
     //-------------------
     //   WriteReadEntryCategoriesDAOiBatisImpl
     //-------------------
+    // These two are used by the AutoTagger
+    public List<EntryCategory> selectEntryCategories(EntryDescriptor entryQuery) {
+        return writeReadCategoriesDAO.selectEntryCategories(entryQuery);
+    }
+
+    public List<EntryCategory> selectEntryCategoriesInScheme(EntryDescriptor entryQuery, String scheme) {
+        return writeReadCategoriesDAO.selectEntryCategoriesInScheme(entryQuery, scheme);
+    }
+
+
 
     public int insertEntryCategory(EntryCategory entry) {return writeReadCategoriesDAO.insertEntryCategory(entry);}
 

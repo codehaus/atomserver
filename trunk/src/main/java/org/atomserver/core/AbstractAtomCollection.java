@@ -592,9 +592,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                                 }
                             }
                             final Object internalId = getInternalId(target);
-                            EntryMetaDataStatus metaDataStatus = modifyEntry(internalId,
-                                                                             target,
-                                                                             mustAlreadyExist());
+                            EntryMetaDataStatus metaDataStatus = modifyEntry(internalId, target, mustAlreadyExist());
 
                             // Update category to see if there are changes.
                             // Assumption here: postProcessEntryContents method does not need entry revision or timestamps.
@@ -973,21 +971,20 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                     }
                 }
         );
-        return (entryMetaData == null) ?
-               null :
-               newEntry(abdera, entryMetaData, EntryType.link);
+        return (entryMetaData == null) ? null : newEntry(abdera, entryMetaData, EntryType.link);
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~
 
     private boolean postProcessEntryContents(String entryXml, EntryMetaData entryMetaData) {
+        log.debug("BEGIN AUTO_TAGGING................");
         EntryAutoTagger autoTagger = getAutoTagger();
         if (autoTagger != null) {
             StopWatch stopWatch = new AtomServerStopWatch();
             try {
                 return autoTagger.tag(entryMetaData, entryXml);
             } finally {
-                stopWatch.stop("XML.autoTagger", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryMetaData));
+                stopWatch.stop("AC.postProcContent", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryMetaData));
 
             }
         }
@@ -1005,6 +1002,8 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         String entryId = entryTarget.getEntryId();
         int revision = entryTarget.getRevision();
         String entryXml = null;
+
+        StopWatch stopWatch1 = new AtomServerStopWatch();
         try {
             entryXml = entry.getContent();
         } catch (Exception ee) {
@@ -1015,7 +1014,10 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                          + "\n 2) MAKE CERTAIN THAT YOU ARE INDEED SENDING UTF-8 CHARACTERS";
             log.error(msg, ee);
             throw new BadContentException(msg, ee);
+        } finally {
+             stopWatch1.stop("AC.entry.getContent", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryTarget));
         }
+
         if (entryXml == null) {
             String msg = "Could not process PUT for [" + workspace + ", " + collection + ", "
                          + locale + ", " + entryId + ", " + revision + "]\n Reason:: Content is NULL";
@@ -1026,11 +1028,11 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         // now validate the <content> with whatever Validator was registered (if any)
         ContentValidator validator = getContentValidator();
         if (validator != null) {
-            StopWatch stopWatch = new AtomServerStopWatch();
+            StopWatch stopWatch2 = new AtomServerStopWatch();
             try {
                 validator.validate(entryXml);
             } finally {
-                stopWatch.stop("XML.validator", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryTarget));
+                stopWatch2.stop("XML.validator", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryTarget));
             }
         }
 
@@ -1042,7 +1044,6 @@ abstract public class AbstractAtomCollection implements AtomCollection {
     private Entry parseEntry(EntryTarget entryTarget, RequestContext request) {
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
-
             String errMsgPrefix = "Could not process PUT for [" + entryTarget.getWorkspace()
                                   + ", " + entryTarget.getCollection() + ", " + entryTarget.getLocale() +
                                   ", " + entryTarget.getEntryId() + ", " + entryTarget.getRevision();
@@ -1137,7 +1138,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                     throw new AtomServerException("Must define the EntryType -- full or link");
                 }
             } finally {
-                contentStopWatch.stop("XML.fine.addContent", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryMetaData));
+                contentStopWatch.stop("XML.entry.addContent", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryMetaData));
             }
 
             return entry;
@@ -1148,7 +1149,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
             throw (ee instanceof AtomServerException) ? (AtomServerException)ee : new AtomServerException( msg, ee );
 
         } finally {
-            outerStopWatch.stop("XML.fine.entry", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryMetaData));
+            outerStopWatch.stop("XML.entry.all", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryMetaData));
         }
     }
 

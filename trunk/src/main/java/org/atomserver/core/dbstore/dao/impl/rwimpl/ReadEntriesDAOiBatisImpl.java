@@ -32,22 +32,22 @@ public class ReadEntriesDAOiBatisImpl
     static public final long STARTUP_INTERVAL = 900000;
 
     static private long startupTime = System.currentTimeMillis();
+    static private boolean isFirstPass = true;
 
     static private Set<String> workspaces = new CopyOnWriteArraySet<String>();
     static long lastWorkspacesSelectTime = 0L;
 
-    private ConcurrentHashMap<String, HashSet<String>> collections = new ConcurrentHashMap<String, HashSet<String>>();
+    static private ConcurrentHashMap<String, HashSet<String>> collections = new ConcurrentHashMap<String, HashSet<String>>();
     static long lastCollectionsSelectTime = 0L;
 
-    private boolean useWorkspaceCollectionCache = false;
+    private boolean useWorkspaceCollectionCache = true;
 
     public boolean isUseWorkspaceCollectionCache() {
         return useWorkspaceCollectionCache;
     }
 
-    public void setUseWorkspaceCollectionCache(boolean useWorkspaceCollectionCache) {
-        this.useWorkspaceCollectionCache = useWorkspaceCollectionCache;
-        clearWorkspaceCollectionCaches();
+    public void setUseWorkspaceCollectionCache(boolean useCache) {
+        useWorkspaceCollectionCache = useCache;
     }
 
 //-----------------------
@@ -308,6 +308,7 @@ public class ReadEntriesDAOiBatisImpl
                              workspace + "/" + collection + " - this is probably okay.");
                 }
                 if ( useWorkspaceCollectionCache ) {
+                    log.debug("Adding " + workspace + " " + collection );
                     HashSet<String> workspaceCollections = getWorkspaceCollections(workspace);
                     workspaceCollections.add(collection);
                 }
@@ -370,9 +371,10 @@ public class ReadEntriesDAOiBatisImpl
                 HashSet<String> workspaceCollections = getWorkspaceCollections(workspace);
                 if ( collectionsIsExpired() ) {
                     lastCollectionsSelectTime = System.currentTimeMillis();
-                    if ( collections.isEmpty() ) {
+                    if ( isFirstPass ) {
                         loadWorkspaceCollections();
                         workspaceCollections = getWorkspaceCollections(workspace);
+                        isFirstPass = false;
                     } else {
                         List<String> dbcollections = getSqlMapClientTemplate().queryForList("listCollections",
                                                                                             paramMap().param("workspace", workspace));
@@ -424,6 +426,7 @@ public class ReadEntriesDAOiBatisImpl
             List<WorkspaceCollection> wcs = getSqlMapClientTemplate().queryForList("selectWorkspaceCollections", paramMap());
             if (wcs != null) {
                 for( WorkspaceCollection wc : wcs ) {
+                    log.info("ADDING " + wc.getWorkspace() + " " + wc.getCollection() );
                     HashSet<String> workspaceCollections = getWorkspaceCollections(wc.getWorkspace());
                     workspaceCollections.add(wc.getCollection());
                 }
