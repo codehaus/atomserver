@@ -795,7 +795,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                         throw (ee instanceof AtomServerException) ? (AtomServerException)ee : new AtomServerException( msg, ee );
                     }
                 } finally {
-                    stopWatch.stop("XML.fine.feed.addEntry", "");
+                    stopWatch.stop("XML.feed.addEntry", "");
                 }
             }
             knt++;
@@ -875,7 +875,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             addFeedSelfLink(abdera, feed, iri, startIndex, pageSize );
             addFeedEntries( abdera, feed, sortedList, pageSize, entryType );
         } finally {
-            stopWatch.stop("XML.feed", AtomServerPerfLogTagFormatter.getPerfLogFeedString( locale, workspace, collection ));
+            stopWatch.stop("XML.feed.all", AtomServerPerfLogTagFormatter.getPerfLogFeedString( locale, workspace, collection ));
         }
         return lastUpdatedDate;
     }

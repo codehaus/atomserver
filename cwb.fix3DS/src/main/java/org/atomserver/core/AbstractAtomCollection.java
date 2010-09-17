@@ -1138,7 +1138,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                     throw new AtomServerException("Must define the EntryType -- full or link");
                 }
             } finally {
-                contentStopWatch.stop("XML.fine.addContent", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryMetaData));
+                contentStopWatch.stop("XML.entry.addContent", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryMetaData));
             }
 
             return entry;
@@ -1149,7 +1149,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
             throw (ee instanceof AtomServerException) ? (AtomServerException)ee : new AtomServerException( msg, ee );
 
         } finally {
-            outerStopWatch.stop("XML.fine.entry", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryMetaData));
+            outerStopWatch.stop("XML.entry.all", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryMetaData));
         }
     }
 

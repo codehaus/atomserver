@@ -368,7 +368,7 @@ public class XPathAutoTagger
                             XPathExpression expression = getXPathExpression(xPath, xpathString);
                             nodeList = (NodeList) expression.evaluate(doc, XPathConstants.NODESET);
                         } finally {
-                            stopWatch1.stop("XML.fine.xpath.1", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
+                            stopWatch1.stop("XML.autotag.xpath.1", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
                         }
 
                         for (int ii = 0; ii < nodeList.getLength(); ii++) {
@@ -397,7 +397,7 @@ public class XPathAutoTagger
                                 String[] replacements = values.toArray(new String[values.size()]);
                                 deleteSchemes.add(MessageFormat.format(scheme, replacements));
                             } finally {
-                                stopWatch2.stop("XML.fine.xpath.2", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
+                                stopWatch2.stop("XML.autotag.xpath.2", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
                             }
 
                             if ( parent != null ) {
@@ -453,7 +453,7 @@ public class XPathAutoTagger
                         XPathExpression expression = getXPathExpression(xPath, xpathString);
                         nodeList = (NodeList) expression.evaluate(doc, XPathConstants.NODESET);
                     } finally {
-                        stopWatch1.stop("XML.fine.xpath.3", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
+                        stopWatch1.stop("XML.autotag.xpath.3", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
                     }
 
                     for (int ii = 0; ii < nodeList.getLength(); ii++) {
@@ -479,7 +479,7 @@ public class XPathAutoTagger
                                 }
                             }                            
                         } finally {
-                            stopWatch2.stop("XML.fine.xpath.4", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
+                            stopWatch2.stop("XML.autotag.xpath.4", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
                         }
 
                         if ( parent != null ) {
