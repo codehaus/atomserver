@@ -19,9 +19,16 @@ package org.atomserver.core.autotaggers;
 
 import org.atomserver.CategoriesHandler;
 import org.atomserver.EntryAutoTagger;
+import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.dbstore.dao.CategoriesDAO;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.StringReader;
 
 /**
  * BaseAutoTagger - provides an abstract base class for EntryAutoTaggers that allows for a spring-
@@ -41,6 +48,31 @@ public abstract class BaseAutoTagger implements EntryAutoTagger {
 
     public void setCategoriesHandler(CategoriesHandler categoriesHandler) {
         this.categoriesHandler = categoriesHandler;
+    }
+
+    public boolean tag(EntryMetaData entry, String contentXML) {
+        Document doc = parseContentXml( entry, contentXML );
+        if ( doc == null ){
+            return false;
+        }
+        return tag(entry, doc);
+    }
+        
+    protected Document parseContentXml( EntryMetaData entry, String contentXML ) {
+        // Parse the contentXML
+        Document doc = null;
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            doc = builder.parse(new InputSource(new StringReader(contentXML)));
+        } catch (Exception ee) {
+            // TODO : should we really be eating these??
+            String errmsg = "Exception : Unable to complete auto-tagging - exception parsing content for " + entry ;
+            log.error(errmsg, ee);
+            return null;
+        }
+        return doc;
     }
 
     //>>>>>>>>>>>>>>>>>>>>>>>>>>

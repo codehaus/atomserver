@@ -168,10 +168,12 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             throw ee;
         } catch ( ExecutionException ee ) {
             log.debug("Exception in DB TXN: " + ee.getClass().getSimpleName() + " " + ee.getMessage() );
-            throw ee.getCause() instanceof AtomServerException ?
-                    (AtomServerException)ee.getCause() :
-                    new AtomServerException("A " + ee.getCause().getClass().getSimpleName() +
-                            " caught in Transaction", ee.getCause());
+            throw (ee.getCause() == null)
+                  ? new AtomServerException("A " + ee.getClass().getSimpleName() + " caught in Transaction", ee)
+                  : (ee.getCause() instanceof AtomServerException)
+                    ? (AtomServerException)ee.getCause()
+                    : new AtomServerException("A " + ee.getCause().getClass().getSimpleName() +
+                                              " caught in Transaction", ee.getCause());
         } catch( Exception ee ) {
             log.debug("Exception in DB TXN: " + ee.getClass().getSimpleName() + " " + ee.getMessage() );
             throw new AtomServerException("A " + ee.getClass().getSimpleName() + " caught in Transaction", ee);
@@ -493,9 +495,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
      * <p/>
      * NOTE: A PUT will receive an EntryTarget which points at the NEXT revision
      */
-    protected EntryMetaDataStatus modifyEntry(Object internalId,
-                                        EntryTarget entryTarget,
-                                        boolean mustAlreadyExist)
+    protected EntryMetaDataStatus modifyEntry(Object internalId, EntryTarget entryTarget, boolean mustAlreadyExist)
             throws AtomServerException {
 
         String workspace = entryTarget.getWorkspace();
@@ -503,16 +503,14 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         Locale locale = entryTarget.getLocale();
         String entryId = entryTarget.getEntryId();
         int revision = entryTarget.getRevision();
-        if (log.isDebugEnabled()) {
-            log.debug("DBBasedAtomCollection.(MODIFY) [" + workspace + ", " + collection + ", "
-                      + locale + ", " + entryId + ", " + revision + "]" + "Id= " + internalId );
-        }
+        log.debug("DBBasedAtomCollection.(MODIFY) [" + workspace + ", " + collection + ", "
+                   + locale + ", " + entryId + ", " + revision + "]" + "Id= " + internalId );
 
         boolean isNewEntry = (internalId == null);
         boolean writeFailed = true;
 
         if (!isNewEntry) {
-
+            // if this isn't a new Entry and revision ==0 , then we know we have an error
             if (revision == 0) {
                 // SELECT -- we do this select to know what revision we actually had,
                 // so we can create the proper editURI
@@ -525,14 +523,12 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                 throwOptimisticConcurrencyException(msg, workspace, collection, entryId, locale, (rev + 1));
             }
 
-            if(this.alwaysUpdateEntry()) { // update entry regardless of its content.
-
+            if (this.alwaysUpdateEntry()) { // update entry regardless of its content.
                 int numRowsModified = getWriteEntriesDAO().updateEntry( entryTarget, false );
                 if (numRowsModified > 0) {
                     writeFailed = false;
                 }
-                if (log.isDebugEnabled())
-                    log.debug( "AFTER UPDATE:: [" + entryTarget.getEntryId() + "] numRowsModified= " + numRowsModified );
+                log.debug( "AFTER UPDATE:: [" + entryTarget.getEntryId() + "] numRowsModified= " + numRowsModified );
 
             } else {
                 // Don't update entry if the content are the same.
@@ -545,20 +541,17 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
 
                 // if the entry is deleted or the content has changed, proceed with update.
                 if(!revisionError && !metaData.getDeleted() && !isContentChanged(entryTarget, metaData)) {
-                   if( log.isDebugEnabled())
-                        log.debug(" CONTENT Hash is the same: [" + entryTarget.getEntryId() + "]");
+                    log.debug(" CONTENT Hash is the same: [" + entryTarget.getEntryId() + "]");
                     metaData.setNewlyCreated(false);
                     // If content has not changed, do not update the Entry (unless the categories are changed).
                     return new EntryMetaDataStatus(metaData,false);
                 }
 
-                if(!revisionError) {
+                if (!revisionError) {
                     int numRowsModified = getWriteEntriesDAO().updateEntry( entryTarget, false );
                     if (numRowsModified > 0) {
                         writeFailed = false;
                     }
-
-                    if (log.isDebugEnabled())
                     log.debug( "AFTER UPDATE:: [" + entryTarget.getEntryId() + "] numRowsModified= " + numRowsModified );
                  } else {
                     writeFailed = true;
@@ -582,8 +575,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
 
             try {
                 internalId = getWriteEntriesDAO().insertEntry(entryTarget );
-                if (log.isDebugEnabled())
-                   log.debug( "AFTER INSERT :: [" + entryTarget.getEntryId() + "] internalId= " + internalId);
+                log.debug( "AFTER INSERT :: [" + entryTarget.getEntryId() + "] internalId= " + internalId);
                 if (internalId != null) {
                     writeFailed = false;
                 }
@@ -646,10 +638,8 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
      * @param isNewEntry
      * @return
      */
-    protected EntryMetaDataStatus postModifyEntry(Object internalId,
-                                                  EntryTarget entryTarget,
-                                                  boolean isNewEntry,
-                                                  boolean writeFailed) {
+    protected EntryMetaDataStatus postModifyEntry(Object internalId, EntryTarget entryTarget,
+                                                  boolean isNewEntry, boolean writeFailed) {
 
          // SELECT -- We must select again
         //  because we need data that was set during the INSERT or UPDATE (e.g. published & lastModified)
@@ -794,13 +784,18 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                     log.debug("addFeedEntries ADD:: " + entryMetaData );
                 }
 
-                Entry entry = newEntry( abdera, entryMetaData, entryType );
+                StopWatch stopWatch = new AtomServerStopWatch();
                 try {
-                    feed.addEntry(entry);
-                } catch (Exception ee) {
-                    String msg = "Exception " + ee.getClass().getSimpleName() + " while adding: " + entryMetaData;
-                    log.error( ee );
-                    throw (ee instanceof AtomServerException) ? (AtomServerException)ee : new AtomServerException( msg, ee );
+                    Entry entry = newEntry( abdera, entryMetaData, entryType );
+                    try {
+                        feed.addEntry(entry);
+                    } catch (Exception ee) {
+                        String msg = "Exception " + ee.getClass().getSimpleName() + " while adding: " + entryMetaData;
+                        log.error( ee );
+                        throw (ee instanceof AtomServerException) ? (AtomServerException)ee : new AtomServerException( msg, ee );
+                    }
+                } finally {
+                    stopWatch.stop("XML.feed.addEntry", "");
                 }
             }
             knt++;
@@ -880,7 +875,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             addFeedSelfLink(abdera, feed, iri, startIndex, pageSize );
             addFeedEntries( abdera, feed, sortedList, pageSize, entryType );
         } finally {
-            stopWatch.stop("XML.feed", AtomServerPerfLogTagFormatter.getPerfLogFeedString( locale, workspace, collection ));
+            stopWatch.stop("XML.feed.all", AtomServerPerfLogTagFormatter.getPerfLogFeedString( locale, workspace, collection ));
         }
         return lastUpdatedDate;
     }
