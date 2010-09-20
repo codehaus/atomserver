@@ -33,7 +33,6 @@ import java.util.Locale;
  */
 public class EntryMetaData extends BaseEntryDescriptor {
     private static final Log log = LogFactory.getLog(EntryMetaData.class);
-    private static final List<EntryCategory> EMPTY_CAT_LIST = new ArrayList<EntryCategory>();
 
     private Long entryStoreId = null;
 
@@ -117,40 +116,10 @@ public class EntryMetaData extends BaseEntryDescriptor {
 
     public List<EntryCategory> getCategories() {
         return categories;
-        /*
-        log.debug("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% " + categories);
-        log.debug("cat size = " + categories.size());
-        if (categories.size() == 1) {
-            log.debug("cat = " + categories.get(0).getScheme() + " " + categories.get(0).getTerm());
-        }
-
-
-        if ( (categories == null) || (categories.size() == 0) ) {
-            return EMPTY_CAT_LIST;
-        } else if ( (categories.size() == 1)
-             && ((categories.get(0).getScheme() == null) && (categories.get(0).getTerm() == null)) ) {
-            log.debug("returning empty list: " + EMPTY_CAT_LIST);
-            return new ArrayList<EntryCategory>();
-        } else {
-            return categories;
-        }
-        */
     }
 
     public void setCategories(List<EntryCategory> categories) {
          this.categories = categories;
-        /*
-        log.debug("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& " + categories);
-        // workaround for iBatis
-        if ( (categories == null) || (categories.size() == 0) ) {
-            this.categories = EMPTY_CAT_LIST;
-        } else if ( (categories.size() == 1)
-             && ((categories.get(0).getScheme() == null) && (categories.get(0).getTerm() == null)) ) {
-            this.categories = EMPTY_CAT_LIST;
-        } else {
-            this.categories = categories;
-        }
-        */
     }
 
     public Long getEntryStoreId() {

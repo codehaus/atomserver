@@ -89,16 +89,6 @@ public class CategoriesDAOiBatisImpl
         return readCategoriesDAO.selectEntriesCategories(workspace, collection, entryIds);
     }
 
-    /*
-    public List<EntryCategory> selectEntryCategories(EntryDescriptor entryQuery) {
-        return readCategoriesDAO.selectEntryCategories(entryQuery);
-    }
-
-    public List<EntryCategory> selectEntryCategoriesInScheme(EntryDescriptor entryQuery, String scheme) {
-        return readCategoriesDAO.selectEntryCategoriesInScheme(entryQuery, scheme);
-    }
-    */
-
     public List<String> selectDistictCollections(String workspace) {
         return readCategoriesDAO.selectDistictCollections(workspace);
     }
