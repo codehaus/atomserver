@@ -387,8 +387,9 @@ public class XPathAutoTagger
                                     String subExpression = subExpressionStrings.get(jj);
                                     log.debug("executing XPATH subExpression : " + subExpression);
 
-                                    XPathExpression expression = getXPathSubExpression(jj, xPath);
-                                    NodeList subValue = (NodeList) expression.evaluate(node, XPathConstants.NODESET);
+                                    //XPathExpression expression = getXPathSubExpression(jj, xPath);
+                                    //NodeList subValue = (NodeList) expression.evaluate(node, XPathConstants.NODESET);
+                                    NodeList subValue = (NodeList) xPath.evaluate(subExpression, node, XPathConstants.NODESET);
 
                                     if ( (subValue != null) && (subValue.item(0) != null) ) {
                                         log.debug("Adding : " + subValue.item(0).getTextContent());
@@ -472,8 +473,9 @@ public class XPathAutoTagger
                                 String subExpression = subExpressionStrings.get(jj);
                                 log.debug("executing XPATH subExpression : " + subExpression);
 
-                                XPathExpression expression = getXPathSubExpression(jj, xPath);
-                                NodeList subValue = (NodeList) expression.evaluate(node, XPathConstants.NODESET);
+                                //XPathExpression expression = getXPathSubExpression(jj, xPath);
+                                //NodeList subValue = (NodeList) expression.evaluate(node, XPathConstants.NODESET);
+                                NodeList subValue = (NodeList) xPath.evaluate(subExpression, node, XPathConstants.NODESET);
 
                                 if ( (subValue != null) && (subValue.item(0) != null) ) {
                                     log.debug("Adding " + subValue.item(0).getTextContent());
