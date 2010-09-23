@@ -466,6 +466,7 @@ public class XPathAutoTagger
                         Node node = nodeList.item(ii);
 
                         values.add(node.getTextContent());
+                        log.debug("node= " + node.getTextContent());
 
                         StopWatch stopWatch2 = new AtomServerStopWatch();
                         try {
