@@ -311,6 +311,7 @@ public class XPathAutoTagger
         }
 
         protected XPathExpression getXPathSubExpression( int index, XPath xPath ) throws XPathExpressionException {
+            log.debug("operating on subExpression: " + subExpressionStrings.get(index));
             XPathExpression expression = null;
             if ( CACHE_XPATH_EXPRESSIONS ) {
                 if ( subExpressionStrings.size() == 0 ) {
@@ -442,7 +443,7 @@ public class XPathAutoTagger
         private String labelPattern;
 
         public void tag(EntryMetaData entry, Document doc, Set<EntryCategory> categoryMods, XPath xPath) {
-            log.debug("XPathMatchAction.tag");
+            log.debug("XPathMatchAction.tag: xpathString=" + xpathString + " scheme=" + scheme + " termPattern=" + termPattern);
             StopWatch stopWatch0 = new AtomServerStopWatch();
             try {
                 try {
@@ -489,9 +490,20 @@ public class XPathAutoTagger
                         EntryCategory category = new EntryCategory();
                         category.setEntryStoreId(entry.getEntryStoreId());
                         String[] replacements = values.toArray(new String[values.size()]);
+
                         category.setScheme(MessageFormat.format(scheme, replacements));
                         category.setTerm(MessageFormat.format(termPattern, replacements));
                         category.setLabel(labelPattern == null ? null : MessageFormat.format(labelPattern, replacements));
+
+                        // Per MessageFormat: An argument is unavailable if arguments is null or has fewer than argumentIndex+1 elements
+                        //   And if an argument is unavailable, then "{" + argumentIndex + "}" is printed
+                        if (category.getScheme().matches("\\{\\d+\\}")) {
+                            log.error("Illegal Category Scheme for entry= " + entry + " scheme=" + category.getScheme());
+                        }
+                        if (category.getTerm().matches("\\{\\d+\\}")) {
+                            log.error("Illegal Category Term for entry= " + entry + " term=" + category.getTerm());
+                        }
+
                         log.debug("creating category : " + category);
                         categoryMods.add(category);
                     }
