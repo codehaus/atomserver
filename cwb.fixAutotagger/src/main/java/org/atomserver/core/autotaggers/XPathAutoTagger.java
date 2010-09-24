@@ -375,15 +375,20 @@ public class XPathAutoTagger
                         for (int ii = 0; ii < nodeList.getLength(); ii++) {
                             List<String> values = new ArrayList<String>(this.subExpressionStrings.size() + 1);
 
-                            Node parent = nodeList.item(ii).getParentNode();
-                            Node node = ( parent == null ) ? nodeList.item(ii) : parent.removeChild(nodeList.item(ii));
+                            //Node parent = nodeList.item(ii).getParentNode();
+                            //Node node = ( parent == null ) ? nodeList.item(ii) : parent.removeChild(nodeList.item(ii));
+
                             //Node node = nodeList.item(ii);
 
-                            values.add(node.getTextContent());
+                            //values.add(node.getTextContent());
+                            values.add(nodeList.item(ii).getTextContent());
 
                             StopWatch stopWatch2 = new AtomServerStopWatch();
                             try {
                                 for (int jj=0; jj < subExpressionStrings.size(); jj++) {
+                                    Node parent = nodeList.item(ii).getParentNode();
+                                    Node node = ( parent == null ) ? nodeList.item(ii) : parent.removeChild(nodeList.item(ii));
+
                                     String subExpression = subExpressionStrings.get(jj);
                                     log.debug("executing XPATH subExpression : " + subExpression);
 
@@ -395,6 +400,10 @@ public class XPathAutoTagger
                                         log.debug("Adding : " + subValue.item(0).getTextContent());
                                         values.add(subValue.item(0).getTextContent());
                                     }
+
+                                    if ( parent != null ) {
+                                        parent.appendChild(node);
+                                    }
                                 }
                                 String[] replacements = values.toArray(new String[values.size()]);
                                 deleteSchemes.add(MessageFormat.format(scheme, replacements));
@@ -402,9 +411,9 @@ public class XPathAutoTagger
                                 stopWatch2.stop("XML.autotag.xpath.2", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
                             }
 
-                            if ( parent != null ) {
-                                parent.appendChild(node);
-                            }
+                            //if ( parent != null ) {
+                            //    parent.appendChild(node);
+                            //}
 
                         }
                     } catch (XPathExpressionException e) {
@@ -461,16 +470,20 @@ public class XPathAutoTagger
                     for (int ii = 0; ii < nodeList.getLength(); ii++) {
                         List<String> values = new ArrayList<String>(subExpressionStrings.size() + 1);
 
-                        Node parent = nodeList.item(ii).getParentNode();
-                        Node node = ( parent == null ) ? nodeList.item(ii) : parent.removeChild(nodeList.item(ii));
+                        //Node parent = nodeList.item(ii).getParentNode();
+                        //Node node = ( parent == null ) ? nodeList.item(ii) : parent.removeChild(nodeList.item(ii));
                         //Node node = nodeList.item(ii);
 
-                        values.add(node.getTextContent());
-                        log.debug("node= " + node.getTextContent());
+                        //values.add(node.getTextContent());
+                        values.add(nodeList.item(ii).getTextContent());
+                        log.debug("node= " + nodeList.item(ii).getTextContent());
 
                         StopWatch stopWatch2 = new AtomServerStopWatch();
                         try {
                             for (int jj=0; jj < subExpressionStrings.size(); jj++) {
+                                Node parent = nodeList.item(ii).getParentNode();
+                                Node node = ( parent == null ) ? nodeList.item(ii) : parent.removeChild(nodeList.item(ii));
+
                                 String subExpression = subExpressionStrings.get(jj);
                                 log.debug("executing XPATH subExpression : " + subExpression);
 
@@ -482,14 +495,18 @@ public class XPathAutoTagger
                                     log.debug("Adding " + subValue.item(0).getTextContent());
                                     values.add(subValue.item(0).getTextContent());
                                 }
-                            }                            
+
+                                if ( parent != null ) {
+                                    parent.appendChild(node);
+                                }
+                            }
                         } finally {
                             stopWatch2.stop("XML.autotag.xpath.4", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entry));
                         }
 
-                        if ( parent != null ) {
-                            parent.appendChild(node);
-                        }
+                        //if ( parent != null ) {
+                        //    parent.appendChild(node);
+                        //}
 
                         EntryCategory category = new EntryCategory();
                         category.setEntryStoreId(entry.getEntryStoreId());
