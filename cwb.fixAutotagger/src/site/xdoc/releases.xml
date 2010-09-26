@@ -7,6 +7,13 @@
     </properties>
 
     <body>
+        <section name="Release 2.3.2 (09/26/10)">
+            <ul>
+                <li>Fixed bug introduced into XPathAutoTagger in 2.3.1, where Terms could be tagged with "{2}".
+                    This bug only occurs in some XML Processors (i.e. the default one in Resin)</li>
+            </ul>
+        </section>
+
         <section name="Release 2.3.1 (09/19/10)">
             <ul>
                 <li>Improved XPathAutoTagger performance by ~68%. In doing so, added a new method
