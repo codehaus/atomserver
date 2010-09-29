@@ -223,8 +223,10 @@ public class CollectionOperations {
         entryIterator = buildIterator(categoryQuery, timestamp);
         int countdown = maxResults;
         StringBuffer entryEtagsConcatenated = new StringBuffer();
-        while (entryIterator.hasNext() && countdown-- > 0) {
+        while (entryIterator.hasNext() && countdown > 0) {
             EntryTuple entryNode = entryIterator.next();
+            if(entryNode==null){continue;}
+            countdown--;
             Entry entry = convertToEntry(entryNode, fullEntries);
             feed.addEntry(entry);
             endIndex = entryNode.timestamp;
