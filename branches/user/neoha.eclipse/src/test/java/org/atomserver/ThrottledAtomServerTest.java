@@ -59,7 +59,7 @@ public class ThrottledAtomServerTest extends BaseCRUDDBSTestCase {
             assertEquals(201, response.getStatus());
         }
         LatencyUtil.accountForLatency();
-        Thread.currentThread().sleep(50); // Give some time to finish tasks.
+        Thread.sleep(50); // Give some time to finish tasks.
 
         //assert that 2 more tasks were completed
         long endingNumberOfCompletedTasks = executor.getCompletedTaskCount();
