@@ -13,7 +13,8 @@ import java.util.concurrent.TimeoutException;
 public class TransactionTimeoutTest extends CRUDDBSTestCase {
     public static final boolean JDBC_DEBUG_VERBOSE = false;
 
-    public void testTransactionBehavior() throws Exception {
+    @SuppressWarnings("deprecation")
+	public void testTransactionBehavior() throws Exception {
 
         if ( JDBC_DEBUG_VERBOSE ) {
             PrintWriter p = new PrintWriter(System.out);
