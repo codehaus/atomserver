@@ -17,8 +17,6 @@
 
 package org.atomserver.core.dbstore;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.atomserver.ContentStorage;
 import org.atomserver.core.dbstore.dao.AtomServerDAO;
 import org.atomserver.utils.alive.AliveStatus;
@@ -44,8 +42,6 @@ import org.springframework.jmx.export.annotation.ManagedResource;
  */
 @ManagedResource(description = "Is Alive Handler")
 public class AtomServerIsAliveHandler implements IsAliveHandler {
-    
-    static private Log log = LogFactory.getLog( AtomServerIsAliveHandler.class );
     
     private AtomServerDAO atomServerDao = null;
     private ContentStorage contentStorage = null;

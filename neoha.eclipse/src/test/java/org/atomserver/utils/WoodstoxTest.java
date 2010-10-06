@@ -27,14 +27,9 @@ import javax.xml.stream.XMLStreamException;
 
 import com.ctc.wstx.stax.WstxInputFactory;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 /**
  */
 public class WoodstoxTest extends TestCase {
-
-    static private Log log = LogFactory.getLog( WoodstoxTest.class );
 
     public static Test suite() 
     { return new TestSuite( WoodstoxTest.class ); }

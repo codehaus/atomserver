@@ -49,7 +49,6 @@ public class RawClientDBSTest extends JettyWebAppTestCase {
 
     private String propId = "24560";
     private IRI entryIRI;
-    private String urlPath;
     private String baseURI;
 
     private URIHandler uriHandler;
@@ -69,7 +68,6 @@ public class RawClientDBSTest extends JettyWebAppTestCase {
 
         widgetsDao = (EntriesDAO) springContext.getBean("org.atomserver-entriesDAO");
 
-        urlPath = "widgets/foobar/" + propId + ".en.xml";
         entryIRI = IRI.create("http://localhost:8080/"
                               + uriHandler.constructURIString( "widgets", "foobar", propId,
                                                                LocaleUtils.toLocale("en")) );

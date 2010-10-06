@@ -25,9 +25,6 @@ import org.atomserver.exceptions.AtomServerException;
 import org.apache.abdera.model.Collection;
 import org.apache.abdera.protocol.server.RequestContext;
 import org.apache.abdera.Abdera;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import java.io.File;
 import java.util.List;
 import java.util.ArrayList;
@@ -36,8 +33,6 @@ import java.util.HashMap;
 /**
  */
 public class FileBasedBlogWorkspace implements AtomWorkspace {
-    private Log log = LogFactory.getLog(FileBasedBlogService.class);
-
     private String name = null;
     private AtomService parentService = null ;
     private java.util.Map<String, AtomCollection> collections = new HashMap<String, AtomCollection>();
