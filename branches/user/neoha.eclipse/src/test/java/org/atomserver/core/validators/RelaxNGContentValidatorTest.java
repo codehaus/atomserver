@@ -20,14 +20,10 @@ package org.atomserver.core.validators;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.atomserver.exceptions.BadContentException;
 import org.springframework.core.io.ClassPathResource;
 
 public class RelaxNGContentValidatorTest extends TestCase {
-
-    private static final Log log = LogFactory.getLog(RelaxNGContentValidatorTest.class);
 
     public static Test suite() { return new TestSuite(RelaxNGContentValidatorTest.class); }
 

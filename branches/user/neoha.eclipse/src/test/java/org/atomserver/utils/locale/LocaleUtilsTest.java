@@ -18,9 +18,6 @@ package org.atomserver.utils.locale;
 
 import java.util.Locale;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -29,8 +26,6 @@ import org.atomserver.utils.locale.LocaleUtils;
 
 public class LocaleUtilsTest  extends TestCase {
 
-    static private Log log = LogFactory.getLog( LocaleUtilsTest.class );
-    
     // -------------------------------------------------------
     public static Test suite() 
     { return new TestSuite( LocaleUtilsTest.class ); }

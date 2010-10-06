@@ -19,8 +19,6 @@ package org.atomserver.testutils.plot;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jfree.data.xy.XYDataset;
 
 import java.io.File;
@@ -35,8 +33,6 @@ import java.util.Arrays;
  * NOTE: if -DplotsVisible=true, will only display one plot. So "X out" the other tests...
  */
 public class PlotTest  extends TestCase {
-
-    static private Log log = LogFactory.getLog(PlotTest.class );
 
     // toggle this back to FALSE before you check in !!!
     static private final boolean MAKE_PLOTS_LOCALLY = false;

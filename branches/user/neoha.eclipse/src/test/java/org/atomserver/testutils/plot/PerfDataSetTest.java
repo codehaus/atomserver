@@ -19,9 +19,6 @@ package org.atomserver.testutils.plot;
 import java.net.URL;
 import java.io.File;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -32,8 +29,6 @@ import org.atomserver.testutils.plot.PerfDataSet;
 
 public class PerfDataSetTest extends TestCase {
 
-    static private Log log = LogFactory.getLog(PerfDataSetTest.class );
-    
     // -------------------------------------------------------
     public static Test suite() 
     { return new TestSuite( PerfDataSetTest.class ); }
