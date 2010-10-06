@@ -78,7 +78,7 @@ public class TagsFeedQueriesDBSTest extends DBSTestCase {
         int propIdSeed = 34500 ;
         String locale = "fr";
 
-        long lnow= (entriesDao.selectSysDate()).getTime();
+        (entriesDao.selectSysDate()).getTime();
 
         // INSERT
         int numRecs = 12 ;
@@ -90,8 +90,6 @@ public class TagsFeedQueriesDBSTest extends DBSTestCase {
         // COUNT
         int count = entriesDao.getTotalCount(serviceDescriptor);
         assertEquals( (startCount + numRecs), count );
-
-        int pageSize = count + 1;
 
         //====================
         // Create a standard APP Categories doc
@@ -215,7 +213,7 @@ public class TagsFeedQueriesDBSTest extends DBSTestCase {
         int propIdSeed = 98700 ;
         String[] locale = {"fr", "pl" };
 
-        long lnow= (entriesDao.selectSysDate()).getTime();
+        (entriesDao.selectSysDate()).getTime();
 
         // INSERT
         // this must be 12 
@@ -229,12 +227,6 @@ public class TagsFeedQueriesDBSTest extends DBSTestCase {
         // COUNT
         int count = entriesDao.getTotalCount(serviceDescriptor);
         assertEquals( (startCount + numRecs), count );
-
-        int pageSize = count + 1;
-
-        //====================
-        // Create a standard APP Categories doc
-        //  which is the Content for this "tags:widgets" Entry
 
         int startCountEC = categoriesDAO.getTotalCount(workspace);
         log.debug( "startCountEC = " + startCountEC );

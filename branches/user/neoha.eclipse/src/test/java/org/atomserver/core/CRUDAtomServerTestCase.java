@@ -380,7 +380,8 @@ abstract public class CRUDAtomServerTestCase extends AtomServerTestCase {
     }
 
     // This method causes the Client to barf. So do NOT use it unless you are reporting an error....
-    private void dumpResponse( ClientResponse response ) throws Exception {
+    @SuppressWarnings("unused")
+	private void dumpResponse( ClientResponse response ) throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(response.getInputStream()));
         String line;
         while ((line = br.readLine()) != null) {

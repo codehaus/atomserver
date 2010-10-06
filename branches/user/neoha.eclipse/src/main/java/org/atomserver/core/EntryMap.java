@@ -76,7 +76,8 @@ public class EntryMap<V> extends HashMap<EntryDescriptor, V> {
             return descriptor.getContentHashCode();
         }
 
-        EntryKey reuse(EntryDescriptor descriptor) {
+        @SuppressWarnings("unused")
+		EntryKey reuse(EntryDescriptor descriptor) {
             this.descriptor = descriptor;
             return this;
         }

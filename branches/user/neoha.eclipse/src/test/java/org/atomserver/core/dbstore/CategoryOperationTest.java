@@ -121,7 +121,7 @@ public class CategoryOperationTest extends CRUDDBSTestCase {
         // create property 642.
         String realEntryURL = getServerURL() + "widgets/acme/642.en.xml";
         String realId = urlPath;
-        String realEditURI = insert(realId, realEntryURL);
+        insert(realId, realEntryURL);
         // add categories to it.
         String editURI = insert(id, (fullURL + "/1"), categoriesXML, false);
 
@@ -190,7 +190,8 @@ public class CategoryOperationTest extends CRUDDBSTestCase {
         entriesDAO.obliterateEntry(entryTarget);
     }
 
-    private Category newCategory(String scheme, String term) {
+    @SuppressWarnings("unused")
+	private Category newCategory(String scheme, String term) {
         Category category = getFactory().newCategory();
         category.setScheme(scheme);
         category.setTerm(term);
