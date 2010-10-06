@@ -1,6 +1,5 @@
 package org.atomserver.utils.spring;
 
-import bsh.EvalError;
 import bsh.Interpreter;
 import bsh.TargetError;
 import org.apache.commons.logging.Log;

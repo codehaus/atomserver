@@ -20,10 +20,6 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.atomserver.testutils.client.JettyWebAppTestCase;
 import org.atomserver.testutils.conf.TestConfUtil;
-import org.atomserver.utils.conf.ConfigurationAwareClassLoader;
-
-import java.io.File;
-import java.util.Properties;
 
 public class ExtendedContextCustomEnvTest extends JettyWebAppTestCase {
 

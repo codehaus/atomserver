@@ -1,24 +1,14 @@
 package org.atomserver.core.dbstore;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
+
 import org.atomserver.EntryDescriptor;
 import org.atomserver.FeedDescriptor;
 import org.atomserver.core.AbstractAtomCollection;
 import org.atomserver.core.BaseEntryDescriptor;
 import org.atomserver.core.BaseFeedDescriptor;
-import org.atomserver.core.EntryMetaData;
 
-import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeoutException;
-
 
 public class TransactionTimeoutTest extends CRUDDBSTestCase {
     public static final boolean JDBC_DEBUG_VERBOSE = false;

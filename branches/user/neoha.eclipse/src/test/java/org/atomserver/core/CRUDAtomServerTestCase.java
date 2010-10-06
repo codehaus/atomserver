@@ -27,7 +27,6 @@ import org.atomserver.core.etc.AtomServerConstants;
 import org.atomserver.core.filestore.FileBasedContentStorage;
 import org.atomserver.utils.PartitionPathGenerator;
 
-import javax.xml.namespace.QName;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
