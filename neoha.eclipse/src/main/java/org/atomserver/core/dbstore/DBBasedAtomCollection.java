@@ -335,9 +335,9 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                                                          Collection<EntryTarget> allEntriesUriData)
             throws AtomServerException {
 
-        MultiMap<Locale, EntryTarget> dataByLocale = new MultiHashMap<Locale, EntryTarget>();
+    	MultiHashMap<Locale, EntryTarget> dataByLocale = new MultiHashMap<Locale, EntryTarget>();
         for (EntryTarget uriData : allEntriesUriData) {
-            dataByLocale.put(uriData.getLocale(), uriData);
+            dataByLocale.putValue(uriData.getLocale(), uriData);
         }
 
         List<BatchEntryResult> returnValue = new ArrayList<BatchEntryResult>();
@@ -392,9 +392,9 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                                                          Collection<EntryTarget> allEntriesUriData)
             throws AtomServerException {
 
-        MultiMap<Locale, EntryTarget> dataByLocale = new MultiHashMap<Locale, EntryTarget>();
+    	MultiHashMap<Locale, EntryTarget> dataByLocale = new MultiHashMap<Locale, EntryTarget>();
         for (EntryTarget uriData : allEntriesUriData) {
-            dataByLocale.put(uriData.getLocale(), uriData);
+            dataByLocale.putValue(uriData.getLocale(), uriData);
         }
 
         List<BatchEntryResult> returnValue = new ArrayList<BatchEntryResult>();
