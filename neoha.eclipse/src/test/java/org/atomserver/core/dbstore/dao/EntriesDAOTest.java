@@ -247,8 +247,6 @@ public class EntriesDAOTest extends DAOTestCase {
 
         Thread.sleep(1000);
 
-        long seqNum = 0L;
-
         entriesDAO.ensureCollectionExists(entryIn.getWorkspace(), entryIn.getCollection());
         entriesDAO.insertEntry(entryIn);
 
@@ -451,20 +449,13 @@ public class EntriesDAOTest extends DAOTestCase {
             log.debug("List= " + sortedList);
             
             lastVal = zeroDate;
-            long seqNum = 0;
             for (Object obj : sortedList) {
                 EntryMetaData entry = (EntryMetaData) obj;
                 assertTrue(lastVal.compareTo(entry.getUpdatedDate()) <= 0);
                 lastVal = entry.getUpdatedDate();
 
 
-                // FIXME -- this Should work but does not.
-                //          AFAICt there may be something wrong with the updateLastModifiedSeqNumForAllEntries
-                //          BUT this code is NOT actually used anywhere in PRD
-                //          So I am going to ignore it for now.
-                //assertTrue("[seqNum= " + seqNum + "] !< [entrySeq= " + entry.getUpdateTimestamp(),
-                //           seqNum < entry.getUpdateTimestamp());
-                seqNum = entry.getUpdateTimestamp();
+                entry.getUpdateTimestamp();
             }
        } finally { 
              

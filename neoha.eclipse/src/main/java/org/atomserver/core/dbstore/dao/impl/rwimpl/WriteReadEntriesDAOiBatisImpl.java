@@ -3,13 +3,16 @@
  */
 package org.atomserver.core.dbstore.dao.impl.rwimpl;
 
+import java.sql.SQLException;
+import java.util.*;
+
 import com.ibatis.sqlmap.client.SqlMapExecutor;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.EntryDescriptor;
 import org.atomserver.FeedDescriptor;
 import org.atomserver.ServiceDescriptor;
-import org.atomserver.core.EntryCategory;
 import org.atomserver.core.EntryMetaData;
 import org.atomserver.core.dbstore.dao.rwdao.WriteReadEntriesDAO;
 import org.atomserver.exceptions.AtomServerException;
@@ -19,9 +22,6 @@ import org.perf4j.StopWatch;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.orm.ibatis.SqlMapClientCallback;
-
-import java.sql.SQLException;
-import java.util.*;
 
 /**
  * @author Chris Berry  (chriswberry at gmail.com)
@@ -296,13 +296,11 @@ public class WriteReadEntriesDAOiBatisImpl
     public synchronized void obliterateEntry(EntryDescriptor entryQuery) {
         log.info("OBLITERATE EntriesDAOiBatisImpl [ " + entryQuery + " ]");
         EntryMetaData metaData = null;
-        List<EntryCategory> categoriesToRemove = null;
-
         if (getContentDAO() != null || getCategoriesDAO() != null) {
             metaData = (entryQuery instanceof EntryMetaData) ? (EntryMetaData) entryQuery : selectEntry(entryQuery);
 
             if (metaData != null) {
-                categoriesToRemove = metaData.getCategories();
+                metaData.getCategories();
             }
             if (metaData != null && getCategoryLogEventDAO() != null) {
                 getCategoryLogEventDAO().deleteEntryCategoryLogEvent(entryQuery);

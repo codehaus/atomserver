@@ -132,7 +132,6 @@ public class PerfDataSet {
             }
 
             if ( computeMovingAverage ) { 
-                int numIntervalsInAvg = 5;
                 TimeSeries movingAvg = MovingAverage.createPointMovingAverage( series,  methodName + " moving average", 
                                                                                numPointsInAvg );
                 tsc.addSeries( movingAvg );

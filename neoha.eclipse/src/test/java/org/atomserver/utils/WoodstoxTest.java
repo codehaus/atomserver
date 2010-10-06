@@ -62,35 +62,34 @@ public class WoodstoxTest extends TestCase {
 
     private static void printEventInfo(XMLStreamReader reader) throws XMLStreamException {
         int eventCode = reader.next();
-        String val = null;
         switch (eventCode) {
             case 1 :
-                val= reader.getLocalName(); 
+			reader.getLocalName(); 
                 //log.debug("event = START_ELEMENT");
                 //log.debug("Localname = "+val);
                 break;
             case 2 :
-                val= reader.getLocalName(); 
+			reader.getLocalName(); 
                 //log.debug("event = END_ELEMENT");
                 //log.debug("Localname = "+val);
                 break;
             case 3 :
-                val= reader.getPIData();
+			reader.getPIData();
                 //log.debug("event = PROCESSING_INSTRUCTION");
                 //log.debug("PIData = " + val);
                 break;
             case 4 :
-                val= reader.getText();
+			reader.getText();
                 //log.debug("event = CHARACTERS");
                 //log.debug("Characters = " + val);
                 break;
             case 5 :
-                val= reader.getText();
+			reader.getText();
                 //log.debug("event = COMMENT");
                 //log.debug("Comment = " + val);
                 break;
             case 6 :
-                val= reader.getText();
+			reader.getText();
                 //log.debug("event = SPACE");
                 //log.debug("Space = " + val);
                 break;
@@ -103,18 +102,16 @@ public class WoodstoxTest extends TestCase {
                 //log.debug("Document Ended");
                 break;
             case 9 :
-                val= reader.getText();
+			reader.getText();
                 //log.debug("event = ENTITY_REFERENCE");
                 //log.debug("Text = " + val);
                 break;
             case 11 :
-                val= reader.getText();
-                //log.debug("event = DTD");
-                //log.debug("DTD = " + val);
+			reader.getText();
 
                 break;
             case 12 :
-                val= reader.getText();
+			reader.getText();
                 //log.debug("event = CDATA");
                 //log.debug("CDATA = " + val);
                 break;

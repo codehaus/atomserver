@@ -68,7 +68,7 @@ public class EntryURIHelperTest extends TestCase {
     public void testDate() {
         try {
             String ddd = "12012007";
-            Date date = AtomDate.parse(ddd);
+            AtomDate.parse(ddd);
             fail("this should fail");
         } catch (IllegalArgumentException ee) {
             log.error(ee);
