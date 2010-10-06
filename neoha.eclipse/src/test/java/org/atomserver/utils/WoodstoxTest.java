@@ -17,17 +17,15 @@
 package org.atomserver.utils;
 
 
-import junit.framework.Test; 
-import junit.framework.TestCase; 
+import junit.framework.Test;
+import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 
-import java.io.FileInputStream;
-
-import com.ctc.wstx.stax.WstxInputFactory; 
+import com.ctc.wstx.stax.WstxInputFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

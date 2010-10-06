@@ -21,7 +21,6 @@ import org.apache.commons.logging.LogFactory;
 import org.atomserver.exceptions.AtomServerException;
 import org.atomserver.utils.locale.LocaleUtils;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
