@@ -99,6 +99,7 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
                 }
                 int startIndex = feedTarget.getStartIndexParam();
                 int endIndex = feedTarget.getEndIndexParam();
+                boolean noLatency = feedTarget.getNoLatency();
 
                 if ( endIndex != -1 && endIndex < startIndex ) {
                     String msg = "endIndex parameter (" + endIndex + ") is less than the startIndex (" + startIndex +")";
@@ -114,6 +115,7 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
                                                                     startIndex,
                                                                     endIndex,
                                                                     pageSize + 1,
+                                                                    noLatency,
                                                                     feedTarget.getCategoriesQuery(),
                                                                     joinWorkspaces);
 

@@ -61,6 +61,10 @@ public enum QueryParam {
     entryType("entry-type", null) {
         Object parseValue(String stringValue) {
             return EntryType.valueOf(stringValue);
+        }},
+    noLatency("no-latency", false) {
+        Object parseValue(String stringValue) {
+            return Boolean.valueOf(stringValue);
         }};
 
     private static final Log log = LogFactory.getLog(QueryParam.class);

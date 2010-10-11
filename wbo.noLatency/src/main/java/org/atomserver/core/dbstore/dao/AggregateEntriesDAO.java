@@ -28,6 +28,7 @@ public interface AggregateEntriesDAO extends AtomServerDAO {
                                                               int startIndex,
                                                               int endIndex,
                                                               int pageSize,
+                                                              boolean noLatency,
                                                               Collection<BooleanExpression<AtomCategory>> categoriesQuery,
                                                               List<String> joinWorkspaces);
 

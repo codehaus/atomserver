@@ -212,8 +212,8 @@ public class EntriesDAOiBatisImpl
 
     public List<EntryMetaData> selectEntries(EntryDescriptor entry) {return readEntriesDAO.selectEntries(entry);}
 
-    public List<EntryMetaData> selectFeedPage(Date updatedMin, Date updatedMax, int startIndex, int endIndex, int pageSize, String locale, FeedDescriptor feed, Collection<BooleanExpression<AtomCategory>> categoryQuery) {
-        return readEntriesDAO.selectFeedPage(updatedMin, updatedMax, startIndex, endIndex, pageSize, locale, feed, categoryQuery);
+    public List<EntryMetaData> selectFeedPage(Date updatedMin, Date updatedMax, int startIndex, int endIndex, int pageSize, boolean noLatency, String locale, FeedDescriptor feed, Collection<BooleanExpression<AtomCategory>> categoryQuery) {
+        return readEntriesDAO.selectFeedPage(updatedMin, updatedMax, startIndex, endIndex, pageSize, noLatency, locale, feed, categoryQuery);
     }
 
     public List<EntryMetaData> selectEntriesByLastModifiedSeqNum(FeedDescriptor feed, Date updatedMin) {
@@ -248,14 +248,14 @@ public class EntriesDAOiBatisImpl
 
     public void clearWorkspaceCollectionCaches() { readEntriesDAO.clearWorkspaceCollectionCaches(); }
 
-    public long selectMaxIndex(Date updatedMax) {return readEntriesDAO.selectMaxIndex(updatedMax);}
+    public long selectMaxIndex(Date updatedMax, boolean noLatency) {return readEntriesDAO.selectMaxIndex(updatedMax, noLatency);}
 
     //-------------------
     //   AggregateEntriesDAO
     //-------------------
 
-    public List<AggregateEntryMetaData> selectAggregateEntriesByPage(FeedDescriptor feed, Date updatedMin, Date updatedMax, Locale locale, int startIndex, int endIndex, int pageSize, Collection<BooleanExpression<AtomCategory>> categoriesQuery, List<String> joinWorkspaces) {
-        return aggregateEntriesDAO.selectAggregateEntriesByPage(feed, updatedMin, updatedMax, locale, startIndex, endIndex, pageSize, categoriesQuery, joinWorkspaces);
+    public List<AggregateEntryMetaData> selectAggregateEntriesByPage(FeedDescriptor feed, Date updatedMin, Date updatedMax, Locale locale, int startIndex, int endIndex, int pageSize, boolean noLatency, Collection<BooleanExpression<AtomCategory>> categoriesQuery, List<String> joinWorkspaces) {
+        return aggregateEntriesDAO.selectAggregateEntriesByPage(feed, updatedMin, updatedMax, locale, startIndex, endIndex, pageSize, noLatency, categoriesQuery, joinWorkspaces);
     }
 
     public AggregateEntryMetaData selectAggregateEntry(EntryDescriptor entryDescriptor, List<String> joinWorkspaces) {

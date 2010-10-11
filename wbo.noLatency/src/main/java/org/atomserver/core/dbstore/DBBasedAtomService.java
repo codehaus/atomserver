@@ -71,8 +71,8 @@ public class DBBasedAtomService extends AbstractAtomService {
         return transactionTemplate;
     }
 
-    public long getMaxIndex(Date updatedMax) {
-        return this.entriesDAO.selectMaxIndex(updatedMax);
+    public long getMaxIndex(Date updatedMax, boolean noLatency) {
+        return this.entriesDAO.selectMaxIndex(updatedMax, noLatency);
     }
 
     @ManagedAttribute

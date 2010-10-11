@@ -186,6 +186,7 @@ public class ReadEntriesDAOiBatisImpl
                                               int startIndex,
                                               int endIndex,
                                               int pageSize,
+                                              boolean noLatency,
                                               String locale,
                                               FeedDescriptor feed,
                                               Collection<BooleanExpression<AtomCategory>> categoryQuery) {
@@ -194,7 +195,7 @@ public class ReadEntriesDAOiBatisImpl
             ParamMap paramMap = prepareParamMapForSelectEntries(updatedMin, updatedMax,
                                                                 startIndex, endIndex,
                                                                 pageSize, locale, feed);
-            addSetOpsSelectFeedPageParams(paramMap, categoryQuery);
+            addSetOpsSelectFeedPageParams(paramMap, categoryQuery, noLatency);
             return getSqlMapClientTemplate().queryForList("selectFeedPage", paramMap);
         }
         finally {
@@ -204,12 +205,12 @@ public class ReadEntriesDAOiBatisImpl
     }
 
 
-    private void addSetOpsSelectFeedPageParams(ParamMap paramMap, Collection<BooleanExpression<AtomCategory>> categoryQuery) {
+    private void addSetOpsSelectFeedPageParams(ParamMap paramMap, Collection<BooleanExpression<AtomCategory>> categoryQuery, boolean noLatency) {
         if (categoryQuery != null && !categoryQuery.isEmpty()) {
             paramMap.param("categoryQuerySql",
                            SetOpCategoryQueryGenerator.generateCategorySearch(categoryQuery));
         }
-        if (getLatencySeconds() > 0) {
+        if (!noLatency && getLatencySeconds() > 0) {
             paramMap.param("latencySeconds", getLatencySeconds());
         }
         paramMap.param("usequery", "setOps");
@@ -440,11 +441,11 @@ public class ReadEntriesDAOiBatisImpl
 //                MISC
 //======================================
 
-    public long selectMaxIndex(Date updatedMax) {
+    public long selectMaxIndex(Date updatedMax, boolean noLatency) {
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
             ParamMap paramMap = paramMap();
-            if (getLatencySeconds() > 0) {
+            if (!noLatency && getLatencySeconds() > 0) {
                 paramMap.param("latencySeconds", getLatencySeconds());
             }
             if (updatedMax != null) {

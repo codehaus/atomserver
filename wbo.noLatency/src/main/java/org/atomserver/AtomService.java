@@ -129,7 +129,7 @@ public interface AtomService {
      * @param updatedMax the latest date up to which to retrieve the highest index number
      * @return the highest index number in the store
      */
-    public long getMaxIndex(Date updatedMax);
+    public long getMaxIndex(Date updatedMax, boolean noLatency);
 
     /**
      * get the EntiresMonitor
