@@ -223,6 +223,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
 
         int startIndex = feedTarget.getStartIndexParam();
         int endIndex = feedTarget.getEndIndexParam();
+        boolean noLatency = feedTarget.getNoLatency();
 
         if ( endIndex != -1 && endIndex < startIndex ) {
             String msg = "endIndex parameter (" + endIndex + ") is less than the startIndex (" + startIndex +")";
@@ -247,6 +248,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                                                 startIndex,
                                                 endIndex,
                                                 pageSize + 1 /* ask for 1 more than pageSize, to detect the end of the feed */,
+                                                noLatency,
                                                 locale == null ? null : locale.toString(),
                                                 feedTarget,
                                                 categoryQuery);

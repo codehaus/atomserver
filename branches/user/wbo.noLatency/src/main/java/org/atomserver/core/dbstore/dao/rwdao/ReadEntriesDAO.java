@@ -45,6 +45,7 @@ public interface ReadEntriesDAO extends AtomServerDAO {
                                        Date updatedMax,
                                        int startIndex,
                                        int endIndex, int pageSize,
+                                       boolean noLatency,
                                        String locale,
                                        FeedDescriptor feed,
                                        Collection<BooleanExpression<AtomCategory>> categoryQuery);
@@ -76,5 +77,5 @@ public interface ReadEntriesDAO extends AtomServerDAO {
 
     List<String> listCollections(String workspace);
 
-    long selectMaxIndex(Date updatedMax);
+    long selectMaxIndex(Date updatedMax, boolean noLatency);
 }

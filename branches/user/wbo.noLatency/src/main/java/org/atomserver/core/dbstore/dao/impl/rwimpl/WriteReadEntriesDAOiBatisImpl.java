@@ -478,9 +478,9 @@ public class WriteReadEntriesDAOiBatisImpl
                 paramMap().param("internalId", internalId));
     }
 
-    public long selectMaxIndex(Date updatedMax) {
+    public long selectMaxIndex(Date updatedMax, boolean noLatency) {
         ParamMap paramMap = paramMap();
-        if (getLatencySeconds() > 0) {
+        if (!noLatency && getLatencySeconds() > 0) {
             paramMap.param("getLatencySeconds()", getLatencySeconds());
         }
         if (updatedMax != null) {
