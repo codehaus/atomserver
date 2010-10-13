@@ -64,10 +64,10 @@ public class BlockingFilterTest extends CRUDDBSTestCase {
         // Block by content length.
         getFilterSettings().setMaxContentLength(10);
         // This addEntry will set the servlet request's content length
-        String editLink = addEntry(false, 413);
+        addEntry(false, 413);
 
         // This addEntry will not set the servlet request's content length
-        editLink = addEntry(true, 413);
+        addEntry(true, 413);
 
         // Unblock content length.
         getFilterSettings().setMaxContentLength(-1);

@@ -19,8 +19,6 @@ package org.atomserver.utils.collections;
 import java.util.Map;
 import java.util.HashMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.atomserver.utils.collections.BidirectionalMap;
 
 import junit.framework.Test;
@@ -29,8 +27,6 @@ import junit.framework.TestSuite;
 
 public class BidirectionalMapTest extends TestCase {
 
-    static private Log log = LogFactory.getLog( BidirectionalMapTest.class );
-    
     // -------------------------------------------------------
     public static Test suite() 
     { return new TestSuite( BidirectionalMapTest.class ); }

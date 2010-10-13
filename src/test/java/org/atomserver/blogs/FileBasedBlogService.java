@@ -111,7 +111,6 @@ public class FileBasedBlogService implements AtomService {
     }
 
     public boolean workspaceExists( String workspace ) {
-        boolean create = false;
         File workspaceDir = getRootDir();
         return (workspaceDir.exists() && workspaceDir.isDirectory());
     }

@@ -535,7 +535,8 @@ public class AggregateFeedsTest extends DBSTestCase {
         }
     }
 
-    private static void dumpToFile(Base object) throws IOException {
+    @SuppressWarnings("unused")
+	private static void dumpToFile(Base object) throws IOException {
         FileWriter fileWriter = new FileWriter("buff.xml");
         object.writeTo(fileWriter);
         fileWriter.close();

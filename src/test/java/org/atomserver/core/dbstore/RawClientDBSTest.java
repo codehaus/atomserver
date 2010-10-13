@@ -49,7 +49,6 @@ public class RawClientDBSTest extends JettyWebAppTestCase {
 
     private String propId = "24560";
     private IRI entryIRI;
-    private String urlPath;
     private String baseURI;
 
     private URIHandler uriHandler;
@@ -69,7 +68,6 @@ public class RawClientDBSTest extends JettyWebAppTestCase {
 
         widgetsDao = (EntriesDAO) springContext.getBean("org.atomserver-entriesDAO");
 
-        urlPath = "widgets/foobar/" + propId + ".en.xml";
         entryIRI = IRI.create("http://localhost:8080/"
                               + uriHandler.constructURIString( "widgets", "foobar", propId,
                                                                LocaleUtils.toLocale("en")) );
@@ -117,7 +115,8 @@ public class RawClientDBSTest extends JettyWebAppTestCase {
     }
 
     // No content element at all
-    public void testMissingEntryContent() throws Exception {
+    @SuppressWarnings("deprecation")
+	public void testMissingEntryContent() throws Exception {
 
         String urlToCall = getServerURL() + "widgets/foobar/24560.en.xml";
 
@@ -140,7 +139,8 @@ public class RawClientDBSTest extends JettyWebAppTestCase {
     }
 
     // No content within the <div>
-    public void testMissingEntryContent2() throws Exception {
+    @SuppressWarnings("deprecation")
+	public void testMissingEntryContent2() throws Exception {
 
         String urlToCall = getServerURL() + "widgets/foobar/24560.en.xml";
 
@@ -163,7 +163,8 @@ public class RawClientDBSTest extends JettyWebAppTestCase {
     }
 
     // Empty request 
-    public void testEmptyRequest() throws Exception {
+    @SuppressWarnings("deprecation")
+	public void testEmptyRequest() throws Exception {
 
         String urlToCall = getServerURL() + "widgets/foobar/24560.en.xml";
 
@@ -186,7 +187,8 @@ public class RawClientDBSTest extends JettyWebAppTestCase {
     }
 
     // No namespace on the entry element
-    public void testNoNamespace() throws Exception {
+    @SuppressWarnings("deprecation")
+	public void testNoNamespace() throws Exception {
 
         String urlToCall = getServerURL() + "widgets/foobar/24560.en.xml";
 

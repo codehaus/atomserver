@@ -121,7 +121,7 @@ public class TagsLogEventDBSTest extends CRUDDBSTestCase {
         log.debug("Categories= " + categoriesXML);
 
         //INSERT to tags:widgets
-        String editURI = update(id, fullURL, categoriesXML);
+        update(id, fullURL, categoriesXML);
 
         int count = categoriesDAO.getTotalCount("widgets");
         assertEquals((startCount + numCats), count);
@@ -167,7 +167,7 @@ public class TagsLogEventDBSTest extends CRUDDBSTestCase {
         assertTrue(logEvents.size() == 1);
 
         //INSERT to tags:widgets
-        editURI = update(id, fullURL, categoriesXML);
+        update(id, fullURL, categoriesXML);
 
         count = categoriesDAO.getTotalCount("widgets");
         assertEquals((startCount + numCats), count);
@@ -175,7 +175,7 @@ public class TagsLogEventDBSTest extends CRUDDBSTestCase {
         assertEquals((startCount + numCats*2), count);
 
         //INSERT to tags:widgets
-        editURI = update(id, fullURL, categoriesXML);
+        update(id, fullURL, categoriesXML);
 
         count = categoriesDAO.getTotalCount("widgets");
         assertEquals((startCount + numCats), count);

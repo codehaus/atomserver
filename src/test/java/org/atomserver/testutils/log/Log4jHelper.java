@@ -74,7 +74,7 @@ public class Log4jHelper {
 
     static private org.apache.log4j.Logger getRootLogger() {
         if ( rootLogger == null ) {
-            rootLogger = getLog4jLogger( LogFactory.getLog(App_LOG4J_CATEGORY) ).getRootLogger();
+            rootLogger = org.apache.log4j.Logger.getRootLogger();
             originalRootLogLevel = rootLogger.getLevel() ;
         }
         return rootLogger;

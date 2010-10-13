@@ -19,7 +19,6 @@ package org.atomserver.core.dbstore;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.i18n.iri.IRI;
 
@@ -28,14 +27,11 @@ import org.apache.abdera.protocol.client.AbderaClient;
 import org.apache.abdera.protocol.client.RequestOptions;
 import org.atomserver.utils.locale.LocaleUtils;
 import org.atomserver.uri.EntryTarget;
-import org.atomserver.core.filestore.FileBasedContentStorage;
 import org.atomserver.core.filestore.TestingContentStorage;
 import org.atomserver.core.AtomServerTestCase;
 
 import org.atomserver.testutils.client.MockRequestContext;
 import org.atomserver.testutils.conf.TestConfUtil;
-
-import java.io.File;
 
 /**
  */

@@ -201,8 +201,7 @@ public class TagsBasicsDBSTest extends CRUDDBSTestCase {
         Categories categories = getFactory().newCategories();
         Category category = getFactory().newCategory();
 
-        EntryCategoriesHandler catHandler =
-                (EntryCategoriesHandler) getSpringFactory().getBean("org.atomserver-entryCategoriesHandler");
+        getSpringFactory().getBean("org.atomserver-entryCategoriesHandler"); // TODO - do we need to do this get? (see history)
         SizeLimit sizeLimit =  (SizeLimit) getSpringFactory().getBean("org.atomserver-sizeLimit");
         int schemeSize = sizeLimit.getSchemeSize();
         assertTrue( schemeSize  > 0);
@@ -442,8 +441,8 @@ public class TagsBasicsDBSTest extends CRUDDBSTestCase {
 
         //===============
         // Let's delete the Categories -- these are actually deleted -- not just "marked deleted"
-        String editURI = delete(editURI4);
-        editURI = delete(editURI2797);
+        delete(editURI4);
+        delete(editURI2797);
 
         // Delete the Categories we created (permanently)
         IRI entryIRI4 = IRI.create("http://localhost:8080/"

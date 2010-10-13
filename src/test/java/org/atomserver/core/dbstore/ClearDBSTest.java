@@ -19,13 +19,9 @@ package org.atomserver.core.dbstore;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.atomserver.core.dbstore.utils.DBSeeder;
 
 public class ClearDBSTest extends DBSTestCase {
-
-    static private Log log = LogFactory.getLog(ClearDBSTest.class);
 
     static public boolean ENABLE_DB_CLEAR_ALL = false;
 

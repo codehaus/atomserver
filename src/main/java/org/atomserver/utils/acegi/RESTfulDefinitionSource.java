@@ -24,9 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Iterator;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import org.acegisecurity.ConfigAttributeDefinition;
 import org.acegisecurity.SecurityConfig;
 import org.acegisecurity.intercept.web.FilterInvocation;
@@ -40,8 +37,6 @@ import org.springframework.util.StringUtils;
  * @author Bryon Jacob (bryon at jacob.net)
  */
 public class RESTfulDefinitionSource implements FilterInvocationDefinitionSource {
-
-    static private Log log = LogFactory.getLog(RESTfulDefinitionSource.class);
 
     static private final String[] validMethodNames = { "GET", "PUT", "DELETE", "POST" };
 

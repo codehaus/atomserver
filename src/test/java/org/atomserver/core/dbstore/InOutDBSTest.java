@@ -19,18 +19,15 @@ package org.atomserver.core.dbstore;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
+
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.protocol.client.ClientResponse;
-import org.atomserver.core.filestore.FileBasedContentStorage;
-import org.atomserver.utils.ShardedPathGenerator;
-import org.atomserver.utils.PrefixPartitionPathGenerator;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
-import java.util.Arrays;
 
 /**
  * testutils DB in/out.

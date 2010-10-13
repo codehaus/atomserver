@@ -52,7 +52,7 @@ public class EntryDBSTest extends DBSTestCase {
         log.debug( "location= " + response.getLocation() );
 
         Entry entry = verifyProperty4( response );
-        String resolvedEditLink = entry.getEditLinkResolvedHref().toString();
+        entry.getEditLinkResolvedHref().toString();
         String resolvedSelfLink = entry.getSelfLinkResolvedHref().toString();
         response.release();
 
@@ -86,7 +86,7 @@ public class EntryDBSTest extends DBSTestCase {
         entry = doc.getRoot();
         assertTrue( entry.getContent().indexOf( "id=\"" + propId + "\"" ) != -1 );
         response.release();
-        Date updated = entry.getUpdated();
+        entry.getUpdated(); // TODO - do we need this for possible side effects? See annotation/history
         Date published = entry.getPublished();
 
         // we cannot say (updated == published), because these tests all reuse the same set of entries...
