@@ -299,9 +299,6 @@ public class WriteReadEntriesDAOiBatisImpl
         if (getContentDAO() != null || getCategoriesDAO() != null) {
             metaData = (entryQuery instanceof EntryMetaData) ? (EntryMetaData) entryQuery : selectEntry(entryQuery);
 
-            if (metaData != null) {
-                metaData.getCategories();
-            }
             if (metaData != null && getCategoryLogEventDAO() != null) {
                 getCategoryLogEventDAO().deleteEntryCategoryLogEvent(entryQuery);
             }
