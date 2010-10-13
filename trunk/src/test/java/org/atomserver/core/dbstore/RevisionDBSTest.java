@@ -57,7 +57,6 @@ public class RevisionDBSTest extends CRUDDBSTestCase {
         }
 
         // SELECT
-        String fullURL0 = fullURL + "/0";
         editURI = select(fullURL, true);
         log.debug("editURI= " + editURI);
         assertTrue(editURI.indexOf("/1") != -1);

@@ -20,14 +20,10 @@ import junit.framework.Test;
 import junit.framework.TestCase; 
 import junit.framework.TestSuite;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.atomserver.exceptions.EntryNotFoundException;
 
 
 public class EntryNotFoundExceptionTest extends TestCase {
-
-    static private Log log = LogFactory.getLog( EntryNotFoundExceptionTest.class );
 
     public static Test suite() 
     { return new TestSuite( EntryNotFoundExceptionTest.class ); }

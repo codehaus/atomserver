@@ -355,8 +355,6 @@ public class FeedDBSTestCase extends DBSTestCase {
 
     protected void loopThruPagesUsingNextLink( String wspace, int pgSize, String collection,
                                                int totalEntries, boolean isMTtest ) throws Exception {
-        int startDelim = 0;
-        int endDelim = 0;
         int numpages = totalEntries / pgSize;
         numpages += ((totalEntries % pgSize) == 0) ? 0 : 1;
         log.debug("numpages = " + numpages);
@@ -383,7 +381,7 @@ public class FeedDBSTestCase extends DBSTestCase {
             totalEntriesResp = Integer.parseInt(feed.getSimpleExtension(OpenSearchConstants.TOTAL_RESULTS));
 
         int pageSizeResp = Integer.parseInt(feed.getSimpleExtension(OpenSearchConstants.ITEMS_PER_PAGE));
-        int startIndexResp = Integer.parseInt(feed.getSimpleExtension(OpenSearchConstants.START_INDEX));
+        Integer.parseInt(feed.getSimpleExtension(OpenSearchConstants.START_INDEX));
 
         int endIndexResp = Integer.parseInt(feed.getSimpleExtension(AtomServerConstants.END_INDEX));
         log.debug("(totalEntriesResp, endIndexResp, pageSizeResp)= " + totalEntriesResp

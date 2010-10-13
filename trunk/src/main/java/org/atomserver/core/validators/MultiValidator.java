@@ -19,9 +19,6 @@ package org.atomserver.core.validators;
 
 import org.atomserver.exceptions.BadContentException;
 import org.atomserver.ContentValidator;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import java.util.Collection;
 
 /**
@@ -31,8 +28,6 @@ import java.util.Collection;
  * @author Bryon Jacob (bryon at jacob.net)
  */
 public class MultiValidator implements ContentValidator {
-
-    private static final Log log = LogFactory.getLog(MultiValidator.class);
 
     private Collection<ContentValidator> validators = null;
 

@@ -68,7 +68,7 @@ public class EntryURIHelperTest extends TestCase {
     public void testDate() {
         try {
             String ddd = "12012007";
-            Date date = AtomDate.parse(ddd);
+            AtomDate.parse(ddd);
             fail("this should fail");
         } catch (IllegalArgumentException ee) {
             log.error(ee);
@@ -84,7 +84,8 @@ public class EntryURIHelperTest extends TestCase {
         }
     }
 
-    public void testDate2() {
+    @SuppressWarnings("deprecation")
+	public void testDate2() {
         try {
             String iri = "http://foobar:7890/" + baseURI + "/widgets/acme/?updated-min=2007-11-30T23:59:59:000Z";
             handler.getFeedTarget(new MockRequestContext(serviceContext, "GET", iri));

@@ -66,7 +66,7 @@ public class LocaleParamDBSTest extends ParamDBSTestCase {
         log.debug( "location= " + response.getLocation() );
 
         Entry entry = verifyEntry( response, "widgets", "acme", "4");
-        String resolvedEditLink = entry.getEditLinkResolvedHref().toString();
+        entry.getEditLinkResolvedHref().toString();
         String resolvedSelfLink = entry.getSelfLinkResolvedHref().toString();
         response.release();
 
@@ -120,7 +120,6 @@ public class LocaleParamDBSTest extends ParamDBSTestCase {
         int startCount = entriesDao.getTotalCount(serviceDescriptor);
         log.debug( "startCount = " + startCount );
 
-        String sysId =  "acme" ;
         int propIdSeed = 77700 ;
         String dirId = "77";
 
@@ -156,8 +155,6 @@ public class LocaleParamDBSTest extends ParamDBSTestCase {
         // COUNT
         int count = entriesDao.getTotalCount(serviceDescriptor);
         assertEquals( (startCount + numRecs), count );
-
-        int pageSize = count + 1;
 
         // get page (for "de")
         // should get:: 77700,de  77701,de  77703,de  77704,de

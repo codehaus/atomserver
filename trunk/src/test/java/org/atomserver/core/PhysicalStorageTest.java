@@ -18,11 +18,11 @@
 package org.atomserver.core;
 
 import junit.framework.TestCase;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atomserver.EntryDescriptor;
-import org.atomserver.ContentStorage;
 import org.atomserver.core.filestore.FileBasedContentStorage;
 import org.atomserver.core.filestore.TestingContentStorage;
 import org.atomserver.exceptions.AtomServerException;

@@ -17,6 +17,7 @@
 
 package org.atomserver.core.dbstore;
 
+
 import org.apache.abdera.Abdera;
 import org.apache.abdera.ext.history.FeedPagingHelper;
 import org.apache.abdera.ext.opensearch.OpenSearchConstants;
@@ -42,7 +43,6 @@ import org.atomserver.server.servlet.AtomServerUserInfo;
 import org.atomserver.uri.*;
 import org.atomserver.utils.AtomDate;
 import org.atomserver.utils.collections.MultiHashMap;
-import org.atomserver.utils.collections.MultiMap;
 import org.atomserver.utils.logic.BooleanExpression;
 import org.atomserver.utils.perf.AtomServerPerfLogTagFormatter;
 import org.atomserver.utils.perf.AtomServerStopWatch;
@@ -335,9 +335,9 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                                                          Collection<EntryTarget> allEntriesUriData)
             throws AtomServerException {
 
-        MultiMap<Locale, EntryTarget> dataByLocale = new MultiHashMap<Locale, EntryTarget>();
+    	MultiHashMap<Locale, EntryTarget> dataByLocale = new MultiHashMap<Locale, EntryTarget>();
         for (EntryTarget uriData : allEntriesUriData) {
-            dataByLocale.put(uriData.getLocale(), uriData);
+            dataByLocale.putValue(uriData.getLocale(), uriData);
         }
 
         List<BatchEntryResult> returnValue = new ArrayList<BatchEntryResult>();
@@ -392,9 +392,9 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                                                          Collection<EntryTarget> allEntriesUriData)
             throws AtomServerException {
 
-        MultiMap<Locale, EntryTarget> dataByLocale = new MultiHashMap<Locale, EntryTarget>();
+    	MultiHashMap<Locale, EntryTarget> dataByLocale = new MultiHashMap<Locale, EntryTarget>();
         for (EntryTarget uriData : allEntriesUriData) {
-            dataByLocale.put(uriData.getLocale(), uriData);
+            dataByLocale.putValue(uriData.getLocale(), uriData);
         }
 
         List<BatchEntryResult> returnValue = new ArrayList<BatchEntryResult>();

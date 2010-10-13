@@ -20,14 +20,10 @@ import junit.framework.Test;
 import junit.framework.TestCase; 
 import junit.framework.TestSuite;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.atomserver.exceptions.OptimisticConcurrencyException;
 
 
 public class OptimisticConcurrencyExceptionTest extends TestCase {
-
-    static private Log log = LogFactory.getLog( OptimisticConcurrencyExceptionTest.class );
 
     public static Test suite() 
     { return new TestSuite( OptimisticConcurrencyExceptionTest.class ); }

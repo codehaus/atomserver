@@ -41,7 +41,6 @@ import org.atomserver.utils.logic.Disjunction;
 import org.atomserver.utils.logic.TermDictionary;
 
 import java.text.MessageFormat;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Set;

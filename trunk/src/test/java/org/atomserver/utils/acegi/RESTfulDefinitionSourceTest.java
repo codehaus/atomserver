@@ -78,11 +78,10 @@ public class RESTfulDefinitionSourceTest extends TestCase {
 
     public void testFail()  throws Exception {
         log.debug( "========================" );
-        String url = "/v1/widgets/acme/2797.en.xml";
         String pathToRoleList = "/**:GOO=ROLE_READER\n" + "/**:PUT,DELETE,POST=ROLE_WRITER\n" ;
 
         try { 
-            RESTfulDefinitionSource rds = new RESTfulDefinitionSource( pathToRoleList );
+            new RESTfulDefinitionSource( pathToRoleList );
             fail( "shouldnt get here" );
         } catch ( IllegalArgumentException ee ) { /* expected */ }
     }

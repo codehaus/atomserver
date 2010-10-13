@@ -63,7 +63,7 @@ public class TagsFeedEntriesCategoriesDBSTest extends DBSTestCase {
 
         String locale = "fr_CA";
 
-        long lnow= (entriesDao.selectSysDate()).getTime();
+        (entriesDao.selectSysDate()).getTime();
 
         // INSERT
         int numRecs = 6 ;
@@ -81,8 +81,6 @@ public class TagsFeedEntriesCategoriesDBSTest extends DBSTestCase {
         // COUNT
         int count = entriesDao.getTotalCount(serviceDescriptor);
         assertEquals( (startCount + numRecs + 1), count );
-
-        int pageSize = count + 1;
 
         //====================
         // Create a standard APP Categories doc
