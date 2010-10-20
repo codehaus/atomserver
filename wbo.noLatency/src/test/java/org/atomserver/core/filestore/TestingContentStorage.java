@@ -1,7 +1,5 @@
 package org.atomserver.core.filestore;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.atomserver.EntryDescriptor;
 import org.atomserver.exceptions.AtomServerException;
 import org.springframework.jmx.export.annotation.ManagedResource;
@@ -12,8 +10,6 @@ import java.io.IOException;
 
 @ManagedResource(description = "Testing Content Storage")
 public class TestingContentStorage extends FileBasedContentStorage {
-
-    private static final Log log = LogFactory.getLog(TestingContentStorage.class);
 
     /**
      * construct a EntryStore object to store entry data.  <br/>

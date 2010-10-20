@@ -20,16 +20,11 @@ import junit.framework.Test;
 import junit.framework.TestCase; 
 import junit.framework.TestSuite;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import org.atomserver.core.validators.SimpleXMLContentValidator;
 import org.atomserver.exceptions.BadContentException;
 
 
 public class SimpleXMLContentValidatorTest extends TestCase {
-
-    static private Log log = LogFactory.getLog( SimpleXMLContentValidatorTest.class );
 
     static private String badXML = "<foo>blah</bar>";
     static private String goodXML = "<foo>blah</foo>";

@@ -16,17 +16,12 @@
 
 package org.atomserver.utils.alive;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 
 /**
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
 public class AliveStatus {
-
-    static private Log log = LogFactory.getLog( AliveServlet.class );
 
     static public final AliveStatus OK_STATUS = new AliveStatus( State.OK, null );
     static public final AliveStatus DOWN_STATUS = new AliveStatus( State.DOWN, null ); 

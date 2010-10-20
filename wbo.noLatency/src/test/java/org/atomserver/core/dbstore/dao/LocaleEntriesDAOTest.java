@@ -29,7 +29,6 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.apache.abdera.i18n.iri.IRI;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -61,7 +60,7 @@ public class LocaleEntriesDAOTest extends DAOTestCase {
 
         String[] locales = {"de", "de_DE", "de_CH"};
 
-        Date lnow = entriesDAO.selectSysDate();
+        entriesDAO.selectSysDate();
 
         // INSERT -- first we have to seed the DB 
         //           NOTE: no SeqNums yet...

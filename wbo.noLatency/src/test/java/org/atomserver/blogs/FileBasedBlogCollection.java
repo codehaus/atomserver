@@ -18,7 +18,6 @@
 package org.atomserver.blogs;
 
 import org.apache.abdera.Abdera;
-import org.apache.abdera.util.Constants;
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.i18n.iri.IRISyntaxException;
 import org.apache.abdera.model.*;

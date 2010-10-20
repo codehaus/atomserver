@@ -25,10 +25,9 @@ import java.util.HashMap;
  * @author Chris Berry  (chriswberry at gmail.com)
  * @author Bryon Jacob (bryon at jacob.net)
  */
-public class MultiHashMap<K, V>
-    extends HashMap<K, Set<V>>
-        implements MultiMap<K, V> {
-    public Set<V> put(K k, V v) {
+@SuppressWarnings("serial")
+public class MultiHashMap<K, V> extends HashMap<K, Set<V>> {
+    public Set<V> putValue(K k, V v) {
         Set<V> set = lazy(k);
         set.add(v);
         return set;
