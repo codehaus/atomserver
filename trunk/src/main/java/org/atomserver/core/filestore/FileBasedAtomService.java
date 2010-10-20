@@ -31,7 +31,7 @@ public class FileBasedAtomService extends AbstractAtomService {
 
     FileBasedContentStorage contentStorage;
 
-    public long getMaxIndex(Date updatedMax) {
+    public long getMaxIndex(Date updatedMax, boolean noLatency) {
         return -1;
     }
 

@@ -67,6 +67,10 @@ public abstract class URITarget extends AbstractTarget {
         return (EntryType) QueryParam.entryType.parse(this.requestContext);
     }
 
+    public Boolean getNoLatency() throws BadRequestException {
+        return (Boolean) QueryParam.noLatency.parse(this.requestContext);
+    }
+
     public RequestContext getRequestContext() {
         return requestContext;
     }
