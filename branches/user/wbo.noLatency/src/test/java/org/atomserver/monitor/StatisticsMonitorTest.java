@@ -19,8 +19,6 @@ import java.util.Set;
  */
 public class StatisticsMonitorTest extends AtomServerTestCase {
 
-    private String workspaceCollection = "widgets/acme";
-
     protected String getStoreName() { return "org.atomserver-atomService"; }
 
     public static Test suite()

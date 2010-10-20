@@ -100,8 +100,7 @@ public class CategoryPagingEntriesDAOTest extends DAOTestCase {
         int count = entriesDAO.getTotalCount(serviceDescriptor);
         assertEquals((startCount + numRecs), count);
 
-        // UPDATE -- Now we put in SeqNum
-        List updatedEntries = entriesDAO.updateLastModifiedSeqNumForAllEntries(serviceDescriptor);
+        entriesDAO.updateLastModifiedSeqNumForAllEntries(serviceDescriptor);
 
         //------------------------
         // Now create the Categories

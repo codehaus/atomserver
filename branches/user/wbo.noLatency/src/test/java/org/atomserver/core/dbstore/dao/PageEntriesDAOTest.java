@@ -24,8 +24,6 @@ import org.atomserver.core.BaseFeedDescriptor;
 import org.atomserver.core.etc.AtomServerConstants;
 import org.atomserver.testutils.client.MockRequestContext;
 import org.atomserver.testutils.latency.LatencyUtil;
-import org.atomserver.ContentStorage;
-
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.apache.abdera.i18n.iri.IRI;
@@ -298,8 +296,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
         int count = entriesDAO.getTotalCount(serviceDescriptor);
         assertEquals((startCount + numRecs), count);
 
-        // UPDATE -- Now we put in SeqNum
-        List updatedEntries = entriesDAO.updateLastModifiedSeqNumForAllEntries(serviceDescriptor);
+        entriesDAO.updateLastModifiedSeqNumForAllEntries(serviceDescriptor);
 
         LatencyUtil.updateLastWrote();
 
@@ -408,8 +405,7 @@ public class PageEntriesDAOTest extends DAOTestCase {
         assertEquals(true, ((EntryMetaData) (sortedList.get(1))).getDeleted());
         assertEquals(true, ((EntryMetaData) (sortedList.get(2))).getDeleted());
 
-        ContentStorage physicalStorage =
-                (ContentStorage) springFactory.getBean("org.atomserver-contentStorage");
+        springFactory.getBean("org.atomserver-contentStorage"); // TODO - do we need this side-effect? (see annotation/history for more info)
 
         // DELETE them all for real
         for (int ii = 0; ii < numRecs; ii++) {

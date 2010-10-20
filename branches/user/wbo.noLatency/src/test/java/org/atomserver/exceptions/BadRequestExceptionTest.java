@@ -20,14 +20,10 @@ import junit.framework.Test;
 import junit.framework.TestCase; 
 import junit.framework.TestSuite;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.atomserver.exceptions.BadRequestException;
 
 
 public class BadRequestExceptionTest extends TestCase {
-
-    static private Log log = LogFactory.getLog( BadRequestExceptionTest.class );
 
     public static Test suite() 
     { return new TestSuite( BadRequestExceptionTest.class ); }

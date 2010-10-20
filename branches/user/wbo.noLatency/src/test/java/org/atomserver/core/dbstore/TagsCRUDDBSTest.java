@@ -127,7 +127,7 @@ public class TagsCRUDDBSTest extends CRUDDBSTestCase {
         // Now let's actually create property 642
         String realEntryURL = getServerURL() + "widgets/acme/642.en.xml";
         String realId = urlPath;
-        String realEditURI = insert( realId, realEntryURL );
+        insert( realId, realEntryURL );
 
         // Now we should be able to actually add Categories
         editURI = insert(id, (fullURL + "/1"), categoriesXML, false );

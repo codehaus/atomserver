@@ -34,8 +34,6 @@ import java.util.List;
 public class SeederDBSTest extends TestCase {
 
     static private Log log = LogFactory.getLog(SeederDBSTest.class);
-    static private String userDir = System.getProperty("user.dir");
-
     static protected final Date ZERO_DATE = new Date(0L);
 
     static private boolean hasRun = false;

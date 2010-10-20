@@ -18,7 +18,6 @@ package org.atomserver.utils.perf;
 
 import org.perf4j.log4j.Log4JStopWatch;
 import org.atomserver.server.servlet.AtomServerUserInfo;
-import org.apache.abdera.protocol.server.RequestContext;
 
 /**
  * AtomServerStopWatch appends the authenticated user name to the tag when logging the elapsed time.

@@ -127,7 +127,7 @@ public class ConfigurationAwareClassLoader
             if (opsConf != null) {
                 final File opsConfDir = new File(opsConf);
                 if (opsConfDir.exists() && opsConfDir.isDirectory()) {
-                    urls.add(opsConfDir.toURL());
+                    urls.add(opsConfDir.toURI().toURL());
                     log.debug("added OPS conf dir [" + opsConf +
                               "] to the classpath.");
                 } else {
@@ -144,7 +144,7 @@ public class ConfigurationAwareClassLoader
                 if (confDir.exists() && confDir.isDirectory()) {
                     final File classesDir = new File(confDir, "classes/");
                     if (classesDir.exists() && classesDir.isDirectory()) {
-                        urls.add(classesDir.toURL());
+                        urls.add(classesDir.toURI().toURL());
                         log.debug("added atomserver conf classes dir [" + classesDir +
                                   "] to the classpath.");
                     } else {
@@ -163,7 +163,7 @@ public class ConfigurationAwareClassLoader
                         });
 
                         for (File jarFile : jarFiles) {
-                            urls.add(jarFile.toURL());
+                            urls.add(jarFile.toURI().toURL());
                             log.debug("added jar file [" + jarFile +
                                       "] to the classpath.");
                         }
