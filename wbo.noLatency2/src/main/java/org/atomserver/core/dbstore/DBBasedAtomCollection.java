@@ -291,7 +291,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
 
         // Add elements to the Feed document
         return createFeedElements(feed, abdera, iri, feedTarget, entryType,
-                                  sortedList, workspace, collection, locale,
+                                  sortedList, workspace, collection, locale, noLatency,
                                   numEntries, (numEntries <= pageSize), pageSize,
                                   startIndex, totalEntries);
     }
@@ -736,7 +736,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
     // We do NOT write "previous" link, because we do not have any way to know the starting index
     // for the previous page.
     private void addPagingLinks(Feed feed, IRI iri, int endIndex,
-                                int pageSize, URITarget uriTarget ) {
+                                int pageSize, URITarget uriTarget, boolean noLatency ) {
         String nextURI = iri.getPath() + "?" +
                          QueryParam.startIndex.getParamName() + "=" + endIndex +
                          "&" + QueryParam.maxResults.getParamName() + "=" + pageSize;
@@ -760,6 +760,10 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         int endIndexMax = uriTarget.getEndIndexParam();
         if ( endIndexMax != -1 ) {
             nextURI += "&" + QueryParam.endIndex.getParamName() + "=" + endIndexMax;
+        }
+        
+        if( noLatency )  {
+            nextURI += "&" + QueryParam.noLatency.getParamName() + "=" + noLatency;
         }
 
         FeedPagingHelper.setNext(feed, nextURI);
@@ -844,7 +848,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
     protected long createFeedElements( Feed feed, Abdera abdera, IRI iri,
                                      FeedTarget feedTarget, EntryType entryType,
                                      List<? extends EntryMetaData> sortedList,
-                                     String workspace, String collection, Locale locale,
+                                     String workspace, String collection, Locale locale, boolean noLatency,
                                      int numEntries, boolean resultsFitOnOnePage, int pageSize,
                                      int startIndex, int totalEntries ) {
 
@@ -872,7 +876,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                 addOpenSearchElements(feed, startIndex, pageSize, totalEntries);
 
                 if ( ! isLastPage )
-                    addPagingLinks(feed, iri, lastTimestamp, pageSize, feedTarget );
+                    addPagingLinks(feed, iri, lastTimestamp, pageSize, feedTarget, noLatency );
             }
             addFeedSelfLink(abdera, feed, iri, startIndex, pageSize );
             addFeedEntries( abdera, feed, sortedList, pageSize, entryType );
