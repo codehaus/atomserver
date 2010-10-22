@@ -35,7 +35,7 @@ public class AtomServerV2 extends AtomServer {
         try {
             URIHandler uriHandler = getAtomService().getURIHandler();
             FeedTarget feedTarget = uriHandler.getFeedTarget(request);
-            long maxIndex = getAtomService().getMaxIndex(feedTarget.getUpdatedMaxParam());
+            long maxIndex = getAtomService().getMaxIndex(feedTarget.getUpdatedMaxParam(), feedTarget.getNoLatency());
             if (feedTarget.getEndIndexParam() > 0 && feedTarget.getEndIndexParam() < maxIndex) {
                 maxIndex = feedTarget.getEndIndexParam();
             }
