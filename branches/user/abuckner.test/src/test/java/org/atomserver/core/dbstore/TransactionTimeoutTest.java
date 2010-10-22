@@ -139,7 +139,7 @@ public class TransactionTimeoutTest extends CRUDDBSTestCase {
             try {
                 entries = collection.executeTransactionally(new AbstractAtomCollection.TransactionalTask<Object>() {
                     public Object execute() {
-                        return collection.getEntriesDAO().selectFeedPage(null,null,0,-1,1000,null,feedDescriptor,null);
+                        return collection.getEntriesDAO().selectFeedPage(null,null,0,-1,1000,false,null,feedDescriptor,null);
                     }
                 });
                 fail("should throw a TimeoutException");

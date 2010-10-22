@@ -113,6 +113,7 @@ public class AggregateEntriesDAOiBatisImpl
                                                                      int startIndex,
                                                                      int endIndex,
                                                                      int pageSize,
+                                                                     boolean noLatency,
                                                                      Collection<BooleanExpression<AtomCategory>> categoriesQuery,
                                                                      List<String> joinWorkspaces) {
 
@@ -133,7 +134,7 @@ public class AggregateEntriesDAOiBatisImpl
                                CategoryQueryGenerator.generateCategorySearch(categoriesQuery));
             }
 
-            if (getLatencySeconds() > 0) {
+            if (!noLatency && getLatencySeconds() > 0) {
                 paramMap.param("latencySeconds", getLatencySeconds());
             }
 

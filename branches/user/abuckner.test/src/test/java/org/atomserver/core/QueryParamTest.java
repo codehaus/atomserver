@@ -192,6 +192,15 @@ public class QueryParamTest extends URITargetTestCase {
                              TargetType.TYPE_ENTRY);
         checkStartIndex((URITarget) target);
         checkLocale((URITarget) target);
+        checkNoLatency((URITarget) target, false);
+
+        target = checkTarget("/" + servletMapping + "/widgets/acme/123.en.xml/3?start-index=" + startIndex +
+                             "&locale=" + localeString  + "&no-latency=" + true,
+                             TargetType.TYPE_ENTRY);
+        checkStartIndex((URITarget) target);
+        checkLocale((URITarget) target);
+        checkNoLatency((URITarget) target, true);
+
     }
 
     private void checkUpdatedMin(URITarget target) {
@@ -238,5 +247,12 @@ public class QueryParamTest extends URITargetTestCase {
         log.debug("entryTypeParam = " + entryTypeParam);
         assertNotNull(entryTypeParam);
         assertEquals(entryType, entryTypeParam);
+    }
+
+    private void checkNoLatency(URITarget target, Boolean expected) {
+        Boolean noLatencyParam = target.getNoLatency();
+        log.debug("noLatencyParam = " + noLatencyParam);
+        assertNotNull(noLatencyParam);
+        assertEquals(expected, noLatencyParam);
     }
 }
