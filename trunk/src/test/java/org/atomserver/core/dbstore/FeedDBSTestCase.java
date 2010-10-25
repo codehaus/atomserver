@@ -350,19 +350,32 @@ public class FeedDBSTestCase extends DBSTestCase {
     }
 
     protected void loopThruPagesUsingNextLink( String wspace, int pgSize, String collection ) throws Exception {
-        loopThruPagesUsingNextLink( wspace, pgSize, collection, startCount, false) ;
+        loopThruPagesUsingNextLink( wspace, pgSize, collection, startCount, false, false) ;
+    }
+
+    protected void loopThruPagesUsingNextLink( String wspace, int pgSize, String collection, boolean noLatency) throws Exception {
+        loopThruPagesUsingNextLink( wspace, pgSize, collection, startCount, false, noLatency) ;
     }
 
     protected void loopThruPagesUsingNextLink( String wspace, int pgSize, String collection,
-                                               int totalEntries, boolean isMTtest ) throws Exception {
+                                               int totalEntries, boolean isMTtest) throws Exception {
+        loopThruPagesUsingNextLink( wspace, pgSize, collection, totalEntries, isMTtest, false) ;
+    }
+
+    protected void loopThruPagesUsingNextLink( String wspace, int pgSize, String collection,
+                                               int totalEntries, boolean isMTtest, boolean noLatency ) throws Exception {
         int numpages = totalEntries / pgSize;
         numpages += ((totalEntries % pgSize) == 0) ? 0 : 1;
         log.debug("numpages = " + numpages);
 
         int knt = 0;
-        IRI next = new IRI( getServerURL() + wspace + "/" + collection + "?max-results=" + pgSize);
+        IRI next = new IRI( getServerURL() + wspace + "/" + collection + "?max-results=" + pgSize + ((noLatency) ? "&no-latency=true":""));
         while (next != null) {
             next = getPageUsingNext(wspace, pgSize, next, isMTtest );
+            if(next != null && noLatency) {
+                // make sure subsequent link has no-latency returned.
+                assertTrue(next.getRawQuery().indexOf("no-latency=true") > 0);
+            }
             knt++;
         }
         if ( !isMTtest )
