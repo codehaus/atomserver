@@ -111,7 +111,7 @@
                 <role>developer</role>
             </roles>
         </developer>
-	<developer>
+		<developer>
             <id>abuckner</id>
             <name>Austin Buckner</name>
             <email>abuckner@atomserver.org</email>
