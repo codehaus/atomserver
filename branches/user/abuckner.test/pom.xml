@@ -135,7 +135,7 @@
     </ciManagement>
 
     <!-- ======================================================================= -->
-    <!-- PROPERTIES
+    <!-- PROPERTIES 
          ==========
         NOTE: you may provide -D overrides for any of the following properties
                e.g. "mvn -Denv=foo install"
