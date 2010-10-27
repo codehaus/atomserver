@@ -67,22 +67,23 @@ public class FileBasedContentStorage implements ContentStorage {
     private static final Pattern FILE_PATH_LOCALE_REV_PATTERN =
             Pattern.compile("^/?((?:[a-z]{2})?(?:/[A-Z]{2})?)/\\w+\\.xml.r(\\d+)(?:" + GZIP_EXTENSION + ")?$");
 
-    static public final String TRASH_DIR_NAME = "_trash";
+    //DESTROY!!!!!!!!!!!!!!!!!
+    //static public final String TRASH_DIR_NAME = "_trash";
 
     static private final int NO_REVISION = -777;
-
-    static private final int SWEEP_TO_TRASH_LAG_TIME_SECS_DEFAULT = 120;
+    
+    //DESTROY!!!!
+    //static private final int SWEEP_TO_TRASH_LAG_TIME_SECS_DEFAULT = 120;
 
     //============================================
     private File nfsTempFile = null;
     private String rootDirAbsPath = null;
 
-    private boolean sweepToTrash = true;
-
-    private int sweepToTrashLagTimeSecs = SWEEP_TO_TRASH_LAG_TIME_SECS_DEFAULT;
-
-    static private final String TRASH_LOG_NAME = "org.atomserver.trash";
-    static private Log trashLog = LogFactory.getLog(TRASH_LOG_NAME);
+    //DESTROY!!!!!!!!!
+    //private boolean sweepToTrash = true;
+    //private int sweepToTrashLagTimeSecs = SWEEP_TO_TRASH_LAG_TIME_SECS_DEFAULT;
+    //static private final String TRASH_LOG_NAME = "org.atomserver.trash";
+    //static private Log trashLog = LogFactory.getLog(TRASH_LOG_NAME);
 
     //=========================
     // The following methods are for testing purposes ONLY
@@ -104,13 +105,14 @@ public class FileBasedContentStorage implements ContentStorage {
         return successfulAvailabiltyFileWrite;
     }
 
-    public static Log getTrashLog() {
+    //DESTROY!!!!!!!!!!!
+    /*public static Log getTrashLog() {
         return trashLog;
     }//====================================
 
     public static void setTrashLog(Log trashLog) {
         FileBasedContentStorage.trashLog = trashLog;
-    }
+    }*/
 
     /**
      * This method is used by the isAliveHandler to determine if the ContentStorage is alive and well
@@ -260,7 +262,8 @@ public class FileBasedContentStorage implements ContentStorage {
         initializeRootDir(rootDir);
     }
 
-    // Used by IOC container to enable/disable sweeping excess revisions to a separate trash dir
+    //DESTROY!!!!!!!!!!
+    /* Used by IOC container to enable/disable sweeping excess revisions to a separate trash dir
 
     @ManagedAttribute
     public void setSweepToTrash(boolean sweepToTrash) {
@@ -283,7 +286,7 @@ public class FileBasedContentStorage implements ContentStorage {
     @ManagedAttribute
     public int getSweepToTrashLagTimeSecs() {
         return sweepToTrashLagTimeSecs;
-    }
+    }*/
 
     public boolean canRead() {
         return getRootDir().exists() && getRootDir().canRead();
@@ -575,9 +578,10 @@ public class FileBasedContentStorage implements ContentStorage {
      */
     private void cleanupExcessFiles(final File thisRev, final EntryDescriptor descriptor) {
 
-        if (!sweepToTrash) {
+        //DESTROY!!!!!!!
+        /*if (!sweepToTrash) {
             return;
-        }
+        }*/
 
         String fullPath = FilenameUtils.getFullPath(thisRev.getAbsolutePath());
         File baseDir = new File(fullPath);
@@ -586,7 +590,8 @@ public class FileBasedContentStorage implements ContentStorage {
         }
 
         try {
-            File trashDir = findExistingTrashDir(descriptor);
+            //DESTROY!!!!!!!!!!!!!!
+            /*File trashDir = findExistingTrashDir(descriptor);
             if (trashDir == null) {
                 trashDir = new File(thisRev.getParentFile(), TRASH_DIR_NAME);
                 if (log.isTraceEnabled()) {
@@ -599,7 +604,7 @@ public class FileBasedContentStorage implements ContentStorage {
                 }
                 trashDir.renameTo(newTrashDir);
                 trashDir = newTrashDir;
-            }
+            }*/
 
             // get a file pointer at the previous revision of the file -- we DON'T want to delete it
             final File oneRevBack = findExistingEntryFile(descriptor, 1);
@@ -637,8 +642,10 @@ public class FileBasedContentStorage implements ContentStorage {
                                fileToCheck.canWrite() &&
                                !fileToCheck.isHidden() &&
                                !thisRev.equals(fileToCheck) &&
-                               (oneRevBack == null || !oneRevBack.equals(fileToCheck)) &&
-                               ((System.currentTimeMillis() - fileToCheck.lastModified()) > sweepToTrashLagTimeSecs * 1000L);
+                               (oneRevBack == null || !oneRevBack.equals(fileToCheck));
+                        
+                        //DESTROY!!!!!!!        
+                        //&& ((System.currentTimeMillis() - fileToCheck.lastModified()) > sweepToTrashLagTimeSecs * 1000L);
 
                     }
                 });
@@ -646,24 +653,35 @@ public class FileBasedContentStorage implements ContentStorage {
                 // if there's anything to delete...
                 if (toDelete != null && toDelete.length > 0) {
 
+                    //DESTROY!!!!!!
                     // first of all, there needs to be a "_trash" subdirectory,
                     // so we make sure that exists
-                    trashDir.mkdirs();
+                    //trashDir.mkdirs();
 
-                    File root = getRootDir();
-                    int rootDirLen = (root != null) ? root.getCanonicalPath().length() : 0;
+                    //File root = getRootDir();
+                    //int rootDirLen = (root != null) ? root.getCanonicalPath().length() : 0;
                     // and move the files into it
                     for (File file : toDelete) {
-                        File moveTo = new File(trashDir, file.getName());
+                        
+                        
+                        //figure out how to delete the file
+                        if (log.isTraceEnabled()) {
+                            log.trace("deleting file" + file.getName());
+                        }
+                        
+                        FileUtils.forceDelete(file);
+                        
+                        //DESTROY!!!!!!!!!
+                        /*File moveTo = new File(trashDir, file.getName());
                         if (!file.renameTo(moveTo)) {
                             throw new IOException("When cleaning up excess revisions, could not move the file ("
                                                   + file + ") to (" + moveTo + ")");
-                        }
+                        }*/
                         // log the deleted files so that external scripts can locate them
-                        if (trashLog != null) {
+                        /*if (trashLog != null) {
                             String relativePath = moveTo.getCanonicalPath().substring(rootDirLen + 1); // get relateivePath
                             trashLog.info(System.currentTimeMillis() / 1000 + " " + relativePath); // seconds timestamp
-                        }
+                        }*/
                     }
                     cleanUpToCollection(descriptor, directoryToClean);
                 }
@@ -705,6 +723,9 @@ public class FileBasedContentStorage implements ContentStorage {
         }
     }
 
+    /*
+     * DESTROY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+     
     private File findExistingTrashDir(EntryDescriptor entry) {
         if (log.isTraceEnabled()) {
             log.trace("%> looking for trash directory for entry " + entry);
@@ -723,7 +744,8 @@ public class FileBasedContentStorage implements ContentStorage {
         }
         return null;
     }
-
+    */
+    
     protected File findExistingEntryFile(EntryDescriptor entry) {
         return findExistingEntryFile(entry, 0);
     }
