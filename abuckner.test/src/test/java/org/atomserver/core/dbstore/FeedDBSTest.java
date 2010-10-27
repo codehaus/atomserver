@@ -69,6 +69,9 @@ public class FeedDBSTest extends FeedDBSTestCase {
         //  loop thru all pages, with partial page at the end
         loopThruPagesUsingNextLink("widgets", (startCount / 3 + 1), "acme");
 
+        // do the same as above with no latency flag
+        loopThruPagesUsingNextLink("widgets", (startCount / 3 + 1), "acme", true);
+
         // grab pages without start-index and max-results
         //  loop thru all pages, without partial page at the end
         loopThruPagesUsingNextLink("widgets", (startCount / 2), "acme");
