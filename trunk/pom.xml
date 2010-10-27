@@ -111,6 +111,16 @@
                 <role>developer</role>
             </roles>
         </developer>
+	<developer>
+            <id>abuckner</id>
+            <name>Austin Buckner</name>
+            <email>abuckner@atomserver.org</email>
+            <organization>atomserver.org</organization>
+            <timezone>-6</timezone>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
     </developers>
 
     <scm>
