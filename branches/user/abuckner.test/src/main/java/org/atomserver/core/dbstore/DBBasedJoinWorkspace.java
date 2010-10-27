@@ -155,7 +155,7 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
 
                 return createFeedElements(feed, abdera, iri, feedTarget, entryType,
                                           list, feedTarget.getWorkspace(), feedTarget.getCollection(),
-                                          feedTarget.getLocaleParam(),
+                                          feedTarget.getLocaleParam(), noLatency,
                                           list.size(), resultsFitOnOnePage, pageSize,
                                           feedTarget.getStartIndexParam(), 0 /*total entries*/);
             }
