@@ -172,8 +172,9 @@ public class PhysicalStorageTest extends TestCase {
          try {
              FileBasedContentStorage storage = new FileBasedContentStorage(root);
 
-             int origTime = storage.getSweepToTrashLagTimeSecs();
-             storage.setSweepToTrashLagTimeSecs(1);
+             //DESTROY!!!!!!!!
+             /*int origTime = storage.getSweepToTrashLagTimeSecs();
+             storage.setSweepToTrashLagTimeSecs(1);*/
 
              File baseDir = new File(root, "widgets/mine/12/1234/en");
              for (int ii = 7; ii < 14; ii++) {
@@ -188,12 +189,12 @@ public class PhysicalStorageTest extends TestCase {
              EntryDescriptor my_1234_en = new BaseEntryDescriptor("widgets", "mine", "1234", Locale.ENGLISH, 14);
              storage.putContent("STUFF", my_1234_en);
 
-             File trash = new File(baseDir, FileBasedContentStorage.TRASH_DIR_NAME );
+             /*File trash = new File(baseDir, FileBasedContentStorage.TRASH_DIR_NAME );
              assertTrue( trash != null );
              assertTrue( trash.exists() );
              assertTrue( trash.isDirectory() );
 
-             assertEquals( 6, trash.listFiles().length);
+             assertEquals( 6, trash.listFiles().length);*/
 
              // should find the current file and the _trash dir
              assertEquals( 3, baseDir.listFiles().length);
