@@ -67,23 +67,15 @@ public class FileBasedContentStorage implements ContentStorage {
     private static final Pattern FILE_PATH_LOCALE_REV_PATTERN =
             Pattern.compile("^/?((?:[a-z]{2})?(?:/[A-Z]{2})?)/\\w+\\.xml.r(\\d+)(?:" + GZIP_EXTENSION + ")?$");
 
-    //DESTROY!!!!!!!!!!!!!!!!!
-    //static public final String TRASH_DIR_NAME = "_trash";
-
     static private final int NO_REVISION = -777;
     
-    //DESTROY!!!!
-    //static private final int SWEEP_TO_TRASH_LAG_TIME_SECS_DEFAULT = 120;
+    static private final int DELETE_LAG_TIME_SECS_DEFAULT = 120;
 
     //============================================
     private File nfsTempFile = null;
     private String rootDirAbsPath = null;
 
-    //DESTROY!!!!!!!!!
-    //private boolean sweepToTrash = true;
-    //private int sweepToTrashLagTimeSecs = SWEEP_TO_TRASH_LAG_TIME_SECS_DEFAULT;
-    //static private final String TRASH_LOG_NAME = "org.atomserver.trash";
-    //static private Log trashLog = LogFactory.getLog(TRASH_LOG_NAME);
+    private int DeleteLagTimeSecs = DELETE_LAG_TIME_SECS_DEFAULT;
 
     //=========================
     // The following methods are for testing purposes ONLY
@@ -103,16 +95,7 @@ public class FileBasedContentStorage implements ContentStorage {
 
     public boolean testingWroteAvailabiltyFile() {
         return successfulAvailabiltyFileWrite;
-    }
-
-    //DESTROY!!!!!!!!!!!
-    /*public static Log getTrashLog() {
-        return trashLog;
-    }//====================================
-
-    public static void setTrashLog(Log trashLog) {
-        FileBasedContentStorage.trashLog = trashLog;
-    }*/
+    } 
 
     /**
      * This method is used by the isAliveHandler to determine if the ContentStorage is alive and well
@@ -262,31 +245,18 @@ public class FileBasedContentStorage implements ContentStorage {
         initializeRootDir(rootDir);
     }
 
-    //DESTROY!!!!!!!!!!
-    /* Used by IOC container to enable/disable sweeping excess revisions to a separate trash dir
-
-    @ManagedAttribute
-    public void setSweepToTrash(boolean sweepToTrash) {
-        this.sweepToTrash = sweepToTrash;
-    }
-
-    @ManagedAttribute
-    public boolean getSweepToTrash() {
-        return sweepToTrash;
-    }
-
     // Used by IOC container to set the time (in Seconds) to lag when sweeping excess revisions
     // to a separate trash dir
 
     @ManagedAttribute
-    public void setSweepToTrashLagTimeSecs(int sweepToTrashLagTimeSecs) {
-        this.sweepToTrashLagTimeSecs = sweepToTrashLagTimeSecs;
+    public void setDeleteLagTimeSecs(int DeleteLagTimeSecs) {
+        this.DeleteLagTimeSecs = DeleteLagTimeSecs;
     }
 
     @ManagedAttribute
-    public int getSweepToTrashLagTimeSecs() {
-        return sweepToTrashLagTimeSecs;
-    }*/
+    public int getDeleteLagTimeSecs() {
+        return DeleteLagTimeSecs;
+    }
 
     public boolean canRead() {
         return getRootDir().exists() && getRootDir().canRead();
@@ -578,11 +548,6 @@ public class FileBasedContentStorage implements ContentStorage {
      */
     private void cleanupExcessFiles(final File thisRev, final EntryDescriptor descriptor) {
 
-        //DESTROY!!!!!!!
-        /*if (!sweepToTrash) {
-            return;
-        }*/
-
         String fullPath = FilenameUtils.getFullPath(thisRev.getAbsolutePath());
         File baseDir = new File(fullPath);
         if (log.isTraceEnabled()) {
@@ -590,21 +555,6 @@ public class FileBasedContentStorage implements ContentStorage {
         }
 
         try {
-            //DESTROY!!!!!!!!!!!!!!
-            /*File trashDir = findExistingTrashDir(descriptor);
-            if (trashDir == null) {
-                trashDir = new File(thisRev.getParentFile(), TRASH_DIR_NAME);
-                if (log.isTraceEnabled()) {
-                    log.trace("%> no trash dir, will create one at " + trashDir + " if needed");
-                }
-            } else if (!trashDir.getParentFile().equals(thisRev.getParentFile())) {
-                File newTrashDir = new File(thisRev.getParentFile(), TRASH_DIR_NAME);
-                if (log.isTraceEnabled()) {
-                    log.trace("%> trash dir " + trashDir + " will be migrated to " + newTrashDir);
-                }
-                trashDir.renameTo(newTrashDir);
-                trashDir = newTrashDir;
-            }*/
 
             // get a file pointer at the previous revision of the file -- we DON'T want to delete it
             final File oneRevBack = findExistingEntryFile(descriptor, 1);
@@ -643,9 +593,6 @@ public class FileBasedContentStorage implements ContentStorage {
                                !fileToCheck.isHidden() &&
                                !thisRev.equals(fileToCheck) &&
                                (oneRevBack == null || !oneRevBack.equals(fileToCheck));
-                        
-                        //DESTROY!!!!!!!        
-                        //&& ((System.currentTimeMillis() - fileToCheck.lastModified()) > sweepToTrashLagTimeSecs * 1000L);
 
                     }
                 });
@@ -653,35 +600,14 @@ public class FileBasedContentStorage implements ContentStorage {
                 // if there's anything to delete...
                 if (toDelete != null && toDelete.length > 0) {
 
-                    //DESTROY!!!!!!
-                    // first of all, there needs to be a "_trash" subdirectory,
-                    // so we make sure that exists
-                    //trashDir.mkdirs();
-
-                    //File root = getRootDir();
-                    //int rootDirLen = (root != null) ? root.getCanonicalPath().length() : 0;
-                    // and move the files into it
                     for (File file : toDelete) {
                         
-                        
-                        //figure out how to delete the file
+                        //delete the file
                         if (log.isTraceEnabled()) {
                             log.trace("deleting file" + file.getName());
                         }
                         
                         FileUtils.forceDelete(file);
-                        
-                        //DESTROY!!!!!!!!!
-                        /*File moveTo = new File(trashDir, file.getName());
-                        if (!file.renameTo(moveTo)) {
-                            throw new IOException("When cleaning up excess revisions, could not move the file ("
-                                                  + file + ") to (" + moveTo + ")");
-                        }*/
-                        // log the deleted files so that external scripts can locate them
-                        /*if (trashLog != null) {
-                            String relativePath = moveTo.getCanonicalPath().substring(rootDirLen + 1); // get relateivePath
-                            trashLog.info(System.currentTimeMillis() / 1000 + " " + relativePath); // seconds timestamp
-                        }*/
                     }
                     cleanUpToCollection(descriptor, directoryToClean);
                 }
@@ -722,29 +648,6 @@ public class FileBasedContentStorage implements ContentStorage {
             cleanDir = cleanDir.getParentFile();
         }
     }
-
-    /*
-     * DESTROY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     
-    private File findExistingTrashDir(EntryDescriptor entry) {
-        if (log.isTraceEnabled()) {
-            log.trace("%> looking for trash directory for entry " + entry);
-        }
-        for (PartitionPathGenerator pathGenerator : partitionPathGenerators) {
-            File trashDir = new File(generateEntryDir(entry, pathGenerator), TRASH_DIR_NAME);
-            if (log.isTraceEnabled()) {
-                log.trace("%> checking trash directory path " + trashDir);
-            }
-            if (trashDir.exists() && trashDir.isDirectory()) {
-                if (log.isTraceEnabled()) {
-                    log.trace("%> trash directory " + trashDir + " exists.");
-                }
-                return trashDir;
-            }
-        }
-        return null;
-    }
-    */
     
     protected File findExistingEntryFile(EntryDescriptor entry) {
         return findExistingEntryFile(entry, 0);

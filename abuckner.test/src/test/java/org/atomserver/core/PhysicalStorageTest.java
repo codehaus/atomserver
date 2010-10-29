@@ -172,9 +172,8 @@ public class PhysicalStorageTest extends TestCase {
          try {
              FileBasedContentStorage storage = new FileBasedContentStorage(root);
 
-             //DESTROY!!!!!!!!
-             /*int origTime = storage.getSweepToTrashLagTimeSecs();
-             storage.setSweepToTrashLagTimeSecs(1);*/
+             int origTime = storage.getDeleteLagTimeSecs();
+             storage.setDeleteLagTimeSecs(1);
 
              File baseDir = new File(root, "widgets/mine/12/1234/en");
              for (int ii = 7; ii < 14; ii++) {
@@ -188,20 +187,12 @@ public class PhysicalStorageTest extends TestCase {
              // do the actual put, which will sweep to trash
              EntryDescriptor my_1234_en = new BaseEntryDescriptor("widgets", "mine", "1234", Locale.ENGLISH, 14);
              storage.putContent("STUFF", my_1234_en);
-
-             /*File trash = new File(baseDir, FileBasedContentStorage.TRASH_DIR_NAME );
-             assertTrue( trash != null );
-             assertTrue( trash.exists() );
-             assertTrue( trash.isDirectory() );
-
-             assertEquals( 6, trash.listFiles().length);*/
-
+             
              // should find the current file and the _trash dir
-             assertEquals( 3, baseDir.listFiles().length);
+             assertEquals( 2, baseDir.listFiles().length);
              for ( File file : baseDir.listFiles() ) {
                 assertTrue( file.getName().equals( "1234.xml.r13") ||
-                            file.getName().equals( "1234.xml.r14") ||
-                            file.getName().equals( FileBasedContentStorage.TRASH_DIR_NAME ));
+                            file.getName().equals( "1234.xml.r14"));
              }
 
              // add more revisions
@@ -209,7 +200,7 @@ public class PhysicalStorageTest extends TestCase {
                  File file = new File(baseDir, "1234.xml.r" + ii);
                  FileUtils.writeStringToFile(file, "JUNK", "UTF-8");
              }
-             assertEquals( 7, baseDir.listFiles().length);
+             assertEquals( 6, baseDir.listFiles().length);
 
              Thread.sleep( 2000 );
 
@@ -218,27 +209,24 @@ public class PhysicalStorageTest extends TestCase {
              storage.putContent("STUFF", my_1234_en);
 
              // check it out
-             assertEquals( 11, trash.listFiles().length);
-             assertEquals( 3, baseDir.listFiles().length);
+             assertEquals( 2, baseDir.listFiles().length);
              for ( File file : baseDir.listFiles() ) {
                 assertTrue( file.getName().equals( "1234.xml.r18") ||
-                            file.getName().equals( "1234.xml.r19") ||
-                            file.getName().equals( FileBasedContentStorage.TRASH_DIR_NAME ));
+                            file.getName().equals( "1234.xml.r19"));
              }
-             storage.setSweepToTrashLagTimeSecs(origTime);
+             storage.setDeleteLagTimeSecs(origTime);
 
          } finally {
              FileUtils.deleteDirectory(root);
          }
      }
-
     public void testLagTime() throws Exception {
          File root = new File(System.getProperty("java.io.tmpdir"), "trashTest");
          try {
              FileBasedContentStorage storage = new FileBasedContentStorage(root);
 
-             int origTime = storage.getSweepToTrashLagTimeSecs();
-             storage.setSweepToTrashLagTimeSecs(1);
+             int origTime = storage.getDeleteLagTimeSecs();
+             storage.setDeleteLagTimeSecs(1);
 
              File baseDir = new File(root, "widgets/thiers/12/1234/en");
              for (int ii = 7; ii < 10; ii++) {
@@ -259,40 +247,13 @@ public class PhysicalStorageTest extends TestCase {
              EntryDescriptor my_1234_en = new BaseEntryDescriptor("widgets", "thiers", "1234", Locale.ENGLISH, 14);
              storage.putContent("STUFF", my_1234_en);
 
-             File trash = new File(baseDir, FileBasedContentStorage.TRASH_DIR_NAME );
-             assertTrue( trash != null );
-             assertTrue( trash.exists() );
-             assertTrue( trash.isDirectory() );
-
-             assertEquals( 3, trash.listFiles().length);
-
              // including the trash dir itself and the one we just PUT
-             assertEquals( 6, baseDir.listFiles().length);
+             assertEquals( 5, baseDir.listFiles().length);
 
-             storage.setSweepToTrashLagTimeSecs(origTime);
+             storage.setDeleteLagTimeSecs(origTime);
 
          } finally {
              FileUtils.deleteDirectory(root);
          }
      }
-
-
-    public void testZeroRev() throws Exception {
-        File root = new File(System.getProperty("java.io.tmpdir"), "trashTest2");
-        try {
-            FileBasedContentStorage storage = new FileBasedContentStorage(root);
-            File baseDir = new File(root, "widgets/yours/12/1234/en");
-
-            EntryDescriptor my_1234_en = new BaseEntryDescriptor("widgets", "yours", "1234", Locale.ENGLISH, 0);
-            storage.putContent("STUFF", my_1234_en);
-
-            File trash = new File(baseDir, FileBasedContentStorage.TRASH_DIR_NAME);
-            assertTrue(trash != null);
-            assertFalse( trash.exists() );
-        }
-        finally {
-            FileUtils.deleteDirectory(root);
-        }
-    }
-
 }

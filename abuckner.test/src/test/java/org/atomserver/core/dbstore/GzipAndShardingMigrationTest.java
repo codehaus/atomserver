@@ -98,9 +98,11 @@ public class GzipAndShardingMigrationTest extends DBSTestCase {
         assertTrue(new File(TEST_DATA_DIR, "/widgets/acme/60/6000/en/6000.xml.r2").exists());
         assertTrue(new File(TEST_DATA_DIR, "/widgets/acme/60/6001/en/US/6001.xml.r2").exists());
         assertTrue(new File(TEST_DATA_DIR, "/dummy/dumbo/60/6002/6002.xml.r2").exists());
-        assertTrue(new File(TEST_DATA_DIR, "/widgets/acme/60/6000/en/_trash/6000.xml.r0").exists());
-        assertTrue(new File(TEST_DATA_DIR, "/widgets/acme/60/6001/en/US/_trash/6001.xml.r0").exists());
-        assertTrue(new File(TEST_DATA_DIR, "/dummy/dumbo/60/6002/_trash/6002.xml.r0").exists());
+        
+        // used to have a trash dir, all trash dir checks are to make sure it hasn't been created
+        assertFalse(new File(TEST_DATA_DIR, "/widgets/acme/60/6000/en/_trash/6000.xml.r0").exists());
+        assertFalse(new File(TEST_DATA_DIR, "/widgets/acme/60/6001/en/US/_trash/6001.xml.r0").exists());
+        assertFalse(new File(TEST_DATA_DIR, "/dummy/dumbo/60/6002/_trash/6002.xml.r0").exists());
 
         // change the gzipping and sharding settings
         ((FileBasedContentStorage) contentStorage).setGzipEnabled(true);
@@ -176,9 +178,11 @@ public class GzipAndShardingMigrationTest extends DBSTestCase {
         assertTrue(generateShardedDir("widgets/acme", "6002", "6002/en/6002.xml.r2.gz").exists());
         assertTrue(generateShardedDir("widgets/acme", "6003", "6003/en/US/6003.xml.r2.gz").exists());
         assertTrue(generateShardedDir("dummy/dumbo", "6004", "6004/6004.xml.r2.gz").exists());
-        assertTrue(generateShardedDir("widgets/acme", "6002", "6002/en/_trash/6002.xml.r0").exists());
-        assertTrue(generateShardedDir("widgets/acme", "6003", "6003/en/US/_trash/6003.xml.r0").exists());
-        assertTrue(generateShardedDir("dummy/dumbo", "6004", "6004/_trash/6004.xml.r0").exists());
+       
+        //no trash dir
+        assertFalse(generateShardedDir("widgets/acme", "6002", "6002/en/_trash/6002.xml.r0").exists());
+        assertFalse(generateShardedDir("widgets/acme", "6003", "6003/en/US/_trash/6003.xml.r0").exists());
+        assertFalse(generateShardedDir("dummy/dumbo", "6004", "6004/_trash/6004.xml.r0").exists());
 
         // check the ones that migrated from r2
         assertTrue(new File(TEST_DATA_DIR, "/widgets/acme/60/6000/en/6000.xml.r2").exists());
@@ -187,12 +191,14 @@ public class GzipAndShardingMigrationTest extends DBSTestCase {
         assertTrue(generateShardedDir("widgets/acme", "6000", "6000/en/6000.xml.r3.gz").exists());
         assertTrue(generateShardedDir("widgets/acme", "6001", "6001/en/US/6001.xml.r3.gz").exists());
         assertTrue(generateShardedDir("dummy/dumbo", "6002", "6002/6002.xml.r3.gz").exists());
-        assertTrue(generateShardedDir("widgets/acme", "6000", "6000/en/_trash/6000.xml.r0").exists());
-        assertTrue(generateShardedDir("widgets/acme", "6001", "6001/en/US/_trash/6001.xml.r0").exists());
-        assertTrue(generateShardedDir("dummy/dumbo", "6002", "6002/_trash/6002.xml.r0").exists());
-        assertTrue(generateShardedDir("widgets/acme", "6000", "6000/en/_trash/6000.xml.r1").exists());
-        assertTrue(generateShardedDir("widgets/acme", "6001", "6001/en/US/_trash/6001.xml.r1").exists());
-        assertTrue(generateShardedDir("dummy/dumbo", "6002", "6002/_trash/6002.xml.r1").exists());
+        
+        //no trash dir
+        assertFalse(generateShardedDir("widgets/acme", "6000", "6000/en/_trash/6000.xml.r0").exists());
+        assertFalse(generateShardedDir("widgets/acme", "6001", "6001/en/US/_trash/6001.xml.r0").exists());
+        assertFalse(generateShardedDir("dummy/dumbo", "6002", "6002/_trash/6002.xml.r0").exists());
+        assertFalse(generateShardedDir("widgets/acme", "6000", "6000/en/_trash/6000.xml.r1").exists());
+        assertFalse(generateShardedDir("widgets/acme", "6001", "6001/en/US/_trash/6001.xml.r1").exists());
+        assertFalse(generateShardedDir("dummy/dumbo", "6002", "6002/_trash/6002.xml.r1").exists());
 
         Thread.sleep(2000); // wait 2 seconds, so we will sweep to the trash
 
@@ -237,9 +243,11 @@ public class GzipAndShardingMigrationTest extends DBSTestCase {
         assertTrue(generateShardedDir("widgets/acme", "6004", "6004/en/6004.xml.r2.gz").exists());
         assertTrue(generateShardedDir("widgets/acme", "6005", "6005/en/US/6005.xml.r2.gz").exists());
         assertTrue(generateShardedDir("dummy/dumbo", "6005", "6005/6005.xml.r2.gz").exists());
-        assertTrue(generateShardedDir("widgets/acme", "6004", "6004/en/_trash/6004.xml.r0").exists());
-        assertTrue(generateShardedDir("widgets/acme", "6005", "6005/en/US/_trash/6005.xml.r0").exists());
-        assertTrue(generateShardedDir("dummy/dumbo", "6005", "6005/_trash/6005.xml.r0").exists());
+        
+        //no trash dir
+        assertFalse(generateShardedDir("widgets/acme", "6004", "6004/en/_trash/6004.xml.r0").exists());
+        assertFalse(generateShardedDir("widgets/acme", "6005", "6005/en/US/_trash/6005.xml.r0").exists());
+        assertFalse(generateShardedDir("dummy/dumbo", "6005", "6005/_trash/6005.xml.r0").exists());
 
         // check the ones that migrated from r1
         assertFalse(new File(TEST_DATA_DIR, "/widgets/acme/60/6002").exists());
@@ -251,12 +259,14 @@ public class GzipAndShardingMigrationTest extends DBSTestCase {
         assertTrue(generateShardedDir("widgets/acme", "6002", "6002/en/6002.xml.r3.gz").exists());
         assertTrue(generateShardedDir("widgets/acme", "6003", "6003/en/US/6003.xml.r3.gz").exists());
         assertTrue(generateShardedDir("dummy/dumbo", "6004", "6004/6004.xml.r3.gz").exists());
-        assertTrue(generateShardedDir("widgets/acme", "6002", "6002/en/_trash/6002.xml.r0").exists());
-        assertTrue(generateShardedDir("widgets/acme", "6003", "6003/en/US/_trash/6003.xml.r0").exists());
-        assertTrue(generateShardedDir("dummy/dumbo", "6004", "6004/_trash/6004.xml.r0").exists());
-        assertTrue(generateShardedDir("widgets/acme", "6002", "6002/en/_trash/6002.xml.r1").exists());
-        assertTrue(generateShardedDir("widgets/acme", "6003", "6003/en/US/_trash/6003.xml.r1").exists());
-        assertTrue(generateShardedDir("dummy/dumbo", "6004", "6004/_trash/6004.xml.r1").exists());
+        
+        //no trash dir
+        assertFalse(generateShardedDir("widgets/acme", "6002", "6002/en/_trash/6002.xml.r0").exists());
+        assertFalse(generateShardedDir("widgets/acme", "6003", "6003/en/US/_trash/6003.xml.r0").exists());
+        assertFalse(generateShardedDir("dummy/dumbo", "6004", "6004/_trash/6004.xml.r0").exists());
+        assertFalse(generateShardedDir("widgets/acme", "6002", "6002/en/_trash/6002.xml.r1").exists());
+        assertFalse(generateShardedDir("widgets/acme", "6003", "6003/en/US/_trash/6003.xml.r1").exists());
+        assertFalse(generateShardedDir("dummy/dumbo", "6004", "6004/_trash/6004.xml.r1").exists());
 
         // check the ones that migrated from r2
         assertFalse(new File(TEST_DATA_DIR, "/widgets/acme/60/6000").exists());
@@ -268,15 +278,17 @@ public class GzipAndShardingMigrationTest extends DBSTestCase {
         assertTrue(generateShardedDir("widgets/acme", "6000", "6000/en/6000.xml.r4.gz").exists());
         assertTrue(generateShardedDir("widgets/acme", "6001", "6001/en/US/6001.xml.r4.gz").exists());
         assertTrue(generateShardedDir("dummy/dumbo", "6002", "6002/6002.xml.r4.gz").exists());
-        assertTrue(generateShardedDir("widgets/acme", "6000", "6000/en/_trash/6000.xml.r0").exists());
-        assertTrue(generateShardedDir("widgets/acme", "6001", "6001/en/US/_trash/6001.xml.r0").exists());
-        assertTrue(generateShardedDir("dummy/dumbo", "6002", "6002/_trash/6002.xml.r0").exists());
-        assertTrue(generateShardedDir("widgets/acme", "6000", "6000/en/_trash/6000.xml.r1").exists());
-        assertTrue(generateShardedDir("widgets/acme", "6001", "6001/en/US/_trash/6001.xml.r1").exists());
-        assertTrue(generateShardedDir("dummy/dumbo", "6002", "6002/_trash/6002.xml.r1").exists());
-        assertTrue(generateShardedDir("widgets/acme", "6000", "6000/en/_trash/6000.xml.r2").exists());
-        assertTrue(generateShardedDir("widgets/acme", "6001", "6001/en/US/_trash/6001.xml.r2").exists());
-        assertTrue(generateShardedDir("dummy/dumbo", "6002", "6002/_trash/6002.xml.r2").exists());
+        
+        //no trash dir
+        assertFalse(generateShardedDir("widgets/acme", "6000", "6000/en/_trash/6000.xml.r0").exists());
+        assertFalse(generateShardedDir("widgets/acme", "6001", "6001/en/US/_trash/6001.xml.r0").exists());
+        assertFalse(generateShardedDir("dummy/dumbo", "6002", "6002/_trash/6002.xml.r0").exists());
+        assertFalse(generateShardedDir("widgets/acme", "6000", "6000/en/_trash/6000.xml.r1").exists());
+        assertFalse(generateShardedDir("widgets/acme", "6001", "6001/en/US/_trash/6001.xml.r1").exists());
+        assertFalse(generateShardedDir("dummy/dumbo", "6002", "6002/_trash/6002.xml.r1").exists());
+        assertFalse(generateShardedDir("widgets/acme", "6000", "6000/en/_trash/6000.xml.r2").exists());
+        assertFalse(generateShardedDir("widgets/acme", "6001", "6001/en/US/_trash/6001.xml.r2").exists());
+        assertFalse(generateShardedDir("dummy/dumbo", "6002", "6002/_trash/6002.xml.r2").exists());
 
         // at this point, we have migrated ALL of the widgets under 60..., but not all the dummies
         assertFalse(new File(TEST_DATA_DIR, "/widgets/acme/60").exists());
