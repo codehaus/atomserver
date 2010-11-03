@@ -8,7 +8,6 @@
           class="org.atomserver.core.filestore.TestingContentStorage"
           lazy-init="true">
         <constructor-arg type="java.io.File" value="${atomserver.data.dir}"/>
-        <property name="sweepToTrash" value="true"/>
         <property name="gzipEnabled" value="true"/>
         <property name="partitionPathGenerators">
             <list>

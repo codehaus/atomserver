@@ -241,15 +241,18 @@ public class PhysicalStorageTest extends TestCase {
                  File file = new File(baseDir, "1234.xml.r" + ii);
                  FileUtils.writeStringToFile(file, "JUNK", "UTF-8");
              }
+         
              assertEquals( 7, baseDir.listFiles().length);
 
-             // do the actual put, which will sweep to trash
+             // do the actual put, which will delete
              EntryDescriptor my_1234_en = new BaseEntryDescriptor("widgets", "thiers", "1234", Locale.ENGLISH, 14);
              storage.putContent("STUFF", my_1234_en);
 
-             // including the trash dir itself and the one we just PUT
-             assertEquals( 5, baseDir.listFiles().length);
-
+             assertEquals( 2, baseDir.listFiles().length);
+             for ( File file : baseDir.listFiles() ) {
+                 assertTrue( file.getName().equals( "1234.xml.r13") ||
+                             file.getName().equals( "1234.xml.r14"));
+              }
              storage.setDeleteLagTimeSecs(origTime);
 
          } finally {
