@@ -65,6 +65,10 @@ public enum QueryParam {
     noLatency("no-latency", false) {
         Object parseValue(String stringValue) {
             return Boolean.valueOf(stringValue);
+        }},
+    obliterate("obliterate", false) {
+        Object parseValue(String stringValue) {
+            return Boolean.valueOf(stringValue);
         }};
 
     private static final Log log = LogFactory.getLog(QueryParam.class);
