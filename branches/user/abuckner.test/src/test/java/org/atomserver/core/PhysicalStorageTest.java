@@ -167,7 +167,7 @@ public class PhysicalStorageTest extends TestCase {
     }
 
 
-    public void testTrashDir() throws Exception {
+    public void testDeleteAlgorithm() throws Exception {
          File root = new File(System.getProperty("java.io.tmpdir"), "trashTest");
          try {
              FileBasedContentStorage storage = new FileBasedContentStorage(root);

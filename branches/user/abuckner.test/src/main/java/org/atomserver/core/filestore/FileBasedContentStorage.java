@@ -76,7 +76,7 @@ public class FileBasedContentStorage implements ContentStorage {
 
     private String rootDirAbsPath = null;
 
-    private int DeleteLagTimeSecs = DELETE_LAG_TIME_SECS_DEFAULT;
+    private int deleteLagTimeSecs = DELETE_LAG_TIME_SECS_DEFAULT;
 
     //=========================
     // The following methods are for testing purposes ONLY
@@ -245,12 +245,12 @@ public class FileBasedContentStorage implements ContentStorage {
     // Used by IOC container to set the time (in Seconds) to lag when deleting
     @ManagedAttribute
     public void setDeleteLagTimeSecs(int DeleteLagTimeSecs) {
-        this.DeleteLagTimeSecs = DeleteLagTimeSecs;
+        this.deleteLagTimeSecs = DeleteLagTimeSecs;
     }
 
     @ManagedAttribute
     public int getDeleteLagTimeSecs() {
-        return DeleteLagTimeSecs;
+        return deleteLagTimeSecs;
     }
 
     public boolean canRead() {
