@@ -1,0 +1,1051 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation=" http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.atomserver</groupId>
+    <artifactId>atomserver</artifactId>
+
+    <packaging>war</packaging>
+    <version>2.3.4-SNAPSHOT</version>
+
+    <name>Atomserver</name>
+
+    <url>http://www.atomserver.org</url>
+
+    <description>
+        AtomServer is an Atom-based, RESTful, generic data services framework, built on top of Apache Abdera.
+    </description>
+
+    <inceptionYear>2007</inceptionYear>
+
+    <licenses>
+        <license>
+            <name>Apache 2</name>
+            <url>LICENSE.txt</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+
+    <organization>
+        <name>atomserver.org</name>
+        <url>http://atomserver.org</url>
+    </organization>
+
+    <mailingLists>
+        <mailingList>
+            <name>AtomServer Users</name>
+            <post>user@atomserver.codehaus.org</post>
+            <subscribe>http://xircles.codehaus.org/lists/user@atomserver.codehaus.org/subscribe</subscribe>
+            <unsubscribe>http://xircles.codehaus.org/lists/user@atomserver.codehaus.org/unsubscribe</unsubscribe>
+            <archive>http://markmail.org/search/list:org.codehaus.atomserver</archive>
+        </mailingList>
+        <mailingList>
+            <name>AtomServer Dev</name>
+            <post>dev@atomserver.codehaus.org</post>
+            <subscribe>http://xircles.codehaus.org/lists/dev@atomserver.codehaus.org/subscribe</subscribe>
+            <unsubscribe>http://xircles.codehaus.org/lists/dev@atomserver.codehaus.org/unsubscribe</unsubscribe>
+            <archive>http://markmail.org/search/list:org.codehaus.atomserver</archive>
+        </mailingList>
+        <mailingList>
+            <name>AtomServer SCM</name>
+            <post>scm@atomserver.codehaus.org</post>
+            <subscribe>http://xircles.codehaus.org/lists/scm@atomserver.codehaus.org/subscribe</subscribe>
+            <unsubscribe>http://xircles.codehaus.org/lists/scm@atomserver.codehaus.org/unsubscribe</unsubscribe>
+            <archive>http://markmail.org/search/list:org.codehaus.atomserver</archive>
+        </mailingList>
+        <mailingList>
+            <name>AtomServer Announce</name>
+            <post>announce@atomserver.codehaus.org</post>
+            <subscribe>http://xircles.codehaus.org/lists/announce@atomserver.codehaus.org/subscribe</subscribe>
+            <unsubscribe>http://xircles.codehaus.org/lists/announce@atomserver.codehaus.org/unsubscribe</unsubscribe>
+            <archive>http://markmail.org/search/list:org.codehaus.atomserver</archive>
+        </mailingList>
+    </mailingLists>
+
+    <issueManagement>
+        <system>JIRA</system>
+        <url>http://jira.codehaus.org/browse/ATOMSERVER</url>
+    </issueManagement>
+
+    <developers>
+        <developer>
+            <id>cberry</id>
+            <name>Chris Berry</name>
+            <email>chris@atomserver.org</email>
+            <organization>atomserver.org</organization>
+            <timezone>-6</timezone>
+            <roles>
+                <role>despot</role>
+                <role>developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>bjacob</id>
+            <name>Bryon Jacob</name>
+            <email>bryon@atomserver.org</email>
+            <organization>atomserver.org</organization>
+            <timezone>-6</timezone>
+            <roles>
+                <role>despot</role>
+                <role>developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>avictoria</id>
+            <name>Alex Victoria</name>
+            <email>alex@atomserver.org</email>
+            <organization>atomserver.org</organization>
+            <timezone>-6</timezone>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>wbo</id>
+            <name>Win Bo</name>
+            <email>wbo@atomserver.org</email>
+            <organization>atomserver.org</organization>
+            <timezone>-6</timezone>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+		<developer>
+            <id>abuckner</id>
+            <name>Austin Buckner</name>
+            <email>abuckner@atomserver.org</email>
+            <organization>atomserver.org</organization>
+            <timezone>-6</timezone>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:svn:http://svn.codehaus.org/atomserver/atomserver-2.1.14</connection>
+        <developerConnection>scm:svn:https://svn.codehaus.org/atomserver/tags/atomserver-2.1.14</developerConnection>
+        <url>http://fisheye.codehaus.org/browse/atomserver/atomserver-2.1.14</url>
+    </scm>
+
+    <ciManagement>
+        <system>TeamCity</system>
+        <url>http://managed.on.a.private.build.server</url>
+    </ciManagement>
+
+    <!-- ======================================================================= -->
+    <!-- PROPERTIES 
+         ==========
+        NOTE: you may provide -D overrides for any of the following properties
+               e.g. "mvn -Denv=foo install"
+    -->
+    <properties>
+        <!-- designate the general Spring properties file -->
+        <env>asdev-postgres</env>
+
+        <servletContext>atomserver</servletContext>
+        <servletMapping>v1</servletMapping>
+
+        <!-- the filestore location -->
+        <dataDir>file:target/var</dataDir>
+
+        <!-- configuration dirs -->
+        <confDir />
+        <opsConfDir />
+
+        <!-- JMX (jmxBeans.xml) -->
+        <jmxHttpPort>50505</jmxHttpPort>
+        <jmxHttpHost>0.0.0.0</jmxHttpHost>
+
+        <!-- log4j properties -->
+        <rootAppender>Stdout</rootAppender>
+
+        <rootLogLevel>WARN</rootLogLevel>
+        <logLevel>INFO</logLevel>
+        <logDir>${basedir}/target</logDir>
+        <logFileNamePrefix>atomserver</logFileNamePrefix>
+
+        <!-- used by jettyBeans.xml and jetty:run -->
+        <port>60080</port>
+
+        <!-- versions that are used in several dependencies -->
+        <abderaVersion>0.3.0-incubating-AS</abderaVersion>
+        <mx4jVersion>3.0.2</mx4jVersion>
+        <springVersion>2.0.6</springVersion>
+    </properties>
+
+    <!-- ======================================================================= -->
+    <!-- REPOS
+         ===== -->
+    <repositories>
+        <repository>
+            <id>Maven2</id>
+            <url>http://repo1.maven.org/maven2/</url>
+        </repository>
+        <repository>
+            <id>atomserver</id>
+            <url>file://lib</url>
+        </repository>
+        <repository>
+            <id>Codehaus</id>
+            <url>http://repository.codehaus.org/</url>
+        </repository>
+        <repository>
+            <id>Apache Incubator</id>
+            <url>http://people.apache.org/repo/m2-incubating-repository/</url>
+        </repository>
+        <repository>
+            <id>relaxng4j</id>
+            <url>http://relaxng4j.googlecode.com/svn/repo/</url>
+        </repository>
+        <repository>
+            <id>snapshotCodeHaus</id>
+            <url>http://snapshots.repository.codehaus.org/</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>Codehaus</id>
+            <url>http://repository.codehaus.org/</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>Codehaus Mojo</id>
+            <url>http://repository.codehaus.org/org/codehaus/mojo/</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>Codehaus Snapshots</id>
+            <url>http://snapshots.repository.codehaus.org/</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>Maven2</id>
+            <url>http://repo1.maven.org/maven2/</url>
+        </pluginRepository>
+
+        <pluginRepository>
+            <id>maven snapshots</id>
+            <url>http://people.apache.org/repo/m2-snapshot-repository/</url>
+        </pluginRepository>
+
+    </pluginRepositories>
+
+    <!-- ======================================================================= -->
+    <!-- DEPENDENCIES
+         ============ -->
+    <dependencies>
+
+        <dependency>
+            <groupId>hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <version>1.8.0.10</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.relaxng4j</groupId>
+            <artifactId>relaxng4j-validator</artifactId>
+            <version>1.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>bsh</groupId>
+            <artifactId>bsh</artifactId>
+            <version>2.0b4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.sourceforge.jtds</groupId>
+            <artifactId>jtds</artifactId>
+            <version>1.2.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>3.8.1</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>2.4</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- this should match Abdera
+              but is "runtime" there -->
+        <dependency>
+            <groupId>org.codehaus.woodstox</groupId>
+            <artifactId>wstx-asl</artifactId>
+            <version>3.2.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>1.3.2</version>
+        </dependency>
+
+        <!-- this client has some extensions to add access to HttpClient timeout control -->
+        <dependency>
+            <groupId>org.atomserver.abdera</groupId>
+            <artifactId>abdera-client</artifactId>
+            <version>${abderaVersion}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.atomserver.abdera</groupId>
+            <artifactId>abdera-server</artifactId>
+            <version>${abderaVersion}</version>
+        </dependency>
+
+        <!-- exclude Sun jars due to licensing issues -->
+        <dependency>
+            <groupId>org.atomserver.abdera</groupId>
+            <artifactId>abdera-extensions-opensearch</artifactId>
+            <version>${abderaVersion}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.mail</groupId>
+                    <artifactId>mail</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.atomserver.abdera</groupId>
+            <artifactId>abdera-extensions-main</artifactId>
+            <version>${abderaVersion}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.atomserver.abdera</groupId>
+            <artifactId>abdera-spring</artifactId>
+            <version>${abderaVersion}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring</artifactId>
+            <version>${springVersion}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-mock</artifactId>
+            <version>${springVersion}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>1.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-httpclient</groupId>
+            <artifactId>commons-httpclient</artifactId>
+            <version>3.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>3.2.1</version>
+        </dependency>
+        
+
+        <!-- This shouldn't be needed, but without it Maven will pull down version 1.2
+             because it's specified in commons-httpclient's POM. -->
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-dbcp</groupId>
+            <artifactId>commons-dbcp</artifactId>
+            <version>1.2.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>3.1.12</version>
+        </dependency>
+
+        <dependency>
+            <groupId>postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>8.3-603.jdbc3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.15</version>
+            <!--
+              Unfortunately the 1.2.15 pom added dependencies that should have been optional
+              We exclude those unnecessary dependencies here
+            -->
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.mail</groupId>
+                    <artifactId>mail</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.jms</groupId>
+                    <artifactId>jms</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sun.jdmk</groupId>
+                    <artifactId>jmxtools</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sun.jmx</groupId>
+                    <artifactId>jmxri</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>jetty</artifactId>
+            <version>6.1.9</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.ibatis</groupId>
+            <artifactId>ibatis-sqlmap</artifactId>
+            <version>2.3.4.726</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.acegisecurity</groupId>
+            <artifactId>acegi-security</artifactId>
+            <version>1.0.6</version>
+            <scope>provided</scope>
+
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-remoting</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-dao</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-context</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-aop</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-webmvc</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-web</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-jdbc</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-beans</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-support</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- WARNING: do not use mx4j.jar as it contains javax.management classes
+                      which conflicts with something in the Classpath
+                      Causing a LinkageError -->
+        <dependency>
+            <groupId>mx4j</groupId>
+            <artifactId>mx4j-impl</artifactId>
+            <scope>compile</scope>
+            <version>${mx4jVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>mx4j</groupId>
+            <artifactId>mx4j-tools</artifactId>
+            <scope>compile</scope>
+            <version>${mx4jVersion}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>jfree</groupId>
+            <artifactId>jfreechart</artifactId>
+            <scope>test</scope>
+            <version>1.0.9</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.perf4j</groupId>
+            <artifactId>perf4j</artifactId>
+            <version>0.9.12</version>
+        </dependency>
+    </dependencies>
+
+    <!-- ======================================================================= -->
+    <!--  PLUGINS
+          ======= -->
+    <build>
+        <plugins>
+
+            <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+            <!-- Force the classes and resources into A JAR within the WAR -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>2.1-alpha-1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>war</goal>
+                        </goals>
+                        <configuration>
+                            <archiveClasses>true</archiveClasses>
+                            <!-- when this is available, in 2.1-alpha-2
+                                 we can get rid of teh extra assembly execution below -->
+                            <!-- <attachClasses>true</attachClasses> -->
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/jetty-lib</outputDirectory>
+                            <includeGroupIds>org.mortbay.jetty</includeGroupIds>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
+
+            <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <inherited>true</inherited>
+                <configuration>
+                    <!-- do not create unique binaries for each snapshot -->
+                    <uniqueVersion>false</uniqueVersion>
+                </configuration>
+            </plugin>
+
+            <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+            <!-- Tell maven to generate a version.properties files from SVN -->
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.1</version>
+                <executions>
+
+                    <execution>
+                        <id>build-versions-file</id>
+                        <phase>compile</phase>
+                        <inherited>false</inherited>
+                        <configuration>
+                            <tasks>
+                                <mkdir dir="${project.build.directory}" />
+                                <exec executable="svn" output="${project.build.directory}/version.properties">
+                                    <arg value="info" />
+                                    <arg value="." />
+                                    <redirector>
+                                        <outputfilterchain>
+                                            <linecontains>
+                                                <contains value="Revision" />
+                                            </linecontains>
+                                            <tokenfilter>
+                                                <replacestring from="Revision: " to="atomserver.revision=" />
+                                            </tokenfilter>
+                                        </outputfilterchain>
+                                    </redirector>
+                                </exec>
+                                <echo file="${project.build.directory}/version.properties" append="true">
+                                    atomserver.version=${project.version}
+                                </echo>
+                                <fixcrlf srcdir="${project.build.directory}" eol="lf" includes="version.properties" />
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+            <!-- Tell maven how to setup the assembly -->
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.1</version>
+                <executions>
+                    <execution>
+                        <id>generate-tar-gz</id>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>
+                                    src/main/assembly/install.xml
+                                </descriptor>
+                            </descriptors>
+                            <outputDirectory>${project.build.directory}/install</outputDirectory>
+                        </configuration>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attached</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>generate-jar</id>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>
+                                    src/main/assembly/jar.xml
+                                </descriptor>
+                            </descriptors>
+                            <outputDirectory>${project.build.directory}/install</outputDirectory>
+                        </configuration>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attached</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+            <!-- set up code coverage -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>cobertura-maven-plugin</artifactId>
+                <version>2.2</version>
+                <inherited>true</inherited>
+
+                <configuration>
+                    <instrumentation>
+                        <ignores>
+                            <ignore>org.apache.commons.logging.*</ignore>
+                        </ignores>
+                    </instrumentation>
+                </configuration>
+
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+            <!-- surefire 2.3 fixes test report generation bugs -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.3</version>
+                <inherited>true</inherited>
+                <configuration>
+
+                    <forkMode>once</forkMode>
+
+                    <argLine>-Dlog4j.configuration=org/atomserver/test-log4j.xml</argLine>
+                    <reportFormat>plain</reportFormat>
+                    <trimStackTrace>false</trimStackTrace>
+                    <includes>
+                        <include>**/*Test.java</include>
+                    </includes>
+                    <systemProperties>
+
+                        <!-- used to determine which {atomserver.env}.properties file to load off the CLASSPATH-->
+                        <property>
+                            <name>atomserver.env</name>
+                            <value>${env}</value>
+                        </property>
+
+                        <property>
+                            <name>atomserver.data.dir</name>
+                            <value>${dataDir}</value>
+                        </property>
+
+                        <property>
+                            <name>atomserver.ops.conf.dir</name>
+                            <value>${opsConfDir}</value>
+                        </property>
+                        <property>
+                            <name>atomserver.conf.dir</name>
+                            <value>${confDir}</value>
+                        </property>
+
+                        <property>
+                            <name>atomserver.servlet.context</name>
+                            <value>${servletContext}</value>
+                        </property>
+                        <property>
+                            <name>atomserver.servlet.mapping</name>
+                            <value>${servletMapping}</value>
+                        </property>
+
+                        <property>
+                            <name>atomserver.jmxhttp.port</name>
+                            <value>${jmxHttpPort}</value>
+                        </property>
+                        <property>
+                            <name>atomserver.jmxhttp.hostname</name>
+                            <value>${jmxHttpHost}</value>
+                        </property>
+
+                        <property>
+                            <name>atomserver.port</name>
+                            <value>${port}</value>
+                        </property>
+
+                        <property>
+                            <name>java.io.tmpdir</name>
+                            <value>${java.io.tmpdir}</value>
+                        </property>
+
+                        <!-- log4j ONLY looks at System properties .... sigh -->
+                        <property>
+                            <name>log4j.configuration</name>
+                            <value>org/atomserver/test-log4j.xml</value>
+                        </property>
+                        <property>
+                            <name>log4j.debug</name>
+                            <value>true</value>
+                        </property>
+                        <property>
+                            <name>root.appender</name>
+                            <value>${rootAppender}</value>
+                        </property>
+                        <property>
+                            <name>root.loglevel</name>
+                            <value>${rootLogLevel}</value>
+                        </property>
+                        <property>
+                            <name>atomserver.loglevel</name>
+                            <value>${logLevel}</value>
+                        </property>
+                        <property>
+                            <name>atomserver.logdir</name>
+                            <value>${logDir}</value>
+                        </property>
+                        <property>
+                            <name>atomserver.logfilename</name>
+                            <value>${logFileNamePrefix}</value>
+                        </property>
+
+                        <property>
+                            <name>ENABLE_DB_CLEAR_ALL</name>
+                            <value>${env.ENABLE_DB_CLEAR_ALL}</value>
+                        </property>
+
+                        <property>
+                            <name>plotsVisible</name>
+                            <value>${env.plotsVisible}</value>
+                        </property>
+
+                        <property>
+                            <name>csvfile</name>
+                            <value>${csvfile}</value>
+                        </property>
+
+                        <property>
+                            <name>title</name>
+                            <value>${title}</value>
+                        </property>
+
+                    </systemProperties>
+                </configuration>
+            </plugin>
+
+            <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+            <!-- Configures surefire to generated HTML test
+                 results with the test phase -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>2.3</version>
+                <inherited>true</inherited>
+                <executions>
+                    <execution>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report-only</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+            <!-- javadoc jar deployed with the binaries -->
+            <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.1</version>
+                <inherited>true</inherited>
+                <executions>
+                    <execution>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <attach>true</attach>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+            <!-- source binaries to be generated and deployed -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <inherited>true</inherited>
+                <executions>
+                    <execution>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <attach>true</attach>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.2</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+            <!-- 2.1 version was failing -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.0</version>
+            </plugin>
+
+            <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+            <!-- NOTE - jetty:run doesn't work anymore because it doen't have access to the test classpath to find
+            resources like the widgets.rnc.  TODO - fix this at some point
+            -->
+            <plugin>
+                <groupId>org.mortbay.jetty</groupId>
+                <artifactId>maven-jetty-plugin</artifactId>
+                <version>6.1.1</version>
+                <configuration>
+                    <contextPath>${servletContext}</contextPath>
+
+                    <connectors>
+                        <connector implementation="org.mortbay.jetty.bio.SocketConnector">
+                            <port>${port}</port>
+                        </connector>
+                    </connectors>
+
+                    <systemProperties>
+                        <!-- used to determine which {atomserver.env}.properties file to load off the CLASSPATH-->
+                        <systemProperty>
+                            <name>atomserver.env</name>
+                            <value>${env}</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <name>atomserver.data.dir</name>
+                            <value>${dataDir}</value>
+                        </systemProperty>
+
+                        <systemProperty>
+                            <name>atomserver.ops.conf.dir</name>
+                            <value>${opsConfDir}</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <name>atomserver.conf.dir</name>
+                            <value>${confDir}</value>
+                        </systemProperty>
+
+                        <systemProperty>
+                            <name>atomserver.servlet.context</name>
+                            <value>${servletContext}</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <name>atomserver.servlet.mapping</name>
+                            <value>${servletMapping}</value>
+                        </systemProperty>
+
+                        <systemProperty>
+                            <name>atomserver.port</name>
+                            <value>${port}</value>
+                        </systemProperty>
+
+                        <systemProperty>
+                            <name>atomserver.jmxhttp.port</name>
+                            <value>${jmxHttpPort}</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <name>atomserver.jmxhttp.hostname</name>
+                            <value>${jmxHttpHost}</value>
+                        </systemProperty>
+
+                        <!-- log4j ONLY looks at System properties .... sigh -->
+                        <systemProperty>
+                            <name>log4j.configuration</name>
+                            <value>org/atomserver/log4j.xml</value>
+                        </systemProperty>
+
+                        <systemProperty>
+                            <name>root.appender</name>
+                            <value>${rootAppender}</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <name>root.loglevel</name>
+                            <value>${rootLogLevel}</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <name>atomserver.loglevel</name>
+                            <value>${logLevel}</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <name>atomserver.logdir</name>
+                            <value>${logDir}</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <name>atomserver.logfilename</name>
+                            <value>${logFileNamePrefix}</value>
+                        </systemProperty>
+
+                    </systemProperties>
+                </configuration>
+            </plugin>
+        </plugins>
+
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-webdav</artifactId>
+                <version>1.0-beta-2</version>
+            </extension>
+        </extensions>
+    </build>
+
+    <!-- ======================================================================= -->
+    <!-- REPORTING
+         ========= -->
+    <reporting>
+        <plugins>
+            <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+            <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <attach>true</attach>
+                </configuration>
+                <inherited>true</inherited>
+            </plugin>
+
+            <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>cobertura-maven-plugin</artifactId>
+                <version>2.2</version>
+            </plugin>
+
+            <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+            </plugin>
+
+            <!-- ~~~~~~~~~~~~~~~~~~~~~~~~ -->
+            <!-- generates a source reference for this project -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jxr-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </reporting>
+
+    <!-- ======================================================================= -->
+    <!-- DEPLOYMENT
+         ========== -->
+    <distributionManagement>
+        <!-- this is where binaries are deployed -->
+        <repository>
+            <id>codehaus.org</id>
+            <name>AtomServer Repository</name>
+            <url>dav:https://dav.codehaus.org/repository/atomserver/</url>
+        </repository>
+        <!-- NOTE: the uniqueVersion element tells Maven to keep only a single version of a SNAPSHOT -->
+        <snapshotRepository>
+            <id>codehaus.org</id>
+            <uniqueVersion>false</uniqueVersion>
+            <name>AtomServer Snapshot Repository</name>
+            <url>dav:https://dav.codehaus.org/snapshots.repository/atomserver/</url>
+        </snapshotRepository>
+        <!-- this is where the site is deployed-->
+        <site>
+            <id>codehaus.org</id>
+            <url>dav:https://dav.codehaus.org/atomserver/</url>
+        </site>
+        <downloadUrl>
+            http://repository.codehaus.org/org/codehaus/atomserver/
+        </downloadUrl>
+    </distributionManagement>
+
+</project>
