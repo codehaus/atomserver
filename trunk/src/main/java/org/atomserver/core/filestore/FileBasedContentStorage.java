@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package org.atomserver.core.filestore;
 
 import org.apache.commons.io.FileUtils;
@@ -54,35 +53,30 @@ import java.util.zip.GZIPOutputStream;
 public class FileBasedContentStorage implements ContentStorage {
 
     static private Log log = LogFactory.getLog(FileBasedContentStorage.class);
+
     static private final String UTF_8 = "UTF-8";
 
     public static final int MAX_RETRIES = 3;
+
     public static final int SLEEP_BETWEEN_RETRY = 750;
 
     private static final String GZIP_EXTENSION = ".gz";
 
-    private static final Pattern FILE_PATH_WORKSPACE_COLLECTION_PATTERN =
-            Pattern.compile("^/?(\\w+)/(\\w+)/.*$");
+    private static final Pattern FILE_PATH_WORKSPACE_COLLECTION_PATTERN = Pattern.compile("^/?(\\w+)/(\\w+)/.*$");
 
-    private static final Pattern FILE_PATH_LOCALE_REV_PATTERN =
-            Pattern.compile("^/?((?:[a-z]{2})?(?:/[A-Z]{2})?)/\\w+\\.xml.r(\\d+)(?:" + GZIP_EXTENSION + ")?$");
-
-    static public final String TRASH_DIR_NAME = "_trash";
+    private static final Pattern FILE_PATH_LOCALE_REV_PATTERN = Pattern
+            .compile("^/?((?:[a-z]{2})?(?:/[A-Z]{2})?)/\\w+\\.xml.r(\\d+)(?:" + GZIP_EXTENSION + ")?$");
 
     static private final int NO_REVISION = -777;
 
-    static private final int SWEEP_TO_TRASH_LAG_TIME_SECS_DEFAULT = 120;
+    static private final int DELETE_LAG_TIME_SECS_DEFAULT = 120;
 
     //============================================
     private File nfsTempFile = null;
+
     private String rootDirAbsPath = null;
 
-    private boolean sweepToTrash = true;
-
-    private int sweepToTrashLagTimeSecs = SWEEP_TO_TRASH_LAG_TIME_SECS_DEFAULT;
-
-    static private final String TRASH_LOG_NAME = "org.atomserver.trash";
-    static private Log trashLog = LogFactory.getLog(TRASH_LOG_NAME);
+    private int deleteLagTimeSecs = DELETE_LAG_TIME_SECS_DEFAULT;
 
     //=========================
     // The following methods are for testing purposes ONLY
@@ -102,14 +96,6 @@ public class FileBasedContentStorage implements ContentStorage {
 
     public boolean testingWroteAvailabiltyFile() {
         return successfulAvailabiltyFileWrite;
-    }
-
-    public static Log getTrashLog() {
-        return trashLog;
-    }//====================================
-
-    public static void setTrashLog(Log trashLog) {
-        FileBasedContentStorage.trashLog = trashLog;
     }
 
     /**
@@ -152,8 +138,8 @@ public class FileBasedContentStorage implements ContentStorage {
             throw new AtomServerException(msg);
         }
         if (!nfsTempFile.exists()) {
-            String msg = "The NFS tempfile - which indicates that NFS is still up -- is missing (in "
-                         + rootDirAbsPath + ")" + "\n NFS is DOWN";
+            String msg = "The NFS tempfile - which indicates that NFS is still up -- is missing (in " + rootDirAbsPath + ")"
+                    + "\n NFS is DOWN";
             log.error(msg);
             throw new AtomServerException(msg);
         }
@@ -183,7 +169,7 @@ public class FileBasedContentStorage implements ContentStorage {
             this.nfsTempFile.deleteOnExit();
         } catch (IOException ee) {
             String msg = "The NFS tempfile - which indicates that NFS is still up -- cannot be created (in "
-                         + rootDirAbsPath + ")";
+                    + rootDirAbsPath + ")";
             log.error(msg);
             throw new AtomServerException(msg, ee);
         }
@@ -198,11 +184,8 @@ public class FileBasedContentStorage implements ContentStorage {
         List<String> collections = new ArrayList<String>();
         for (File file : pathFromRoot(workspace).listFiles(new FileFilter() {
             public boolean accept(File pathname) {
-                return pathname.exists() &&
-                       pathname.isDirectory() &&
-                       pathname.canRead() &&
-                       pathname.canWrite() &&
-                       !pathname.isHidden();
+                return pathname.exists() && pathname.isDirectory() && pathname.canRead() && pathname.canWrite()
+                        && !pathname.isHidden();
             }
         })) {
             collections.add(file.getName());
@@ -241,8 +224,7 @@ public class FileBasedContentStorage implements ContentStorage {
         try {
             collectionDir.mkdirs();
         } catch (SecurityException e) {
-            String msg = "collection " + workspace + "/" + collection +
-                         " does not exist and could not be created.";
+            String msg = "collection " + workspace + "/" + collection + " does not exist and could not be created.";
             log.error(msg, e);
             throw new AtomServerException(msg, e);
         }
@@ -260,35 +242,20 @@ public class FileBasedContentStorage implements ContentStorage {
         initializeRootDir(rootDir);
     }
 
-    // Used by IOC container to enable/disable sweeping excess revisions to a separate trash dir
-
+    // Used by IOC container to set the time (in Seconds) to lag when deleting
     @ManagedAttribute
-    public void setSweepToTrash(boolean sweepToTrash) {
-        this.sweepToTrash = sweepToTrash;
+    public void setDeleteLagTimeSecs(int DeleteLagTimeSecs) {
+        this.deleteLagTimeSecs = DeleteLagTimeSecs;
     }
 
     @ManagedAttribute
-    public boolean getSweepToTrash() {
-        return sweepToTrash;
-    }
-
-    // Used by IOC container to set the time (in Seconds) to lag when sweeping excess revisions
-    // to a separate trash dir
-
-    @ManagedAttribute
-    public void setSweepToTrashLagTimeSecs(int sweepToTrashLagTimeSecs) {
-        this.sweepToTrashLagTimeSecs = sweepToTrashLagTimeSecs;
-    }
-
-    @ManagedAttribute
-    public int getSweepToTrashLagTimeSecs() {
-        return sweepToTrashLagTimeSecs;
+    public int getDeleteLagTimeSecs() {
+        return deleteLagTimeSecs;
     }
 
     public boolean canRead() {
         return getRootDir().exists() && getRootDir().canRead();
     }
-
 
     /**
      * {@inheritDoc}
@@ -304,8 +271,7 @@ public class FileBasedContentStorage implements ContentStorage {
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
             if (descriptor.getRevision() == EntryDescriptor.UNDEFINED_REVISION) {
-                String msg = "The revision number is UNDEFINED when attempting to GET the XML file for "
-                             + descriptor;
+                String msg = "The revision number is UNDEFINED when attempting to GET the XML file for " + descriptor;
                 log.error(msg);
                 throw new AtomServerException(msg);
             }
@@ -333,16 +299,17 @@ public class FileBasedContentStorage implements ContentStorage {
                 if ((exceptionThrown == null) && (result != null)) {
                     finished = true;
                 } else {
-                    try { Thread.sleep(SLEEP_BETWEEN_RETRY); }
-                    catch (InterruptedException ee) {
+                    try {
+                        Thread.sleep(SLEEP_BETWEEN_RETRY);
+                    } catch (InterruptedException ee) {
                         // never interrupted
                     }
                     retries++;
                 }
             }
             if (exceptionThrown != null) {
-                String msg = MessageFormat.format("IOException getting XML data for entry {0} :: Reason {1}",
-                                                  descriptor, exceptionThrown.getMessage());
+                String msg = MessageFormat.format("IOException getting XML data for entry {0} :: Reason {1}", descriptor,
+                        exceptionThrown.getMessage());
                 log.error(msg, exceptionThrown);
                 throw new AtomServerException(msg, exceptionThrown);
             }
@@ -354,7 +321,6 @@ public class FileBasedContentStorage implements ContentStorage {
 
     }
 
-
     /**
      * {@inheritDoc}
      */
@@ -362,8 +328,7 @@ public class FileBasedContentStorage implements ContentStorage {
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
             if (descriptor.getRevision() == EntryDescriptor.UNDEFINED_REVISION) {
-                String msg = "The revision number is UNDEFINED when attempting to PUT the XML file for "
-                             + descriptor;
+                String msg = "The revision number is UNDEFINED when attempting to PUT the XML file for " + descriptor;
                 log.error(msg);
                 throw new AtomServerException(msg);
             }
@@ -380,13 +345,13 @@ public class FileBasedContentStorage implements ContentStorage {
                 // marshall the entry to that file
                 writeStringToFile(entryXml, xmlFile);
 
-                // move ANY files except the just created  revision to "_trash" dir
+                // delete any files older than the last revision
                 // NOTE: cleanupExcessFiles will NOT throw any Exceptions
                 cleanupExcessFiles(xmlFile, descriptor);
 
             } catch (Exception ee) {
-                String errmsg = MessageFormat.format("Exception putting XML data for entry {0}   Reason:: {1}",
-                                                     descriptor, ee.getMessage());
+                String errmsg = MessageFormat.format("Exception putting XML data for entry {0}   Reason:: {1}", descriptor,
+                        ee.getMessage());
                 if (xmlFile != null && xmlFile.exists()) {
                     errmsg += "\n!!!!!!!!! WARNING !!!!!!!! The file (" + xmlFile + ") exists BUT the write FAILED";
                 }
@@ -451,7 +416,6 @@ public class FileBasedContentStorage implements ContentStorage {
         }
     }
 
-
     /**
      * {@inheritDoc}
      */
@@ -486,7 +450,6 @@ public class FileBasedContentStorage implements ContentStorage {
         return file == null ? 0L : file.lastModified();
     }
 
-
     private String getFileName(String entryId, int revision, boolean gzipped) {
         String fileName = entryId + ".xml";
         if (revision != NO_REVISION) {
@@ -502,11 +465,7 @@ public class FileBasedContentStorage implements ContentStorage {
         return getMetaDataFromFilePath(new File(filePath));
     }
 
-    public Object getPhysicalRepresentation(String workspace,
-                                            String collection,
-                                            String entryId,
-                                            Locale locale,
-                                            int revision) {
+    public Object getPhysicalRepresentation(String workspace, String collection, String entryId, Locale locale, int revision) {
         return findExistingEntryFile(new BaseEntryDescriptor(workspace, collection, entryId, locale, revision));
     }
 
@@ -523,28 +482,25 @@ public class FileBasedContentStorage implements ContentStorage {
         if (log.isDebugEnabled()) {
             log.debug("relative path = " + relativePath);
         }
-        Matcher matcher =
-                FILE_PATH_WORKSPACE_COLLECTION_PATTERN.matcher(relativePath);
+        Matcher matcher = FILE_PATH_WORKSPACE_COLLECTION_PATTERN.matcher(relativePath);
         if (matcher.matches()) {
             String workspace = matcher.group(1);
             String collection = matcher.group(2);
             File collectionRoot = pathFromRoot(workspace, collection);
 
             for (PartitionPathGenerator pathGenerator : partitionPathGenerators) {
-                PartitionPathGenerator.ReverseMatch match =
-                        pathGenerator.reverseMatch(collectionRoot, file);
+                PartitionPathGenerator.ReverseMatch match = pathGenerator.reverseMatch(collectionRoot, file);
                 if (match != null) {
                     String entryId = match.getSeed();
-                    Matcher localeRevMatcher =
-                            FILE_PATH_LOCALE_REV_PATTERN.matcher(match.getRest());
+                    Matcher localeRevMatcher = FILE_PATH_LOCALE_REV_PATTERN.matcher(match.getRest());
                     Locale locale;
                     int revision;
                     if (localeRevMatcher.matches()) {
-                        locale = StringUtils.isEmpty(localeRevMatcher.group(1)) ?
-                                 null :
-                                 LocaleUtils.toLocale(localeRevMatcher.group(1).replace("/", "_"));
-                        try { revision = Integer.parseInt(localeRevMatcher.group(2)); }
-                        catch (NumberFormatException ee) {
+                        locale = StringUtils.isEmpty(localeRevMatcher.group(1)) ? null : LocaleUtils
+                                .toLocale(localeRevMatcher.group(1).replace("/", "_"));
+                        try {
+                            revision = Integer.parseInt(localeRevMatcher.group(2));
+                        } catch (NumberFormatException ee) {
                             String msg = "Could not parse revision from file= " + file;
                             log.error(msg);
                             throw new AtomServerException(msg);
@@ -566,18 +522,14 @@ public class FileBasedContentStorage implements ContentStorage {
     }
 
     /**
-     * removes all of the files, except the file passed in, to the trash bin for deletion.
-     * The trash dir is meant to be cleaned up by some external process.
+     * removes all of the files, except the file passed in
+     * No more trash bin, files get deleted
      * NOTE: this method does not throw an Exception. Instead, it simply logs errors and moves on.
      *
      * @param thisRev    the file pointint at the current revision
      * @param descriptor the entry that relates to the content
      */
     private void cleanupExcessFiles(final File thisRev, final EntryDescriptor descriptor) {
-
-        if (!sweepToTrash) {
-            return;
-        }
 
         String fullPath = FilenameUtils.getFullPath(thisRev.getAbsolutePath());
         File baseDir = new File(fullPath);
@@ -586,20 +538,6 @@ public class FileBasedContentStorage implements ContentStorage {
         }
 
         try {
-            File trashDir = findExistingTrashDir(descriptor);
-            if (trashDir == null) {
-                trashDir = new File(thisRev.getParentFile(), TRASH_DIR_NAME);
-                if (log.isTraceEnabled()) {
-                    log.trace("%> no trash dir, will create one at " + trashDir + " if needed");
-                }
-            } else if (!trashDir.getParentFile().equals(thisRev.getParentFile())) {
-                File newTrashDir = new File(thisRev.getParentFile(), TRASH_DIR_NAME);
-                if (log.isTraceEnabled()) {
-                    log.trace("%> trash dir " + trashDir + " will be migrated to " + newTrashDir);
-                }
-                trashDir.renameTo(newTrashDir);
-                trashDir = newTrashDir;
-            }
 
             // get a file pointer at the previous revision of the file -- we DON'T want to delete it
             final File oneRevBack = findExistingEntryFile(descriptor, 1);
@@ -630,15 +568,9 @@ public class FileBasedContentStorage implements ContentStorage {
                 final File[] toDelete = directoryToClean.listFiles(new FileFilter() {
                     public boolean accept(File fileToCheck) {
 
-                        return fileToCheck != null &&
-                               fileToCheck.exists() &&
-                               fileToCheck.isFile() &&
-                               fileToCheck.canRead() &&
-                               fileToCheck.canWrite() &&
-                               !fileToCheck.isHidden() &&
-                               !thisRev.equals(fileToCheck) &&
-                               (oneRevBack == null || !oneRevBack.equals(fileToCheck)) &&
-                               ((System.currentTimeMillis() - fileToCheck.lastModified()) > sweepToTrashLagTimeSecs * 1000L);
+                        return fileToCheck != null && fileToCheck.exists() && fileToCheck.isFile() && fileToCheck.canRead()
+                                && fileToCheck.canWrite() && !fileToCheck.isHidden() && !thisRev.equals(fileToCheck)
+                                && (oneRevBack == null || !oneRevBack.equals(fileToCheck));
 
                     }
                 });
@@ -646,38 +578,26 @@ public class FileBasedContentStorage implements ContentStorage {
                 // if there's anything to delete...
                 if (toDelete != null && toDelete.length > 0) {
 
-                    // first of all, there needs to be a "_trash" subdirectory,
-                    // so we make sure that exists
-                    trashDir.mkdirs();
-
-                    File root = getRootDir();
-                    int rootDirLen = (root != null) ? root.getCanonicalPath().length() : 0;
-                    // and move the files into it
                     for (File file : toDelete) {
-                        File moveTo = new File(trashDir, file.getName());
-                        if (!file.renameTo(moveTo)) {
-                            throw new IOException("When cleaning up excess revisions, could not move the file ("
-                                                  + file + ") to (" + moveTo + ")");
+
+                        //delete the file
+                        if (log.isTraceEnabled()) {
+                            log.trace("deleting file" + file.getName());
                         }
-                        // log the deleted files so that external scripts can locate them
-                        if (trashLog != null) {
-                            String relativePath = moveTo.getCanonicalPath().substring(rootDirLen + 1); // get relateivePath
-                            trashLog.info(System.currentTimeMillis() / 1000 + " " + relativePath); // seconds timestamp
-                        }
+
+                        FileUtils.forceDelete(file);
                     }
                     cleanUpToCollection(descriptor, directoryToClean);
                 }
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             // if there was any exception in the move (including the one we might have just thrown
             // above) then we should log it
             log.error("Error when cleaning up dir [" + baseDir + "] when writing file (" + thisRev + ")", e);
         }
     }
 
-    private void cleanUpToCollection(EntryDescriptor descriptor, File cleanDir)
-            throws IOException {
+    private void cleanUpToCollection(EntryDescriptor descriptor, File cleanDir) throws IOException {
         // under no circumstances do we want to clean the collection directory.
         File stopDir = pathFromRoot(descriptor.getWorkspace(), descriptor.getCollection());
 
@@ -687,16 +607,13 @@ public class FileBasedContentStorage implements ContentStorage {
 
         // if the stop dir is not an ancestor of the clean dir, we are in trouble.
         if (!cleanDir.getAbsolutePath().startsWith(stopDir.getAbsolutePath())) {
-            throw new AtomServerException("the directory to clean (" + cleanDir + ") is not " +
-                                          "within the collection of the provided entry (" +
-                                          descriptor + ").");
+            throw new AtomServerException("the directory to clean (" + cleanDir + ") is not "
+                    + "within the collection of the provided entry (" + descriptor + ").");
         }
 
         // as long as we are underneath the stop dir, and we are pointing at a directory that has
         // no files at all, we should delete the directory and walk up to our parent.
-        while (!cleanDir.equals(stopDir) &&
-               cleanDir.isDirectory() &&
-               cleanDir.listFiles().length == 0) {
+        while (!cleanDir.equals(stopDir) && cleanDir.isDirectory() && cleanDir.listFiles().length == 0) {
             if (log.isTraceEnabled()) {
                 log.trace("deleting empty directory " + cleanDir);
             }
@@ -705,38 +622,17 @@ public class FileBasedContentStorage implements ContentStorage {
         }
     }
 
-    private File findExistingTrashDir(EntryDescriptor entry) {
-        if (log.isTraceEnabled()) {
-            log.trace("%> looking for trash directory for entry " + entry);
-        }
-        for (PartitionPathGenerator pathGenerator : partitionPathGenerators) {
-            File trashDir = new File(generateEntryDir(entry, pathGenerator), TRASH_DIR_NAME);
-            if (log.isTraceEnabled()) {
-                log.trace("%> checking trash directory path " + trashDir);
-            }
-            if (trashDir.exists() && trashDir.isDirectory()) {
-                if (log.isTraceEnabled()) {
-                    log.trace("%> trash directory " + trashDir + " exists.");
-                }
-                return trashDir;
-            }
-        }
-        return null;
-    }
-
     protected File findExistingEntryFile(EntryDescriptor entry) {
         return findExistingEntryFile(entry, 0);
     }
 
-    protected File findExistingEntryFile(EntryDescriptor entry,
-                                         int revisionsBack) {
+    protected File findExistingEntryFile(EntryDescriptor entry, int revisionsBack) {
         if (log.isTraceEnabled()) {
             log.trace("%> looking for entry file for " + entry);
         }
         for (PartitionPathGenerator pathGenerator : partitionPathGenerators) {
             if (isGzipEnabled()) {
-                File entryFile = generateEntryFilePath(entry, pathGenerator, true,
-                                                       entry.getRevision() - revisionsBack);
+                File entryFile = generateEntryFilePath(entry, pathGenerator, true, entry.getRevision() - revisionsBack);
                 if (log.isTraceEnabled()) {
                     log.trace("%> checking file path " + entryFile);
                 }
@@ -749,8 +645,7 @@ public class FileBasedContentStorage implements ContentStorage {
                     log.info("Could not locate the GZIP file: " + entryFile + " " + entry);
                 }
             }
-            File entryFile = generateEntryFilePath(entry, pathGenerator, false,
-                                                   entry.getRevision() - revisionsBack);
+            File entryFile = generateEntryFilePath(entry, pathGenerator, false, entry.getRevision() - revisionsBack);
             if (log.isTraceEnabled()) {
                 log.trace("%> checking file path " + entryFile);
             }
@@ -770,19 +665,14 @@ public class FileBasedContentStorage implements ContentStorage {
         return generateEntryFilePath(entry, partitionPathGenerators.get(0), isGzipEnabled(), entry.getRevision());
     }
 
-
-    public File generateEntryFilePath(EntryDescriptor entry,
-                                      PartitionPathGenerator pathGenerator,
-                                      boolean gzipped,
-                                      int revision) {
-        return new File(generateEntryDir(entry, pathGenerator),
-                        getFileName(entry.getEntryId(), revision, gzipped));
+    public File generateEntryFilePath(EntryDescriptor entry, PartitionPathGenerator pathGenerator, boolean gzipped,
+            int revision) {
+        return new File(generateEntryDir(entry, pathGenerator), getFileName(entry.getEntryId(), revision, gzipped));
     }
 
     private File generateEntryDir(EntryDescriptor entry, PartitionPathGenerator pathGenerator) {
-        File entryDir = new File(pathGenerator.generatePath(pathFromRoot(entry.getWorkspace(), entry.getCollection()),
-                                                            entry.getEntryId()),
-                                 entry.getEntryId());
+        File entryDir = new File(pathGenerator.generatePath(pathFromRoot(entry.getWorkspace(), entry.getCollection()), entry
+                .getEntryId()), entry.getEntryId());
         if (entry.getLocale() != null) {
             if (entry.getLocale().getLanguage() != null) {
                 entryDir = new File(entryDir, entry.getLocale().getLanguage());
@@ -797,8 +687,8 @@ public class FileBasedContentStorage implements ContentStorage {
         return entryDir;
     }
 
-    private List<PartitionPathGenerator> partitionPathGenerators =
-            Collections.<PartitionPathGenerator>singletonList(new PrefixPartitionPathGenerator());
+    private List<PartitionPathGenerator> partitionPathGenerators = Collections
+            .<PartitionPathGenerator> singletonList(new PrefixPartitionPathGenerator());
 
     public List<PartitionPathGenerator> getPartitionPathGenerators() {
         return partitionPathGenerators;
@@ -842,4 +732,3 @@ public class FileBasedContentStorage implements ContentStorage {
         }
     }
 }
-
