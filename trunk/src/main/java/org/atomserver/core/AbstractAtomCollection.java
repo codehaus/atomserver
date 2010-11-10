@@ -956,6 +956,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         EntryMetaData entryMetaData = executeTransactionally(
                 new TransactionalTask<EntryMetaData>() {
                     public EntryMetaData execute() {
+                        
                         EntryMetaData entryMetaData =
                                 deleteEntry(entryTarget, setDeletedFlag());
 
