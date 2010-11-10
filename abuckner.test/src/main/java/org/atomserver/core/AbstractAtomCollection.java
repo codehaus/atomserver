@@ -957,23 +957,33 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                 new TransactionalTask<EntryMetaData>() {
                     public EntryMetaData execute() {
                         
-                        EntryMetaData entryMetaData =
+                        boolean isObliterate = QueryParam.parse(request);
+                        
+                        if(isObliterate){
+                            obliterateEntries(entryTarget);
+                        }
+                        else{
+                            EntryMetaData entryMetaData =
                                 deleteEntry(entryTarget, setDeletedFlag());
 
-                        // Replace the XML file with a "deleted file"
-                        //  we wait to do this now that we know that the delete was successfull
-                        EntryMetaData entryMetaDataClone = (EntryMetaData) (entryMetaData.clone());
-                        int currentRevision = entryMetaData.getRevision();
-                        entryMetaDataClone.setRevision((currentRevision - 1));
+                            // Replace the XML file with a "deleted file"
+                            //  we wait to do this now that we know that the delete was successful
+                            EntryMetaData entryMetaDataClone = (EntryMetaData) (entryMetaData.clone());
+                            int currentRevision = entryMetaData.getRevision();
+                            entryMetaDataClone.setRevision((currentRevision - 1));
 
-                        getContentStorage().deleteContent(createDeletedEntryXML(entryMetaDataClone),
+                            getContentStorage().deleteContent(createDeletedEntryXML(entryMetaDataClone),
                                                           entryMetaData);
-                        return entryMetaData;
+                            return entryMetaData;
+                        }
                     }
                 }
         );
         return (entryMetaData == null) ? null : newEntry(abdera, entryMetaData, EntryType.link);
     }
+    
+    //abstract String obliterateEntries(String entriesQueries);
+        
 
     //~~~~~~~~~~~~~~~~~~~~~~
 
