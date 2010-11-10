@@ -22,26 +22,15 @@ public class TestingContentStorage extends FileBasedContentStorage {
         super(rootDir);
     }
 
-
-    // Used by IOC container to enable/disable sweeping excess revisions to a separate trash dir
-    @ManagedAttribute
-    public void setSweepToTrash( boolean sweepToTrash ) {
-        super.setSweepToTrash(sweepToTrash);
-    }
-    @ManagedAttribute
-    public boolean getSweepToTrash() {
-        return super.getSweepToTrash();
-    }
-
     // Used by IOC container to set the time (in Seconds) to lag when sweeping excess revisions
     // to a separate trash dir
     @ManagedAttribute
-    public void setSweepToTrashLagTimeSecs(int sweepToTrashLagTimeSecs) {
-        super.setSweepToTrashLagTimeSecs(sweepToTrashLagTimeSecs);
+    public void setDeleteLagTimeSecs(int DeleteLagTimeSecs) {
+        super.setDeleteLagTimeSecs(DeleteLagTimeSecs);
     }
     @ManagedAttribute
-    public int getSweepToTrashLagTimeSecs() {
-        return super.getSweepToTrashLagTimeSecs();
+    public int getDeleteLagTimeSecs() {
+        return super.getDeleteLagTimeSecs();
     }
 
     public String getContent(EntryDescriptor descriptor)  {
