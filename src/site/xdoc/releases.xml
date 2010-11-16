@@ -7,6 +7,11 @@
     </properties>
 
     <body>
+        <section name="Release 2.3.4 (11/16/10)">
+            <ul>
+                <li>As new revisions of an atom entry are published, trash is no longer created. Revisions are now hard deleted.</li>
+            </ul>
+        </section>
         <section name="Release 2.3.3 (10/29/10)">
             <ul>
                 <li>Added support for no-latency flag in getting feeds. When this flag is passed as an argument with the value true in the call, the 
