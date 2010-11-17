@@ -131,6 +131,14 @@ abstract public class AbstractAtomCollection implements AtomCollection {
      */
     abstract protected EntryMetaData deleteEntry(EntryTarget entryTarget,
                                                  boolean setDeletedFlag) throws AtomServerException;
+    
+    /**
+     * The deleteEntry() method on the AtomCollection API delegates to this method within the subclass
+     * with the obliterate flag thrown 
+     * 
+     * @param entryDescriptor   basically the EntryTarget
+     */
+    abstract protected void obliterateEntry(EntryDescriptor entryDescriptor);
 
     // ----------
     //   statics
@@ -957,10 +965,12 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                 new TransactionalTask<EntryMetaData>() {
                     public EntryMetaData execute() {
                         
-                        boolean isObliterate = QueryParam.parse(request);
+                        boolean isObliterate = (Boolean)QueryParam.obliterate.parse(request);
                         
                         if(isObliterate){
-                            obliterateEntries(entryTarget);
+                            EntryMetaData lastMetaData = getEntry(entryTarget);
+                            obliterateEntry(entryTarget);
+                            return lastMetaData;
                         }
                         else{
                             EntryMetaData entryMetaData =
@@ -981,12 +991,6 @@ abstract public class AbstractAtomCollection implements AtomCollection {
         );
         return (entryMetaData == null) ? null : newEntry(abdera, entryMetaData, EntryType.link);
     }
-    
-    //abstract String obliterateEntries(String entriesQueries);
-        
-
-    //~~~~~~~~~~~~~~~~~~~~~~
-
     private boolean postProcessEntryContents(String entryXml, EntryMetaData entryMetaData) {
         log.debug("BEGIN AUTO_TAGGING................");
         EntryAutoTagger autoTagger = getAutoTagger();
