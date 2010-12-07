@@ -967,6 +967,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                         
                         boolean isObliterate = (Boolean)QueryParam.obliterate.parse(request);
                         
+                        //completely delete the entryTarget and return the metaData of that deleted target
                         if(isObliterate){
                             EntryMetaData lastMetaData = getEntry(entryTarget);
                             obliterateEntry(entryTarget);
