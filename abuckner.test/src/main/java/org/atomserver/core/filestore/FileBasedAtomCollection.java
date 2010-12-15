@@ -158,13 +158,13 @@ public class FileBasedAtomCollection
     }
     /**
      */
-    protected void obliterateEntry(final EntryDescriptor entryMetaData) {
-        String workspace = entryMetaData.getWorkspace();
-        String collection = entryMetaData.getCollection();
-        Locale locale = entryMetaData.getLocale();
-        String entryId = entryMetaData.getEntryId();
+    protected void obliterateEntry(final EntryDescriptor entryDescript) {
+        String workspace = entryDescript.getWorkspace();
+        String collection = entryDescript.getCollection();
+        Locale locale = entryDescript.getLocale();
+        String entryId = entryDescript.getEntryId();
 
-        if (!contentExists(workspace,entryMetaData)) {
+        if (!contentExists(workspace,entryDescript)) {
             throw new EntryNotFoundException(EntryNotFoundException.EntryNotFoundType.DELETE,
                                              "Property [" + collection + ", " + entryId + ", " + locale + "] NOT FOUND");
         }
