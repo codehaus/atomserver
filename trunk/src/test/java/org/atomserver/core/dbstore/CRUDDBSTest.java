@@ -115,9 +115,23 @@ public class CRUDDBSTest extends CRUDDBSTestCase {
         // SELECT
         selectAndCheckDeletion( fullURL );
     }
+    
+    public void testObliterate() throws Exception {
+        String fullURL = getServerURL() + getURLPath();
+        String id = getURLPath();
+
+        // INSERT
+        String editURI = insert(id, fullURL, getFileXMLInsert(), false, false );
+
+        // OBLITERATE
+        editURI = delete(editURI+"?obliterate=true");
+
+        // SELECT
+        selectAndCheckObliteration( fullURL );
+    }
 
     private void selectAndCheckDeletion( String url ){
-        ClientResponse response = clientGetWithFullURL(url, 200);
+        ClientResponse response = clientGetWithFullURL(url,200);
         Document<Entry> doc = response.getDocument();
         Entry entry = doc.getRoot();
         String content = entry.getContent();
@@ -125,6 +139,13 @@ public class CRUDDBSTest extends CRUDDBSTestCase {
         int count = StringUtils.countMatches( content, "<deletion xmlns");
         log.debug( "Count= " + count + "\nContent= \n" + content );
         assertEquals( 1, count );
+        response.release();
+    }
+    
+    private void selectAndCheckObliteration( String url ){
+        ClientResponse response = clientGetWithFullURL(url, 404);
+        //redundant because clientGetWithFullURL() also does this check
+        assertEquals(response.getStatus(),404 );
         response.release();
     }
 }

@@ -88,7 +88,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
          return ((DBBasedAtomService)parentAtomWorkspace.getParentAtomService()).getTransactionTemplate();
      }
 
-    public void obliterateEntry(final EntryMetaData entryMetaData) {
+    public void obliterateEntry(final EntryDescriptor entryMetaData) {
         StopWatch stopWatch = new AtomServerStopWatch();
         try {
             getTransactionTemplate().execute(new TransactionCallbackWithoutResult() {
