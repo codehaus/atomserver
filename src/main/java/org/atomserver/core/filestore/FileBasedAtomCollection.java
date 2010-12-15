@@ -156,6 +156,19 @@ public class FileBasedAtomCollection
 
         return null;
     }
+    /**
+     */
+    protected void obliterateEntry(final EntryDescriptor entryDescript) {
+        String workspace = entryDescript.getWorkspace();
+        String collection = entryDescript.getCollection();
+        Locale locale = entryDescript.getLocale();
+        String entryId = entryDescript.getEntryId();
+
+        if (!contentExists(workspace,entryDescript)) {
+            throw new EntryNotFoundException(EntryNotFoundException.EntryNotFoundType.DELETE,
+                                             "Property [" + collection + ", " + entryId + ", " + locale + "] NOT FOUND");
+        }
+    }
 
 
     //--------------------------------
@@ -233,11 +246,10 @@ public class FileBasedAtomCollection
         return ((FileBasedContentStorage) getContentStorage()).lastModified(entryTarget);
     }
 
-    public boolean contentExists(String workspace, EntryTarget entryTarget) {
-        return getContentStorage().contentExists(entryTarget);
+    public boolean contentExists(String workspace, EntryDescriptor entryDescriptor) {
+        return getContentStorage().contentExists(entryDescriptor);
     }
-
-
+    
     //--------------------------------
     //      private classes
     //--------------------------------

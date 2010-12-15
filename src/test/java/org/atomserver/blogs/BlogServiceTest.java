@@ -193,7 +193,7 @@ public class BlogServiceTest extends JettyWebAppTestCase {
         assertEquals(404, response.getStatus());
         response.release();
     }
-
+    
     public void testUpdateEntry() throws Exception {
 
         AbderaClient client = new AbderaClient();

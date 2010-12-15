@@ -200,7 +200,20 @@ public class QueryParamTest extends URITargetTestCase {
         checkStartIndex((URITarget) target);
         checkLocale((URITarget) target);
         checkNoLatency((URITarget) target, true);
-
+        
+        target = checkTarget("/" + servletMapping + "/widgets/acme/123.en.xml/3?start-index=" + startIndex +
+                             "&locale=" + localeString  + "&obliterate=" + false,
+                             TargetType.TYPE_ENTRY);
+        checkStartIndex((URITarget) target);
+        checkLocale((URITarget) target);
+        checkObliterate((URITarget) target, false);
+        
+        target = checkTarget("/" + servletMapping + "/widgets/acme/123.en.xml/3?start-index=" + startIndex +
+                             "&locale=" + localeString  + "&obliterate=" + true,
+                             TargetType.TYPE_ENTRY);
+        checkStartIndex((URITarget) target);
+        checkLocale((URITarget) target);
+        checkObliterate((URITarget) target, true);
     }
 
     private void checkUpdatedMin(URITarget target) {
@@ -254,5 +267,11 @@ public class QueryParamTest extends URITargetTestCase {
         log.debug("noLatencyParam = " + noLatencyParam);
         assertNotNull(noLatencyParam);
         assertEquals(expected, noLatencyParam);
+    }
+    private void checkObliterate(URITarget target, Boolean expected) {
+        Boolean obliterateParam = target.getObliterate();
+        log.debug("obliterateParam = " + obliterateParam);
+        assertNotNull(obliterateParam);
+        assertEquals(expected, obliterateParam);
     }
 }
