@@ -76,17 +76,17 @@ public class AtomServerPerfLogTagFormatter {
     }
     
   //~~~~~~~~~~~~~~~~~~~~~~
-    public static String getPerfLogEntryCategoryString( PubSubRegistration entryQuery ) {
-        if ( entryQuery == null )
+    public static String getPerfLogEntryCategoryString( PubSubRegistration reg ) {
+        if ( reg == null )
             return "";
 
         StringBuffer buff = new StringBuffer();
         buff.append( "[" );
-        buff.append( entryQuery.getFeedURL() );
+        buff.append( reg.getFeedURL() );
         buff.append( "." );
-        buff.append( entryQuery.getCallbackURL() );
+        buff.append( reg.getCallbackURL() );
         buff.append( "." );
-        buff.append( entryQuery.getTimestamp() );
+        buff.append( reg.getTimestamp() );
         buff.append( "]" );
         return buff.toString();
     }
