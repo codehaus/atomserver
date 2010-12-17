@@ -7,6 +7,7 @@ DROP TABLE IF EXISTS EntryCategory CASCADE;
 DROP TABLE IF EXISTS EntryStore CASCADE;
 DROP TABLE IF EXISTS AtomCollection CASCADE;
 DROP TABLE IF EXISTS AtomWorkspace CASCADE;
+DROP TABLE IF EXISTS ClientFeedRegistration CASCADE;
 DROP VIEW IF EXISTS vw_AggregateEntry;
 DROP VIEW IF EXISTS vw_EntryWithCategory;
 
@@ -27,6 +28,19 @@ Workspace           VARCHAR(20)             NOT NULL,
 Collection          VARCHAR(20)             NOT NULL,
 PRIMARY KEY (Workspace, Collection),
 FOREIGN KEY (Workspace) REFERENCES AtomWorkspace(Workspace)
+);
+
+/*==============================================================*/
+/* Table: ClientFeedRegistration                                */
+/*==============================================================*/
+CREAT TABLE ClientFeedRegistration (
+RegistrationId      BIGINT                  NOT NULL,
+FeedURL             VARCHAR(1024)           NOT NULL,
+CallbackURL         VARCHAR(1024)           NOT NULL,
+Timestamp           BIGINT                  NOT NULL,
+PRIMARY KEY (RegistrationId),
+UNIQUE (Timestamp),
+UNIQUE (FeedURL, CallbackURL)
 );
 
 /*==============================================================*/
