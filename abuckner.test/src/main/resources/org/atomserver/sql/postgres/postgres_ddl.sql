@@ -34,7 +34,7 @@ FOREIGN KEY (Workspace) REFERENCES AtomWorkspace(Workspace)
 /* Table: PubSubRegistration                                    */
 /*==============================================================*/
 CREAT TABLE PubSubRegistration (
-RegistrationId      BIGINT                  NOT NULL,
+RegistrationID      BIGINT                  NOT NULL,
 FeedURL             VARCHAR(1024)           NOT NULL,
 CallbackURL         VARCHAR(1024)           NOT NULL,
 Timestamp           BIGINT                  NOT NULL,
