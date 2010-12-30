@@ -88,7 +88,7 @@
     </resultMap>
     
     <resultMap class="pubSubRegistration" id="pubSubRegistrationResult">
-    	<result property="registrationId" column="registrationId"/>
+    	<result property="registrationID" column="registrationID"/>
     	<result property="feedURL" column="feedURL"/>
     	<result property="callbackURL" column="callbackURL"/>
     	<result property="timestamp" column="timestamp"/>
