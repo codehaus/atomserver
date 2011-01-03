@@ -1,0 +1,9 @@
+default namespace = "http://atomserver.org/3/spring"
+
+grammar {
+    start = CONTENT_STORE
+
+    CONTENT_STORE = element content {
+        attribute class { text }
+    }
+}
