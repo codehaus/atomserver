@@ -1,7 +1,17 @@
 package org.atomserver.app;
 
+import static java.lang.String.*;
+import static javax.ws.rs.core.MediaType.*;
+import static javax.ws.rs.core.Response.Status.*;
+import static org.atomserver.AtomServerConstants.*;
+
+import java.util.Date;
+import java.util.UUID;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
+
 import org.apache.abdera.model.*;
-import org.apache.log4j.Logger;
 import org.atomserver.AtomServerConstants;
 import org.atomserver.app.jaxrs.DELETE;
 import org.atomserver.app.jaxrs.GET;
@@ -14,26 +24,10 @@ import org.atomserver.filter.EntryFilterChain;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.EntityTag;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-import java.util.Date;
-import java.util.UUID;
-
-import static java.lang.String.format;
-import static javax.ws.rs.core.MediaType.*;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.OK;
-import static org.atomserver.AtomServerConstants.*;
-
 @Path(Atompub.APP_CONTEXT)
 @Component
 @Produces({APPLICATION_ATOM_XML, APPLICATION_XML, TEXT_XML})
 public class Atompub {
-    private static final Logger log = Logger.getLogger(Atompub.class);
-
     // TODO: make /app in to /app/v3, or some suitably versioned context
     // TODO: pull this constant in programatically where it is referenced in code and tests
     public static final String APP_CONTEXT = "/app";

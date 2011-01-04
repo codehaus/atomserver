@@ -158,16 +158,6 @@ public class ManagementApiTest extends BaseAtomServerTestCase {
         return null;
     }
 
-    private static Collection getCollectionByName(Workspace workspace, String collectionName) {
-        for (Collection collection : workspace.getCollections()) {
-            if (collection.getSimpleExtension(AtomServerConstants.NAME).equals(collectionName)) {
-                return collection;
-            }
-        }
-        return null;
-    }
-
-
     private void testRetrievingNonexistentWorkspace(String serviceName, String workspaceName) {
         ClientResponse response = root().path(serviceName).path(workspaceName)
                 .type(APPLICATION_APP_XML).get(ClientResponse.class);
@@ -312,7 +302,7 @@ public class ManagementApiTest extends BaseAtomServerTestCase {
         }
         assertEquals("req TODO",
                      ROOT_URL + "/" + serviceName + "/" + workspaceName + "/" + collectionName,
-                     response.getMetadata().get("Location").get(0));
+                     response.getHeaders().get("Location").get(0));
 
         response = root().path(serviceName).path(workspaceName)
                 .type(MediaType.APPLICATION_ATOM_XML).get(ClientResponse.class);
@@ -340,7 +330,7 @@ public class ManagementApiTest extends BaseAtomServerTestCase {
                      response.getStatus());
         assertEquals("req TODO",
                      AtomServerConstants.APPLICATION_APP_XML,
-                     response.getMetadata().getFirst("Content-Type"));
+                     response.getHeaders().getFirst("Content-Type"));
         Service service = response.getEntity(Service.class);
         assertNotNull("req TODO",
                       service);
@@ -450,7 +440,7 @@ public class ManagementApiTest extends BaseAtomServerTestCase {
         assertEquals("req 2.2.k - The response should contain a Location header with the " +
                      "Workspace URL",
                      ROOT_URL + "/" + serviceName + "/" + workspaceName,
-                     response.getMetadata().get("Location").get(0));
+                     response.getHeaders().get("Location").get(0));
 
         response = root().path(serviceName).path(workspaceName)
                 .type(MediaType.APPLICATION_ATOM_XML).get(ClientResponse.class);
@@ -493,7 +483,7 @@ public class ManagementApiTest extends BaseAtomServerTestCase {
         assertEquals("req 2.1.c - Request for valid service should have a Content-Type of " +
                      "application/atomsvc+xml",
                      "application/atomsvc+xml",
-                     response.getMetadata().getFirst("Content-Type"));
+                     response.getHeaders().getFirst("Content-Type"));
         Service service = response.getEntity(Service.class);
         assertNotNull("req 2.1.d - Request for valid service should return a Service Document",
                       service);
@@ -783,7 +773,7 @@ public class ManagementApiTest extends BaseAtomServerTestCase {
         assertEquals("req 1.2.j - The response should contain a Location header with the " +
                      "Service URL",
                      ROOT_URL + "/" + name,
-                     response.getMetadata().get("Location").get(0));
+                     response.getHeaders().get("Location").get(0));
         return service;
     }
 
@@ -796,7 +786,7 @@ public class ManagementApiTest extends BaseAtomServerTestCase {
         assertEquals("req 1.1.b - GET on Service Root URL should have Content-type of " +
                      "application/atom+xml",
                      MediaType.APPLICATION_ATOM_XML,
-                     response.getMetadata().getFirst("Content-type"));
+                     response.getHeaders().getFirst("Content-type"));
         Feed serviceFeed = response.getEntity(Feed.class);
         assertTrue("req 1.1.c - GET on Service root URL returns valid XML that represents an " +
                    "ATOM FEED",

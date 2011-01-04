@@ -1,7 +1,12 @@
 package org.atomserver.content;
 
 public class ContentStoreException extends Exception {
-    public ContentStoreException() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 2884360818074957385L;
+
+	public ContentStoreException() {
     }
 
     public ContentStoreException(String message) {

@@ -32,16 +32,16 @@ public class AbderaMarshaller
         implements MessageBodyWriter<ExtensibleElement>, MessageBodyReader<ExtensibleElement> {
     public static final Abdera ABDERA = new Abdera();
 
-    public void writeTo(ExtensibleElement element, Class clazz, Type type,
+    public void writeTo(ExtensibleElement element, Class<?> clazz, Type type,
                         Annotation[] annotations, MediaType mediaType,
-                        MultivaluedMap multivaluedMap, OutputStream outputStream)
+                        MultivaluedMap<String, Object> multivaluedMap, OutputStream outputStream)
             throws IOException, WebApplicationException {
 
         element.writeTo(outputStream);
     }
 
-    public ExtensibleElement readFrom(Class clazz, Type type, Annotation[] annotations,
-                                      MediaType mediaType, MultivaluedMap multivaluedMap,
+    public ExtensibleElement readFrom(Class<ExtensibleElement> clazz, Type type, Annotation[] annotations,
+                                      MediaType mediaType, MultivaluedMap<String, String> multivaluedMap,
                                       InputStream inputStream)
             throws IOException, WebApplicationException {
         // parse doesn't completely drain the InputStream before returning, so for large enough
@@ -56,22 +56,22 @@ public class AbderaMarshaller
                 new ByteArrayInputStream(bytes)).getRoot();
     }
 
-    public boolean isWriteable(Class clazz, Type type,
+    public boolean isWriteable(Class<?> clazz, Type type,
                                Annotation[] annotations, MediaType mediaType) {
         return isAbderaExtensibleElement(clazz);
     }
 
-    public long getSize(ExtensibleElement element, Class clazz, Type type,
+    public long getSize(ExtensibleElement element, Class<?> clazz, Type type,
                         Annotation[] annotations, MediaType mediaType) {
         return -1;
     }
 
-    public boolean isReadable(Class clazz, Type type,
+    public boolean isReadable(Class<?> clazz, Type type,
                               Annotation[] annotations, MediaType mediaType) {
         return isAbderaExtensibleElement(clazz);
     }
 
-    private boolean isAbderaExtensibleElement(Class clazz) {
+    private boolean isAbderaExtensibleElement(Class<?> clazz) {
         return ExtensibleElement.class.isAssignableFrom((Class<?>) clazz);
     }
 }

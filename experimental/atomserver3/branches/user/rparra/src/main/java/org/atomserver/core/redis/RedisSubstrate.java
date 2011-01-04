@@ -107,7 +107,7 @@ public class RedisSubstrate implements Substrate {
 
                 public void add(Long value) {
                     try {
-                        boolean b = redis.at(indexKey(key)).zadd(indexKey(key), value.doubleValue(), value);
+                        redis.at(indexKey(key)).zadd(indexKey(key), value.doubleValue(), value);
                     } catch (RedisException e) {
                         throw new IllegalStateException(e); // TODO: handle
                     }

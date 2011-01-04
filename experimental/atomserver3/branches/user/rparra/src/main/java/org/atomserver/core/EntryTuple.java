@@ -7,7 +7,11 @@ import java.util.Arrays;
 import java.util.Set;
 
 public class EntryTuple implements Serializable {
-    public final String entryId;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 6547118838392454565L;
+	public final String entryId;
     public final long timestamp;
     public final long created;
     public final long updated;

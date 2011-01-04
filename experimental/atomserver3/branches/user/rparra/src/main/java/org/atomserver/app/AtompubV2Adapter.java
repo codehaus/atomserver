@@ -19,7 +19,8 @@ public class AtompubV2Adapter implements Filter {
     public void init(FilterConfig filterConfig) throws ServletException {
     }
 
-    public void doFilter(ServletRequest servletRequest,
+    @SuppressWarnings("unchecked")
+	public void doFilter(ServletRequest servletRequest,
                          ServletResponse servletResponse,
                          FilterChain chain) throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
@@ -29,12 +30,12 @@ public class AtompubV2Adapter implements Filter {
         if (request.getRequestURI().contains("/v2/")) {
             final String originalUri = request.getRequestURI();
             final Map<String, Set<String>> headers = new HashMap<String, Set<String>>();
-            Enumeration headerNames = request.getHeaderNames();
+            Enumeration<String> headerNames = request.getHeaderNames();
             while (headerNames.hasMoreElements()) {
-                String name = (String) headerNames.nextElement();
-                Enumeration headerValues = request.getHeaders(name);
+                String name = headerNames.nextElement();
+                Enumeration<String> headerValues = request.getHeaders(name);
                 while (headerValues.hasMoreElements()) {
-                    String value = (String) headerValues.nextElement();
+                    String value = headerValues.nextElement();
                     Set<String> values = headers.get(name);
                     if (values == null) {
                         headers.put(name, values = new HashSet<String>());
@@ -56,15 +57,15 @@ public class AtompubV2Adapter implements Filter {
                 }
 
                 public String getHeader(String name) {
-                    Enumeration enumeration = getHeaders(name);
+                    Enumeration<String> enumeration = getHeaders(name);
                     return enumeration.hasMoreElements() ? (String) enumeration.nextElement() : null;
                 }
 
-                public Enumeration getHeaderNames() {
+                public Enumeration<String> getHeaderNames() {
                     return Collections.enumeration(headers.keySet());
                 }
 
-                public Enumeration getHeaders(String name) {
+                public Enumeration<String> getHeaders(String name) {
                     Set<String> headerValues = headers.get(name);
                     return Collections.enumeration(
                             headerValues == null ? Collections.EMPTY_SET : headerValues);

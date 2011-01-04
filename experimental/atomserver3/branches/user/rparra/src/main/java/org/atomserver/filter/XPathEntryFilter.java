@@ -96,7 +96,7 @@ public class XPathEntryFilter implements EntryFilter, NamespaceContext {
     /**
      * {@inheritDoc}
      */
-    public Iterator getPrefixes(String namespaceURI) {
+    public Iterator<String> getPrefixes(String namespaceURI) {
         return Collections.singleton(getPrefix(namespaceURI)).iterator();
     }
 
@@ -127,7 +127,7 @@ public class XPathEntryFilter implements EntryFilter, NamespaceContext {
          * {@inheritDoc}
          */
         public void tag(Entry entry, InputSource inputSource, XPath xPath) {
-            Iterator iterator = ((FOMExtensibleElement) entry).getChildElements();
+            Iterator<?> iterator = ((FOMExtensibleElement) entry).getChildElements();
             while (iterator.hasNext()) {
                 Object next = iterator.next();
                 if (Category.class.isAssignableFrom(next.getClass())) {
@@ -167,7 +167,7 @@ public class XPathEntryFilter implements EntryFilter, NamespaceContext {
                             values.add(subValue.item(i).getTextContent());
                         }
                         String[] replacements = values.toArray(new String[values.size()]);
-                        deleteSchemes.add(MessageFormat.format(scheme, replacements));
+                        deleteSchemes.add(MessageFormat.format(scheme,(Object[]) replacements));
                     }
                 } catch (XPathExpressionException e) {
                     log.error("unable to delete scheme - exception executing XPath expression", e);
@@ -176,7 +176,7 @@ public class XPathEntryFilter implements EntryFilter, NamespaceContext {
                 deleteSchemes.add(this.scheme);
             }
 
-            Iterator iterator = ((FOMExtensibleElement) entry).getChildElements();
+            Iterator<?> iterator = ((FOMExtensibleElement) entry).getChildElements();
             while (iterator.hasNext()) {
                 Object next = iterator.next();
                 if (Category.class.isAssignableFrom(next.getClass())) {
@@ -238,10 +238,10 @@ public class XPathEntryFilter implements EntryFilter, NamespaceContext {
                         values.add(subValue.item(0).getTextContent());
                     }
                     String[] replacements = values.toArray(new String[values.size()]);
-                    String scheme = MessageFormat.format(this.scheme, replacements);
-                    String term = MessageFormat.format(termPattern, replacements);
+                    String scheme = MessageFormat.format(this.scheme, (Object[]) replacements);
+                    String term = MessageFormat.format(termPattern, (Object[]) replacements);
                     String label = labelPattern == null ? null :
-                                   MessageFormat.format(labelPattern, replacements);
+                                   MessageFormat.format(labelPattern, (Object[]) replacements);
                     entry.addCategory(scheme, term, label);
 
                 }
@@ -362,7 +362,11 @@ public class XPathEntryFilter implements EntryFilter, NamespaceContext {
     }
 
     static class BidirectionalMap<K, V> extends HashMap<K, V> {
-        private Map<V, K> reverse;
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = 8961623568790597657L;
+		private Map<V, K> reverse;
 
         public BidirectionalMap(Map<K, V> map) {
             this.putAll(map);

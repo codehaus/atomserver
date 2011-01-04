@@ -1,19 +1,21 @@
 package org.atomserver.test;
 
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+
 import junit.framework.Assert;
-import org.apache.abdera.i18n.iri.IRI;
+
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
 import org.apache.abdera.model.Link;
 import org.apache.log4j.Logger;
 import org.atomserver.AtomServerConstants;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import java.util.HashMap;
-import java.util.Map;
+import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 public class FeedFollower {
     private static final Logger log = Logger.getLogger(FeedFollower.class);
@@ -38,7 +40,7 @@ public class FeedFollower {
     public Feed nextPage(EntryChecker entryChecker, PageChecker pageChecker) throws Exception {
         log.debug(String.format("next page of %s : pageSize = %d, timestamp = %d",
                 path, pageSize, timestamp));
-        MultivaluedMap params = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> params = new MultivaluedMapImpl();
         params.add("max-results", String.valueOf(pageSize));
         params.add("start-index", String.valueOf(timestamp));
         params.add("entry-type", "full");

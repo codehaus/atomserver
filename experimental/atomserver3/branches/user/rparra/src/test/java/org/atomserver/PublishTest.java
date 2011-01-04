@@ -1,21 +1,21 @@
 package org.atomserver;
 
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.*;
+import static org.atomserver.AtomServerConstants.*;
+
+import java.util.UUID;
+
+import javax.ws.rs.core.MediaType;
+
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
-import org.apache.log4j.Logger;
-import static org.atomserver.AtomServerConstants.OPTIMISTIC_CONCURRENCY_OVERRIDE;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.ws.rs.core.MediaType;
-import java.util.UUID;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
 
 public class PublishTest extends BaseAtomServerTestCase {
-    private static final Logger log = Logger.getLogger(PublishTest.class);
     private static final String WRONG_ETAG = UUID.randomUUID().toString().replaceAll("\\W", "");
 
     @Before
@@ -58,7 +58,7 @@ public class PublishTest extends BaseAtomServerTestCase {
                      responseEntry.getContent());
         assertEquals("expected to get the requested Content-Type",
                      MediaType.APPLICATION_ATOM_XML,
-                     response.getMetadata().getFirst("Content-Type"));
+                     response.getHeaders().getFirst("Content-Type"));
         assertTrue("expected MD5 ETag Header",
                    response.getEntityTag().getValue().matches("[a-f0-9]{32}"));
         assertEquals("expected MD5 Etag Element",
@@ -90,7 +90,7 @@ public class PublishTest extends BaseAtomServerTestCase {
                      responseEntry.getContent());
         assertEquals("expected to get the requested Content-Type",
                      MediaType.APPLICATION_ATOM_XML,
-                     response.getMetadata().getFirst("Content-Type"));
+                     response.getHeaders().getFirst("Content-Type"));
         assertTrue("expected MD5 ETag Header",
                    response.getEntityTag().getValue().matches("[a-f0-9]{32}"));
         assertEquals("expected MD5 Etag Element",
@@ -121,7 +121,7 @@ public class PublishTest extends BaseAtomServerTestCase {
                      responseEntry.getContentSrc());
         assertEquals("expected to get the requested Content-Type",
                      MediaType.APPLICATION_ATOM_XML,
-                     response.getMetadata().getFirst("Content-Type"));
+                     response.getHeaders().getFirst("Content-Type"));
 //        assertTrue("expected MD5 ETag Header",
 //                   response.getEntityTag().getValue().matches("[a-f0-9]{32}"));
 //        assertEquals("expected MD5 Etag Element",
@@ -155,7 +155,7 @@ public class PublishTest extends BaseAtomServerTestCase {
                      responseEntry.getContent());
         assertEquals("expected to get the requested Content-Type",
                      MediaType.APPLICATION_ATOM_XML,
-                     response.getMetadata().getFirst("Content-Type"));
+                     response.getHeaders().getFirst("Content-Type"));
         assertTrue("expected MD5 ETag Header",
                    response.getEntityTag().getValue().matches("[a-f0-9]{32}"));
         assertEquals("expected MD5 Etag Element",

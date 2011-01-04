@@ -3,7 +3,12 @@ package org.atomserver.app;
 import javax.ws.rs.core.Response;
 
 public class OptimisticConcurrencyException extends AtompubException {
-    public OptimisticConcurrencyException(String message) {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 7090397392216524068L;
+
+	public OptimisticConcurrencyException(String message) {
         super(Response.Status.CONFLICT, message);
     }
 

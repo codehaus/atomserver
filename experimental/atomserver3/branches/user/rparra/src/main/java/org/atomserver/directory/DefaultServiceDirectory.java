@@ -28,9 +28,6 @@ public class DefaultServiceDirectory implements ServiceDirectory {
 
     private Map<String, AtomServerService> memStorage = new HashMap<String, AtomServerService>();
     private File diskStorage;
-    private Map<String, EntryFilterChain> entryFilterChains =
-            new HashMap<String, EntryFilterChain>();
-
     public void setDiskStorage(File diskStorage) {
         this.diskStorage = diskStorage;
     }

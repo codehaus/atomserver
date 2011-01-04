@@ -3,7 +3,11 @@ package org.atomserver.core;
 import java.io.Serializable;
 
 public class CategoryTuple implements Serializable {
-    public final String scheme;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 6224169891988067571L;
+	public final String scheme;
     public final String term;
     public final String label;
 

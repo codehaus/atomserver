@@ -9,7 +9,7 @@ public class AtomServerNamespaceHandler extends NamespaceHandlerSupport {
 
     public AtomServerNamespaceHandler() {
         registerBeanDefinitionParser("content", new AbstractSimpleBeanDefinitionParser() {
-            protected Class getBeanClass(Element element) {
+            protected Class<?> getBeanClass(Element element) {
                 return null;
             };
         });

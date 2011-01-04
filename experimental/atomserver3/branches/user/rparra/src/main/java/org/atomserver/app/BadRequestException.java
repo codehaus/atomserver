@@ -3,7 +3,12 @@ package org.atomserver.app;
 import javax.ws.rs.core.Response;
 
 public class BadRequestException extends AtompubException {
-    public BadRequestException(String message) {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -1466980062425509652L;
+
+	public BadRequestException(String message) {
         super(Response.Status.BAD_REQUEST, message);
     }
 

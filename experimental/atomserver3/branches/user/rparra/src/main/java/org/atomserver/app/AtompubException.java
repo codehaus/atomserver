@@ -4,7 +4,8 @@ import javax.ws.rs.core.Response;
 
 
 public class AtompubException extends RuntimeException {
-    public final Response.Status status;
+	private static final long serialVersionUID = -1348806532265362582L;
+	public final Response.Status status;
 
     protected AtompubException(Response.Status status, String message) {
         super(message);

@@ -60,6 +60,11 @@ public class MemSubstrate implements Substrate {
     }
 
     class MemEntryStore<K, V> extends HashMap<K, V> implements KeyValueStore<K, V> {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -8677729853042334580L;
     }
 
     public KeyValueStore<Long, EntryTuple> getEntriesByTimestamp(String key) {

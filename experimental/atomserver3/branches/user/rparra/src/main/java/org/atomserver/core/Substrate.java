@@ -1,8 +1,5 @@
 package org.atomserver.core;
 
-import org.apache.abdera.model.Service;
-
-import java.util.Collection;
 import java.util.concurrent.Callable;
 
 public interface Substrate {

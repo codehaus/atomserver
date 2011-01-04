@@ -1,11 +1,6 @@
 package org.atomserver.domain;
 
-import org.simpleframework.xml.Root;
-import org.simpleframework.xml.Namespace;
-import org.simpleframework.xml.Element;
-import org.simpleframework.xml.Attribute;
-
-import java.util.Map;
+import org.simpleframework.xml.*;
 
 @Root
 @Namespace(reference = "http://atomserver.org/widgets/1.0", prefix = "widgets")

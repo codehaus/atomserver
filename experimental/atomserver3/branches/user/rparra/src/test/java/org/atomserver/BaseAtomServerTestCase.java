@@ -41,7 +41,8 @@ public class BaseAtomServerTestCase {
         server.start();
 
         Client client = Client.create(new DefaultClientConfig() {
-            public Set getClasses() {
+            @SuppressWarnings({ "rawtypes", "unchecked" })
+			public Set getClasses() {
                 return Collections.singleton(AbderaMarshaller.class);
             }
         });
@@ -108,7 +109,8 @@ public class BaseAtomServerTestCase {
      * @param location the location in the classpath of the XML resource
      * @return the parsed object
      */
-    protected <T extends Element> T parse(String location) {
+    @SuppressWarnings("unchecked")
+	protected <T extends Element> T parse(String location) {
         return (T) AbderaMarshaller.ABDERA.getParser().parse(
                 getClass().getClassLoader().getResourceAsStream(location)).getRoot();
     }
