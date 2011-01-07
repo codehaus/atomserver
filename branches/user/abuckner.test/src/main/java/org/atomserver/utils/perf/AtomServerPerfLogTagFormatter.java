@@ -76,7 +76,7 @@ public class AtomServerPerfLogTagFormatter {
     }
     
   //~~~~~~~~~~~~~~~~~~~~~~
-    public static String getPerfLogEntryCategoryString( PubSubRegistration reg ) {
+    public static String getPerfLogEntryPubSubString( PubSubRegistration reg ) {
         if ( reg == null )
             return "";
 
