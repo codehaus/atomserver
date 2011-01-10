@@ -41,7 +41,6 @@ FeedURL             VARCHAR(1024)           NOT NULL,
 CallbackURL         VARCHAR(1024)           NOT NULL,
 Timestamp           BIGINT                  NOT NULL,
 PRIMARY KEY (RegistrationId),
-UNIQUE (Timestamp),
 UNIQUE (FeedURL, CallbackURL)
 );
 

@@ -74,19 +74,6 @@
         <property name="maxActive" value="${db.aggregate.poolsize.max}"/>
         <property name="maxWait" value="10000"/>
     </bean>
-    
-    <!-- PubSubRegistration elements?? 
-    
-    <bean id="org.atomserver-pubsubregistration"
-    	  class="org.atomserver.core.PubSubRegistration"
-    	  destroy-method="close"
-    	  lazy-init="true">
-    	  
-    	  <property name="registrationId" value="${db.registrationId"/>
-    	  <property name="feedURL" value="${db.feedURL"/>
-    	  <property name="callbackURL" value="${db.callbackURL"/>
-    	  <property name="timestamp" value="${db.timestamp"/>
-    </bean>-->
     	  
 
     <!-- +++++++++++++++++++++++++++++++++++ -->
