@@ -39,6 +39,8 @@
     <sqlMap resource="org/atomserver/ibatis/sqlMap-aggregate.xml"/>
     <sqlMap resource="org/atomserver/ibatis/sqlMap-category-log-events.xml"/>
     <sqlMap resource="org/atomserver/ibatis/sqlMap-statisticsMonitor.xml"/>
+    <sqlMap resource="org/atomserver/ibatis/sqlMap-pubSubRegistration.xml"/>
+    <sqlMap resource="org/atomserver/ibatis/sqlMap-pubSubRegistrationWriteOperations.xml"/>
 
 </sqlMapConfig>
 

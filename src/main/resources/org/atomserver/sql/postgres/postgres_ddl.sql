@@ -7,6 +7,7 @@ DROP TABLE IF EXISTS EntryCategory CASCADE;
 DROP TABLE IF EXISTS EntryStore CASCADE;
 DROP TABLE IF EXISTS AtomCollection CASCADE;
 DROP TABLE IF EXISTS AtomWorkspace CASCADE;
+DROP TABLE IF EXISTS PubSubRegistration CASCADE;
 DROP VIEW IF EXISTS vw_AggregateEntry;
 DROP VIEW IF EXISTS vw_EntryWithCategory;
 
@@ -28,6 +29,22 @@ Collection          VARCHAR(20)             NOT NULL,
 PRIMARY KEY (Workspace, Collection),
 FOREIGN KEY (Workspace) REFERENCES AtomWorkspace(Workspace)
 );
+
+/*==============================================================*/
+/* Table: PubSubRegistration                                    */
+/*==============================================================*/
+CREATE SEQUENCE pubsubregistration_registrationid_seq;
+
+CREATE TABLE PubSubRegistration (
+RegistrationId      INT                     NOT NULL,
+FeedURL             VARCHAR(1024)           NOT NULL,
+CallbackURL         VARCHAR(1024)           NOT NULL,
+Timestamp           BIGINT                  NOT NULL,
+PRIMARY KEY (RegistrationId),
+UNIQUE (FeedURL, CallbackURL)
+);
+
+ALTER SEQUENCE pubsubregistration_registrationid_seq OWNED BY PubSubRegistration.RegistrationId;
 
 /*==============================================================*/
 /* Table: EntryStore                                            */
