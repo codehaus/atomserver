@@ -55,6 +55,7 @@ public class PubSubEntryRegistrationDAOTest
         
             log.debug("====> entryOut = " + entryOut);
             assertNotNull(entryOut);
+            assertEquals(feedURL, entryOut.getFeedURL());
         }
         finally{
             // DELETE
@@ -87,27 +88,35 @@ public class PubSubEntryRegistrationDAOTest
             log.debug("====> entryOut = " + entryOut);
             assertNotNull(entryOut);
             assertEquals(2, entryOut.size());
+            for ( PubSubRegistration reg : entryOut) {
+                assertEquals(feedURL, reg.getFeedURL());
+            }
             
             entryOut = pubSubRegistrationDAO.selectPubSubRegistrationByCallbackURL(callbackURL);
             //test for callbackURL select
             log.debug("====> entryOut = " + entryOut);
             assertNotNull(entryOut);
             assertEquals(2, entryOut.size());
+            assertEquals(feedURL, entryOut.get(0).getFeedURL());
+            assertEquals(feedURL2, entryOut.get(1).getFeedURL());
+            
             
             entryOut = pubSubRegistrationDAO.selectPubSubRegistrationByFeedURL(feedURL3);
             //extra select test using 1 element feedURL
             log.debug("====> entryOut = " + entryOut);
             assertNotNull(entryOut);
             assertEquals(1, entryOut.size());
+            for ( PubSubRegistration reg : entryOut) {
+                assertEquals(feedURL3, reg.getFeedURL());
+            }
+            
         }
         finally{
             // DELETE
             for(int i = 0; i< group.length; i++){
-                //if(group[i] != null){
-                    pubSubRegistrationDAO.deletePubSubRegistration(group[i]);
-                    PubSubRegistration entryCheck = pubSubRegistrationDAO.selectPubSubRegistration(group[i]);
-                    assertNull(entryCheck);
-                //}
+                pubSubRegistrationDAO.deletePubSubRegistration(group[i]);
+                PubSubRegistration entryCheck = pubSubRegistrationDAO.selectPubSubRegistration(group[i]);
+                assertNull(entryCheck);
             }
         }
         
