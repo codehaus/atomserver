@@ -28,7 +28,7 @@
     <typeAlias type="org.atomserver.EntryDescriptor" alias="entryDescriptor"/>
     <typeAlias type="org.atomserver.core.EntryCategoryLogEvent" alias="entryCategoryLogEvent"/>
     <typeAlias type="org.atomserver.core.dbstore.dao.impl.AggregateEntriesDAOiBatisImpl$EntryStats" alias="entryStats"/>
-
+	<typeAlias type="org.atomserver.core.PubSubRegistration" alias="pubSubRegistration"/>
 
     <resultMap class="entryMetaData" id="entryResultSansCategories">
         <result property="entryStoreId" column="EntryStoreId"/>
@@ -85,6 +85,13 @@
     <resultMap class="entryStats" id="entryStatsResult">
         <result property="maxTimestamp"  column="maxTimestamp"/>
         <result property="minTimestamp"  column="minTimestamp"/>
+    </resultMap>
+    
+    <resultMap class="pubSubRegistration" id="pubSubRegistrationResult">
+    	<result property="registrationId" column="registrationId"/>
+    	<result property="feedURL" column="feedURL"/>
+    	<result property="callbackURL" column="callbackURL"/>
+    	<result property="timestamp" column="timestamp"/>
     </resultMap>
 
     <sql id="paginationPrefix">

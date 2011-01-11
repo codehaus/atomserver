@@ -5,6 +5,7 @@ package org.atomserver.utils.perf;
 
 import org.atomserver.EntryDescriptor;
 import org.atomserver.core.EntryCategory;
+import org.atomserver.core.PubSubRegistration;
 
 import java.util.Locale;
 
@@ -70,6 +71,22 @@ public class AtomServerPerfLogTagFormatter {
         buff.append( entryQuery.getScheme() );
         buff.append( "." );
         buff.append( entryQuery.getTerm() );
+        buff.append( "]" );
+        return buff.toString();
+    }
+    
+  //~~~~~~~~~~~~~~~~~~~~~~
+    public static String getPerfLogEntryPubSubString( PubSubRegistration reg ) {
+        if ( reg == null )
+            return "";
+
+        StringBuffer buff = new StringBuffer();
+        buff.append( "[" );
+        buff.append( reg.getFeedURL() );
+        buff.append( "." );
+        buff.append( reg.getCallbackURL() );
+        buff.append( "." );
+        buff.append( reg.getTimestamp() );
         buff.append( "]" );
         return buff.toString();
     }
