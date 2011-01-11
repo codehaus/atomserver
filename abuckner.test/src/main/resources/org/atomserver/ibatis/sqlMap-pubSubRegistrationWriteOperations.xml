@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE sqlMap
+        PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<!--
+ Copyright (c) 2010 HomeAway, Inc.
+  All rights reserved.  http://www.atomserver.org
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<sqlMap>
+	<insert id="createPubSubRegistration-sqlserver" parameterClass="pubsubregistration"> 
+		INSERT INTO PubSubRegistration
+		(FeedURL, CallbackURL, Timestamp)
+		VALUES 
+		(#feedURL#, #callbackURL#, #timestamp#)
+		
+		<selectKey resultClass="Long" keyProperty="registrationId" type="post">
+            SELECT @@IDENTITY AS registrationId
+        </selectKey>
+	</insert>
+
+    <insert id="createPubSubRegistration-postgres" parameterClass="pubsubregistration">
+
+        <selectKey resultClass="Long" type="pre" keyProperty="registrationId" >
+            SELECT nextval('pubsubregistration_registrationid_seq')
+        </selectKey>
+        
+        INSERT INTO PubSubRegistration
+		(RegistrationId, FeedURL, CallbackURL, Timestamp)
+		VALUES 
+		(#registrationId#, #feedURL#, #callbackURL#, #timestamp#)
+     </insert>
+
+    <insert id="createPubSubRegistration-hsql" parameterClass="pubsubregistration">
+        INSERT INTO PubSubRegistration
+		(RegistrationId, FeedURL, CallbackURL, Timestamp)
+		VALUES 
+		(#registrationId#, #feedURL#, #callbackURL#, #timestamp#,
+          NEXT VALUE FOR pubsubregistration_registrationid_seq)
+
+        <selectKey resultClass="Long" keyProperty="registrationId" type="post">
+            CALL IDENTITY();
+        </selectKey>
+     </insert>
+	
+	<update id="updatePubSubRegistration" parameterClass="pubsubregistration"> 
+		UPDATE PubSubRegistration
+		SET TimeStamp = #timestamp#
+		WHERE RegistrationId = #registrationId# 
+	</update>
+	
+	<delete id="deletePubSubRegistration" parameterClass="Long"> 
+		DELETE FROM PubSubRegistration
+		WHERE RegistrationId = #value# 
+	</delete>
+</sqlMap>
