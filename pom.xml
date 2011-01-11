@@ -702,7 +702,7 @@
                         <include>**/*Test.java</include>
                     </includes>
                     <excludes>
-                        <exclude>**/PubSubEntryRegistrationDAOTest.java</excludes>
+                        <exclude>**/PubSubEntryRegistrationDAOTest.java</exclude>
                     </excludes>
                     <systemProperties>
 
