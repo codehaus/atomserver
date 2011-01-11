@@ -701,6 +701,9 @@
                     <includes>
                         <include>**/*Test.java</include>
                     </includes>
+                    <excludes>
+                        <exclude>**/PubSubEntryRegistrationDAOTest.java</excludes>
+                    </excludes>
                     <systemProperties>
 
                         <!-- used to determine which {atomserver.env}.properties file to load off the CLASSPATH-->
