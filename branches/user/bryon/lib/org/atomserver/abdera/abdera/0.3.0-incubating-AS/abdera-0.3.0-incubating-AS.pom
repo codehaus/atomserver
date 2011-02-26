@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  The ASF licenses this file to You
+  under the Apache License, Version 2.0 (the "License"); you may not
+  use this file except in compliance with the License.
+  You may obtain a copy of the License at
+ 
+      http://www.apache.org/licenses/LICENSE-2.0
+ 
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.  For additional information regarding
+  copyright in this work, please see the NOTICE file in the top level
+  directory of this distribution. -->
+<project 
+  xmlns="http://maven.apache.org/POM/4.0.0" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.atomserver.abdera</groupId>
+  <artifactId>abdera</artifactId>
+  <packaging>pom</packaging>
+  <name>Apache Abdera</name>
+
+  <version>0.3.0-incubating-AS</version>
+    
+  <description>Atom Specification Implementation</description>
+  <inceptionYear>2006</inceptionYear>
+  <url>http://incubator.apache.org/abdera</url>
+  
+  <organization>
+    <name>Apache Software Foundation</name>
+    <url>http://www.apache.org/</url>
+  </organization>
+  
+  <issueManagement>
+    <system>JIRA</system>
+    <url>https://issues.apache.org/jira/browse/ABDERA</url>
+  </issueManagement>
+  
+  <mailingLists>
+    <mailingList>
+     <name>Abdera Developer List</name>
+     <subscribe>abdera-dev-subscribe@incubator.apache.org</subscribe>
+     <unsubscribe>abdera-dev-unsubscribe@incubator.apache.org</unsubscribe>
+     <post>abdera-dev@incubator.apache.org</post>
+     <archive>http://mail-archives.apache.org/mod_mbox/incubator-abdera-dev/</archive>
+   </mailingList>
+   <mailingList>
+     <name>Abdera User List</name>
+     <subscribe>abdera-user-subscribe@incubator.apache.org</subscribe>
+     <unsubscribe>abdera-user-unsubscribe@incubator.apache.org</unsubscribe>
+     <post>abdera-user@incubator.apache.org</post>
+     <archive>http://mail-archives.apache.org/mod_mbox/incubator-abdera-user/</archive>
+   </mailingList>
+   <mailingList>
+     <name>Abdera Source Control List</name>
+     <subscribe>abdera-commits-subscribe@incubator.apache.org</subscribe>
+     <unsubscribe>abdera-commits-unsubscribe@incubator.apache.org</unsubscribe>
+     <archive>http://mail-archives.apache.org/mod_mbox/incubator-abdera-commits/</archive>
+   </mailingList>
+  </mailingLists>
+  
+  <licenses>
+    <license>
+      <name>Apache License 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  
+    <scm>
+      <connection>scm:svn:http://10.1.1.65/svn-services/abdera-0.3.0/trunk</connection>
+      <url>http://10.1.1.65/svn-services/abdera-0.3.0/trunk</url>
+    </scm>
+
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>homeaway</id>
+            <name>Homeaway Proxy Repository</name>
+            <layout>default</layout>
+            <url>http://java-build:33333/mvn_proxy/repository</url>
+        </pluginRepository>
+
+       	<pluginRepository>
+       		<id>Codehaus</id>
+       		<url>http://repository.codehaus.org/</url>
+       	</pluginRepository>
+
+       	<pluginRepository>
+       		<id>Codehaus Mojo</id>
+       		<url>http://repository.codehaus.org/org/codehaus/mojo/</url>
+       	</pluginRepository>
+
+        <pluginRepository>
+            <id>Maven2</id>
+            <url>http://repo1.maven.org/maven2/</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <source>1.5</source>				
+          <links>
+            <link>http://java.sun.com/j2se/1.5.0/docs/api/</link>
+          </links>
+          <aggregate>true</aggregate>
+          <excludePackageNames>org.atomserver.abdera.util,org.atomserver.abdera.ext.*.impl,org.atomserver.abdera.parser.**,org.atomserver.abdera.security.**</excludePackageNames>
+        </configuration>
+      </plugin>
+      
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jxr-plugin</artifactId>
+        <configuration>
+          <aggregate>true</aggregate>
+        </configuration>
+      </plugin>
+      
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+      </plugin>
+      
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>cobertura-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </reporting>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>cobertura-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+            <excludes>
+              <exclude>**/*TestSuite*</exclude>
+              <exclude>**/*$Test*</exclude>
+            </excludes>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>    
+  </build>
+
+  <profiles>
+    <profile>
+      <id>no-online-tests</id>
+      <activation>
+       <property>
+               <name>offline-tests</name>
+               <value>false</value>
+       </property>
+      </activation>
+      <build>
+      <plugins>
+       <plugin>
+               <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+         <excludes>
+            <exclude>**/*TestSuite*</exclude>
+             <exclude>**/*$Test*</exclude>
+             <exclude>**/FeedValidatorTest.java</exclude>
+             <exclude>**/DSigThirdPartyVerifyTest.java</exclude>
+             <exclude>**/AtomConformanceTest.java</exclude>
+        </excludes>
+        </configuration>
+       </plugin>
+      </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+  
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.3</version>
+        <scope>test</scope>
+      </dependency>
+      
+      <dependency>
+        <groupId>commons-logging</groupId>
+        <artifactId>commons-logging</artifactId>
+        <version>1.0.4</version>
+        <scope>compile</scope>
+      </dependency>
+      
+      <dependency>
+        <groupId>commons-httpclient</groupId>
+        <artifactId>commons-httpclient</artifactId>
+        <version>3.1-rc1</version>
+        <scope>compile</scope>
+      </dependency>
+         
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>1.3</version>
+        <scope>compile</scope>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.apache.ws.commons.axiom</groupId>
+        <artifactId>axiom-api</artifactId>
+        <version>1.2.5</version>
+        <scope>compile</scope>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.apache.ws.commons.axiom</groupId>
+        <artifactId>axiom-impl</artifactId>
+        <version>1.2.5</version>
+        <scope>compile</scope>
+      </dependency>
+      
+      <dependency>
+        <groupId>stax</groupId>
+        <artifactId>stax-api</artifactId>
+        <version>1.0.1</version>
+        <scope>compile</scope>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.codehaus.woodstox</groupId>
+        <artifactId>wstx-asl</artifactId>
+        <version>3.2.1</version>
+        <scope>runtime</scope>	    
+      </dependency>
+      
+      <dependency>
+        <groupId>org.apache.geronimo.specs</groupId>
+        <artifactId>geronimo-activation_1.0.2_spec</artifactId>
+        <version>1.1</version>
+        <scope>compile</scope>
+      </dependency>
+      
+      <dependency>
+        <groupId>jaxen</groupId>
+        <artifactId>jaxen</artifactId>
+        <version>1.1.1</version>
+        <scope>compile</scope>
+      </dependency>
+      
+      <dependency>
+        <groupId>xml-security</groupId>
+        <artifactId>xmlsec</artifactId>
+        <version>1.3.0</version>
+        <scope>compile</scope>
+      </dependency>
+      
+      <dependency>
+        <groupId>xerces</groupId>
+        <artifactId>xercesImpl</artifactId>
+        <version>2.8.0</version>
+        <scope>compile</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+  
+  <modules>
+    <module>dependencies/i18n</module>
+    <module>dependencies/json</module>
+    <module>core</module>
+    <module>parser</module>
+    <module>protocol</module>
+    <module>security</module>
+    <module>server</module>
+    <module>client</module>
+    <module>extensions/gdata</module>
+    <module>extensions/geo</module>
+    <module>extensions/json</module>
+    <module>extensions/main</module>
+    <module>extensions/media</module>
+    <module>extensions/opensearch</module>
+    <module>extensions/sharing</module>
+    <module>extensions/wsse</module>
+    <module>spring</module>
+    <module>examples</module>
+  </modules>
+
+    <distributionManagement>
+        <!-- this is where binaries are deployed -->
+        <repository>
+            <id>homeaway-repository</id>
+            <url>scp://mvn-repo.wvrgroup.internal/opt/maven-repository</url>
+        </repository>
+
+        <!-- NOTE: the uniqueVersion element tells Maven to keep only a single version of a SNAPSHOT -->
+        <snapshotRepository>
+            <id>homeaway-snapshots</id>
+            <url>scp://mvn-repo.wvrgroup.internal/opt/maven-repository</url>
+            <uniqueVersion>false</uniqueVersion>
+        </snapshotRepository>
+    </distributionManagement>
+
+</project>
