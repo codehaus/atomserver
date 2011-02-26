@@ -601,6 +601,7 @@ abstract public class AbstractAtomCollection implements AtomCollection {
                             }
                             final Object internalId = getInternalId(target);
                             EntryMetaDataStatus metaDataStatus = modifyEntry(internalId, target, mustAlreadyExist());
+                            updateEntryCategories(metaDataStatus.getEntryMetaData(), entry);
 
                             // Update category to see if there are changes.
                             // Assumption here: postProcessEntryContents method does not need entry revision or timestamps.
@@ -653,6 +654,40 @@ abstract public class AbstractAtomCollection implements AtomCollection {
             return new UpdateCreateOrDeleteEntry.CreateOrUpdateEntry(newEntry, entryMetaData.isNewlyCreated());
         } finally {
             stopWatch2.stop("AC.updateEntry.Proc", AtomServerPerfLogTagFormatter.getPerfLogEntryString(entryMetaData));
+        }
+    }
+
+    private void updateEntryCategories(EntryMetaData entryMetaData, Entry entry) {
+        // if categories were passed in on the entry, we should modify the set of entries to
+        // exactly match that set.
+        if (entry.getCategories() != null && !entry.getCategories().isEmpty()) {
+            // first, grab the set of current categories on the entry, and call that "toDelete"
+            // (we'll be removing the ones that we shouldn't delete)
+            Set<EntryCategory> toDelete =
+                    new HashSet<EntryCategory>(entryMetaData.getCategories());
+            // create a new empty list of categories called "toInsert" - we'll add "new" categories
+            // here
+            List<EntryCategory> toInsert = new ArrayList<EntryCategory>();
+            for (Category category : entry.getCategories()) {
+                // convert each category to an entry category, attached to the entry by the DB ID.
+                EntryCategory entryCategory = new EntryCategory();
+                entryCategory.setEntryStoreId(entryMetaData.getEntryStoreId());
+                entryCategory.setScheme(category.getScheme().toString());
+                entryCategory.setTerm(category.getTerm());
+                entryCategory.setLabel(category.getLabel());
+                // remove it from the "toDelete" set (it's on the new request, so we want to keep it)
+                if (!toDelete.remove(entryCategory)) {
+                    // if it wasn't there to remove, then it's new to us, so we should put it in the
+                    // toInsert set
+                    toInsert.add(entryCategory);
+                }
+            }
+            if (!toDelete.isEmpty()) {
+                getCategoriesHandler().deleteEntryCategoryBatch(new ArrayList<EntryCategory>(toDelete));
+            }
+            if (!toInsert.isEmpty()) {
+                getCategoriesHandler().insertEntryCategoryBatch(toInsert);
+            }
         }
     }
 
