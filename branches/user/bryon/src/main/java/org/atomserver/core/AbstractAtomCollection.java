@@ -684,9 +684,11 @@ abstract public class AbstractAtomCollection implements AtomCollection {
             }
             if (!toDelete.isEmpty()) {
                 getCategoriesHandler().deleteEntryCategoryBatch(new ArrayList<EntryCategory>(toDelete));
+                entryMetaData.getCategories().removeAll(toDelete);
             }
             if (!toInsert.isEmpty()) {
                 getCategoriesHandler().insertEntryCategoryBatch(toInsert);
+                entryMetaData.getCategories().addAll(toInsert);
             }
         }
     }
