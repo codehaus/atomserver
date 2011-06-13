@@ -1177,6 +1177,10 @@ abstract public class AbstractAtomCollection implements AtomCollection {
             String entryId = entryMetaData.getEntryId();
             java.util.Locale locale = entryMetaData.getLocale();
 
+            if (locale != null) {
+            	entry.addSimpleExtension(AtomServerConstants.LOCALE, locale.toString());
+            }
+            
             String fileURI = getURIHandler().constructURIString(workspace, collection, entryId, locale);
 
             addCategoriesToEntry(entry, entryMetaData, abdera);
