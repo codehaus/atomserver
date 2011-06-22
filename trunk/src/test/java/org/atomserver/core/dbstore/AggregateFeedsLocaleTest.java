@@ -66,9 +66,9 @@ public class AggregateFeedsLocaleTest extends DBSTestCase {
             assertTrue(content.startsWith("<aggregate"));
 
             assertEquals( 3, StringUtils.countMatches( content, "<entry" ) );
-            assertEquals( 2, StringUtils.countMatches( content, "<as:locale" ) );
-            assertEquals( 1, StringUtils.countMatches( content, "en_US</as:locale>" ) );
-            assertEquals( 1, StringUtils.countMatches( content, "fr_FR</as:locale>" ) );
+            assertEquals( 4, StringUtils.countMatches( content, "<as:locale" ) );
+            assertEquals( 2, StringUtils.countMatches( content, "en_US</as:locale>" ) );
+            assertEquals( 2, StringUtils.countMatches( content, "fr_FR</as:locale>" ) );
             assertEquals( 2, StringUtils.countMatches( content, "<foo" ) );
             assertEquals( 1, StringUtils.countMatches( content, "<bar" ) );
        }
@@ -102,9 +102,9 @@ public class AggregateFeedsLocaleTest extends DBSTestCase {
             assertTrue(content.startsWith("<aggregate"));
 
             assertEquals( 3, StringUtils.countMatches( content, "<entry" ) );
-            assertEquals( 3, StringUtils.countMatches( content, "<as:locale" ) );
-            assertEquals( 2, StringUtils.countMatches( content, "en_US</as:locale>" ) );
-            assertEquals( 1, StringUtils.countMatches( content, "fr_FR</as:locale>" ) );
+            assertEquals( 6, StringUtils.countMatches( content, "<as:locale" ) );
+            assertEquals( 4, StringUtils.countMatches( content, "en_US</as:locale>" ) );
+            assertEquals( 2, StringUtils.countMatches( content, "fr_FR</as:locale>" ) );
             assertEquals( 2, StringUtils.countMatches( content, "<foo" ) );
             assertEquals( 1, StringUtils.countMatches( content, "<boo" ) );
        }
