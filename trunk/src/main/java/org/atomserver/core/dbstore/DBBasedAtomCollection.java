@@ -221,8 +221,8 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
             }
         }
 
-        int startIndex = feedTarget.getStartIndexParam();
-        int endIndex = feedTarget.getEndIndexParam();
+        long startIndex = feedTarget.getStartIndexParam();
+        long endIndex = feedTarget.getEndIndexParam();
         boolean noLatency = feedTarget.getNoLatency();
 
         if ( endIndex != -1 && endIndex < startIndex ) {
@@ -720,12 +720,12 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         return bean;
     }
 
-    private void addOpenSearchElements(Feed feed, int startIndex,
+    private void addOpenSearchElements(Feed feed, long startIndex,
                                        int pageSize, int totalEntries ) {
         if ( totalEntries > 0 )
             feed.addSimpleExtension(OpenSearchConstants.TOTAL_RESULTS, Integer.toString(totalEntries));
 
-        feed.addSimpleExtension(OpenSearchConstants.START_INDEX, Integer.toString(startIndex));
+        feed.addSimpleExtension(OpenSearchConstants.START_INDEX, Long.toString(startIndex));
         feed.addSimpleExtension(OpenSearchConstants.ITEMS_PER_PAGE, Integer.toString(pageSize));
     }
 
@@ -769,7 +769,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         FeedPagingHelper.setNext(feed, nextURI);
     }
 
-    private void addFeedSelfLink(Abdera abdera, Feed feed, IRI iri, int startIndex, int pageSize) {
+    private void addFeedSelfLink(Abdera abdera, Feed feed, IRI iri, long startIndex, int pageSize) {
         String selfURI = iri.getPath();
         selfURI += "?" + QueryParam.maxResults.getParamName() + "=" + pageSize;
         if ( startIndex != 0 ) {
@@ -850,7 +850,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
                                      List<? extends EntryMetaData> sortedList,
                                      String workspace, String collection, Locale locale, boolean noLatency,
                                      int numEntries, boolean resultsFitOnOnePage, int pageSize,
-                                     int startIndex, int totalEntries ) {
+                                     long startIndex, int totalEntries ) {
 
         // Pick out the last item in the list and pull lastModified from it
         //  Note: we asked for one more than we really needed so subtract 2...

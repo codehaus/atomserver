@@ -212,7 +212,7 @@ public class EntriesDAOiBatisImpl
 
     public List<EntryMetaData> selectEntries(EntryDescriptor entry) {return readEntriesDAO.selectEntries(entry);}
 
-    public List<EntryMetaData> selectFeedPage(Date updatedMin, Date updatedMax, int startIndex, int endIndex, int pageSize, boolean noLatency, String locale, FeedDescriptor feed, Collection<BooleanExpression<AtomCategory>> categoryQuery) {
+    public List<EntryMetaData> selectFeedPage(Date updatedMin, Date updatedMax, long startIndex, long endIndex, int pageSize, boolean noLatency, String locale, FeedDescriptor feed, Collection<BooleanExpression<AtomCategory>> categoryQuery) {
         return readEntriesDAO.selectFeedPage(updatedMin, updatedMax, startIndex, endIndex, pageSize, noLatency, locale, feed, categoryQuery);
     }
 

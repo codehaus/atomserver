@@ -183,8 +183,8 @@ public class ReadEntriesDAOiBatisImpl
 
     public List<EntryMetaData> selectFeedPage(Date updatedMin,
                                               Date updatedMax,
-                                              int startIndex,
-                                              int endIndex,
+                                              long startIndex,
+                                              long endIndex,
                                               int pageSize,
                                               boolean noLatency,
                                               String locale,
