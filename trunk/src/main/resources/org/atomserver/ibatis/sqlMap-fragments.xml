@@ -119,7 +119,7 @@
     </sql>
 
     <sql id="timestampType">
-        <isEqual property="dbType" compareValue="sqlserver">TIMESTAMP</isEqual>
+        <isEqual property="dbType" compareValue="sqlserver">BIGINT</isEqual>
         <isNotEqual property="dbType" compareValue="sqlserver">BIGINT</isNotEqual>
     </sql>
 
