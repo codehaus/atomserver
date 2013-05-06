@@ -231,7 +231,7 @@ public class QueryParamTest extends URITargetTestCase {
     }
 
     private void checkStartIndex(URITarget target) {
-        int startIndexParam = target.getStartIndexParam();
+        long startIndexParam = target.getStartIndexParam();
         log.debug("startIndexParam = " + startIndexParam );
         assertEquals(startIndex, startIndexParam);
     }
@@ -243,7 +243,7 @@ public class QueryParamTest extends URITargetTestCase {
     }
 
     private void checkEndIndex(URITarget target) {
-        int endIndexParam = target.getEndIndexParam();
+        long endIndexParam = target.getEndIndexParam();
         log.debug("endIndexParam = " + endIndexParam );
         assertEquals(endIndex, endIndexParam);
     }
