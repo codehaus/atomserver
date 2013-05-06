@@ -34,13 +34,13 @@ import java.util.regex.Pattern;
  * @author Bryon Jacob (bryon at jacob.net)
  */
 public enum QueryParam {
-    startIndex("start-index", 0) {
+    startIndex("start-index", 0L) {
         Object parseValue(String stringValue) {
-            return Integer.parseInt(stringValue);
+            return Long.parseLong(stringValue);
         }},
-    endIndex("end-index", -1) {
+    endIndex("end-index", -1L) {
         Object parseValue(String stringValue) {
-            return Integer.parseInt(stringValue);
+            return Long.parseLong(stringValue);
         }},
     maxResults("max-results", 0) {
         Object parseValue(String stringValue) {

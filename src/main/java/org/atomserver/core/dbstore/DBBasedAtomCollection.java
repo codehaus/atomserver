@@ -757,8 +757,8 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         if ( updatedMax != null ) {
             nextURI += "&" + QueryParam.updatedMax.getParamName() + "=" + AtomDate.format( updatedMax );
         }
-        int endIndexMax = uriTarget.getEndIndexParam();
-        if ( endIndexMax != -1 ) {
+        long endIndexMax = uriTarget.getEndIndexParam();
+        if ( endIndexMax != -1L ) {
             nextURI += "&" + QueryParam.endIndex.getParamName() + "=" + endIndexMax;
         }
         

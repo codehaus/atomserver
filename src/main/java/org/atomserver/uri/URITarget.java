@@ -39,12 +39,12 @@ public abstract class URITarget extends AbstractTarget {
         this.requestContext = requestContext;
     }
 
-    public int getStartIndexParam() throws BadRequestException {
-        return (Integer) QueryParam.startIndex.parse(this.requestContext);
+    public long getStartIndexParam() throws BadRequestException {
+        return (Long) QueryParam.startIndex.parse(this.requestContext);
     }
 
-    public int getEndIndexParam() throws BadRequestException {
-        return (Integer) QueryParam.endIndex.parse(this.requestContext);
+    public long getEndIndexParam() throws BadRequestException {
+        return (Long) QueryParam.endIndex.parse(this.requestContext);
     }
 
     public int getMaxResultsParam() throws BadRequestException {

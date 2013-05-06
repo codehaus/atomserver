@@ -254,7 +254,7 @@ public class EntriesDAOiBatisImpl
     //   AggregateEntriesDAO
     //-------------------
 
-    public List<AggregateEntryMetaData> selectAggregateEntriesByPage(FeedDescriptor feed, Date updatedMin, Date updatedMax, Locale locale, int startIndex, int endIndex, int pageSize, boolean noLatency, Collection<BooleanExpression<AtomCategory>> categoriesQuery, List<String> joinWorkspaces) {
+    public List<AggregateEntryMetaData> selectAggregateEntriesByPage(FeedDescriptor feed, Date updatedMin, Date updatedMax, Locale locale, long startIndex, long endIndex, int pageSize, boolean noLatency, Collection<BooleanExpression<AtomCategory>> categoriesQuery, List<String> joinWorkspaces) {
         return aggregateEntriesDAO.selectAggregateEntriesByPage(feed, updatedMin, updatedMax, locale, startIndex, endIndex, pageSize, noLatency, categoriesQuery, joinWorkspaces);
     }
 

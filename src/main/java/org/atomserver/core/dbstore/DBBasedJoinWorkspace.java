@@ -97,8 +97,8 @@ public class DBBasedJoinWorkspace extends DBBasedAtomWorkspace {
                 if(getEntriesMonitor() != null) {
                     getEntriesMonitor().updateNumberOfGetEntriesRequests(1);
                 }
-                int startIndex = feedTarget.getStartIndexParam();
-                int endIndex = feedTarget.getEndIndexParam();
+                long startIndex = feedTarget.getStartIndexParam();
+                long endIndex = feedTarget.getEndIndexParam();
                 boolean noLatency = feedTarget.getNoLatency();
 
                 if ( endIndex != -1 && endIndex < startIndex ) {
