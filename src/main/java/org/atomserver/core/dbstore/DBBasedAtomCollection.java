@@ -729,13 +729,13 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
         feed.addSimpleExtension(OpenSearchConstants.ITEMS_PER_PAGE, Integer.toString(pageSize));
     }
 
-    private void addAtomServerFeedElements(Feed feed, int endIndex ) {
-        feed.addSimpleExtension(AtomServerConstants.END_INDEX, Integer.toString(endIndex));
+    private void addAtomServerFeedElements(Feed feed, long endIndex ) {
+        feed.addSimpleExtension(AtomServerConstants.END_INDEX, Long.toString(endIndex));
     }
 
     // We do NOT write "previous" link, because we do not have any way to know the starting index
     // for the previous page.
-    private void addPagingLinks(Feed feed, IRI iri, int endIndex,
+    private void addPagingLinks(Feed feed, IRI iri, long endIndex,
                                 int pageSize, URITarget uriTarget, boolean noLatency ) {
         String nextURI = iri.getPath() + "?" +
                          QueryParam.startIndex.getParamName() + "=" + endIndex +
@@ -860,7 +860,7 @@ public class DBBasedAtomCollection extends AbstractAtomCollection {
 
         EntryMetaData entry = sortedList.get(lastIndex);
         long lastUpdatedDate = (entry.getUpdatedDate() != null) ? entry.getUpdatedDate().getTime() : 0L;
-        int lastTimestamp = (int) (entry.getUpdateTimestamp());
+        long lastTimestamp = entry.getUpdateTimestamp();
         if (log.isDebugEnabled()) {
             log.debug("DBBasedEntriestore.loadFeedEntries:: lastTimestamp= "
                       + lastTimestamp + " lastUpdatedDate= " + lastUpdatedDate
