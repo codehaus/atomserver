@@ -76,7 +76,7 @@ public class BaseEntriesDAOiBatisImpl
     }
 
     protected AbstractDAOiBatisImpl.ParamMap prepareParamMapForSelectEntries(Date updatedMin, Date updatedMax,
-                                                                   int startIndex, int endIndex,
+                                                                   long startIndex, long endIndex,
                                                                    int pageSize, String locale, FeedDescriptor feed) {
 
         if (updatedMin != null && updatedMin.equals(ZERO_DATE)) {

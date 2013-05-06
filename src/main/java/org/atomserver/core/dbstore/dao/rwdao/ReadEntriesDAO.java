@@ -43,8 +43,8 @@ public interface ReadEntriesDAO extends AtomServerDAO {
 
     List<EntryMetaData> selectFeedPage(Date updatedMin,
                                        Date updatedMax,
-                                       int startIndex,
-                                       int endIndex, int pageSize,
+                                       long startIndex,
+                                       long endIndex, int pageSize,
                                        boolean noLatency,
                                        String locale,
                                        FeedDescriptor feed,
