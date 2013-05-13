@@ -35,9 +35,11 @@
                 from the minTimestamp.-->
             ON recentlyChangedEntries.Scheme = CAST(#collection# AS VARCHAR(128))
         <isNotNull property="startIndex">
-           AND recentlyChangedEntries.UpdateTimestamp > CAST(#startIndex# AS <include refid="timestampType"/>)
+           AND recentlyChangedEntries.UpdateTimestamp > <isEqual property="dbType" compareValue="sqlserver">CAST(CAST(#startIndex# AS BIGINT) AS BINARY(8))</isEqual>
+                                                        <isNotEqual property="dbType" compareValue="sqlserver">CAST(#startIndex# AS BIGINT)</isNotEqual>
             <isNotEqual property="endIndex" compareValue="-1">
-               AND recentlyChangedEntries.UpdateTimestamp &lt;= CAST(#endIndex# AS <include refid="timestampType"/>)
+               AND recentlyChangedEntries.UpdateTimestamp &lt;= <isEqual property="dbType" compareValue="sqlserver">CAST(CAST(#endIndex# AS BIGINT) AS BINARY(8))</isEqual>
+                                                                <isNotEqual property="dbType" compareValue="sqlserver">CAST(#endIndex# AS BIGINT)</isNotEqual>
             </isNotEqual>
         </isNotNull>
 
@@ -135,9 +137,11 @@
                   WHERE Scheme = CAST(#collection# AS VARCHAR(128))
 
                   <isNotNull property="startIndex">
-                    AND UpdateTimestamp > CAST(#startIndex# AS <include refid="timestampType"/>)
+                    AND UpdateTimestamp > <isEqual property="dbType" compareValue="sqlserver">CAST(CAST(#startIndex# AS BIGINT) AS BINARY(8))</isEqual>
+                                          <isNotEqual property="dbType" compareValue="sqlserver">CAST(#startIndex# AS BIGINT)</isNotEqual>
                     <isNotEqual property="endIndex" compareValue="-1">
-                    AND UpdateTimestamp &lt;= CAST(#endIndex# AS <include refid="timestampType"/>)
+                    AND UpdateTimestamp &lt;= <isEqual property="dbType" compareValue="sqlserver">CAST(CAST(#endIndex# AS BIGINT) AS BINARY(8))</isEqual>
+                                              <isNotEqual property="dbType" compareValue="sqlserver">CAST(#endIndex# AS BIGINT)</isNotEqual>
                     </isNotEqual>
                   </isNotNull>
 

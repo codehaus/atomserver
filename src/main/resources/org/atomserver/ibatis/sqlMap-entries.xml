@@ -70,7 +70,8 @@
                entry.RevisionNum AS RevisionNum,
                entry.ContentHashCode AS contentHashCode
           FROM EntryStore entry
-         WHERE UpdateTimestamp > CAST($startIndex$ AS <include refid="timestampType"/>)
+         WHERE UpdateTimestamp > <isEqual property="dbType" compareValue="sqlserver">CAST(CAST($startIndex$ AS BIGINT) AS BINARY(8))</isEqual>
+                                 <isNotEqual property="dbType" compareValue="sqlserver">CAST($startIndex$ AS BIGINT)</isNotEqual>
            AND Workspace = CAST(#workspace# AS VARCHAR(20))
           <isNotNull property="categoryQuerySql">
            AND entry.EntryStoreId IN
@@ -83,7 +84,8 @@
             AND UpdateDate &lt; CAST(#updatedMax# AS <include refid="dateType"/>)
           </isNotNull>
           <isNotEqual property="endIndex" compareValue="-1">
-            AND UpdateTimestamp &lt;= CAST($endIndex$ AS <include refid="timestampType"/>)
+            AND UpdateTimestamp &lt;= <isEqual property="dbType" compareValue="sqlserver">CAST(CAST($endIndex$ AS BIGINT) AS BINARY(8))</isEqual>
+                                      <isNotEqual property="dbType" compareValue="sqlserver">CAST($endIndex$ AS BIGINT)</isNotEqual>
           </isNotEqual>
           <isNotNull property="latencySeconds">
             AND (

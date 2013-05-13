@@ -118,11 +118,6 @@
         </dynamic>
     </sql>
 
-    <sql id="timestampType">
-        <isEqual property="dbType" compareValue="sqlserver">BIGINT</isEqual>
-        <isNotEqual property="dbType" compareValue="sqlserver">BIGINT</isNotEqual>
-    </sql>
-
     <sql id="dateType">
         <isEqual property="dbType" compareValue="sqlserver">DATETIME</isEqual>
         <isNotEqual property="dbType" compareValue="sqlserver">TIMESTAMP</isNotEqual>
