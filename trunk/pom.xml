@@ -6,7 +6,7 @@
     <artifactId>atomserver</artifactId>
 
     <packaging>war</packaging>
-    <version>2.3.9-SNAPSHOT</version>
+    <version>2.3.9</version>
 
     <name>Atomserver</name>
 
@@ -124,9 +124,9 @@
     </developers>
 
     <scm>
-        <connection>scm:svn:http://svn.codehaus.org/atomserver/trunk</connection>
-        <developerConnection>scm:svn:https://svn.codehaus.org/atomserver/trunk</developerConnection>
-        <url>http://fisheye.codehaus.org/browse/atomserver/trunk</url>
+        <connection>scm:svn:http://svn.codehaus.org/atomserver/tags/atomserver-2.3.9</connection>
+        <developerConnection>scm:svn:https://svn.codehaus.org/atomserver/tags/atomserver-2.3.9</developerConnection>
+        <url>http://fisheye.codehaus.org/browse/atomserver/tags/atomserver-2.3.9</url>
     </scm>
 
     <ciManagement>
@@ -1006,7 +1006,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore />
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -1019,7 +1019,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore />
                                     </action>
                                 </pluginExecution>
                             </pluginExecutions>
